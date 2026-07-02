@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="theme-color" content="#6C5CE7" />
+    <meta name="description" content="Parent'Hèse — L'app pour les familles TND" />
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧩</text></svg>" />
+    <title>Parent'Hèse</title>
+    <script>
+      // ─── Adaptateur window.storage → localStorage ────────────────────────────
+      // Remplace l'API Claude.ai window.storage par localStorage pour le déploiement web
+      // Les données "privées" sont préfixées "prv_", les données "partagées" par "shr_"
+      window.storage = {
+        async get(key, shared = false) {
+          const prefixed = (shared ? 'shr_' : 'prv_') + key;
+          const value = localStorage.getItem(prefixed);
+          if (value === null) throw new Error('Key not found: ' + key);
+          return { key, value, shared };
+        },
+        async set(key, value, shared = false) {
+          const prefixed = (shared ? 'shr_' : 'prv_') + key;
+          localStorage.setItem(prefixed, value);
+          return { key, value, shared };
+        },
+        async delete(key, shared = false) {
+          const prefixed = (shared ? 'shr_' : 'prv_') + key;
+          localStorage.removeItem(prefixed);
+          return { key, deleted: true, shared };
+        },
+        async list(prefix = '', shared = false) {
+          const storagePrefix = (shared ? 'shr_' : 'prv_') + prefix;
+          const keys = [];
+          for (let i = 0; i < localStorage.length; i++) {
+            const k = localStorage.key(i);
+            if (k && k.startsWith(storagePrefix)) {
+              keys.push(k.slice(shared ? 4 : 4)); // retire "shr_" ou "prv_"
+            }
+          }
+          return { keys, prefix, shared };
+        }
+      };
+      // ─────────────────────────────────────────────────────────────────────────
+    </script>
+  </head>
+  <body style="margin:0;padding:0;background:#F8FAFC;">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

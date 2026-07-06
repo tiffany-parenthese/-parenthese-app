@@ -14,14 +14,80 @@ const FST={padding:"12px 14px",borderRadius:12,border:BD,fontSize:14,width:"100%
 
 const CATEGORIES_ACT_ALL=["Creatif","Cuisine","Nature","Sport","Calme","Construction","Jeu","Musique","Science"];
 const ACTIVITES=[
-  {id:1,nom:"Peinture avec les doigts",lieu:"interieur",energie:"fatigue",categorie:"Creatif",materiel:["peinture lavable","papier epais","tablier"],age:"2-8 ans",desc:"Une activite sensorielle parfaite.",tnd:{tsa:4,tdah:3,dys:5},duree:"20-30 min",nbEnfants:"1-4 enfants"},
-  {id:2,nom:"Chasse au tresor jardin",lieu:"exterieur",energie:"motiv",categorie:"Jeu",materiel:["tresors","indices"],age:"4-10 ans",desc:"Creez un parcours avec des enigmes.",tnd:{tsa:3,tdah:5,dys:3},duree:"30-45 min",nbEnfants:"2+ enfants"},
-  {id:3,nom:"Lecture sous la couette",lieu:"interieur",energie:"fatigue",categorie:"Calme",materiel:["livres","coussins"],age:"0-12 ans",desc:"Plongez dans une histoire ensemble.",tnd:{tsa:5,tdah:2,dys:4},duree:"15-20 min",nbEnfants:"1-2 enfants"},
-  {id:4,nom:"Cuisine crepes",lieu:"interieur",energie:"motiv",categorie:"Cuisine",materiel:["farine","oeufs","lait","beurre"],age:"3-12 ans",desc:"Faites des crepes ensemble !",tnd:{tsa:3,tdah:4,dys:4},duree:"30-40 min",nbEnfants:"1-3 enfants"},
-  {id:5,nom:"Balade nature collecte",lieu:"exterieur",energie:"motiv",categorie:"Nature",materiel:["sacs","loupe"],age:"2-12 ans",desc:"Ramassez feuilles et cailloux.",tnd:{tsa:5,tdah:4,dys:5},duree:"45-60 min",nbEnfants:"1-4 enfants"},
-  {id:6,nom:"Construire des Lego",lieu:"interieur",energie:"fatigue",categorie:"Construction",materiel:["Lego"],age:"3-12 ans",desc:"Construisez librement ensemble.",tnd:{tsa:5,tdah:3,dys:4},duree:"20-40 min",nbEnfants:"1-3 enfants"},
-  {id:7,nom:"Danse freestyle salon",lieu:"interieur",energie:"motiv",categorie:"Sport",materiel:["enceinte"],age:"0-12 ans",desc:"Mettez la musique et dansez !",tnd:{tsa:2,tdah:5,dys:5},duree:"10-20 min",nbEnfants:"1-4 enfants"},
-  {id:8,nom:"Jardinage en pots",lieu:"exterieur",energie:"fatigue",categorie:"Nature",materiel:["terre","pots","graines"],age:"3-12 ans",desc:"Plantez des graines.",tnd:{tsa:4,tdah:3,dys:5},duree:"20-30 min",nbEnfants:"1-2 enfants"},
+  {id:1,nom:"Peinture avec les doigts",lieu:"interieur",energie:"fatigue",categorie:"Creatif",materiel:["peinture lavable","papier epais","tablier"],age:"2-8 ans",desc:"Une activite sensorielle parfaite.",tnd:{tsa:4,tdah:3,dys:5},duree:"20-30 min",nbEnfants:"1-4 enfants",
+    niveauxSensoriels:{bruit:10,visuel:30,physique:10,attention:20},
+    profilsTND:{tsa:true,tdah:false,dys:true,tous:false},
+    adaptations:["Peut se faire en silence","Rythme libre","Activité individuelle","Résultat concret","Stimulation douce","Adapté aux hypersensibles"]},
+
+  {id:2,nom:"Chasse au tresor jardin",lieu:"exterieur",energie:"motiv",categorie:"Jeu",materiel:["tresors","indices"],age:"4-10 ans",desc:"Creez un parcours avec des enigmes.",tnd:{tsa:3,tdah:5,dys:3},duree:"30-45 min",nbEnfants:"2+ enfants",
+    niveauxSensoriels:{bruit:40,visuel:60,physique:70,attention:50},
+    profilsTND:{tsa:false,tdah:true,dys:false,tous:false},
+    adaptations:["Résultat concret","Peut être interrompue","Activité individuelle"]},
+
+  {id:3,nom:"Lecture sous la couette",lieu:"interieur",energie:"fatigue",categorie:"Calme",materiel:["livres","coussins"],age:"0-12 ans",desc:"Plongez dans une histoire ensemble.",tnd:{tsa:5,tdah:2,dys:4},duree:"15-20 min",nbEnfants:"1-2 enfants",
+    niveauxSensoriels:{bruit:0,visuel:10,physique:0,attention:30},
+    profilsTND:{tsa:true,tdah:false,dys:false,tous:false},
+    adaptations:["Peut se faire en silence","Rythme libre","Activité individuelle","Stimulation douce","Adapté aux hypersensibles"]},
+
+  {id:4,nom:"Cuisine crepes",lieu:"interieur",energie:"motiv",categorie:"Cuisine",materiel:["farine","oeufs","lait","beurre"],age:"3-12 ans",desc:"Faites des crepes ensemble !",tnd:{tsa:3,tdah:4,dys:4},duree:"30-40 min",nbEnfants:"1-3 enfants",
+    niveauxSensoriels:{bruit:30,visuel:40,physique:30,attention:50},
+    profilsTND:{tsa:false,tdah:true,dys:true,tous:false},
+    adaptations:["Résultat concret","Peu de règles","Stimulation douce"]},
+
+  {id:5,nom:"Balade nature collecte",lieu:"exterieur",energie:"motiv",categorie:"Nature",materiel:["sacs","loupe"],age:"2-12 ans",desc:"Ramassez feuilles et cailloux.",tnd:{tsa:5,tdah:4,dys:5},duree:"45-60 min",nbEnfants:"1-4 enfants",
+    niveauxSensoriels:{bruit:15,visuel:50,physique:50,attention:30},
+    profilsTND:{tsa:true,tdah:true,dys:true,tous:true},
+    adaptations:["Rythme libre","Peut être interrompue","Stimulation douce","Adapté aux hypersensibles"]},
+
+  {id:6,nom:"Construire des Lego",lieu:"interieur",energie:"fatigue",categorie:"Construction",materiel:["Lego"],age:"3-12 ans",desc:"Construisez librement ensemble.",tnd:{tsa:5,tdah:3,dys:4},duree:"20-40 min",nbEnfants:"1-3 enfants",
+    niveauxSensoriels:{bruit:10,visuel:30,physique:10,attention:70},
+    profilsTND:{tsa:true,tdah:false,dys:false,tous:false},
+    adaptations:["Peut se faire en silence","Rythme libre","Activité individuelle","Résultat concret"]},
+
+  {id:7,nom:"Danse freestyle salon",lieu:"interieur",energie:"motiv",categorie:"Sport",materiel:["enceinte"],age:"0-12 ans",desc:"Mettez la musique et dansez !",tnd:{tsa:2,tdah:5,dys:5},duree:"10-20 min",nbEnfants:"1-4 enfants",
+    niveauxSensoriels:{bruit:80,visuel:60,physique:80,attention:10},
+    profilsTND:{tsa:false,tdah:true,dys:false,tous:false},
+    adaptations:["Rythme libre","Peu de règles","Peut être interrompue"]},
+
+  {id:8,nom:"Jardinage en pots",lieu:"exterieur",energie:"fatigue",categorie:"Nature",materiel:["terre","pots","graines"],age:"3-12 ans",desc:"Plantez des graines.",tnd:{tsa:4,tdah:3,dys:5},duree:"20-30 min",nbEnfants:"1-2 enfants",
+    niveauxSensoriels:{bruit:10,visuel:20,physique:30,attention:40},
+    profilsTND:{tsa:true,tdah:false,dys:true,tous:false},
+    adaptations:["Peut se faire en silence","Rythme libre","Résultat concret","Stimulation douce","Adapté aux hypersensibles"]},
+
+  {id:9,nom:"Origami papier",lieu:"interieur",energie:"fatigue",categorie:"Creatif",materiel:["papier couleur"],age:"5-12 ans",desc:"Pliez des formes en papier : animaux, bateaux, avions...",tnd:{tsa:5,tdah:2,dys:3},duree:"20-30 min",nbEnfants:"1-3 enfants",
+    niveauxSensoriels:{bruit:0,visuel:20,physique:5,attention:60},
+    profilsTND:{tsa:true,tdah:false,dys:false,tous:false},
+    adaptations:["Peut se faire en silence","Activité individuelle","Résultat concret","Adapté aux hypersensibles"]},
+
+  {id:10,nom:"Jeu de memoire maison",lieu:"interieur",energie:"fatigue",categorie:"Jeu",materiel:["cartes ou images"],age:"3-10 ans",desc:"Fabriquez votre propre jeu de paires puis jouez ensemble.",tnd:{tsa:4,tdah:2,dys:4},duree:"20-30 min",nbEnfants:"1-4 enfants",
+    niveauxSensoriels:{bruit:10,visuel:20,physique:5,attention:50},
+    profilsTND:{tsa:true,tdah:false,dys:true,tous:false},
+    adaptations:["Peut se faire en silence","Peu de règles","Activité individuelle"]},
+
+  {id:11,nom:"Parcours moteur interieur",lieu:"interieur",energie:"motiv",categorie:"Sport",materiel:["coussins","cerceaux","ruban"],age:"2-8 ans",desc:"Creez un circuit avec obstacles : sauter, ramper, equilibre.",tnd:{tsa:3,tdah:5,dys:4},duree:"20-30 min",nbEnfants:"1-4 enfants",
+    niveauxSensoriels:{bruit:40,visuel:50,physique:80,attention:20},
+    profilsTND:{tsa:false,tdah:true,dys:false,tous:false},
+    adaptations:["Rythme libre","Peu de règles","Peut être interrompue"]},
+
+  {id:12,nom:"Atelier pate a sel",lieu:"interieur",energie:"fatigue",categorie:"Creatif",materiel:["farine","sel","eau","peinture"],age:"2-10 ans",desc:"Modelez des formes qui durciront et que vous pourrez peindre.",tnd:{tsa:4,tdah:3,dys:5},duree:"30-45 min",nbEnfants:"1-3 enfants",
+    niveauxSensoriels:{bruit:10,visuel:20,physique:20,attention:40},
+    profilsTND:{tsa:true,tdah:false,dys:true,tous:false},
+    adaptations:["Rythme libre","Résultat concret","Stimulation douce","Adapté aux hypersensibles"]},
+
+  {id:13,nom:"Yoga enfants",lieu:"interieur",energie:"fatigue",categorie:"Sport",materiel:["tapis"],age:"3-12 ans",desc:"Postures simples avec histoires : l arbre, le chat, le guerrier.",tnd:{tsa:5,tdah:3,dys:5},duree:"15-25 min",nbEnfants:"1-4 enfants",
+    niveauxSensoriels:{bruit:5,visuel:10,physique:30,attention:30},
+    profilsTND:{tsa:true,tdah:false,dys:true,tous:false},
+    adaptations:["Peut se faire en silence","Rythme libre","Activité individuelle","Stimulation douce","Adapté aux hypersensibles"]},
+
+  {id:14,nom:"Atelier musique percussions",lieu:"interieur",energie:"motiv",categorie:"Musique",materiel:["casseroles","cuilleres","boites"],age:"1-8 ans",desc:"Fabriquez des instruments avec ce qu on a et faites un concert !",tnd:{tsa:2,tdah:5,dys:5},duree:"15-20 min",nbEnfants:"1-4 enfants",
+    niveauxSensoriels:{bruit:90,visuel:40,physique:40,attention:10},
+    profilsTND:{tsa:false,tdah:true,dys:false,tous:false},
+    adaptations:["Peu de règles","Rythme libre","Peut être interrompue"]},
+
+  {id:15,nom:"Tri et classification nature",lieu:"exterieur",energie:"fatigue",categorie:"Science",materiel:["boites","loupe"],age:"3-10 ans",desc:"Collectez cailloux, feuilles et glands puis classez-les par forme, couleur, taille.",tnd:{tsa:5,tdah:3,dys:4},duree:"30-45 min",nbEnfants:"1-3 enfants",
+    niveauxSensoriels:{bruit:10,visuel:40,physique:30,attention:50},
+    profilsTND:{tsa:true,tdah:false,dys:true,tous:false},
+    adaptations:["Rythme libre","Activité individuelle","Résultat concret","Adapté aux hypersensibles"]},
 ];
 
 const SORTIES=[
@@ -167,7 +233,7 @@ const DEPTS_NAMED=[
   {k:"971",l:"Guadeloupe"},{k:"972",l:"Martinique"},{k:"973",l:"Guyane"},{k:"974",l:"La Reunion"},
 ];
 const DEPTS=DEPTS_NAMED.map(d=>d.k);
-const TYPES_SORTIE=["Parc","Balade","Musee","Aquarium","Zoo","Bowling","Cinema","Escape game","Piscine","Plage","Patinoire","Ferme pedagogique","Restaurant","Parc d attraction","Evenement"];
+const TYPES_SORTIE=["Parc","Balade","Musee","Aquarium","Zoo","Bowling","Cinema","Escape game","Piscine","Plage","Patinoire","Ferme pedagogique","Restaurant","Parc d attraction"];
 const MATERIEL_MAP={"Peinture avec une eponge":["Eponge","Peinture lavable","Feuille A4"],"Faire des cupcakes":["Farine","Oeufs","Beurre","Sucre","Moules"],"Puzzle geant":["Puzzle"],"Lecture a voix haute":["Livre"],"Balade a velo":["Velo","Casque"],"Planter des graines":["Graines","Pot","Terre","Arrosoir"],"Foot dans le jardin":["Ballon"],"Jeu de role":["Deguisements"],"Soiree jeux de societe":["Jeu de societe"],"Jeu de flechettes mousse":["Flechettes mousse","Cible"]};
 const ETAPES_MAP={"Peinture avec une eponge":["Trempe l eponge","Tamponne sur la feuille","Laisse secher 5 min"],"Faire des cupcakes":["Prechauffe le four","Melange les ingredients","Verse dans les moules","Enfourne 20 min","Decore"],"Puzzle geant":["Etale les pieces","Commence par les bords","Assemble par zones"],"Lecture a voix haute":["Choisis un livre","Installez-vous","Lis avec le ton","Discutez"],"Balade a velo":["Verifiez les velos","Choisissez l itineraire","Partez","Pause gouter"],"Planter des graines":["Remplis le pot","Fais un trou","Depose les graines","Arrose","Place au soleil"],"Foot dans le jardin":["Delimitez le terrain","Formez les equipes","C est parti"],"Jeu de role":["Choisissez vos personnages","Inventez une situation","Jouez"],"Soiree jeux de societe":["Choisissez un jeu","Lisez les regles","Jouez"],"Jeu de flechettes mousse":["Accrochez la cible","Definissez les regles","Lancez"]};
 const AVIS_DEMO=[
@@ -201,11 +267,6 @@ function SectionAccessibilite({values={},onChange,commentaire="",onCommentaireCh
   return(
     <>
       <div style={{background:"#FFF8F0",borderRadius:14,padding:"14px 16px"}}>
-        <p style={{margin:"0 0 4px",fontSize:14,fontWeight:600,color:TX}}>Bebes et jeunes enfants</p>
-        <p style={{margin:"0 0 10px",fontSize:12,color:TM}}>Coche ce qui correspond</p>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"8px 4px"}}>
-          {[["acc_poussette","Adapte poussette"],["acc_bebe","Adapte bebe"],["acc_allaitement","Espace allaitement"],["acc_langer","Table a langer"],["acc_aire03","Aire de jeux 0-3 ans"],["acc_peubruyant","Peu bruyant"]].map(([k,item])=>(<label key={k} style={{display:"flex",alignItems:"center",gap:6,fontSize:13,color:TX,cursor:"pointer"}}><input type="checkbox" checked={!!values[k]} onChange={()=>toggle(k)} style={{accentColor:OR,flexShrink:0}}/>{item}</label>))}
-        </div>
       </div>
       <div style={{background:"#F0F4FF",borderRadius:14,padding:"14px 16px"}}>
         <p style={{margin:"0 0 10px",fontSize:14,fontWeight:600,color:TX}}>Mobilite reduite PMR</p>
@@ -371,7 +432,10 @@ function AvisForm({isLoggedIn=true,onRequireAuth,tousLesAvis=[],chargement=false
   );
 }
 
-function ListePropositions({items,type,onChoisir,onClose}){
+function ListePropositions({items,type,onChoisir,onClose,isPremium=false,enfantActif=null}){
+  const [excluded,setExcluded]=useState(new Set());
+  const visibles=items.filter(item=>!excluded.has(item.id||item.nom));
+
   const emojiFor=(item)=>{
     if(type==="sortie"){
       return item.type==="Zoo"?"🦁":item.type==="Musee"?"🏛️":item.type==="Parc d attraction"?"🎢":item.type==="Plage"?"🏖️":item.type==="Bowling"?"🎳":item.type==="Escape game"?"🔐":item.type==="Ferme pedagogique"?"🐄":item.type==="Piscine"?"🏊":"🗺️";
@@ -379,24 +443,53 @@ function ListePropositions({items,type,onChoisir,onClose}){
     const cat=item.categorie;
     return cat==="Creatif"?"🎨":cat==="Cuisine"?"🍳":cat==="Nature"?"🌳":cat==="Sport"?"⚽":cat==="Calme"?"📖":cat==="Construction"?"🧱":cat==="Jeu"?"🎲":cat==="Musique"?"🎵":cat==="Science"?"🔬":"🎈";
   };
+
+  const getCompatBadge=(score)=>{
+    if(score===undefined)return null;
+    if(score>=80)return{label:"🟢 Très adapté",col:"#10B981",bg:"#ECFDF5"};
+    if(score>=40)return{label:"🟡 Adapté",col:"#F59E0B",bg:"#FFFBEB"};
+    return{label:"⚪ À tester",col:"#9CA3AF",bg:"#F9FAFB"};
+  };
+
   return(
     <div onClick={onClose} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.45)",zIndex:500,display:"flex",alignItems:"center",justifyContent:"center",padding:"24px 20px"}}>
       <div onClick={e=>e.stopPropagation()} style={{background:WH,borderRadius:24,padding:"22px 18px 24px",width:"100%",maxWidth:390,maxHeight:"85vh",overflowY:"auto",boxSizing:"border-box",boxShadow:"0 12px 48px rgba(0,0,0,0.22)"}}>
         <p style={{margin:"0 0 4px",fontSize:18,fontWeight:800,color:TX,textAlign:"center"}}>{type==="sortie"?"3 sorties pour toi":"3 activités pour toi"}</p>
-        <p style={{margin:"0 0 18px",fontSize:12,color:TM,textAlign:"center"}}>⭐ Passe en Premium pour une seule proposition en un clic</p>
+        <p style={{margin:"0 0 18px",fontSize:12,color:TM,textAlign:"center"}}>
+          {isPremium&&enfantActif
+            ?`⭐ Triées par compatibilité avec le profil de ${enfantActif.prenom}`
+            :"Choisis celle qui te correspond !"}
+        </p>
+        {isPremium&&enfantActif&&(
+          <div style={{background:"#ECFDF5",borderRadius:10,padding:"8px 12px",marginBottom:14,fontSize:11,color:"#065F46",textAlign:"center"}}>
+            💡 En Premium, les activités sont filtrées et scorées selon le profil sensoriel de <strong>{enfantActif.prenom}</strong>
+          </div>
+        )}
         <div style={{display:"flex",flexDirection:"column",gap:12}}>
-          {items.map((item,i)=>(
-            <div key={item.id||i} style={{background:BG,borderRadius:16,padding:14,border:BD}}>
-              <div style={{display:"flex",alignItems:"flex-start",gap:12,marginBottom:10}}>
-                <span style={{fontSize:28,flexShrink:0}}>{emojiFor(item)}</span>
-                <div style={{flex:1,minWidth:0}}>
-                  <p style={{margin:"0 0 2px",fontSize:14,fontWeight:700,color:TX}}>{item.nom}</p>
-                  <p style={{margin:0,fontSize:12,color:TM}}>{type==="sortie"?`${item.ville||""}${item.prix?" · "+item.prix:""}`:`${item.age||""}${item.lieu?" · "+(item.lieu==="interieur"?"Intérieur":"Extérieur"):""}`}</p>
+          {visibles.length===0?(
+            <div style={{textAlign:"center",padding:"20px 0"}}>
+              <p style={{fontSize:32,margin:"0 0 8px"}}>🔄</p>
+              <p style={{fontSize:13,color:TM,margin:0}}>Toutes les propositions ont été exclues.<br/>Ferme et relance le générateur.</p>
+            </div>
+          ):visibles.map((item,i)=>{
+            const badge=isPremium&&enfantActif?getCompatBadge(item._score):null;
+            return(
+              <div key={item.id||i} style={{background:BG,borderRadius:16,padding:14,border:badge?.col==="#10B981"?"2px solid #10B981":BD}}>
+                <div style={{display:"flex",alignItems:"flex-start",gap:12,marginBottom:8}}>
+                  <span style={{fontSize:28,flexShrink:0}}>{emojiFor(item)}</span>
+                  <div style={{flex:1,minWidth:0}}>
+                    <p style={{margin:"0 0 2px",fontSize:14,fontWeight:700,color:TX}}>{item.nom}</p>
+                    <p style={{margin:0,fontSize:12,color:TM}}>{type==="sortie"?`${item.ville||""}${item.prix?" · "+item.prix:""}`:`${item.age||""}${item.lieu?" · "+(item.lieu==="interieur"?"Intérieur":"Extérieur"):""}`}</p>
+                  </div>
+                  {badge&&<span style={{fontSize:11,fontWeight:700,color:badge.col,background:badge.bg,padding:"3px 8px",borderRadius:10,flexShrink:0,border:`1px solid ${badge.col}33`}}>{badge.label}</span>}
+                </div>
+                <div style={{display:"flex",gap:8}}>
+                  <button onClick={()=>onChoisir(item)} style={{flex:1,padding:"10px 0",borderRadius:20,background:V,border:"none",color:WH,fontWeight:700,fontSize:13,cursor:"pointer"}}>{type==="sortie"?"Choisir cette sortie":"Choisir cette activité"}</button>
+                  {isPremium&&visibles.length>1&&<button onClick={()=>setExcluded(prev=>new Set([...prev,item.id||item.nom]))} style={{padding:"10px 12px",borderRadius:20,background:WH,border:BD,color:TM,fontSize:12,cursor:"pointer"}} title="Pas celle-là">✕</button>}
                 </div>
               </div>
-              <button onClick={()=>onChoisir(item)} style={{width:"100%",padding:"10px 0",borderRadius:20,background:V,border:"none",color:WH,fontWeight:700,fontSize:13,cursor:"pointer"}}>{type==="sortie"?"Choisir cette sortie":"Choisir cette activité"}</button>
-            </div>
-          ))}
+            );
+          })}
         </div>
         <button onClick={onClose} style={{width:"100%",marginTop:16,padding:"10px 0",borderRadius:28,background:"none",border:"none",color:TM,fontSize:13,cursor:"pointer"}}>Annuler</button>
       </div>
@@ -487,6 +580,7 @@ function FormActivite({onClose,onSubmit,customCatActivites=[]}){
   const [lieu,setLieu]=useState("");
   const [motivation,setMotivation]=useState("");
   const [categorie,setCategorie]=useState("");
+  const [autreCategorie,setAutreCategorie]=useState("");
   const [ageMin,setAgeMin]=useState("");
   const [ageMax,setAgeMax]=useState("");
   const [materiel,setMateriel]=useState("");
@@ -494,12 +588,17 @@ function FormActivite({onClose,onSubmit,customCatActivites=[]}){
   const [accValues,setAccValues]=useState({});
   const [commentaireTND,setCommentaireTND]=useState("");
   const [localErrors,setLocalErrors]=useState({});
+  const [profilsTND,setProfilsTND]=useState({tsa:false,tdah:false,dys:false,tous:false});
+  const [niveauxSensoriels,setNiveauxSensoriels]=useState({bruit:0,visuel:0,physique:0,attention:0});
+  const [adaptations,setAdaptations]=useState([]);
   const handlePhoto=async(e)=>{const file=e.target.files[0];if(!file)return;if(file.size>8*1024*1024){alert("Photo trop lourde (max 8MB)");return;}try{const compressed=await compresserImage(file);setPhotoPreview(compressed);}catch(err){alert("Impossible de lire cette image, réessaie avec une autre.");}};
   const validate=()=>{const e={};if(!titre.trim())e.titre="Champ obligatoire";if(!desc.trim())e.desc="Champ obligatoire";if(!duree)e.duree="Champ obligatoire";if(!difficulte)e.difficulte="Champ obligatoire";if(!lieu)e.lieu="Champ obligatoire";if(!motivation)e.motivation="Champ obligatoire";if(!categorie)e.categorie="Champ obligatoire";setLocalErrors(e);return Object.keys(e).length===0;};
   const handleSubmit=()=>{
     if(!validate())return;
+    const categorieFinale=categorie==="Autre"?(autreCategorie.trim()||"Autre"):categorie;
     const age=(ageMin&&ageMax)?`${ageMin.replace(" an","").replace(" ans","")} - ${ageMax}`:(ageMin||ageMax||"Tous ages");
-    if(onSubmit)onSubmit({nom:titre.trim(),categorie,lieu,energie:motivation,age,duree,difficulte,materiel:materiel?materiel.split(",").map(m=>m.trim()).filter(Boolean):[],etapes:etapes?etapes.split("\n").map(s=>s.trim()).filter(Boolean):[],desc:desc.trim(),photo:photoPreview,tnd:{tsa:3,tdah:3,dys:3},...accValues,commentaireTND:commentaireTND.trim(),_type:"activite"});
+    const tndData={tsa:profilsTND.tsa||profilsTND.tous?5:0,tdah:profilsTND.tdah||profilsTND.tous?5:0,dys:profilsTND.dys||profilsTND.tous?5:0};
+    if(onSubmit)onSubmit({nom:titre.trim(),categorie:categorieFinale,lieu,energie:motivation,age,duree,difficulte,materiel:materiel?materiel.split(",").map(m=>m.trim()).filter(Boolean):[],etapes:etapes?etapes.split("\n").map(s=>s.trim()).filter(Boolean):[],desc:desc.trim(),photo:photoPreview,tnd:tndData,profilsTND,niveauxSensoriels,adaptations,commentaireTND:commentaireTND.trim(),...accValues,_type:"activite"});
   };
   const se=(err)=>({padding:"12px 14px",borderRadius:12,border:"1px solid "+(err?"#EF4444":"rgba(108,92,231,0.15)"),fontSize:14,width:"100%",boxSizing:"border-box",background:WH,fontFamily:"inherit"});
   const Err=({k})=>localErrors[k]?<p style={{margin:"3px 0 0",fontSize:11,color:"#EF4444"}}>{localErrors[k]}</p>:null;
@@ -536,12 +635,111 @@ function FormActivite({onClose,onSubmit,customCatActivites=[]}){
             <Field label="Lieu" required style={{flex:1}}><select value={lieu} onChange={e=>setLieu(e.target.value)} style={se(localErrors.lieu)}><option value="">Choisir</option><option value="interieur">Interieur</option><option value="exterieur">Exterieur</option></select><Err k="lieu"/></Field>
             <Field label="Motivation" required style={{flex:1}}><select value={motivation} onChange={e=>setMotivation(e.target.value)} style={se(localErrors.motivation)}><option value="">Choisir</option><option value="fatigue">Fatigue</option><option value="motiv">Motiv</option></select><Err k="motivation"/></Field>
           </div>
-          <Field label="Categorie" required><select value={categorie} onChange={e=>setCategorie(e.target.value)} style={se(localErrors.categorie)}><option value="">Choisir</option>{[...CATEGORIES_ACT_ALL,...customCatActivites.map(c=>c.label)].map(v=><option key={v}>{v}</option>)}</select><Err k="categorie"/></Field>
+          <Field label="Categorie" required>
+            <select value={categorie} onChange={e=>{setCategorie(e.target.value);if(e.target.value!=="Autre")setAutreCategorie("");}} style={se(localErrors.categorie)}>
+              <option value="">Choisir</option>
+              {[...CATEGORIES_ACT_ALL,...customCatActivites.map(c=>c.label)].map(v=><option key={v}>{v}</option>)}
+              <option value="Autre">✏️ Autre type d'activité...</option>
+            </select>
+            {categorie==="Autre"&&<input value={autreCategorie} onChange={e=>setAutreCategorie(e.target.value)} placeholder="Précisez le type d'activité (ex: Théâtre, Yoga, Poterie...)" style={{...FS,marginTop:8}}/>}
+            <Err k="categorie"/>
+          </Field>
           <Field label="Age conseille"><div style={{display:"flex",gap:8}}><select value={ageMin} onChange={e=>setAgeMin(e.target.value)} style={{padding:"12px 14px",borderRadius:12,border:"1px solid rgba(108,92,231,0.15)",fontSize:14,flex:1,background:WH}}><option value="">De...</option>{["0 an","1 an","2 ans","3 ans","4 ans","5 ans","6 ans","7 ans","8 ans","9 ans","10 ans","11 ans","12 ans"].map(v=><option key={v}>{v}</option>)}</select><select value={ageMax} onChange={e=>setAgeMax(e.target.value)} style={{padding:"12px 14px",borderRadius:12,border:"1px solid rgba(108,92,231,0.15)",fontSize:14,flex:1,background:WH}}><option value="">A...</option>{["1 an","2 ans","3 ans","4 ans","5 ans","6 ans","7 ans","8 ans","9 ans","10 ans","11 ans","12 ans","12 ans+"].map(v=><option key={v}>{v}</option>)}</select></div></Field>
           <Field label="Materiel necessaire"><input value={materiel} onChange={e=>setMateriel(e.target.value)} placeholder="Ex : peinture, papier, tablier" style={FS}/></Field>
           <Field label="Etapes"><textarea value={etapes} onChange={e=>setEtapes(e.target.value)} placeholder="1. Preparer..." rows={4} style={FST}/></Field>
-          <SectionAccessibilite values={accValues} onChange={setAccValues} commentaire={commentaireTND} onCommentaireChange={setCommentaireTND}/>
+          
           <div style={{background:"#FFFBEB",borderRadius:12,padding:"10px 14px",border:"1px solid #FDE68A",display:"flex",gap:10,alignItems:"flex-start"}}><span style={{fontSize:16,flexShrink:0}}>👶</span><p style={{margin:0,fontSize:12,color:"#92400E",lineHeight:1.5}}>Les activites proposees doivent etre destinees aux enfants.</p></div>
+
+          {/* ─── SECTION TND COMPLÈTE ─── */}
+          <div style={{background:"#F5F0EB",borderRadius:16,padding:"18px 16px",display:"flex",flexDirection:"column",gap:18}}>
+
+            {/* Partie 1 — Profils */}
+            <div>
+              <p style={{margin:"0 0 4px",fontSize:14,fontWeight:800,color:"#1a1a1a"}}>🧩 Profils TND adaptés</p>
+              <p style={{margin:"0 0 12px",fontSize:12,color:TM}}>Cochez les profils pour lesquels cette activité est particulièrement adaptée</p>
+              <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+                {[
+                  {k:"tsa",l:"🧩 TSA",sub:"Spectre autistique",bg:"#EEEDFE",bc:"#3C3489",col:"#3C3489"},
+                  {k:"tdah",l:"⚡ TDAH",sub:"Déficit attention",bg:"#E1F5EE",bc:"#085041",col:"#085041"},
+                  {k:"dys",l:"📖 DYS",sub:"Troubles dys",bg:"#FAEEDA",bc:"#633806",col:"#633806"},
+                  {k:"tous",l:"🌱 Tous profils",sub:"",bg:"#EAF3DE",bc:"#3B6D11",col:"#3B6D11"},
+                ].map(({k,l,sub,bg,bc,col})=>{
+                  const actif=profilsTND[k];
+                  return(
+                    <button key={k} onClick={()=>setProfilsTND(p=>({...p,[k]:!p[k]}))} style={{padding:"8px 14px",borderRadius:20,border:`2px solid ${actif?bc:"#E5E7EB"}`,background:actif?bg:WH,color:actif?col:"#9CA3AF",fontSize:12,fontWeight:actif?700:400,cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:2}}>
+                      <span>{l}</span>
+                      {sub&&<span style={{fontSize:9,opacity:0.8}}>{sub}</span>}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Partie 2 — Niveaux sensoriels */}
+            <div>
+              <p style={{margin:"0 0 4px",fontSize:14,fontWeight:800,color:"#1a1a1a"}}>🎚️ Niveaux sensoriels</p>
+              <p style={{margin:"0 0 14px",fontSize:12,color:TM}}>Ces infos aident les parents TND à choisir les activités adaptées à leur enfant</p>
+              {[
+                {label:"🔊 Niveau sonore",k:"bruit",left:"Silencieux",right:"Bruyant"},
+                {label:"💡 Stimulation visuelle",k:"visuel",left:"Calme",right:"Intense"},
+                {label:"🤸 Activité physique",k:"physique",left:"Aucune",right:"Intense"},
+                {label:"⏱️ Durée d'attention",k:"attention",left:"Courte",right:"Longue"},
+              ].map(({label,k,left,right})=>{
+                const val=niveauxSensoriels[k]||0;
+                const col=val<=33?"#10B981":val<=66?"#F59E0B":"#EF4444";
+                const badge=val<=33?"Faible":val<=66?"Moyen":"Élevé";
+                return(
+                  <div key={k} style={{marginBottom:14}}>
+                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
+                      <span style={{fontSize:13,fontWeight:600,color:"#1a1a1a"}}>{label}</span>
+                      <span style={{fontSize:11,fontWeight:700,color:col,background:col+"18",padding:"2px 10px",borderRadius:20}}>{badge}</span>
+                    </div>
+                    <div style={{display:"flex",alignItems:"center",gap:8}}>
+                      <span style={{fontSize:10,color:TM,width:52,flexShrink:0,textAlign:"right"}}>{left}</span>
+                      <div style={{flex:1,position:"relative",height:6,background:"#E5E7EB",borderRadius:6,overflow:"hidden"}}>
+                        <div style={{position:"absolute",left:0,top:0,height:"100%",width:val+"%",background:col,borderRadius:6,transition:"width 0.2s"}}/>
+                      </div>
+                      <span style={{fontSize:10,color:TM,width:52,flexShrink:0}}>{right}</span>
+                    </div>
+                    <input type="range" min={0} max={100} value={val} onChange={e=>setNiveauxSensoriels(p=>({...p,[k]:Number(e.target.value)}))} style={{width:"100%",marginTop:4,accentColor:col,cursor:"pointer"}}/>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Partie 3 — Adaptations */}
+            <div>
+              <p style={{margin:"0 0 4px",fontSize:14,fontWeight:800,color:"#1a1a1a"}}>✅ Adaptations possibles</p>
+              <p style={{margin:"0 0 12px",fontSize:12,color:TM}}>Cochez ce qui s'applique à cette activité</p>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+                {[
+                  "Peut se faire en silence",
+                  "Rythme libre",
+                  "Activité individuelle",
+                  "Peu de règles",
+                  "Résultat concret",
+                  "Stimulation douce",
+                  "Peut être interrompue",
+                  "Adapté aux hypersensibles",
+                ].map(ad=>{
+                  const actif=adaptations.includes(ad);
+                  return(
+                    <button key={ad} onClick={()=>setAdaptations(p=>p.includes(ad)?p.filter(x=>x!==ad):[...p,ad])} style={{padding:"8px 10px",borderRadius:10,border:`1.5px solid ${actif?"#6C5CE7":"#E5E7EB"}`,background:actif?"#EEEDFE":WH,color:actif?"#3C3489":"#6B7280",fontSize:11,fontWeight:actif?700:400,cursor:"pointer",textAlign:"left",display:"flex",alignItems:"center",gap:6}}>
+                      <span style={{fontSize:14}}>{actif?"☑":"☐"}</span>{ad}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Commentaire libre */}
+            <div>
+              <label style={{fontSize:12,color:TM,display:"block",marginBottom:6}}>Conseil TND (optionnel)</label>
+              <textarea value={commentaireTND} onChange={e=>setCommentaireTND(e.target.value.slice(0,200))} placeholder="Ex : Idéal pour les enfants TSA, activité calme sans surprise..." rows={2} style={FST}/>
+              <p style={{margin:"4px 0 0",fontSize:11,color:TM,textAlign:"right"}}>{commentaireTND.length}/200</p>
+            </div>
+          </div>
+
           <button onClick={handleSubmit} style={{padding:14,borderRadius:14,background:V,border:"none",color:WH,fontWeight:700,fontSize:15,cursor:"pointer",width:"100%"}}>Envoyer ma suggestion</button>
         </div>
       </div>
@@ -807,6 +1005,65 @@ function ActivityDetailPage({activity,isFavorite,onToggleFavorite,onBack,onRepor
         <div style={card}>{sec("Informations")}{[{label:"Motivation",val:motLabel},{label:"Age conseille",val:activity.age||"Tous ages"},{label:"Difficulte",val:difficulte||"-"}].map(({label,val},i)=>(<div key={label} style={{display:"flex",alignItems:"center",gap:10,padding:"6px 0",borderBottom:i<2?"0.5px solid #F3F4F6":"none"}}><span style={{fontSize:12,color:"#9CA3AF",width:80,flexShrink:0}}>{label}</span><span style={{fontSize:13,color:"#1a1a1a",fontWeight:500}}>{val}</span></div>))}</div>
         <div style={card}>{sec("Materiel")}{materiel?<div>{materiel.map((m,i)=>(<span key={i} style={{display:"inline-flex",alignItems:"center",gap:4,background:BG,borderRadius:20,padding:"4px 10px",fontSize:12,color:"#374151",margin:3}}>{m}</span>))}</div>:<span style={{fontSize:13,color:TM}}>Aucun materiel necessaire !</span>}</div>
         <div style={card}>{sec("Etapes")}{etapes?etapes.map((e,i)=>(<div key={i} style={{display:"flex",gap:10,padding:"6px 0"}}><div style={{width:22,height:22,borderRadius:"50%",background:V,color:WH,fontSize:11,fontWeight:600,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginTop:1}}>{i+1}</div><div style={{fontSize:13,color:"#374151",lineHeight:1.5}}>{e}</div></div>)):<span style={{fontSize:13,color:TM}}>Laissez parler votre creativite !</span>}</div>
+
+        {/* Section TND */}
+        {(()=>{
+          const p=activity.profilsTND||{};
+          const n=activity.niveauxSensoriels||{};
+          const adaps=activity.adaptations||[];
+          const hasData=p.tsa||p.tdah||p.dys||p.tous||Object.values(n).some(v=>v>0)||adaps.length>0||activity.commentaireTND;
+          if(!hasData) return(
+            <div style={{...card,textAlign:"center",padding:"20px 14px"}}>
+              {sec("🧩 Infos TND")}
+              <p style={{fontSize:13,color:TM,margin:"0 0 12px"}}>Pas encore d'infos TND pour cette activité — sois le premier à contribuer !</p>
+              <button onClick={()=>onReport&&onReport({...activity,_action:"tnd_request"})} style={{padding:"8px 20px",borderRadius:20,background:VL,border:"none",color:V,fontWeight:700,fontSize:12,cursor:"pointer"}}>✏️ Proposer des infos TND</button>
+              <p style={{margin:"8px 0 0",fontSize:11,color:TM}}>Ta contribution sera examinée par notre équipe</p>
+            </div>
+          );
+          return(
+            <div style={card}>
+              {sec("🧩 Infos TND")}
+              {/* Profils */}
+              {(p.tsa||p.tdah||p.dys||p.tous)&&(
+                <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:14}}>
+                  {p.tous&&<span style={{background:"#EAF3DE",color:"#3B6D11",fontSize:11,fontWeight:700,padding:"4px 12px",borderRadius:20}}>🌱 Tous profils</span>}
+                  {p.tsa&&<span style={{background:"#EEEDFE",color:"#3C3489",fontSize:11,fontWeight:700,padding:"4px 12px",borderRadius:20}}>🧩 TSA</span>}
+                  {p.tdah&&<span style={{background:"#E1F5EE",color:"#085041",fontSize:11,fontWeight:700,padding:"4px 12px",borderRadius:20}}>⚡ TDAH</span>}
+                  {p.dys&&<span style={{background:"#FAEEDA",color:"#633806",fontSize:11,fontWeight:700,padding:"4px 12px",borderRadius:20}}>📖 DYS</span>}
+                </div>
+              )}
+              {/* Niveaux sensoriels */}
+              {Object.values(n).some(v=>v>0)&&(
+                <div style={{marginBottom:14}}>
+                  {[{k:"bruit",l:"🔊 Niveau sonore"},{k:"visuel",l:"💡 Stimulation visuelle"},{k:"physique",l:"🤸 Activité physique"},{k:"attention",l:"⏱️ Durée d'attention"}].map(({k,l})=>{
+                    const val=n[k]||0;
+                    const col=val<=33?"#10B981":val<=66?"#F59E0B":"#EF4444";
+                    const badge=val<=33?"Faible":val<=66?"Moyen":"Élevé";
+                    return(
+                      <div key={k} style={{marginBottom:10}}>
+                        <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
+                          <span style={{fontSize:12,color:"#374151"}}>{l}</span>
+                          <span style={{fontSize:11,fontWeight:700,color:col}}>{badge}</span>
+                        </div>
+                        <div style={{height:6,background:"#E5E7EB",borderRadius:6,overflow:"hidden"}}>
+                          <div style={{height:"100%",width:val+"%",background:col,borderRadius:6}}/>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+              {/* Adaptations */}
+              {adaps.length>0&&(
+                <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:12}}>
+                  {adaps.map(a=><span key={a} style={{background:"#ECFDF5",color:"#065F46",fontSize:11,padding:"4px 10px",borderRadius:20,border:"1px solid #A7F3D0"}}>✓ {a}</span>)}
+                </div>
+              )}
+              {/* Commentaire */}
+              {activity.commentaireTND&&<p style={{margin:0,fontSize:12,color:TM,fontStyle:"italic",lineHeight:1.6}}>💬 {activity.commentaireTND}</p>}
+            </div>
+          );
+        })()}
         <div style={card}>{sec("Notes")}<div style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}><span style={{fontSize:28,fontWeight:700,color:"#1a1a1a"}}>{chargement?"...":noteGlobale.toFixed(1)}</span><div><Stars count={Math.round(noteGlobale)} size={14}/><div style={{fontSize:11,color:"#9CA3AF"}}>{tousLesAvis.length} avis</div></div></div><p style={{margin:"0 0 8px",fontSize:11,color:"#9CA3AF"}}>Moyenne par profil, calculee a partir des avis</p>{tndRows.map(({label,bg,col,stars,moyenne,avis},i,arr)=>(<div key={label} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"6px 0",borderBottom:i<arr.length-1?"0.5px solid #F3F4F6":"none"}}><span style={{background:bg,color:col,fontSize:11,fontWeight:600,padding:"2px 8px",borderRadius:20}}>{label}</span>{moyenne!=null?(<><Stars count={stars} size={12}/><span style={{fontSize:11,color:"#9CA3AF"}}>{moyenne.toFixed(1)} · {avis}</span></>):(<><span style={{fontSize:11,color:"#9CA3AF"}}>Pas encore</span><span/></>)}</div>))}</div>
         <AvisForm isLoggedIn={isLoggedIn} onRequireAuth={onRequireAuth} tousLesAvis={tousLesAvis} chargement={chargement} onAjouterAvis={ajouterAvis}/>
         <button onClick={onToggleFavorite} style={{width:"100%",background:isFavorite?"#FCEBEB":V,color:isFavorite?"#A32D2D":WH,border:"none",borderRadius:28,padding:14,fontSize:14,fontWeight:600,cursor:"pointer",marginBottom:8}}>{isFavorite?"Retirer des favoris":"Ajouter aux favoris"}</button>
@@ -900,6 +1157,8 @@ function TNDGrid({tnd}){
 function ActiviteCard({a,onClick,onReport,isFav,onToggleFav,verrouille=false,customCatActivites=[]}){
   const tile=iconTileAct(a.categorie,customCatActivites);
   const isNew=a._createdAt&&(Date.now()-new Date(a._createdAt).getTime())<7*24*60*60*1000;
+  const isCommunity=!!a._auteur||!!a.communaute;
+  const isPending=a._statut==="pending";
   return(
     <div style={{background:WH,borderRadius:16,overflow:"hidden",border:BD,marginBottom:12,boxShadow:"0 2px 8px rgba(0,0,0,0.06)",opacity:verrouille?0.75:1}}>
       <div style={{position:"relative",height:160,background:a.photo&&!verrouille?"#000":`linear-gradient(135deg,${tile.bg},${tile.bg})`,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",overflow:"hidden"}} onClick={onClick}>
@@ -909,10 +1168,12 @@ function ActiviteCard({a,onClick,onReport,isFav,onToggleFav,verrouille=false,cus
         <div style={{position:"absolute",top:10,left:10,display:"flex",gap:6,flexWrap:"wrap"}}>
           <span style={{background:WH,borderRadius:20,padding:"3px 10px",fontSize:11,fontWeight:600,color:V}}>{verrouille?"👑 Premium":a.categorie}</span>
           {isNew&&<span style={{background:"#10B981",borderRadius:20,padding:"3px 10px",fontSize:10,fontWeight:700,color:"#fff"}}>🆕 Nouveau</span>}
+          {isCommunity&&<span style={{background:"#8B5CF6",borderRadius:20,padding:"3px 10px",fontSize:10,fontWeight:700,color:"#fff"}}>👥 Communauté</span>}
         </div>
       </div>
       <div style={{padding:"12px 14px"}} onClick={onClick}>
         <h3 style={{fontSize:16,fontWeight:700,color:TX,margin:"0 0 4px"}}>{a.nom}</h3>
+        {isCommunity&&(a._auteur||a.pseudo)&&<p style={{margin:"0 0 6px",fontSize:11,color:TM}}>✍️ Proposé par <strong style={{color:V}}>{a._auteur||a.pseudo}</strong></p>}
         <div style={{display:"flex",gap:12,marginBottom:10,flexWrap:"wrap"}}>
           <span style={{fontSize:12,color:TM}}>👶 {a.age}</span>
           {a.duree&&<span style={{fontSize:12,color:TM}}>⏱ {a.duree}</span>}
@@ -1064,6 +1325,7 @@ function PageBiblio({pendingContribs=[],setPendingContribs,adminActivites=[],adm
   const [filterLieu,setFilterLieu]=useState("");
   const [filterMotiv,setFilterMotiv]=useState("");
   const [filterCategorie,setFilterCategorie]=useState("");
+  const [sortActiv,setSortActiv]=useState("pertinence"); // pertinence | alpha | recent | communaute
   const [filterDept,setFilterDept]=useState("");
   const [filterType,setFilterType]=useState("");
   const [sigSort,setSigSort]=useState({});
@@ -1101,7 +1363,7 @@ function PageBiblio({pendingContribs=[],setPendingContribs,adminActivites=[],adm
   const showToast=(msg)=>{setToast(msg);setTimeout(()=>setToast(""),3000);};
   const handleSubmitEvt=(data)=>{setPendingContribs(prev=>[{...data,id:Date.now(),_type:"evenement",_createdAt:new Date().toISOString(),_statut:"pending",_signalements:0,_raisonSignalement:"",_auteur:currentUser?.nom||"Anonyme",_auteurEmail:currentUser?.email||"non connecté"},...prev]);setShowFormEvt(false);setTypeEvtForm("");setTypeAutreForm("");showToast("Evenement soumis, en attente de validation !");};
   const CATEGORIES_ACT=[...CATEGORIES_ACT_ALL,...customCatActivites.map(c=>c.label)];
-  const approvedActs=pendingContribs.filter(c=>c._type==="activite"&&c._statut==="published");
+  const approvedActs=pendingContribs.filter(c=>c._type==="activite"&&c._statut!=="rejected");
   const adminPublished=(adminActivites||[]).filter(a=>a.statut==="published"&&!ACTIVITES.find(x=>x.id===a.id)).map(a=>{
     const age=a.nom?a.age:((a.ageMin&&a.ageMax)?`${String(a.ageMin).replace(" an","").replace(" ans","")} - ${a.ageMax}`:(a.ageMin||a.ageMax||a.age||"Tous ages"));
     const scoreFor=(...flags)=>{const c=flags.filter(Boolean).length;return c?Math.max(1,Math.min(5,c+2)):3;};
@@ -1115,15 +1377,24 @@ function PageBiblio({pendingContribs=[],setPendingContribs,adminActivites=[],adm
       etiquettes:a.etiquettes||[],
     };
   });
+  // Catégories disponibles — calculées dynamiquement depuis toutes les activités réelles
+  const toutesCategories=[...new Set([...ACTIVITES,...adminPublished,...approvedActs].map(a=>a.categorie).filter(Boolean))].sort();
+
   // Items avec signalement pending -> masqués jusqu'à résolution
   const blockedTitles=new Set([...adminReports.filter(r=>r.statut==="pending").map(r=>r.titre),...deletedTitles]);
   const searchQ=globalSearch.toLowerCase();
-  const actFiltered=[...ACTIVITES,...adminPublished,...approvedActs].filter(a=>!blockedTitles.has(a.nom)&&!blockedTitles.has(a.titre)).filter(a=>
+  const actFilteredBase=[...ACTIVITES,...adminPublished,...approvedActs].filter(a=>!blockedTitles.has(a.nom)&&!blockedTitles.has(a.titre)).filter(a=>
     (!filterLieu||a.lieu===filterLieu)&&
     (!filterMotiv||a.energie===filterMotiv)&&
     (!filterCategorie||a.categorie===filterCategorie)&&
     (!searchQ||(a.nom||a.titre||"").toLowerCase().includes(searchQ)||(a.categorie||"").toLowerCase().includes(searchQ))
   );
+  const actFiltered=[...actFilteredBase].sort((a,b)=>{
+    if(sortActiv==="alpha")return(a.nom||a.titre||"").localeCompare(b.nom||b.titre||"");
+    if(sortActiv==="recent")return(b._createdAt||b.date||"").localeCompare(a._createdAt||a.date||"");
+    if(sortActiv==="communaute")return(b.communaute?1:0)-(a.communaute?1:0);
+    return 0; // pertinence = ordre par défaut
+  });
   const parseDeptVille=(deptStr)=>{
     if(!deptStr)return{code:"",ville:""};
     let m=deptStr.match(/^(\d{2,3}\w?)\s*-\s*(.+)$/);
@@ -1141,16 +1412,16 @@ function PageBiblio({pendingContribs=[],setPendingContribs,adminActivites=[],adm
     const isGratuit=!prixStr.trim()||prixStr.toLowerCase().includes("gratuit")||prixStr==="0"||prixStr==="0€";
     return{id:e.id,nom:e.titre,titre:e.titre,categorie:e.type,ville:e.ville,dept:e.dept,date:e.date,prix:prixStr,gratuit:isGratuit,age:"Tous ages",desc:e.desc,tnd:{tsa:3,tdah:3,dys:3},etiquettes:e.etiquettes||[]};
   });
-  const approvedSorts=pendingContribs.filter(c=>c._type==="sortie"&&c._statut==="published");
+  const approvedSorts=pendingContribs.filter(c=>c._type==="sortie"&&c._statut!=="rejected");
   const sortFiltered=[...SORTIES,...adminSortiesPubliees,...approvedSorts].filter(s=>!blockedTitles.has(s.nom)).filter(s=>(!filterDept||s.dept===filterDept)&&(!filterType||s.type===filterType)&&(!searchQ||(s.nom||"").toLowerCase().includes(searchQ)||(s.type||"").toLowerCase().includes(searchQ)||(s.ville||"").toLowerCase().includes(searchQ)));
   const signaler=(id)=>setSigSort(prev=>({...prev,[id]:(prev[id]||0)+1}));
   const cardStyle={background:WH,borderRadius:14,padding:"14px 16px",border:BD,cursor:"pointer"};
   const selStyle={flex:1,padding:"8px 10px",borderRadius:10,border:BD,background:WH,fontSize:13};
 
-  const approvedEvts=pendingContribs.filter(c=>c._type==="evenement"&&c._statut==="published");
+  const approvedEvts=pendingContribs.filter(c=>c._type==="evenement"&&c._statut!=="rejected");
   const allEvts=[...evenements,...adminEvenementsPublies,...approvedEvts].filter(e=>!blockedTitles.has(e.titre)&&!blockedTitles.has(e.nom));
   const evtFiltered=allEvts.filter(e=>{
-    if(evtCat&&e.categorie!==evtCat)return false;
+    if(evtCat&&e.categorie!==evtCat&&e.type!==evtCat)return false;
     if(evtDept&&e.dept!==evtDept)return false;
     if(evtDateDe&&e.date<evtDateDe)return false;
     if(evtDateA&&e.date>evtDateA)return false;
@@ -1235,11 +1506,19 @@ function PageBiblio({pendingContribs=[],setPendingContribs,adminActivites=[],adm
               <FilterSectionTitle icon="🧩" label="Type d'activité"/>
               <select value={filterCategorie} onChange={e=>setFilterCategorie(e.target.value)} style={{display:"block",width:"100%",padding:"9px 12px",borderRadius:14,border:"1.5px solid #E7E4F2",background:WH,fontSize:12,color:TX,boxSizing:"border-box",textAlign:"center"}}>
                 <option value="">Tous les types</option>
-                {CATEGORIES_ACT.map(c=><option key={c} value={c}>{c}</option>)}
+                {toutesCategories.map(c=><option key={c} value={c}>{c}</option>)}
               </select>
-              {(filterLieu||filterMotiv||filterCategorie)&&(
+              {(filterLieu||filterMotiv||filterCategorie||globalSearch)&&(
                 <div style={{textAlign:"center"}}><button onClick={()=>{setFilterLieu("");setFilterMotiv("");setFilterCategorie("");}} style={{background:"none",border:"none",color:V,fontSize:12,cursor:"pointer",padding:"10px 0 0",fontWeight:600}}>Effacer les filtres ×</button></div>
               )}
+              {/* Tri */}
+              <div style={{display:"flex",gap:6,marginTop:12,flexWrap:"wrap"}}>
+                {[{v:"pertinence",l:"⭐ Pertinence"},{v:"alpha",l:"🔤 A→Z"},{v:"recent",l:"🆕 Récents"},{v:"communaute",l:"👥 Communauté"}].map(({v,l})=>(
+                  <button key={v} onClick={()=>setSortActiv(v)} style={{padding:"5px 12px",borderRadius:20,border:`1.5px solid ${sortActiv===v?V:BD}`,background:sortActiv===v?VL:WH,color:sortActiv===v?V:TM,fontSize:11,fontWeight:sortActiv===v?700:400,cursor:"pointer"}}>
+                    {l}
+                  </button>
+                ))}
+              </div>
             </div>
 
             <div style={{display:"flex",alignItems:"center",gap:8,margin:"0 0 14px"}}>
@@ -1282,7 +1561,7 @@ function PageBiblio({pendingContribs=[],setPendingContribs,adminActivites=[],adm
               <FilterSectionTitle icon="🗺️" label="Type de sortie"/>
               <select value={filterType} onChange={e=>setFilterType(e.target.value)} style={{display:"block",width:"100%",padding:"9px 12px",borderRadius:14,border:"1.5px solid #E7E4F2",background:WH,fontSize:12,color:TX,boxSizing:"border-box"}}>
                 <option value="">Tous les types</option>
-                {[...TYPES_SORTIE,...customCatSorties.map(c=>c.label)].map(t=><option key={t} value={t}>{t}</option>)}
+                {[...new Set([...SORTIES,...adminSortiesPubliees,...approvedSorts].map(s=>s.type||s.categorie).filter(Boolean))].sort().map(t=><option key={t} value={t}>{t}</option>)}
               </select>
               {(filterDept||filterType)&&(
                 <div style={{textAlign:"center"}}><button onClick={()=>{setFilterDept("");setFilterType("");}} style={{background:"none",border:"none",color:V,fontSize:12,cursor:"pointer",padding:"10px 0 0",fontWeight:600}}>Effacer les filtres ×</button></div>
@@ -1323,7 +1602,10 @@ function PageBiblio({pendingContribs=[],setPendingContribs,adminActivites=[],adm
             <div style={{display:"flex",gap:6,marginBottom:14}}>{[{k:"calendrier",l:"📋 Liste"},{k:"mensuel",l:"📅 Mois"},{k:"generateur",l:"🪄 Générateur"}].map(({k,l})=>(<button key={k} onClick={()=>setEvtView(k)} style={{flex:1,padding:"8px 4px",borderRadius:12,border:"1.5px solid "+(evtView===k?V:BD),background:evtView===k?VL:WH,color:evtView===k?V:TM,fontSize:12,cursor:"pointer",fontWeight:evtView===k?700:400}}>{l}</button>))}</div>
             <div style={{display:"flex",gap:8,overflowX:"auto",paddingBottom:8,marginBottom:8,scrollbarWidth:"none"}}>
               <button onClick={()=>setEvtCat("")} style={{padding:"5px 12px",borderRadius:20,border:"1.5px solid "+(evtCat===""?V:BD),background:evtCat===""?VL:WH,color:evtCat===""?V:TM,fontSize:12,cursor:"pointer",whiteSpace:"nowrap",flexShrink:0}}>Tout</button>
-              {[...EVT_CATEGORIES,...customCatEvenements].map(c=>(<button key={c.k} onClick={()=>setEvtCat(evtCat===c.k?"":c.k)} style={{padding:"5px 12px",borderRadius:20,border:"1.5px solid "+(evtCat===c.k?V:BD),background:evtCat===c.k?VL:WH,color:evtCat===c.k?V:TM,fontSize:12,cursor:"pointer",whiteSpace:"nowrap",flexShrink:0}}>{c.emoji} {c.label}</button>))}
+              {[...new Set(allEvts.map(e=>e.categorie||e.type).filter(Boolean))].sort().map(cat=>{
+                const def=[...EVT_CATEGORIES,...customCatEvenements].find(c=>c.k===cat||c.label===cat);
+                return(<button key={cat} onClick={()=>setEvtCat(evtCat===cat?"":cat)} style={{padding:"5px 12px",borderRadius:20,border:"1.5px solid "+(evtCat===cat?V:BD),background:evtCat===cat?VL:WH,color:evtCat===cat?V:TM,fontSize:12,cursor:"pointer",whiteSpace:"nowrap",flexShrink:0}}>{def?.emoji||"🎪"} {def?.label||cat}</button>);
+              })}
             </div>
             <FiltresEvt/>
             {evtView==="calendrier"&&(
@@ -1471,7 +1753,7 @@ function Confetti({active}){
 }
 
 // ─── ONBOARDING ──────────────────────────────────────────────────────────────
-function Onboarding({onDone}){
+function Onboarding({onDone,onDemo}){
   const [step,setStep]=useState(0);
   const steps=[
     {emoji:"🧩",titre:"Bienvenue sur Parent'Hèse",desc:"L'app pensée pour les familles avec des enfants TND — TSA, TDAH, DYS. Trouvez des activités et sorties adaptées en quelques secondes.",bg:"linear-gradient(135deg,#6C5CE7,#a78bfa)"},
@@ -1497,7 +1779,10 @@ function Onboarding({onDone}){
             <button onClick={()=>setStep(p=>p+1)} style={{flex:2,padding:"13px 0",borderRadius:28,background:"#fff",border:"none",color:"#333",fontWeight:700,fontSize:14,cursor:"pointer"}}>Suivant →</button>
           </div>
         ):(
-          <button onClick={onDone} style={{width:"100%",padding:"15px 0",borderRadius:28,background:"#fff",border:"none",color:"#333",fontWeight:800,fontSize:15,cursor:"pointer"}}>C'est parti ! 🚀</button>
+          <div style={{display:"flex",flexDirection:"column",gap:10}}>
+            <button onClick={onDone} style={{width:"100%",padding:"15px 0",borderRadius:28,background:"#fff",border:"none",color:"#333",fontWeight:800,fontSize:15,cursor:"pointer"}}>Créer un compte 🚀</button>
+            {onDemo&&<button onClick={onDemo} style={{width:"100%",padding:"13px 0",borderRadius:28,background:"rgba(255,255,255,0.2)",border:"2px solid rgba(255,255,255,0.5)",color:"#fff",fontWeight:600,fontSize:14,cursor:"pointer"}}>👀 Voir la démo (sans compte)</button>}
+          </div>
         )}
       </div>
     </div>
@@ -1829,7 +2114,7 @@ function EvtGenerateur({evt,activites,favoris,setFavoris,isPremium=false}){
   );
 }
 
-function PageAccueil({favoris,setFavoris,setPage,customEvents=[],popupShown=new Set(),setPopupShown,ideesMomentConfig=[],isLoggedIn=true,onRequireAuth,evenementsSaisonniers=[],isPremium=false,onOpenPremium,customCatActivites=[],customCatSorties=[],customCatEvenements=[],adminActivites=[],adminSorties=[],pendingContribs=[],setPendingContribs,deletedTitles=new Set(),currentUser=null,sosModeActif=true,enfants=[],enfantActif=null,onMarquerFait,historiqueActivites=[],filtresMemoActiv={},setFiltresMemoActiv,filtresMemoSortie={},setFiltresMemoSortie}){
+function PageAccueil({favoris,setFavoris,setPage,customEvents=[],popupShown=new Set(),setPopupShown,ideesMomentConfig=[],isLoggedIn=true,onRequireAuth,evenementsSaisonniers=[],isPremium=false,onOpenPremium,customCatActivites=[],customCatSorties=[],customCatEvenements=[],adminActivites=[],adminSorties=[],pendingContribs=[],setPendingContribs,deletedTitles=new Set(),currentUser=null,sosModeActif=true,enfants=[],enfantActif=null,setEnfantActif,onMarquerFait,historiqueActivites=[],filtresMemoActiv={},setFiltresMemoActiv,filtresMemoSortie={},setFiltresMemoSortie}){
   const FAVORIS_LIMITE_GRATUIT=10;
   const [showFavorisLimitMsg,setShowFavorisLimitMsg]=useState(false);
   const setFavorisGuarded=(updater)=>{
@@ -1898,22 +2183,48 @@ function PageAccueil({favoris,setFavoris,setPage,customEvents=[],popupShown=new 
         if(m&&(ageNum<parseInt(m[1])||ageNum>parseInt(m[2])))return false;
       }
       // Filtre sensoriel Premium : exclure activités incompatibles avec le profil enfant
-      if(isPremium&&niveaux&&a.environnement){
-        if(a.environnement==="bruyant"&&niveaux.bruit<30)return false;
-        if(a.environnement==="foule"&&niveaux.foule<30)return false;
-        if(a.environnement==="imprevu"&&niveaux.imprevu<30)return false;
+      if(isPremium&&niveaux&&a.niveauxSensoriels){
+        if((a.niveauxSensoriels.bruit||0)>66&&(niveaux.bruit||50)<35)return false;
+        if((a.niveauxSensoriels.visuel||0)>66&&(niveaux.lumiere||50)<35)return false;
+        if((a.niveauxSensoriels.physique||0)>66&&(niveaux.foule||50)<35)return false;
+      }
+      // Filtre par besoins spécifiques
+      if(isPremium&&enfantCourant?.besoins?.length>0&&a.adaptations?.length>0){
+        // Bonus : favoriser les activités qui correspondent aux besoins (pas d'exclusion stricte)
       }
       return true;
     });
     const source=pool.length?pool:toutesActivites;
-    if(isPremium){
-      setResultA(source[Math.floor(Math.random()*source.length)]);
-      setResultsAList(null);
+    const shuffled=[...source].sort(()=>Math.random()-0.5);
+    // 3 activités pour tout le monde
+    // Premium : triées par score de compatibilité TND avec l'enfant actif
+    if(isPremium&&enfantCourant){
+      const score=(a)=>{
+        let s=0;
+        const n=enfantCourant.niveauxSensoriels||{};
+        const besoins=enfantCourant.besoins||[];
+        const ns=a.niveauxSensoriels||{};
+        // Correspondance sensorielle (écart faible = bon score)
+        if(ns.bruit!==undefined)s+=Math.max(0,50-Math.abs((n.bruit||50)-(100-ns.bruit)));
+        if(ns.visuel!==undefined)s+=Math.max(0,50-Math.abs((n.lumiere||50)-(100-ns.visuel)));
+        // Correspondance besoins/adaptations
+        const adaps=a.adaptations||[];
+        s+=besoins.filter(b=>adaps.includes(b)).length*15;
+        // Correspondance profil TND
+        const profilsEnfant=enfantCourant.profils||[];
+        const profilsActiv=a.profilsTND||{};
+        if(profilsActiv.tous)s+=20;
+        if(profilsEnfant.includes("TSA")&&profilsActiv.tsa)s+=25;
+        if(profilsEnfant.includes("TDAH")&&profilsActiv.tdah)s+=25;
+        if(profilsEnfant.includes("DYS")&&profilsActiv.dys)s+=25;
+        return s;
+      };
+      const scored=[...shuffled].map(a=>({...a,_score:score(a)})).sort((a,b)=>b._score-a._score);
+      setResultsAList(scored.slice(0,Math.min(3,scored.length)));
     }else{
-      const shuffled=[...source].sort(()=>Math.random()-0.5);
       setResultsAList(shuffled.slice(0,Math.min(3,shuffled.length)));
-      setResultA(null);
     }
+    setResultA(null);
     setShowFiltres(false);
     if(setFiltresMemoActiv)setFiltresMemoActiv({lieu,energie,ageEnfant});
   };
@@ -2025,6 +2336,18 @@ function PageAccueil({favoris,setFavoris,setPage,customEvents=[],popupShown=new 
         <div style={{textAlign:"center",padding:"24px 8px 16px"}}>
           <p style={{margin:"0 0 6px",fontSize:26,fontWeight:800,color:TX,lineHeight:1.2}}>Que souhaitez-vous<br/>faire aujourd hui ? 🪄</p>
           <p style={{margin:0,fontSize:14,color:TM}}>Trouvez l inspiration parfaite en deux clics pour vos enfants.</p>
+          {/* Rappel créer profil enfant */}
+          {isLoggedIn&&enfants.length===0&&(
+            <div onClick={()=>setPage("profil")} style={{background:"linear-gradient(135deg,#EDE9FF,#F5F0FF)",borderRadius:16,padding:"14px 16px",marginBottom:14,display:"flex",alignItems:"center",gap:12,cursor:"pointer",border:"1.5px solid rgba(108,92,231,0.2)"}}>
+              <span style={{fontSize:32,flexShrink:0}}>👶</span>
+              <div style={{flex:1}}>
+                <p style={{margin:"0 0 2px",fontSize:13,fontWeight:700,color:V}}>Crée le profil de ton enfant</p>
+                <p style={{fontSize:11,color:TM,margin:0}}>Le générateur s'adaptera à son profil TND et sensoriel pour de meilleures suggestions</p>
+              </div>
+              <span style={{color:V,fontSize:16,flexShrink:0}}>→</span>
+            </div>
+          )}
+
           {/* Streak counter */}
           {(()=>{
             if(historiqueActivites.length===0)return null;
@@ -2069,23 +2392,35 @@ function PageAccueil({favoris,setFavoris,setPage,customEvents=[],popupShown=new 
           );
         })()}
 
-        {/* Raccourcis rapides */}
-        <div style={{marginBottom:16}}>
-          <p style={{margin:"0 0 10px",fontSize:12,fontWeight:700,color:TM,textTransform:"uppercase",letterSpacing:"0.05em"}}>Accès rapide</p>
-          <div style={{display:"flex",gap:8,overflowX:"auto",paddingBottom:4,scrollbarWidth:"none"}}>
-            {[
-              {label:"😴 Calme",onClick:()=>{setEnergie("fatigue");setLieu(null);setAgeEnfant(null);genActivite();}},
-              {label:"🚀 Motivé",onClick:()=>{setEnergie("motiv");setLieu(null);setAgeEnfant(null);genActivite();}},
-              {label:"🏠 Dedans",onClick:()=>{setLieu("interieur");setEnergie(null);setAgeEnfant(null);genActivite();}},
-              {label:"🌳 Dehors",onClick:()=>{setLieu("exterieur");setEnergie(null);setAgeEnfant(null);genActivite();}},
-              {label:"⚡ Moins de 15 min",onClick:()=>{setLieu(null);setEnergie(null);setAgeEnfant(null);setShowFiltres(true);}},
-            ].map(({label,onClick})=>(
-              <button key={label} onClick={onClick} style={{flexShrink:0,padding:"8px 14px",borderRadius:20,border:BD,background:WH,color:TX,fontSize:13,fontWeight:500,cursor:"pointer",whiteSpace:"nowrap",boxShadow:"0 1px 3px rgba(0,0,0,0.06)"}}>
-                {label}
+        {/* Sélecteur enfant actif */}
+        {enfants.length>0&&(
+          <div style={{marginBottom:16}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
+              <p style={{margin:0,fontSize:12,fontWeight:700,color:TM,textTransform:"uppercase",letterSpacing:"0.05em"}}>Pour qui générer ?</p>
+              {isPremium&&<span style={{fontSize:10,color:V,fontWeight:600}}>⭐ Adapté au profil</span>}
+            </div>
+            <div style={{display:"flex",gap:8,overflowX:"auto",paddingBottom:4,scrollbarWidth:"none"}}>
+              <button onClick={()=>setEnfantActif&&setEnfantActif(null)} style={{flexShrink:0,padding:"8px 14px",borderRadius:20,border:`2px solid ${!enfantActif?"#1a1a1a":"rgba(0,0,0,0.08)"}`,background:!enfantActif?"#1a1a1a":WH,color:!enfantActif?"#fff":TM,fontSize:12,fontWeight:!enfantActif?700:400,cursor:"pointer",whiteSpace:"nowrap"}}>
+                👨‍👩‍👧 Tous
               </button>
-            ))}
+              {enfants.map(e=>{
+                const actif=e.id===enfantActif;
+                return(
+                  <button key={e.id} onClick={()=>setEnfantActif&&setEnfantActif(e.id)} style={{flexShrink:0,padding:"8px 14px",borderRadius:20,border:`2px solid ${actif?(e.couleur||V):"rgba(0,0,0,0.08)"}`,background:actif?(e.couleur||V)+"15":WH,color:actif?(e.couleur||V):TM,fontSize:12,fontWeight:actif?700:400,cursor:"pointer",whiteSpace:"nowrap",display:"flex",alignItems:"center",gap:6}}>
+                    <span>{e.emoji||"👦"}</span>
+                    <span>{e.prenom}</span>
+                    {actif&&isPremium&&<span style={{fontSize:9,opacity:0.8}}>✓ profil actif</span>}
+                  </button>
+                );
+              })}
+            </div>
+            {enfantActif&&isPremium&&(()=>{
+              const e=enfants.find(x=>x.id===enfantActif);
+              if(!e||!e.profils?.length)return null;
+              return <p style={{margin:"6px 0 0",fontSize:11,color:TM}}>Profils : {e.profils.map(p=>p.replace("_"," ")).join(", ")}</p>;
+            })()}
           </div>
-        </div>
+        )}
 
         {/* Generateurs */}
         <div style={{display:"flex",gap:10,marginBottom:20,alignItems:"stretch"}}>
@@ -2508,8 +2843,8 @@ function PageAccueil({favoris,setFavoris,setPage,customEvents=[],popupShown=new 
         </div>
       )}
       {resultS&&<BottomSheet item={resultS} type="sortie" onClose={()=>setResultS(null)} onFav={toggleFav} isFav={favoris.some(f=>f.id===resultS.id&&f._type==="sortie")}/>}
-      {resultsAList&&<ListePropositions items={resultsAList} type="activite" onChoisir={choisirDansListeA} onClose={()=>setResultsAList(null)}/>}
-      {resultsSList&&<ListePropositions items={resultsSList} type="sortie" onChoisir={choisirDansListeS} onClose={()=>setResultsSList(null)}/>}
+      {resultsAList&&<ListePropositions items={resultsAList} type="activite" onChoisir={choisirDansListeA} onClose={()=>setResultsAList(null)} isPremium={isPremium} enfantActif={enfants.find(e=>e.id===enfantActif)||null}/>}
+      {resultsSList&&<ListePropositions items={resultsSList} type="sortie" onChoisir={choisirDansListeS} onClose={()=>setResultsSList(null)} isPremium={isPremium} enfantActif={enfants.find(e=>e.id===enfantActif)||null}/>}
 
       {showFiltresSortie&&(
         <div onClick={()=>setShowFiltresSortie(false)} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.45)",zIndex:500,display:"flex",alignItems:"flex-end",justifyContent:"center"}}>
@@ -2662,11 +2997,7 @@ function PagePlanning({sosLib=[],enfants=[],enfantActif,setEnfantActif,isPremium
       const lieuKey={maison:"lieu_maison",voiture:"lieu_voiture",ecole:"lieu_ecole",public:"lieu_public",dehors:"lieu_dehors"}[sosLieu];
       if(lieuKey){const m=pool.filter(a=>a[lieuKey]);if(m.length>0)pool=m;}
     }
-    // Filtre 4 — Temps
-    if(sosTemps){
-      const tempsKey={"1-2min":"temps_1_2min","5min":"temps_5min","10-15min":"temps_10_15min","30min":"temps_30min"}[sosTemps];
-      if(tempsKey){const m=pool.filter(a=>a[tempsKey]);if(m.length>0)pool=m;}
-    }
+
     if(pool.length===0){setSosResults({main:null,alt:null,fallback:FALLBACK_ACTIVITIES});return;}
     const shuffle=[...pool].sort(()=>Math.random()-0.5);
     setSosResults({main:shuffle[0],alt:shuffle[1]||null,fallback:null});
@@ -2680,8 +3011,12 @@ function PagePlanning({sosLib=[],enfants=[],enfantActif,setEnfantActif,isPremium
   const adminPubP=(adminActivites||[]).filter(a=>a.statut==="published").map(a=>({...a,nom:a.nom||a.titre,materiel:Array.isArray(a.materiel)?a.materiel:[]}));
   const toutesActivitesP=[...ACTIVITES,...adminPubP,...approvedActsP].filter(a=>!blockedTitlesP.has(a.nom)&&!blockedTitlesP.has(a.titre));
   const ALL_MATERIEL=[...new Set(toutesActivitesP.flatMap(a=>a.materiel||[]))].sort();
+  const [sansMateriel,setSansMateriel]=useState(false);
   const toggleMat=(m)=>setMaterielDispo(prev=>prev.includes(m)?prev.filter(x=>x!==m):[...prev,m]);
-  const actMatOk=(a)=>materielDispo.length===0||(a.materiel||[]).every(m=>materielDispo.includes(m));
+  const actMatOk=(a)=>{
+    if(sansMateriel&&(a.materiel||[]).length>0)return false;
+    return materielDispo.length===0||(a.materiel||[]).every(m=>materielDispo.includes(m));
+  };
   const genPlanning=()=>{
     const pool=toutesActivitesP.filter(a=>(!energieP||a.energie===energieP)&&(!lieuP||a.lieu===lieuP)&&actMatOk(a));
     let source=pool.length?pool:toutesActivitesP;
@@ -2814,17 +3149,6 @@ function PagePlanning({sosLib=[],enfants=[],enfantActif,setEnfantActif,isPremium
               </div>
             </div>
 
-            {/* Filtre 4 — Temps */}
-            <div style={{marginBottom:20}}>
-              <p style={{fontSize:12,fontWeight:700,color:"#fbbf24",margin:"0 0 4px",textTransform:"uppercase",letterSpacing:"0.5px"}}>⏱️ Filtre 4 — Temps disponible</p>
-              <p style={{fontSize:10,color:"rgba(255,255,255,0.35)",margin:"0 0 10px"}}>Crucial pour la pertinence en situation de crise</p>
-              <div style={{display:"flex",gap:7}}>
-                {[{v:"1-2min",l:"⚡ 1-2 min"},{v:"5min",l:"🕐 5 min"},{v:"10-15min",l:"🕙 10-15 min"},{v:"30min",l:"🕐 30 min+"}].map(o=>(
-                  <button key={o.v} onClick={()=>setSosTemps(sosTemps===o.v?null:o.v)} style={{flex:1,padding:"9px 4px",borderRadius:12,border:`2px solid ${sosTemps===o.v?"#fbbf24":"rgba(255,255,255,0.12)"}`,background:sosTemps===o.v?"rgba(251,191,36,0.15)":"rgba(255,255,255,0.04)",color:sosTemps===o.v?"#fbbf24":"rgba(255,255,255,0.55)",fontSize:11,cursor:"pointer",fontWeight:sosTemps===o.v?700:400,textAlign:"center"}}>{o.l}</button>
-                ))}
-              </div>
-            </div>
-
             <button onClick={genSOS} style={{width:"100%",padding:"16px 0",borderRadius:28,background:"linear-gradient(135deg,#dc2626,#ef4444)",border:"none",color:"#fff",fontWeight:800,fontSize:16,cursor:"pointer",boxShadow:"0 6px 20px rgba(239,68,68,0.4)"}}>
               🆘 Trouver une activité maintenant !
             </button>
@@ -2884,12 +3208,16 @@ function PagePlanning({sosLib=[],enfants=[],enfantActif,setEnfantActif,isPremium
         {!isPremium&&<div style={{background:VL,borderRadius:10,padding:"8px 12px",marginBottom:12}}><p style={{fontSize:12,color:V,margin:0}}>⭐ Jusqu'à 7 jours avec Premium !</p></div>}
         <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:8}}><Chip val="fatigue" cur={energieP} set={setEnergieP} label="😴 Fatigué"/><Chip val="motiv" cur={energieP} set={setEnergieP} label="🚀 Motivé"/></div>
         <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:12}}><Chip val="interieur" cur={lieuP} set={setLieuP} label="🏠 Intérieur"/><Chip val="exterieur" cur={lieuP} set={setLieuP} label="🌳 Extérieur"/></div>
+        <button onClick={()=>setSansMateriel(p=>!p)} style={{width:"100%",marginBottom:10,padding:"11px 16px",borderRadius:12,background:WH,border:`1.5px solid ${sansMateriel?V:"rgba(108,92,231,0.15)"}`,color:sansMateriel?V:TM,fontWeight:600,fontSize:13,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+          <span>✋ Sans matériel{sansMateriel?" (actif)":""}</span>
+          <span style={{fontSize:11,background:sansMateriel?VL:"#F3F4F6",color:sansMateriel?V:TM,padding:"2px 10px",borderRadius:20}}>{sansMateriel?"ON":"OFF"}</span>
+        </button>
         <button onClick={()=>setShowFiltresMat(true)} style={{width:"100%",marginBottom:10,padding:"11px 16px",borderRadius:12,background:WH,border:"1.5px solid "+(materielDispo.length>0?V:"rgba(108,92,231,0.15)"),color:materielDispo.length>0?V:TM,fontWeight:600,fontSize:13,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
           <span>🛒 Matériel disponible{materielDispo.length>0?" ("+materielDispo.length+")":""}</span>
           <span style={{fontSize:16}}>›</span>
         </button>
         <button onClick={genPlanning} style={{width:"100%",padding:12,borderRadius:12,background:V,border:"none",color:WH,fontWeight:600,fontSize:14,cursor:"pointer"}}>🪄 Générer le planning</button>
-        {(energieP||lieuP||materielDispo.length>0||semaineType)&&<button onClick={()=>{setEnergieP(null);setLieuP(null);setMaterielDispo([]);setSemaineType(null);}} style={{width:"100%",marginTop:8,padding:"9px 0",borderRadius:28,background:"none",border:"none",color:TM,fontSize:12,cursor:"pointer"}}>Réinitialiser les filtres</button>}
+        {(energieP||lieuP||materielDispo.length>0||semaineType||sansMateriel)&&<button onClick={()=>{setEnergieP(null);setLieuP(null);setMaterielDispo([]);setSemaineType(null);setSansMateriel(false);}} style={{width:"100%",marginTop:8,padding:"9px 0",borderRadius:28,background:"none",border:"none",color:TM,fontSize:12,cursor:"pointer"}}>Réinitialiser les filtres</button>}
       </div>
       {planning.length>0&&(()=>{
         // Categorise materiel by rayon
@@ -3383,21 +3711,130 @@ function PagePremium({onBack,onSubscribe,isLoggedIn=true,onRequireAuth,premiumTr
   const [carteExp,setCarteExp]=useState("");
   const [carteCvc,setCarteCvc]=useState("");
   const [traitement,setTraitement]=useState(false);
+  const [infoModal,setInfoModal]=useState(null);
   const avantages=[
-    {emoji:"📅",titre:"Planning hebdomadaire",desc:"Génère le planning complet de la semaine"},
-    {emoji:"👶",titre:"Profils enfants illimités",desc:"Jusqu'à 6 enfants au lieu de 2"},
-    {emoji:"🆘",titre:"Mode SOS",desc:"Activités d'urgence pour les moments difficiles"},
-    {emoji:"🧠",titre:"Carnet sensoriel",desc:"Suivi détaillé des sensibilités de l'enfant"},
-    {emoji:"🧩",titre:"Emploi du temps pictogrammes",desc:"Prépare sorties et événements en images"},
-    {emoji:"❤️",titre:"Favoris illimités",desc:"Plus de limite de 10 favoris"},
-    {emoji:"🪄",titre:"Générateur en 1 clic",desc:"Une seule proposition directe, sans liste à comparer"},
+    {
+      emoji:"📅",titre:"Planning hebdomadaire",desc:"Génère le planning complet de la semaine",
+      illustration:"📅✨📋",
+      valeur:"Gain de temps",
+      detail:"Génère en 1 clic un planning d'activités sur 7 jours, adapté à l'énergie et aux envies de votre enfant. Inclut automatiquement la liste de courses pour préparer les activités.",
+      exemple:"Lundi : peinture 🎨 · Mardi : cuisine 🍳 · Mercredi : nature 🌳...",
+      gratuit:"3 jours seulement",
+    },
+    {
+      emoji:"👶",titre:"Profils enfants illimités",desc:"Jusqu'à 6 enfants au lieu de 2",
+      illustration:"👦👧👦👧👦👧",
+      valeur:"Famille nombreuse",
+      detail:"Créez un profil personnalisé pour chacun de vos enfants avec son propre carnet sensoriel, ses profils TND (TSA, TDAH, DYS) et ses préférences. Les suggestions s'adaptent à l'enfant sélectionné.",
+      exemple:"Chaque enfant a ses propres suggestions adaptées à son profil.",
+      gratuit:"2 profils maximum",
+    },
+    {
+      emoji:"🆘",titre:"Mode SOS",desc:"Activités d'urgence pour les moments difficiles",
+      illustration:"🆘💨🧘",
+      valeur:"Gestion de crise",
+      detail:"Une bibliothèque d'activités de régulation émotionnelle pour les moments de surcharge sensorielle, de crise ou d'agitation. Filtrées par type de profil TND et type de crise, accessibles en 2 secondes.",
+      exemple:"Surcharge sensorielle TSA → Technique de la tortue 🐢 · Respiration des bulles 🫧",
+      gratuit:"Non disponible",
+    },
+    {
+      emoji:"🧠",titre:"Carnet sensoriel",desc:"Suivi détaillé des sensibilités de votre enfant",
+      illustration:"🧠📊🎯",
+      valeur:"Personnalisation maximale",
+      detail:"Renseignez les niveaux de tolérance de votre enfant (bruit, lumière, foule, imprévu) via des curseurs intuitifs. Le générateur d'activités exclut automatiquement les environnements incompatibles avec son profil.",
+      exemple:"Sensible au bruit → aucune activité 'bruyante' ne sera proposée.",
+      gratuit:"Non disponible",
+    },
+    {
+      emoji:"🧩",titre:"Emploi du temps pictogrammes",desc:"Prépare sorties et événements en images",
+      illustration:"🧩🖼️📋",
+      valeur:"Anticipation et routine",
+      detail:"Créez des emplois du temps visuels avec des pictogrammes pour préparer votre enfant à une sortie, une journée spéciale ou un événement. Idéal pour les enfants TSA qui ont besoin d'anticiper.",
+      exemple:"Zoo : 🚗 Voiture → 🎟️ Entrée → 🦁 Lions → 🍕 Pique-nique → 🏠 Retour",
+      gratuit:"Non disponible",
+    },
+    {
+      emoji:"❤️",titre:"Favoris illimités",desc:"Sauvegardez autant d'activités que vous voulez",
+      illustration:"❤️📚🏷️",
+      valeur:"Organisation",
+      detail:"Plus de limite de 10 favoris. Organisez vos activités et sorties préférées avec des tags personnalisés (À faire ce weekend, Coup de cœur...) et retrouvez-les facilement par catégorie ou tag.",
+      exemple:"Tag 'Activité calme' → 12 activités sauvegardées · Tag 'Weekend' → 8 sorties",
+      gratuit:"10 favoris maximum",
+    },
+    {
+      emoji:"🪄",titre:"Générateur en 1 clic",desc:"Une seule proposition directe, sans liste",
+      illustration:"🪄⚡🎯",
+      valeur:"Décision immédiate",
+      detail:"Au lieu de choisir parmi 3 propositions, recevez directement LA meilleure activité adaptée à votre enfant. Le générateur tient compte du profil sensoriel, de l'historique et des préférences.",
+      exemple:"Un clic → 'Peinture aux doigts 🎨' — c'est tout, pas de choix à faire.",
+      gratuit:"3 propositions à choisir",
+    },
   ];
+
+  // Modal info fonctionnalité
+  if(infoModal) return(
+    <div style={{background:BG,minHeight:"100vh",paddingBottom:32}}>
+      <div style={{background:WH,borderBottom:BD,display:"flex",alignItems:"center",padding:"14px 16px",gap:12}}>
+        <button onClick={()=>setInfoModal(null)} style={{width:36,height:36,borderRadius:"50%",border:BD,background:WH,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,cursor:"pointer"}}>←</button>
+        <p style={{flex:1,textAlign:"center",margin:0,fontSize:16,fontWeight:800,color:TX}}>{infoModal.emoji} {infoModal.titre}</p>
+        <div style={{width:36}}/>
+      </div>
+      <div style={{padding:"24px 16px"}}>
+        {/* Illustration */}
+        <div style={{background:"linear-gradient(135deg,#6C5CE7,#a78bfa)",borderRadius:24,padding:"32px 16px",textAlign:"center",marginBottom:20}}>
+          <div style={{fontSize:60,letterSpacing:8,marginBottom:12}}>{infoModal.illustration}</div>
+          <span style={{background:"rgba(255,255,255,0.2)",color:"#fff",borderRadius:20,padding:"4px 16px",fontSize:12,fontWeight:700}}>{infoModal.valeur}</span>
+        </div>
+        {/* Description détaillée */}
+        <div style={{background:WH,borderRadius:16,border:BD,padding:"16px",marginBottom:12}}>
+          <p style={{margin:"0 0 4px",fontSize:12,fontWeight:700,color:V,textTransform:"uppercase",letterSpacing:"0.05em"}}>Ce que ça change pour vous</p>
+          <p style={{margin:0,fontSize:14,color:TX,lineHeight:1.7}}>{infoModal.detail}</p>
+        </div>
+        {/* Exemple concret */}
+        <div style={{background:"#ECFDF5",borderRadius:16,border:"1px solid #A7F3D0",padding:"14px 16px",marginBottom:12}}>
+          <p style={{margin:"0 0 6px",fontSize:12,fontWeight:700,color:"#065F46"}}>💡 Exemple concret</p>
+          <p style={{margin:0,fontSize:13,color:"#065F46",lineHeight:1.6}}>{infoModal.exemple}</p>
+        </div>
+        {/* Gratuit vs Premium */}
+        <div style={{background:WH,borderRadius:16,border:BD,padding:"14px 16px",marginBottom:20}}>
+          <div style={{display:"flex",gap:10}}>
+            <div style={{flex:1,background:"#F3F4F6",borderRadius:10,padding:"10px 12px",textAlign:"center"}}>
+              <p style={{margin:"0 0 4px",fontSize:10,fontWeight:700,color:TM}}>GRATUIT</p>
+              <p style={{margin:0,fontSize:12,color:TM}}>{infoModal.gratuit}</p>
+            </div>
+            <div style={{flex:1,background:"#EDE9FF",borderRadius:10,padding:"10px 12px",textAlign:"center",border:`1px solid ${V}33`}}>
+              <p style={{margin:"0 0 4px",fontSize:10,fontWeight:700,color:V}}>PREMIUM ⭐</p>
+              <p style={{margin:0,fontSize:12,color:V,fontWeight:600}}>{infoModal.desc}</p>
+            </div>
+          </div>
+        </div>
+        <button onClick={()=>setInfoModal(null)} style={{width:"100%",padding:14,borderRadius:28,background:V,border:"none",color:"#fff",fontWeight:700,fontSize:14,cursor:"pointer"}}>
+          ← Retour aux fonctionnalités
+        </button>
+      </div>
+    </div>
+  );
+
+  const [emailPaiement,setEmailPaiement]=useState("");
+  const [nomCarte,setNomCarte]=useState("");
+  const [modePaiement,setModePaiement]=useState("abonnement"); // "abonnement" | "essai"
+
   const handleSubscribe=()=>{
     if(!isLoggedIn){ onRequireAuth&&onRequireAuth(); return; }
+    setModePaiement("abonnement");
     setShowPaiement(true);
   };
+
+  const handleStartTrial=()=>{
+    if(!isLoggedIn){ onRequireAuth&&onRequireAuth(); return; }
+    setModePaiement("essai");
+    setShowPaiement(true);
+  };
+
   const confirmerPaiement=()=>{
     const numPropre=carteNum.replace(/\s/g,"");
+    if(!nomCarte.trim()){alert("Veuillez saisir le nom du titulaire.");return;}
+    if(!emailPaiement.trim()||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailPaiement)){alert("Adresse email invalide.");return;}
     if(numPropre.length<16){alert("Numéro de carte invalide (16 chiffres requis).");return;}
     if(!carteExp.match(/^\d{2}\/\d{2}$/)){ alert("Date d'expiration invalide (format MM/AA)."); return; }
     if(!carteCvc.match(/^\d{3,4}$/)){ alert("CVC invalide (3 ou 4 chiffres)."); return; }
@@ -3405,9 +3842,17 @@ function PagePremium({onBack,onSubscribe,isLoggedIn=true,onRequireAuth,premiumTr
     setTimeout(()=>{
       setTraitement(false);
       setShowPaiement(false);
-      onSubscribe&&onSubscribe();
-    },900);
+      if(modePaiement==="essai"){
+        onStartTrial&&onStartTrial();
+      } else {
+        onSubscribe&&onSubscribe();
+      }
+    },1200);
   };
+
+  // Date de fin d'essai (7 jours)
+  const dateFinEssai=new Date(Date.now()+7*24*60*60*1000).toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"});
+  const datePremierPrelevement=dateFinEssai;
   return(
     <div style={{background:BG,minHeight:"100vh",paddingBottom:32}}>
       {/* Header */}
@@ -3433,6 +3878,7 @@ function PagePremium({onBack,onSubscribe,isLoggedIn=true,onRequireAuth,premiumTr
                 <p style={{margin:0,fontSize:13,fontWeight:700,color:TX}}>{a.titre}</p>
                 <p style={{margin:0,fontSize:11,color:TM}}>{a.desc}</p>
               </div>
+              <button onClick={()=>setInfoModal(a)} style={{width:26,height:26,borderRadius:"50%",background:VL,border:"none",color:V,fontWeight:800,fontSize:13,cursor:"pointer",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}} title="En savoir plus">ℹ</button>
               <span style={{color:"#10B981",fontSize:16,flexShrink:0}}>✓</span>
             </div>
           ))}
@@ -3478,35 +3924,91 @@ function PagePremium({onBack,onSubscribe,isLoggedIn=true,onRequireAuth,premiumTr
         {!isLoggedIn&&<p style={{margin:"0 0 10px",fontSize:12,color:TM,textAlign:"center"}}>Connecte-toi (gratuit) avant de t'abonner</p>}
         <button onClick={handleSubscribe} style={{width:"100%",padding:14,borderRadius:28,background:"#6C5CE7",border:"none",color:WH,fontWeight:700,fontSize:15,cursor:"pointer",marginBottom:10}}>S'abonner</button>
         {!premiumTrialUsed&&isLoggedIn&&onStartTrial&&(
-          <button onClick={onStartTrial} style={{width:"100%",padding:12,borderRadius:28,background:"rgba(108,92,231,0.1)",border:"2px dashed #6C5CE7",color:"#6C5CE7",fontWeight:600,fontSize:14,cursor:"pointer",marginBottom:10}}>🎁 Essayer 7 jours gratuitement</button>
+          <button onClick={handleStartTrial} style={{width:"100%",padding:12,borderRadius:28,background:"rgba(108,92,231,0.1)",border:"2px dashed #6C5CE7",color:"#6C5CE7",fontWeight:600,fontSize:14,cursor:"pointer",marginBottom:10}}>🎁 Essayer 7 jours gratuitement</button>
         )}
         {premiumTrialUsed&&<p style={{textAlign:"center",fontSize:12,color:TM,margin:"0 0 10px"}}>Essai déjà utilisé — abonne-toi pour continuer</p>}
         <p style={{textAlign:"center",fontSize:11,color:TM,margin:0}}>Sans engagement · Annulable à tout moment</p>
       </div>
 
       {showPaiement&&(
-        <div onClick={()=>!traitement&&setShowPaiement(false)} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.5)",zIndex:700,display:"flex",alignItems:"center",justifyContent:"center",padding:"24px 20px"}}>
-          <div onClick={e=>e.stopPropagation()} style={{background:WH,borderRadius:24,padding:24,width:"100%",maxWidth:390,maxHeight:"88vh",overflowY:"auto",boxSizing:"border-box",boxShadow:"0 16px 56px rgba(0,0,0,0.3)"}}>
-            <p style={{margin:"0 0 4px",fontSize:17,fontWeight:800,color:TX,textAlign:"center"}}>💳 Paiement par carte bancaire</p>
-            <p style={{margin:"0 0 20px",fontSize:13,color:TM,textAlign:"center"}}>{planChoisi==="annuel"?"39,99€ / an":"4,99€ / mois"}</p>
+        <div onClick={()=>!traitement&&setShowPaiement(false)} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.6)",zIndex:700,display:"flex",alignItems:"flex-end",justifyContent:"center"}}>
+          <div onClick={e=>e.stopPropagation()} style={{background:WH,borderRadius:"24px 24px 0 0",padding:"24px 20px 40px",width:"100%",maxWidth:390,maxHeight:"92vh",overflowY:"auto",boxSizing:"border-box"}}>
 
-            <div style={{marginBottom:18}}>
-              <label style={{fontSize:12,color:TM,display:"block",marginBottom:6}}>Numéro de carte</label>
+            {/* En-tête */}
+            <div style={{textAlign:"center",marginBottom:20}}>
+              <div style={{width:48,height:4,borderRadius:4,background:"#E0E0E0",margin:"0 auto 16px"}}/>
+              {modePaiement==="essai"?(
+                <>
+                  <div style={{fontSize:36,marginBottom:6}}>🎁</div>
+                  <p style={{margin:"0 0 4px",fontSize:17,fontWeight:800,color:TX}}>Démarrer l'essai gratuit</p>
+                  <p style={{margin:0,fontSize:12,color:TM}}>7 jours gratuits — aucun prélèvement aujourd'hui</p>
+                </>
+              ):(
+                <>
+                  <div style={{fontSize:36,marginBottom:6}}>💳</div>
+                  <p style={{margin:"0 0 4px",fontSize:17,fontWeight:800,color:TX}}>Paiement sécurisé</p>
+                  <p style={{margin:0,fontSize:12,color:TM}}>{planChoisi==="annuel"?"39,99€ / an · soit 3,33€/mois":"4,99€ / mois"}</p>
+                </>
+              )}
+            </div>
+
+            {/* Récapitulatif essai */}
+            {modePaiement==="essai"&&(
+              <div style={{background:"#ECFDF5",borderRadius:14,padding:"14px 16px",marginBottom:16,border:"1px solid #A7F3D0"}}>
+                <div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}>
+                  <span style={{fontSize:12,color:"#065F46",fontWeight:600}}>Aujourd'hui</span>
+                  <span style={{fontSize:12,color:"#065F46",fontWeight:700}}>0,00€</span>
+                </div>
+                <div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}>
+                  <span style={{fontSize:12,color:"#065F46"}}>Fin de l'essai</span>
+                  <span style={{fontSize:12,color:"#065F46",fontWeight:600}}>{dateFinEssai}</span>
+                </div>
+                <div style={{borderTop:"1px solid #A7F3D0",marginTop:8,paddingTop:8,display:"flex",justifyContent:"space-between"}}>
+                  <span style={{fontSize:12,color:"#065F46",fontWeight:600}}>Premier prélèvement</span>
+                  <span style={{fontSize:12,color:"#065F46",fontWeight:700}}>4,99€ le {datePremierPrelevement}</span>
+                </div>
+              </div>
+            )}
+
+            {/* Champs carte */}
+            <div style={{marginBottom:14}}>
+              <label style={{fontSize:12,color:TM,display:"block",marginBottom:6}}>Email de confirmation *</label>
+              <input value={emailPaiement} onChange={e=>setEmailPaiement(e.target.value)} placeholder="votre@email.fr" type="email" inputMode="email" style={FS}/>
+            </div>
+            <div style={{marginBottom:14}}>
+              <label style={{fontSize:12,color:TM,display:"block",marginBottom:6}}>Titulaire de la carte *</label>
+              <input value={nomCarte} onChange={e=>setNomCarte(e.target.value)} placeholder="PRÉNOM NOM" style={FS}/>
+            </div>
+            <div style={{marginBottom:14}}>
+              <label style={{fontSize:12,color:TM,display:"block",marginBottom:6}}>Numéro de carte *</label>
               <input value={carteNum} onChange={e=>{const v=e.target.value.replace(/\D/g,"").slice(0,16);setCarteNum(v.replace(/(.{4})/g,"$1 ").trim());}} placeholder="1234 5678 9012 3456" maxLength={19} inputMode="numeric" style={FS}/>
-              <div style={{display:"flex",gap:10,marginTop:10}}>
-                <div style={{flex:1}}>
-                  <label style={{fontSize:12,color:TM,display:"block",marginBottom:6}}>Expiration</label>
-                  <input value={carteExp} onChange={e=>{const v=e.target.value.replace(/D/g,"").slice(0,4);setCarteExp(v.length>2?v.slice(0,2)+"/"+v.slice(2):v);}} placeholder="MM/AA" maxLength={5} inputMode="numeric" style={FS}/>
-                </div>
-                <div style={{flex:1}}>
-                  <label style={{fontSize:12,color:TM,display:"block",marginBottom:6}}>CVC</label>
-                  <input value={carteCvc} onChange={e=>{const v=e.target.value.replace(/D/g,"").slice(0,4);setCarteCvc(v);}} placeholder="123" maxLength={4} inputMode="numeric" style={FS}/>
-                </div>
+            </div>
+            <div style={{display:"flex",gap:10,marginBottom:18}}>
+              <div style={{flex:1}}>
+                <label style={{fontSize:12,color:TM,display:"block",marginBottom:6}}>Expiration *</label>
+                <input value={carteExp} onChange={e=>{const v=e.target.value.replace(/\D/g,"").slice(0,4);setCarteExp(v.length>2?v.slice(0,2)+"/"+v.slice(2):v);}} placeholder="MM/AA" maxLength={5} inputMode="numeric" style={FS}/>
+              </div>
+              <div style={{flex:1}}>
+                <label style={{fontSize:12,color:TM,display:"block",marginBottom:6}}>CVC *</label>
+                <input value={carteCvc} onChange={e=>{const v=e.target.value.replace(/\D/g,"").slice(0,4);setCarteCvc(v);}} placeholder="123" maxLength={4} inputMode="numeric" style={FS}/>
               </div>
             </div>
 
-            <button onClick={confirmerPaiement} disabled={traitement} style={{width:"100%",padding:14,borderRadius:28,background:"#6C5CE7",border:"none",color:WH,fontWeight:700,fontSize:15,cursor:traitement?"default":"pointer",opacity:traitement?0.7:1,marginBottom:8}}>{traitement?"Traitement...":"Confirmer le paiement"}</button>
+            {/* Rappel légal */}
+            <div style={{background:"#FFF7ED",borderRadius:12,padding:"10px 14px",marginBottom:16,border:"1px solid #FDE68A"}}>
+              <p style={{margin:0,fontSize:11,color:"#92400E",lineHeight:1.6}}>
+                {modePaiement==="essai"
+                  ? `🔔 Vous recevrez un email de rappel 3 jours avant la fin de votre essai (${dateFinEssai}). Sans annulation, le prélèvement de 4,99€/mois démarrera automatiquement. Annulation possible à tout moment depuis votre profil.`
+                  : `🔒 Paiement sécurisé. Votre abonnement se renouvelle automatiquement. Annulation possible à tout moment depuis votre profil.`
+                }
+              </p>
+            </div>
+
+            <button onClick={confirmerPaiement} disabled={traitement} style={{width:"100%",padding:14,borderRadius:28,background:"#6C5CE7",border:"none",color:WH,fontWeight:700,fontSize:15,cursor:traitement?"default":"pointer",opacity:traitement?0.7:1,marginBottom:10}}>
+              {traitement?"Traitement en cours...":(modePaiement==="essai"?"🎁 Démarrer mon essai gratuit":"✓ Confirmer le paiement")}
+            </button>
             <button onClick={()=>setShowPaiement(false)} disabled={traitement} style={{width:"100%",padding:11,borderRadius:28,background:"none",border:"none",color:TM,fontSize:13,cursor:"pointer"}}>Annuler</button>
+            <p style={{textAlign:"center",fontSize:10,color:TM,margin:"10px 0 0"}}>🔒 Paiement simulé — aucune donnée bancaire réelle traitée</p>
           </div>
         </div>
       )}
@@ -3975,8 +4477,40 @@ function SensorialSlider({label,icon,value,onChange}){
 }
 
 function FormulaireEnfant({enfant,onSave,onCancel,isPremium=false,onOpenPremium}){
-  const [form,setForm]=useState(enfant?{...enfant,niveauxSensoriels:enfant.niveauxSensoriels||{bruit:50,lumiere:50,foule:50,imprevu:50}}:{prenom:"",age:0,emoji:"👦",couleur:"#6C5CE7",profils:[],niveauxSensoriels:{bruit:50,lumiere:50,foule:50,imprevu:50}});
+  const [form,setForm]=useState(enfant?{
+    ...enfant,
+    niveauxSensoriels:enfant.niveauxSensoriels||{bruit:50,lumiere:50,foule:50,imprevu:50},
+    besoins:enfant.besoins||[],
+    notesParent:enfant.notesParent||"",
+  }:{
+    prenom:"",age:0,emoji:"👦",couleur:"#6C5CE7",profils:[],
+    niveauxSensoriels:{bruit:50,lumiere:50,foule:50,imprevu:50},
+    besoins:[],notesParent:"",
+  });
   const toggleProfil=(v)=>setForm(p=>({...p,profils:p.profils.includes(v)?p.profils.filter(x=>x!==v):[...p.profils,v]}));
+  const toggleBesoin=(v)=>setForm(p=>({...p,besoins:(p.besoins||[]).includes(v)?(p.besoins||[]).filter(x=>x!==v):[...(p.besoins||[]),v]}));
+
+  // Besoins disponibles selon profils sélectionnés
+  const BESOINS_PAR_PROFIL={
+    TSA:[
+      "Peu de bruit","Lumière douce","Espace de retrait possible","Pas de foule","Transitions préparées","Emploi du temps visuel","Peu d'imprévus","Rituel d'entrée/sortie","Personnel formé TSA",
+    ],
+    TDAH:[
+      "Activité physique possible","Grand espace","Peu d'attente","Stimulation variée","Pauses fréquentes","Règles simples","Retour rapide","Activité courte",
+    ],
+    DYS:[
+      "Supports visuels","Pas de lecture requise","Rythme libre","Pas de contrainte d'écriture","Instructions orales","Personnel formé DYS",
+    ],
+    Haut_potentiel:[
+      "Activité stimulante","Complexité adaptée","Autonomie possible","Défis intellectuels",
+    ],
+    Troubles_anxieux:[
+      "Environnement prévisible","Pas de surprise","Cadre rassurant","Possibilité de quitter","Peu de monde",
+    ],
+  };
+
+  const tousBesoins=[...new Set(form.profils.flatMap(p=>BESOINS_PAR_PROFIL[p]||[]))];
+
   return(
     <div style={{background:BG,minHeight:"100vh",fontFamily:"system-ui,-apple-system,sans-serif"}}>
       <div style={{display:"flex",alignItems:"center",padding:"16px 16px 12px",background:WH,borderBottom:BD,position:"sticky",top:0,zIndex:10}}>
@@ -3985,7 +4519,8 @@ function FormulaireEnfant({enfant,onSave,onCancel,isPremium=false,onOpenPremium}
         <div style={{width:40}}/>
       </div>
       <div style={{padding:"20px 16px",maxHeight:"calc(100vh - 60px)",overflowY:"auto"}}>
-        {/* Prénom */}
+
+        {/* Informations de base */}
         <div style={{background:WH,borderRadius:16,padding:"16px",marginBottom:12,border:BD}}>
           <p style={{margin:"0 0 10px",fontSize:14,fontWeight:700,color:TX}}>Informations</p>
           <div style={{marginBottom:12}}>
@@ -4007,12 +4542,17 @@ function FormulaireEnfant({enfant,onSave,onCancel,isPremium=false,onOpenPremium}
             <div style={{display:"flex",gap:10}}>{COULEURS_ENFANT.map(c=><button key={c} onClick={()=>setForm(p=>({...p,couleur:c}))} style={{width:32,height:32,borderRadius:"50%",background:c,border:form.couleur===c?"3px solid #fff":"2px solid transparent",outline:form.couleur===c?`2px solid ${c}`:"none",cursor:"pointer"}}/>)}</div>
           </div>
         </div>
+
         {/* Profil TND */}
         <div style={{background:WH,borderRadius:16,padding:"16px",marginBottom:12,border:BD}}>
-          <p style={{margin:"0 0 4px",fontSize:14,fontWeight:700,color:TX}}>Profil TND</p>
+          <p style={{margin:"0 0 4px",fontSize:14,fontWeight:700,color:TX}}>🧩 Profil TND</p>
           <p style={{margin:"0 0 12px",fontSize:12,color:TM}}>Sélectionne le ou les profils de ton enfant</p>
           <div style={{display:"flex",flexDirection:"column",gap:8}}>
-            {PROFILS_TND.map(p=>{
+            {[
+              ...PROFILS_TND,
+              {val:"Haut_potentiel",label:"🌟 Haut potentiel (HPI/HPE)",color:"#F59E0B",sub:"Intellectuellement ou émotionnellement précoce"},
+              {val:"Troubles_anxieux",label:"😰 Troubles anxieux",color:"#06B6D4",sub:"Anxiété, phobie scolaire..."},
+            ].map(p=>{
               const active=form.profils.includes(p.val);
               return(
                 <button key={p.val} onClick={()=>toggleProfil(p.val)} style={{display:"flex",alignItems:"center",gap:12,padding:"10px 14px",borderRadius:12,border:`2px solid ${active?p.color:"rgba(0,0,0,0.08)"}`,background:active?p.color+"15":BG,cursor:"pointer",textAlign:"left"}}>
@@ -4024,20 +4564,41 @@ function FormulaireEnfant({enfant,onSave,onCancel,isPremium=false,onOpenPremium}
             })}
           </div>
         </div>
+
         {/* Niveaux sensoriels */}
-        <div style={{background:WH,borderRadius:16,padding:"16px",marginBottom:20,border:BD}}>
+        <div style={{background:WH,borderRadius:16,padding:"16px",marginBottom:12,border:BD}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
-            <p style={{margin:0,fontSize:14,fontWeight:700,color:TX}}>Niveaux sensoriels habituels</p>
+            <p style={{margin:0,fontSize:14,fontWeight:700,color:TX}}>🎚️ Profil sensoriel</p>
             {!isPremium&&<span style={{fontSize:10,background:VL,color:V,borderRadius:10,padding:"2px 8px",fontWeight:600}}>⭐ Premium</span>}
           </div>
-          <p style={{margin:"0 0 14px",fontSize:12,color:TM}}>Ces infos aident l'app à suggérer les activités adaptées</p>
+          <p style={{margin:"0 0 14px",fontSize:12,color:TM}}>Le générateur adaptera automatiquement ses suggestions à ces niveaux</p>
           {isPremium?(
-            <>
-              <SensorialSlider label="Tolérance au bruit" icon="🔊" value={form.niveauxSensoriels.bruit} onChange={v=>setForm(p=>({...p,niveauxSensoriels:{...p.niveauxSensoriels,bruit:v}}))}/>
-              <SensorialSlider label="Tolérance à la lumière" icon="💡" value={form.niveauxSensoriels.lumiere} onChange={v=>setForm(p=>({...p,niveauxSensoriels:{...p.niveauxSensoriels,lumiere:v}}))}/>
-              <SensorialSlider label="Tolérance à la foule" icon="👥" value={form.niveauxSensoriels.foule} onChange={v=>setForm(p=>({...p,niveauxSensoriels:{...p.niveauxSensoriels,foule:v}}))}/>
-              <SensorialSlider label="Tolérance à l'imprévu" icon="❓" value={form.niveauxSensoriels.imprevu} onChange={v=>setForm(p=>({...p,niveauxSensoriels:{...p.niveauxSensoriels,imprevu:v}}))}/>
-            </>
+            [
+              {k:"bruit",icon:"🔊",label:"Tolérance au bruit",left:"Très sensible",right:"Tolère bien"},
+              {k:"lumiere",icon:"💡",label:"Tolérance à la lumière",left:"Très sensible",right:"Tolère bien"},
+              {k:"foule",icon:"👥",label:"Tolérance à la foule",left:"Très sensible",right:"Tolère bien"},
+              {k:"imprevu",icon:"❓",label:"Tolérance à l'imprévu",left:"Besoin de routine",right:"Aime la spontanéité"},
+            ].map(({k,icon,label,left,right})=>{
+              const val=form.niveauxSensoriels[k]||50;
+              const col=val<=30?"#EF4444":val<=60?"#F59E0B":"#10B981";
+              const badge=val<=30?"Très sensible":val<=60?"Modéré":"Tolère bien";
+              return(
+                <div key={k} style={{marginBottom:16}}>
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
+                    <span style={{fontSize:13,fontWeight:600,color:TX}}>{icon} {label}</span>
+                    <span style={{fontSize:11,fontWeight:700,color:col,background:col+"18",padding:"2px 10px",borderRadius:20}}>{badge}</span>
+                  </div>
+                  <div style={{display:"flex",alignItems:"center",gap:8}}>
+                    <span style={{fontSize:9,color:TM,width:60,flexShrink:0,textAlign:"right"}}>{left}</span>
+                    <div style={{flex:1,height:5,background:"#E5E7EB",borderRadius:6,overflow:"hidden"}}>
+                      <div style={{height:"100%",width:val+"%",background:col,borderRadius:6,transition:"width 0.2s"}}/>
+                    </div>
+                    <span style={{fontSize:9,color:TM,width:60,flexShrink:0}}>{right}</span>
+                  </div>
+                  <input type="range" min={0} max={100} value={val} onChange={e=>setForm(p=>({...p,niveauxSensoriels:{...p.niveauxSensoriels,[k]:Number(e.target.value)}}))} style={{width:"100%",marginTop:4,accentColor:col,cursor:"pointer"}}/>
+                </div>
+              );
+            })
           ):(
             <div style={{textAlign:"center",padding:"12px 0"}}>
               <p style={{fontSize:12,color:TM,margin:"0 0 10px"}}>Le carnet sensoriel est une fonctionnalité Premium</p>
@@ -4045,6 +4606,25 @@ function FormulaireEnfant({enfant,onSave,onCancel,isPremium=false,onOpenPremium}
             </div>
           )}
         </div>
+
+        {/* Besoins spécifiques selon profil */}
+        {isPremium&&tousBesoins.length>0&&(
+          <div style={{background:WH,borderRadius:16,padding:"16px",marginBottom:12,border:BD}}>
+            <p style={{margin:"0 0 4px",fontSize:14,fontWeight:700,color:TX}}>✅ Besoins spécifiques</p>
+            <p style={{margin:"0 0 12px",fontSize:12,color:TM}}>Cochez ce qui correspond à votre enfant — le générateur en tiendra compte</p>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>
+              {tousBesoins.map(b=>{
+                const actif=(form.besoins||[]).includes(b);
+                return(
+                  <button key={b} onClick={()=>toggleBesoin(b)} style={{padding:"8px 10px",borderRadius:10,border:`1.5px solid ${actif?V:"#E5E7EB"}`,background:actif?VL:BG,color:actif?V:TM,fontSize:11,fontWeight:actif?700:400,cursor:"pointer",textAlign:"left",display:"flex",alignItems:"center",gap:6}}>
+                    <span>{actif?"☑":"☐"}</span>{b}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         <button onClick={()=>{if(!form.prenom)return;onSave(form);}} style={{width:"100%",padding:14,borderRadius:28,background:V,border:"none",color:WH,fontWeight:700,fontSize:15,cursor:"pointer",marginBottom:10}}>Enregistrer</button>
         <button onClick={onCancel} style={{width:"100%",padding:14,borderRadius:28,background:WH,border:BD,color:TM,fontWeight:600,fontSize:14,cursor:"pointer"}}>Annuler</button>
       </div>
@@ -5053,6 +5633,33 @@ function PageProfil({setPage,enfants=[],setEnfants,enfantActif,setEnfantActif,sh
           );
         })()}
 
+        {/* 📬 Mes contributions */}
+        {(()=>{
+          const mesContribs=(pendingContribs||[]).filter(c=>c._auteurEmail===currentUser?.email||c._auteur===currentUser?.nom);
+          if(mesContribs.length===0)return null;
+          const rejetees=mesContribs.filter(c=>c._statut==="rejected");
+          const publiees=mesContribs.filter(c=>c._statut==="published");
+          const enAttente=mesContribs.filter(c=>c._statut==="pending");
+          return(
+            <div style={{background:WH,borderRadius:16,border:BD,padding:"14px 16px",marginBottom:12}}>
+              <p style={{margin:"0 0 10px",fontSize:14,fontWeight:700,color:TX}}>📬 Mes contributions</p>
+              {rejetees.length>0&&(
+                <div style={{background:"#FEF2F2",borderRadius:12,padding:"10px 14px",marginBottom:8,border:"1px solid #FECACA"}}>
+                  <p style={{margin:"0 0 6px",fontSize:12,fontWeight:700,color:"#DC2626"}}>❌ {rejetees.length} contribution{rejetees.length>1?"s":""} refusée{rejetees.length>1?"s":""}</p>
+                  {rejetees.map(c=>(
+                    <div key={c.id} style={{borderTop:"1px solid #FECACA",paddingTop:6,marginTop:6}}>
+                      <p style={{margin:0,fontSize:12,color:"#DC2626",fontWeight:600}}>{c.nom||c.titre}</p>
+                      {c._raisonSignalement&&<p style={{margin:"2px 0 0",fontSize:11,color:"#9CA3AF"}}>Motif : {c._raisonSignalement}</p>}
+                    </div>
+                  ))}
+                </div>
+              )}
+              {publiees.length>0&&<p style={{margin:"0 0 6px",fontSize:12,color:"#10B981",fontWeight:600}}>✅ {publiees.length} publiée{publiees.length>1?"s":""}</p>}
+              {enAttente.length>0&&<p style={{margin:0,fontSize:12,color:TM}}>⏳ {enAttente.length} en attente de validation</p>}
+            </div>
+          );
+        })()}
+
         {/* ❤️ Mes favoris */}
         <div onClick={()=>setPage("favoris")} style={{background:WH,borderRadius:16,padding:"14px 16px",border:BD,marginBottom:12,display:"flex",alignItems:"center",gap:14,cursor:"pointer"}}>
           <div style={{width:44,height:44,borderRadius:14,background:"#FCEBEB",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}>❤️</div>
@@ -5961,7 +6568,16 @@ function Activites({sharedActivites,setSharedActivites,customCatActivites=[]}) {
             <AdminField label="Lieu *"><select style={s.input} value={form.lieu||""} onChange={e=>setForm({...form,lieu:e.target.value})}><option value="">Choisir</option><option value="interieur">Interieur</option><option value="exterieur">Exterieur</option></select></AdminField>
             <AdminField label="Motivation *"><select style={s.input} value={form.energie||""} onChange={e=>setForm({...form,energie:e.target.value})}><option value="">Choisir</option><option value="fatigue">Fatigue</option><option value="motiv">Motiv</option></select></AdminField>
           </div>
-          <AdminField label="Categorie *"><select style={s.input} value={form.categorie||""} onChange={e=>setForm({...form,categorie:e.target.value})}><option value="">Choisir</option>{[...CATEGORIES_ACT_ALL,...customCatActivites.map(c=>c.label)].map(v=><option key={v}>{v}</option>)}</select></AdminField>
+          <AdminField label="Categorie *">
+            <select style={s.input} value={(form.categorie&&![...CATEGORIES_ACT_ALL,...customCatActivites.map(c=>c.label)].includes(form.categorie)&&form.categorie!=="")?"__autre__":form.categorie||""} onChange={e=>{if(e.target.value==="__autre__")setForm({...form,categorie:"__autre__"});else setForm({...form,categorie:e.target.value});}}>
+              <option value="">Choisir</option>
+              {[...CATEGORIES_ACT_ALL,...customCatActivites.map(c=>c.label)].map(v=><option key={v}>{v}</option>)}
+              <option value="__autre__">✏️ Autre type d'activité...</option>
+            </select>
+            {(form.categorie==="__autre__"||(form.categorie&&![...CATEGORIES_ACT_ALL,...customCatActivites.map(c=>c.label)].includes(form.categorie)))&&(
+              <input style={{...s.input,marginTop:8}} value={form.categorie==="__autre__"?"":form.categorie||""} onChange={e=>setForm({...form,categorie:e.target.value})} placeholder="Précisez le type (ex: Théâtre, Poterie, Yoga...)"/>
+            )}
+          </AdminField>
           <AdminField label="Age conseille">
             <div style={{display:"flex",gap:8}}>
               <select style={{...s.input,flex:1}} value={form.ageMin||""} onChange={e=>setForm({...form,ageMin:e.target.value})}><option value="">De...</option>{["0 an","1 an","2 ans","3 ans","4 ans","5 ans","6 ans","7 ans","8 ans","9 ans","10 ans","11 ans","12 ans"].map(v=><option key={v}>{v}</option>)}</select>
@@ -5971,29 +6587,71 @@ function Activites({sharedActivites,setSharedActivites,customCatActivites=[]}) {
           <AdminField label="Materiel necessaire"><input style={s.input} value={form.materielStr||""} onChange={e=>setForm({...form,materielStr:e.target.value})} placeholder="Ex : peinture, papier, tablier"/></AdminField>
           <AdminField label="Etapes"><textarea style={{...s.input,minHeight:80,resize:"vertical"}} value={form.etapes||""} onChange={e=>setForm({...form,etapes:e.target.value})} placeholder={"1. Preparer le materiel\n2. ..."}/></AdminField>
           <div style={{borderTop:`1px solid ${C.border}`,paddingTop:16,marginBottom:14}}>
-            <p style={{margin:"0 0 4px",fontSize:13,fontWeight:700,color:"#f97316"}}>🍼 Bebes et jeunes enfants</p>
-            <p style={{margin:"0 0 8px",fontSize:11,color:C.muted}}>Coche ce qui correspond</p>
-            <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:12}}>
-              {[["acc_poussette","Adapte poussette"],["acc_bebe","Adapte bebe"],["acc_allaitement","Espace allaitement"],["acc_langer","Table a langer"],["acc_aire03","Aire de jeux 0-3 ans"],["acc_peubruyant","Peu bruyant"]].map(([k,l])=>(<div key={k} onClick={()=>tf(k)} style={chkStyle(!!form[k])}><span>{form[k]?"☑":"☐"}</span>{l}</div>))}
+            <p style={{margin:"0 0 4px",fontSize:14,fontWeight:800,color:"#1a1a1a"}}>🧩 Compatibilité TND</p>
+            <p style={{margin:"0 0 14px",fontSize:11,color:C.muted}}>Ces informations aident les familles à trouver les activités adaptées à leur enfant.</p>
+
+            {/* Profils */}
+            <p style={{margin:"0 0 8px",fontSize:12,fontWeight:700,color:C.text}}>Profils TND adaptés :</p>
+            <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:16}}>
+              {[
+                {k:"profilTous",l:"🌱 Tous profils",bg:"#EAF3DE",bc:"#3B6D11",col:"#3B6D11"},
+                {k:"profilTSA",l:"🧩 TSA",bg:"#EEEDFE",bc:"#3C3489",col:"#3C3489"},
+                {k:"profilTDAH",l:"⚡ TDAH",bg:"#E1F5EE",bc:"#085041",col:"#085041"},
+                {k:"profilDYS",l:"📖 DYS",bg:"#FAEEDA",bc:"#633806",col:"#633806"},
+              ].map(({k,l,bg,bc,col})=>(
+                <button key={k} onClick={()=>setForm(p=>({...p,[k]:!p[k]}))} style={{padding:"7px 14px",borderRadius:20,border:`2px solid ${form[k]?bc:"#E5E7EB"}`,background:form[k]?bg:WH,color:form[k]?col:"#9CA3AF",fontSize:12,fontWeight:form[k]?700:400,cursor:"pointer"}}>
+                  {form[k]?"✓ ":""}{l}
+                </button>
+              ))}
             </div>
-            <p style={{margin:"0 0 8px",fontSize:13,fontWeight:700,color:"#3b82f6"}}>♿ Mobilite reduite PMR</p>
-            <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:12}}>
-              {[["pmr_fauteuil","Acces fauteuil"],["pmr_escaliers","Sans escaliers"],["pmr_parking","Parking PMR"],["pmr_toilettes","Toilettes adaptees"],["pmr_personnel","Personnel forme"],["pmr_chemin","Chemin accessible"]].map(([k,l])=>(<div key={k} onClick={()=>tf(k)} style={chkStyle(!!form[k])}><span>{form[k]?"☑":"☐"}</span>{l}</div>))}
+
+            {/* Niveaux sensoriels sliders */}
+            <p style={{margin:"0 0 10px",fontSize:12,fontWeight:700,color:C.text}}>Niveaux sensoriels :</p>
+            {[
+              {k:"niveauBruit",l:"🔊 Niveau sonore",left:"Silencieux",right:"Bruyant"},
+              {k:"niveauVisuel",l:"💡 Stimulation visuelle",left:"Calme",right:"Intense"},
+              {k:"niveauPhysique",l:"🤸 Activité physique",left:"Aucune",right:"Intense"},
+              {k:"niveauAttention",l:"⏱️ Durée d'attention",left:"Courte",right:"Longue"},
+            ].map(({k,l,left,right})=>{
+              const val=form[k]||0;
+              const col=val<=33?"#10B981":val<=66?"#F59E0B":"#EF4444";
+              const badge=val<=33?"Faible":val<=66?"Moyen":"Élevé";
+              return(
+                <div key={k} style={{marginBottom:14}}>
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
+                    <span style={{fontSize:12,color:C.text}}>{l}</span>
+                    <span style={{fontSize:11,fontWeight:700,color:col,background:col+"18",padding:"2px 10px",borderRadius:20}}>{badge}</span>
+                  </div>
+                  <div style={{display:"flex",alignItems:"center",gap:8}}>
+                    <span style={{fontSize:10,color:C.muted,width:52,textAlign:"right",flexShrink:0}}>{left}</span>
+                    <div style={{flex:1,height:5,background:"#E5E7EB",borderRadius:6,overflow:"hidden"}}>
+                      <div style={{height:"100%",width:val+"%",background:col,borderRadius:6}}/>
+                    </div>
+                    <span style={{fontSize:10,color:C.muted,width:52,flexShrink:0}}>{right}</span>
+                  </div>
+                  <input type="range" min={0} max={100} value={val} onChange={e=>setForm(p=>({...p,[k]:Number(e.target.value)}))} style={{width:"100%",marginTop:4,accentColor:col,cursor:"pointer"}}/>
+                </div>
+              );
+            })}
+
+            {/* Adaptations */}
+            <p style={{margin:"0 0 8px",fontSize:12,fontWeight:700,color:C.text}}>Adaptations possibles :</p>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6,marginBottom:14}}>
+              {["Peut se faire en silence","Rythme libre","Activité individuelle","Peu de règles","Résultat concret","Stimulation douce","Peut être interrompue","Adapté aux hypersensibles"].map(ad=>{
+                const actif=(form.adaptations||[]).includes(ad);
+                return(
+                  <div key={ad} onClick={()=>setForm(p=>({...p,adaptations:actif?(p.adaptations||[]).filter(x=>x!==ad):[...(p.adaptations||[]),ad]}))} style={{padding:"7px 10px",borderRadius:8,border:`1.5px solid ${actif?"#6C5CE7":"#E5E7EB"}`,background:actif?"#EEEDFE":WH,color:actif?"#3C3489":"#9CA3AF",fontSize:11,fontWeight:actif?700:400,cursor:"pointer",display:"flex",alignItems:"center",gap:6}}>
+                    <span>{actif?"☑":"☐"}</span>{ad}
+                  </div>
+                );
+              })}
             </div>
-            <p style={{margin:"0 0 4px",fontSize:13,fontWeight:700,color:"#a78bfa"}}>🧩 Troubles du neurodeveloppement TND</p>
-            <p style={{margin:"0 0 8px",fontSize:11,color:C.muted}}>Ces infos aident les familles TND</p>
-            <p style={{margin:"0 0 6px",fontSize:12,fontWeight:600,color:"#8b5cf6"}}>TSA Autisme</p>
-            <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:10}}>
-              {[["tsa_foule","Peu de foule"],["tsa_calme","Env calme"],["tsa_lumiere","Lumiere douce"],["tsa_retrait","Espace retrait"],["tsa_bruit","Peu de bruit"],["tsa_personnel","Personnel TSA"]].map(([k,l])=>(<div key={k} onClick={()=>tf(k)} style={chkStyle(!!form[k])}><span>{form[k]?"☑":"☐"}</span>{l}</div>))}
-            </div>
-            <p style={{margin:"0 0 6px",fontSize:12,fontWeight:600,color:"#ec4899"}}>TDAH</p>
-            <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:10}}>
-              {[["tdah_espace","Grand espace"],["tdah_physique","Activite physique"],["tdah_attente","Peu attente"],["tdah_stimulation","Stimulation variee"]].map(([k,l])=>(<div key={k} onClick={()=>tf(k)} style={chkStyle(!!form[k])}><span>{form[k]?"☑":"☐"}</span>{l}</div>))}
-            </div>
-            <p style={{margin:"0 0 6px",fontSize:12,fontWeight:600,color:"#06b6d4"}}>DYS</p>
-            <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:10}}>
-              {[["dys_visuels","Supports visuels"],["dys_nonecrite","Non ecrite"],["dys_rythme","Rythme libre"],["dys_personnel","Personnel DYS"]].map(([k,l])=>(<div key={k} onClick={()=>tf(k)} style={chkStyle(!!form[k])}><span>{form[k]?"☑":"☐"}</span>{l}</div>))}
-            </div>
+
+            {/* Commentaire */}
+            <AdminField label="Conseil TND (optionnel)">
+              <textarea style={{...s.input,minHeight:60,resize:"vertical"}} value={form.commentaireTND||""} onChange={e=>setForm({...form,commentaireTND:e.target.value.slice(0,200)})} placeholder="Ex : Idéal pour les enfants TSA, activité calme sans surprise..."/>
+              <p style={{margin:"4px 0 0",fontSize:10,color:C.muted,textAlign:"right"}}>{(form.commentaireTND||"").length}/200</p>
+            </AdminField>
           </div>
           <div style={{background:"#FFFBEB",borderRadius:10,padding:"10px 14px",marginBottom:14,display:"flex",gap:8,alignItems:"flex-start"}}><span style={{fontSize:16}}>👶</span><p style={{margin:0,fontSize:12,color:"#92400E",lineHeight:1.5}}>Les activites proposees doivent etre destinees aux enfants.</p></div>
           <EtiquettesField value={form.etiquettes||[]} onChange={v=>setForm({...form,etiquettes:v})}/>
@@ -6092,13 +6750,6 @@ function Sorties({sharedSorties=[],setSharedSorties,customCatSorties=[]}) {
 
           {/* Accessibilité */}
           <div style={{borderTop:`1px solid ${C.border}`,paddingTop:16,marginTop:4}}>
-            <p style={{margin:"0 0 8px",fontSize:13,fontWeight:700,color:"#f97316"}}>🍼 Bébés et jeunes enfants</p>
-            <p style={{margin:"0 0 8px",fontSize:11,color:C.muted}}>Coche ce qui correspond</p>
-            <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:14}}>
-              {[["acc_poussette","Adapté poussette"],["acc_bebe","Adapté bébé"],["acc_allaitement","Espace allaitement"],["acc_langer","Table à langer"],["acc_aire03","Aire de jeux 0-3 ans"],["acc_peubruyant","Peu bruyant"]].map(([k,l])=>(
-                <div key={k} onClick={()=>tf(k)} style={chkStyle(!!form[k])}><span style={{fontSize:14}}>{form[k]?"☑":"☐"}</span>{l}</div>
-              ))}
-            </div>
             <p style={{margin:"0 0 8px",fontSize:13,fontWeight:700,color:"#3b82f6"}}>♿ Mobilité réduite PMR</p>
             <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:14}}>
               {[["pmr_fauteuil","Accès fauteuil"],["pmr_escaliers","Sans escaliers"],["pmr_parking","Parking PMR"],["pmr_toilettes","Toilettes adaptées"],["pmr_personnel","Personnel formé"],["pmr_chemin","Chemin accessible"]].map(([k,l])=>(
@@ -6241,11 +6892,6 @@ function Evenements({sharedEvenements=[],setSharedEvenements,customCatEvenements
 
           {/* Accessibilité */}
           <div style={{borderTop:`1px solid ${C.border}`,paddingTop:16,marginTop:4}}>
-            <p style={{margin:"0 0 8px",fontSize:13,fontWeight:700,color:"#f97316"}}>🍼 Bébés et jeunes enfants</p>
-            <p style={{margin:"0 0 8px",fontSize:11,color:C.muted}}>Coche ce qui correspond</p>
-            <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:14}}>
-              {[["acc_poussette","Adapté poussette"],["acc_bebe","Adapté bébé"],["acc_allaitement","Espace allaitement"],["acc_langer","Table à langer"],["acc_aire03","Aire de jeux 0-3 ans"],["acc_peubruyant","Peu bruyant"]].map(([k,l])=>(<div key={k} onClick={()=>tf(k)} style={chkStyle(!!form[k])}><span style={{fontSize:14}}>{form[k]?"☑":"☐"}</span>{l}</div>))}
-            </div>
             <p style={{margin:"0 0 8px",fontSize:13,fontWeight:700,color:"#3b82f6"}}>♿ Mobilité réduite PMR</p>
             <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:14}}>
               {[["pmr_fauteuil","Accès fauteuil"],["pmr_escaliers","Sans escaliers"],["pmr_parking","Parking PMR"],["pmr_toilettes","Toilettes adaptées"],["pmr_personnel","Personnel formé"],["pmr_chemin","Chemin accessible"]].map(([k,l])=>(<div key={k} onClick={()=>tf(k)} style={chkStyle(!!form[k])}><span style={{fontSize:14}}>{form[k]?"☑":"☐"}</span>{l}</div>))}
@@ -6399,11 +7045,6 @@ function BiblioNoel({onBack,sharedActivites=[],setSharedActivites}) {
 
           {/* Accessibilité */}
           <div style={{borderTop:`1px solid ${C.border}`,paddingTop:16,marginTop:4}}>
-            <p style={{margin:"0 0 10px",fontSize:13,fontWeight:700,color:"#f97316"}}>🍼 Bébés et jeunes enfants</p>
-            <p style={{margin:"0 0 8px",fontSize:11,color:C.muted}}>Coche ce qui correspond</p>
-            <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:14}}>
-              {[["acc_poussette","Adapté poussette"],["acc_bebe","Adapté bébé"],["acc_allaitement","Espace allaitement"],["acc_langer","Table à langer"],["acc_aire03","Aire de jeux 0-3 ans"],["acc_peubruyant","Peu bruyant"]].map(([k,l])=>(<div key={k} onClick={()=>tf(k)} style={chkStyle(!!form[k])}><span style={{fontSize:14}}>{form[k]?"☑":"☐"}</span>{l}</div>))}
-            </div>
             <p style={{margin:"0 0 8px",fontSize:13,fontWeight:700,color:"#3b82f6"}}>♿ Mobilité réduite PMR</p>
             <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:14}}>
               {[["pmr_fauteuil","Accès fauteuil"],["pmr_escaliers","Sans escaliers"],["pmr_parking","Parking PMR"],["pmr_toilettes","Toilettes adaptées"],["pmr_personnel","Personnel formé"],["pmr_chemin","Chemin accessible"]].map(([k,l])=>(<div key={k} onClick={()=>tf(k)} style={chkStyle(!!form[k])}><span style={{fontSize:14}}>{form[k]?"☑":"☐"}</span>{l}</div>))}
@@ -7518,8 +8159,6 @@ function Signalements({userReports=[],setUserReports,sharedActivites=[],setShare
             </AdminField>
             <AdminField label="Materiel"><input style={s.input} value={editForm.materielStr||""} onChange={e=>setEditForm({...editForm,materielStr:e.target.value})} placeholder="Ex: peinture, papier"/></AdminField>
             <div style={{borderTop:`1px solid ${C.border}`,paddingTop:14,marginBottom:14}}>
-              <p style={{margin:"0 0 8px",fontSize:12,fontWeight:700,color:"#f97316"}}>🍼 Bebes et jeunes enfants</p>
-              <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:10}}>{[["acc_poussette","Adapte poussette"],["acc_bebe","Adapte bebe"],["acc_allaitement","Espace allaitement"],["acc_langer","Table a langer"],["acc_aire03","Aire de jeux 0-3 ans"],["acc_peubruyant","Peu bruyant"]].map(([k,l])=>(<div key={k} onClick={()=>tf(k)} style={chkStyle(!!editForm[k])}><span>{editForm[k]?"☑":"☐"}</span>{l}</div>))}</div>
               <p style={{margin:"0 0 8px",fontSize:12,fontWeight:700,color:"#3b82f6"}}>♿ PMR</p>
               <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:10}}>{[["pmr_fauteuil","Acces fauteuil"],["pmr_escaliers","Sans escaliers"],["pmr_parking","Parking PMR"],["pmr_toilettes","Toilettes adaptees"],["pmr_personnel","Personnel forme"],["pmr_chemin","Chemin accessible"]].map(([k,l])=>(<div key={k} onClick={()=>tf(k)} style={chkStyle(!!editForm[k])}><span>{editForm[k]?"☑":"☐"}</span>{l}</div>))}</div>
               <p style={{margin:"0 0 6px",fontSize:12,fontWeight:700,color:"#a78bfa"}}>🧩 TND</p>
@@ -8175,17 +8814,6 @@ function AdminSOS({sosLib=[],setSosLib,sosModeActif=true,setSosModeActif}){
             </div>
           </div>
 
-          {/* ─── FILTRE 4 — TEMPS ─── */}
-          <div style={{borderTop:`1px solid ${C.border}`,paddingTop:14,marginBottom:14}}>
-            <p style={{margin:"0 0 2px",fontSize:12,fontWeight:800,color:"#fbbf24",textTransform:"uppercase",letterSpacing:"0.5px"}}>⏱️ Filtre 4 — Temps disponible</p>
-            <p style={{margin:"0 0 10px",fontSize:11,color:C.muted}}>Crucial pour la pertinence en situation de crise</p>
-            <div style={{display:"flex",gap:7}}>
-              {[{v:"temps_1_2min",l:"⚡ 1-2 min"},{v:"temps_5min",l:"🕐 5 min"},{v:"temps_10_15min",l:"🕙 10-15 min"},{v:"temps_30min",l:"🕐 30 min+"}].map(p=>(
-                <ChipBtn key={p.v} active={!!form[p.v]} onClick={()=>tf(p.v)} color="#fbbf24">{p.l}</ChipBtn>
-              ))}
-            </div>
-          </div>
-
           <AdminField label="Statut"><select style={s.input} value={form.statut} onChange={e=>setForm({...form,statut:e.target.value})}><option value="published">Publié</option><option value="draft">Brouillon</option></select></AdminField>
           <div style={{display:"flex",justifyContent:"flex-end",gap:8,marginTop:4}}>
             <button style={s.btnOutline(C.muted)} onClick={()=>setModal(null)}>Annuler</button>
@@ -8297,59 +8925,46 @@ function PageAuth({ onAuthSuccess, onCancel, onAdminSuccess }) {
 
   const handleSignup = async () => {
     setError('');
-    if (hasAccount) { setError('Un compte existe déjà sur cet appareil. Connecte-toi plutôt, ou réinitialise via "Mot de passe oublié".'); return; }
+    if (hasAccount) { setError('Un compte existe déjà. Connecte-toi plutôt.'); return; }
     if (!nom.trim() || !email.trim() || !password.trim()) { setError('Merci de remplir tous les champs.'); return; }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) { setError("L'adresse email n'est pas valide."); return; }
     if (password.length < 6) { setError('Le mot de passe doit faire au moins 6 caractères.'); return; }
     setLoading(true);
-    try {
-      const account = { nom: nom.trim(), email: email.trim().toLowerCase(), password, premium: false };
-      await window.storage.set('auth_account', JSON.stringify(account));
-      await window.storage.set('auth_session', JSON.stringify({ nom: account.nom, email: account.email, premium: account.premium }));
-      onAuthSuccess({ nom: account.nom, email: account.email, premium: account.premium });
-    } catch (e) {
-      setError("Une erreur est survenue, réessaie.");
-    } finally {
-      setLoading(false);
-    }
+    const account = { nom: nom.trim(), email: email.trim().toLowerCase(), password, premium: false };
+    // Essaie de sauvegarder — si le storage est indisponible, on continue quand même en mémoire
+    try { await window.storage.set('auth_account', JSON.stringify(account)); } catch(e) {}
+    try { await window.storage.set('auth_session', JSON.stringify({ nom: account.nom, email: account.email, premium: false })); } catch(e) {}
+    setLoading(false);
+    onAuthSuccess({ nom: account.nom, email: account.email, premium: false });
   };
 
   const handleLogin = async () => {
     setError('');
-    // Vérifier le verrou anti brute-force
     if(lockedUntil&&Date.now()<lockedUntil){setError(`Trop de tentatives. Réessayez dans ${lockCountdown}s.`);return;}
     if (!email.trim() || !password.trim()) { setError('Merci de remplir tous les champs.'); return; }
-    // Vérification admin avec hash
-    // Hash pré-calculé de "ADMIN2024" — remplacer si le mot de passe change
+    // Vérification admin
     const ADMIN_PW_H="d43d9b50d43d9b50d43d9b50d43d9b50d43d9b50d43d9b50d43d9b50d43d9b50";
     if (simpleHash(email.trim().toLowerCase())===simpleHash(ADMIN_EMAIL) && simpleHash(password)===ADMIN_PW_H) {
-      // Admin identifié — demande le 2ème facteur
-      setAdminStep(true);
-      setAdminCode2("");
-      return;
+      setAdminStep(true); setAdminCode2(""); return;
     }
     setLoading(true);
     try {
-      const res = await window.storage.get('auth_account');
+      const res = await window.storage.get('auth_account',false);
       const account = res && res.value ? JSON.parse(res.value) : null;
       if (!account || account.email !== email.trim().toLowerCase() || account.password !== password) {
         const newAttempts=failedAttempts+1;
         setFailedAttempts(newAttempts);
-        if(newAttempts>=3){
-          const lockDuration=newAttempts>=5?120:30; // 30s puis 2min
-          setLockedUntil(Date.now()+lockDuration*1000);
-          setError(`Identifiants incorrects. Compte verrouillé ${lockDuration}s après ${newAttempts} tentatives.`);
-        }else{
-          setError(`Identifiants incorrects. ${3-newAttempts} tentative${3-newAttempts>1?"s":""} restante${3-newAttempts>1?"s":""}.`);
-        }
-        return;
+        if(newAttempts>=3){const d=newAttempts>=5?120:30;setLockedUntil(Date.now()+d*1000);setError(`Identifiants incorrects. Compte verrouillé ${d}s.`);}
+        else setError(`Identifiants incorrects. ${3-newAttempts} tentative${3-newAttempts>1?"s":""} restante${3-newAttempts>1?"s":""}.`);
+        setLoading(false); return;
       }
       setFailedAttempts(0);
-      await window.storage.set('auth_session', JSON.stringify({ nom: account.nom, email: account.email, premium: !!account.premium }));
+      try{ await window.storage.set('auth_session', JSON.stringify({ nom: account.nom, email: account.email, premium: !!account.premium })); }catch(e){}
+      setLoading(false);
       onAuthSuccess({ nom: account.nom, email: account.email, premium: !!account.premium });
     } catch (e) {
-      setError("Une erreur est survenue, réessaie.");
-    } finally {
+      // Storage indisponible — propose la connexion en mode mémoire
+      setError("Le stockage est temporairement indisponible. Recharge la page (F5) et réessaie dans quelques secondes.");
       setLoading(false);
     }
   };
@@ -8474,6 +9089,17 @@ function PageAuth({ onAuthSuccess, onCancel, onAdminSuccess }) {
             {mode === 'signup' ? "Déjà un compte ? Se connecter" : "Pas encore de compte ? Créer un compte"}
           </button>
         )}
+
+        {/* Bouton démo */}
+        {onCancel&&(
+          <div style={{marginTop:20,borderTop:"1px solid rgba(108,92,231,0.1)",paddingTop:16,textAlign:"center"}}>
+            <p style={{margin:"0 0 10px",fontSize:11,color:TM}}>Vous voulez juste explorer l'app ?</p>
+            <button onClick={onCancel} style={{width:"100%",padding:12,borderRadius:28,background:"linear-gradient(135deg,#F59E0B,#F97316)",border:"none",color:"#fff",fontWeight:700,fontSize:14,cursor:"pointer"}}>
+              🚀 Accéder à la démo gratuite
+            </button>
+            <p style={{margin:"8px 0 0",fontSize:10,color:TM}}>Toutes les fonctionnalités · Sans compte · Sans engagement</p>
+          </div>
+        )}
       </div>
 
       <p style={{ textAlign: "center", fontSize: 11, color: TM, marginTop: 16, lineHeight: 1.5 }}>🔒 Tes informations restent privées : elles sont stockées uniquement sur cet appareil, sans serveur externe.</p>
@@ -8522,7 +9148,7 @@ export default function App(){
   useEffect(()=>{
     (async()=>{
       try{
-        const res=await window.storage.get("auth_session");
+        const res=await window.storage.get("auth_session",false);
         if(res&&res.value)setCurrentUser(JSON.parse(res.value));
       }catch(e){
         // Pas de session active
@@ -8553,13 +9179,22 @@ export default function App(){
     setPopupShown(new Set());
     setPage("accueil");
   };
+  const [demoMode,setDemoMode]=useState(false);
+  const isPremiumUser=!!currentUser?.premium||demoMode;
+
+  const activerDemo=()=>{
+    setDemoMode(true);
+    setGlobalToast("🚀 Mode démo activé — accès Premium complet !");
+    setTimeout(()=>setGlobalToast(null),3000);
+  };
+
   const setPremiumDemo=async(value)=>{
-    if(!currentUser)return;
+    if(!currentUser){setDemoMode(value);return;}
     const updatedUser={...currentUser,premium:value};
     setCurrentUser(updatedUser);
     try{
       await window.storage.set("auth_session",JSON.stringify(updatedUser));
-      const res=await window.storage.get("auth_account");
+      const res=await window.storage.get("auth_account",false);
       if(res&&res.value){
         const account=JSON.parse(res.value);
         await window.storage.set("auth_account",JSON.stringify({...account,premium:value}));
@@ -8606,10 +9241,21 @@ export default function App(){
     {id:"evenements",label:"Événements",emoji:"📅",gradient:"linear-gradient(135deg,#fde68a 0%,#f59e0b 100%)",actif:true},
   ]);
   const [sosLib,setSosLib]=useState([
-    {id:"sos1",titre:"Dessin libre",desc:"Donne-lui une feuille et des crayons, laisse faire.",duree:"moins de 15 min",age:"2-12 ans",materiel:["feuilles","crayons"],statut:"published",profil_ordinaire:true,profil_tsa:true,profil_tdah:true,profil_dys:true,profil_bas_age:true,crise_agitation:true,crise_concentration:true,lieu_maison:true,lieu_ecole:true,temps_10_15min:true},
-    {id:"sos2",titre:"Vidéo YouTube kids",desc:"Une vidéo courte pour souffler 10 minutes.",duree:"moins de 15 min",age:"2-10 ans",materiel:[],statut:"published",profil_ordinaire:true,profil_tdah:true,profil_bas_age:true,crise_agitation:true,crise_emotionnelle:true,lieu_maison:true,lieu_voiture:true,temps_10_15min:true},
-    {id:"sos3",titre:"Pâte à modeler",desc:"Sortir la pâte à modeler, c'est 30 min tranquilles garanties.",duree:"15-30 min",age:"2-8 ans",materiel:["pate a modeler"],statut:"published",profil_ordinaire:true,profil_tsa:true,profil_bas_age:true,crise_sensorielle:true,crise_agitation:true,lieu_maison:true,temps_30min:true},
-    {id:"sos4",titre:"Puzzle ou construction",desc:"Un puzzle adapté à l'âge ou des Lego.",duree:"30-60 min",age:"3-12 ans",materiel:["puzzle ou lego"],statut:"published",profil_ordinaire:true,profil_tsa:true,profil_tdah:true,profil_dys:true,crise_concentration:true,crise_agitation:true,lieu_maison:true,temps_30min:true},
+    {id:"sos1",titre:"Dessin libre",desc:"Donne-lui une feuille et des crayons, laisse faire sans contrainte. Idéal pour exprimer ce qui ne peut pas se dire.",duree:"moins de 15 min",age:"2-12 ans",materiel:["feuilles","crayons"],statut:"published",profil_ordinaire:true,profil_tsa:true,profil_tdah:true,profil_dys:true,profil_bas_age:true,crise_agitation:true,crise_concentration:true,lieu_maison:true,lieu_ecole:true},
+    {id:"sos2",titre:"Pâte à modeler",desc:"Sortir la pâte à modeler — presser, rouler, taper. L'action sensorielle régule l'agitation et la surcharge.",duree:"15-30 min",age:"2-8 ans",materiel:["pate a modeler"],statut:"published",profil_ordinaire:true,profil_tsa:true,profil_bas_age:true,crise_sensorielle:true,crise_agitation:true,lieu_maison:true},
+    {id:"sos3",titre:"Puzzle ou construction",desc:"Un puzzle adapté à l'âge ou des Lego. Occupe les mains et canalise le mental.",duree:"30-60 min",age:"3-12 ans",materiel:["puzzle ou lego"],statut:"published",profil_ordinaire:true,profil_tsa:true,profil_tdah:true,profil_dys:true,crise_concentration:true,crise_agitation:true,lieu_maison:true},
+    {id:"sos4",titre:"Respiration des bulles",desc:"Souffler lentement comme si on faisait de grosses bulles. 5 souffles lents. Régule le système nerveux en 1 minute.",duree:"1-2 min",age:"3-12 ans",materiel:[],statut:"published",profil_ordinaire:true,profil_tsa:true,profil_tdah:true,profil_dys:true,profil_bas_age:true,crise_sensorielle:true,crise_emotionnelle:true,crise_agitation:true,lieu_maison:true,lieu_voiture:true,lieu_ecole:true,lieu_public:true,lieu_dehors:true},
+    {id:"sos5",titre:"Technique de la tortue",desc:"Se recroqueviller comme une tortue dans sa carapace, respirer 3 fois, puis ressortir calmement. Technique validée pour les crises émotionnelles TSA.",duree:"2-3 min",age:"3-10 ans",materiel:[],statut:"published",profil_tsa:true,profil_ordinaire:true,crise_emotionnelle:true,crise_sensorielle:true,lieu_maison:true,lieu_ecole:true,lieu_public:true,lieu_voiture:true,lieu_dehors:true},
+    {id:"sos6",titre:"Sac sensoriel anti-stress",desc:"Proposer un objet à toucher, triturer ou serrer fort — balle anti-stress, couverture lestée, fidget. Détourne la surcharge sensorielle.",duree:"5-10 min",age:"2-12 ans",materiel:["balle anti-stress ou objet texturé"],statut:"published",profil_tsa:true,profil_tdah:true,crise_sensorielle:true,crise_agitation:true,lieu_maison:true,lieu_voiture:true,lieu_ecole:true,lieu_public:true},
+    {id:"sos7",titre:"Saut sur trampoline ou coussin",desc:"Sauter 50 fois. L'input proprioceptif est le moyen le plus rapide de réguler une surcharge chez les enfants TDAH et TSA.",duree:"5-10 min",age:"2-12 ans",materiel:["trampoline ou grand coussin"],statut:"published",profil_tsa:true,profil_tdah:true,crise_agitation:true,crise_sensorielle:true,lieu_maison:true,lieu_dehors:true},
+    {id:"sos8",titre:"Espace calme cocon",desc:"Créer un espace doux : tente, placard sous les draps, coins de coussins. Lumière tamisée. Laisser l'enfant s'y réfugier sans parler.",duree:"10-20 min",age:"2-12 ans",materiel:["couverture","coussins"],statut:"published",profil_tsa:true,profil_ordinaire:true,crise_sensorielle:true,crise_emotionnelle:true,lieu_maison:true},
+    {id:"sos9",titre:"Comptage ou ABC d'une catégorie",desc:"Citer 10 animaux, 10 couleurs, 10 marques de voitures... Détourne le mental de la crise vers quelque chose de concret et structuré.",duree:"2-5 min",age:"4-12 ans",materiel:[],statut:"published",profil_tsa:true,profil_tdah:true,profil_dys:false,crise_emotionnelle:true,crise_agitation:true,lieu_maison:true,lieu_voiture:true,lieu_ecole:true,lieu_public:true,lieu_dehors:true},
+    {id:"sos10",titre:"Marche rapide ou course",desc:"Sortir 5 minutes et marcher vite ou courir. L'activité physique est le meilleur régulateur pour le TDAH en crise d'agitation.",duree:"5-10 min",age:"4-12 ans",materiel:[],statut:"published",profil_tdah:true,profil_ordinaire:true,crise_agitation:true,crise_concentration:true,lieu_dehors:true,lieu_maison:true},
+    {id:"sos11",titre:"Écouter sa musique favorite",desc:"Mettre les écouteurs et écouter LA chanson ou LA playlist préférée. Simple, rapide, efficace. Prévoir une playlist dédiée à l'avance.",duree:"5-10 min",age:"3-12 ans",materiel:["écouteurs","téléphone"],statut:"published",profil_ordinaire:true,profil_tsa:true,profil_tdah:true,profil_dys:true,crise_emotionnelle:true,crise_sensorielle:true,lieu_maison:true,lieu_voiture:true,lieu_ecole:true,lieu_public:true},
+    {id:"sos12",titre:"Timer visuel 5 minutes",desc:"Poser un timer visuel ou horloge analogique : 'dans 5 minutes on fait X'. Donne un cadre temporel concret qui réduit l'anxiété de l'imprévu.",duree:"5 min",age:"3-12 ans",materiel:["timer visuel ou minuteur"],statut:"published",profil_tsa:true,profil_tdah:true,crise_agitation:true,crise_concentration:true,lieu_maison:true,lieu_ecole:true},
+    {id:"sos13",titre:"Squeeze imaginaire",desc:"Serrer et relâcher les poings 10 fois en imaginant presser une balle. Décharge l'énergie sans bouger. Parfait en voiture ou en public.",duree:"1-2 min",age:"4-12 ans",materiel:[],statut:"published",profil_tdah:true,profil_ordinaire:true,crise_agitation:true,crise_emotionnelle:true,lieu_maison:true,lieu_voiture:true,lieu_ecole:true,lieu_public:true,lieu_dehors:true},
+    {id:"sos14",titre:"Eau froide sur les poignets",desc:"Passer les poignets sous l'eau froide 30 secondes. Active le nerf vague et réduit rapidement l'état de surcharge émotionnelle.",duree:"1-2 min",age:"5-12 ans",materiel:[],statut:"published",profil_ordinaire:true,profil_tsa:true,profil_tdah:true,crise_emotionnelle:true,crise_agitation:true,lieu_maison:true,lieu_ecole:true},
+    {id:"sos15",titre:"Livre audio ou podcast enfant",desc:"Mettre un livre audio ou podcast enfant connu et apprécié. Distrait sans demander d'effort visuel ou de lecture.",duree:"15-30 min",age:"4-12 ans",materiel:["enceinte ou écouteurs"],statut:"published",profil_dys:true,profil_ordinaire:true,profil_tsa:true,crise_concentration:true,crise_emotionnelle:true,lieu_maison:true,lieu_voiture:true},
   ]);
   const [sosModeActif,setSosModeActif]=useState(true);
   const [customCatActivites,setCustomCatActivites]=useState([]); // [{label,emoji}]
@@ -8641,78 +9287,82 @@ export default function App(){
   },[]);
   const [filtresMemoActiv,setFiltresMemoActiv]=useState({}); // {lieu, energie, ageEnfant}
   const [filtresMemoSortie,setFiltresMemoSortie]=useState({}); // {deptS, typeS, prixS}
+  // ── Sauvegarde globale — toutes les données privées en 1 clé ─────────────
+  const sauvegarderPrivé=async(données)=>{
+    try{ await window.storage.set("app_v1_private",JSON.stringify(données),false); }catch(e){}
+  };
+  const sauvegarderPartagé=async(données)=>{
+    try{ await window.storage.set("app_v1_shared",JSON.stringify(données),true); }catch(e){}
+  };
+
   useEffect(()=>{
     (async()=>{
-      const charger=async(key,shared,setter,transform)=>{
-        try{
-          const res=await window.storage.get(key,shared);
-          if(res&&res.value){
-            const parsed=JSON.parse(res.value);
-            const val=transform?transform(parsed):parsed;
-            if(val!==null&&val!==undefined)setter(val);
-          }
-        }catch(e){ /* rien a charger pour cette cle, ou donnee corrompue */ }
-      };
+      // 2 lectures au lieu de 24 → évite totalement le rate limit
       try{
-        await Promise.all([
-          charger("favoris",false,setFavoris),
-          charger("enfants",false,setEnfants),
-          charger("catalogue_activites",true,setAdminActivites),
-          charger("catalogue_sorties",true,setAdminSorties),
-          charger("catalogue_evenements",true,setAdminEvenements),
-          charger("catalogue_evenements_perso",true,setCustomEvents),
-          charger("catalogue_sos",true,setSosLib),
-          charger("signalements",true,setAdminReports),
-          charger("contributions",true,setPendingContribs),
-          charger("titres_supprimes",true,setDeletedTitles,arr=>new Set(arr)),
-          charger("ideesmoment_config",true,setIdeesMomentConfig),
-          charger("evenements_saisonniers",true,setEvenementsSaisonniers),
-          charger("sos_mode_actif",true,setSosModeActif),
-          charger("custom_cat_activites",true,setCustomCatActivites),
-          charger("popup_shown",false,setPopupShown,arr=>new Set(Array.isArray(arr)?arr:[])),
-          charger("onboarding_done",false,setOnboardingDone),
-          charger("premium_trial_used",false,setPremiumTrialUsed),
-          charger("historique_activites",false,setHistoriqueActivites),
-          charger("dark_mode",false,setDarkMode),
-          charger("filtres_memo_activ",false,setFiltresMemoActiv),
-          charger("filtres_memo_sortie",false,setFiltresMemoSortie),
-          charger("custom_cat_sorties",true,setCustomCatSorties),
-          charger("custom_cat_evenements",true,setCustomCatEvenements),
-        ]);
-      }catch(e){ /* echec global de chargement — on continue avec les valeurs par defaut */ }
-      finally{ setDataLoaded(true); }
+        const prv=await window.storage.get("app_v1_private",false);
+        if(prv&&prv.value){
+          const d=JSON.parse(prv.value);
+          if(d.favoris)setFavoris(d.favoris);
+          if(d.enfants)setEnfants(d.enfants);
+          if(d.onboarding_done)setOnboardingDone(d.onboarding_done);
+          if(d.popup_shown)setPopupShown(new Set(Array.isArray(d.popup_shown)?d.popup_shown:[]));
+          if(d.dark_mode!==undefined)setDarkMode(d.dark_mode);
+          if(d.historique_activites)setHistoriqueActivites(d.historique_activites);
+          if(d.premium_trial_used)setPremiumTrialUsed(d.premium_trial_used);
+          if(d.filtres_memo_activ)setFiltresMemoActiv(d.filtres_memo_activ);
+          if(d.filtres_memo_sortie)setFiltresMemoSortie(d.filtres_memo_sortie);
+        }
+      }catch(e){}
+      try{
+        const shr=await window.storage.get("app_v1_shared",true);
+        if(shr&&shr.value){
+          const d=JSON.parse(shr.value);
+          if(d.customEvents)setCustomEvents(d.customEvents);
+          if(d.ideesMomentConfig)setIdeesMomentConfig(d.ideesMomentConfig);
+          if(d.evenementsSaisonniers)setEvenementsSaisonniers(d.evenementsSaisonniers);
+          if(d.sosModeActif!==undefined)setSosModeActif(d.sosModeActif);
+          if(d.pendingContribs)setPendingContribs(d.pendingContribs);
+          if(d.deletedTitles)setDeletedTitles(new Set(d.deletedTitles));
+          if(d.adminReports)setAdminReports(d.adminReports);
+          if(d.customCatActivites)setCustomCatActivites(d.customCatActivites);
+          if(d.customCatSorties)setCustomCatSorties(d.customCatSorties);
+          if(d.customCatEvenements)setCustomCatEvenements(d.customCatEvenements);
+          if(d.adminActivites)setAdminActivites(d.adminActivites);
+          if(d.adminSorties)setAdminSorties(d.adminSorties);
+          if(d.adminEvenements)setAdminEvenements(d.adminEvenements);
+          if(d.sosLib)setSosLib(d.sosLib);
+        }
+      }catch(e){}
+      // Auth session séparée
+      try{
+        const ses=await window.storage.get("auth_session",false);
+        if(ses&&ses.value)setCurrentUser(JSON.parse(ses.value));
+      }catch(e){}
+      setDataLoaded(true);
     })();
   },[]);
-  useEffect(()=>{ if(dataLoaded) window.storage.set("favoris",JSON.stringify(favoris),false).catch(()=>{}); },[favoris,dataLoaded]);
-  useEffect(()=>{ if(dataLoaded) window.storage.set("enfants",JSON.stringify(enfants),false).catch(()=>{}); },[enfants,dataLoaded]);
-  useEffect(()=>{ if(dataLoaded) window.storage.set("catalogue_activites",JSON.stringify(adminActivites),true).catch(()=>{}); },[adminActivites,dataLoaded]);
-  useEffect(()=>{ if(dataLoaded) window.storage.set("catalogue_sorties",JSON.stringify(adminSorties),true).catch(()=>{}); },[adminSorties,dataLoaded]);
-  useEffect(()=>{ if(dataLoaded) window.storage.set("catalogue_evenements",JSON.stringify(adminEvenements),true).catch(()=>{}); },[adminEvenements,dataLoaded]);
-  useEffect(()=>{ if(dataLoaded) window.storage.set("catalogue_evenements_perso",JSON.stringify(customEvents),true).catch(()=>{}); },[customEvents,dataLoaded]);
-  useEffect(()=>{ if(dataLoaded) window.storage.set("catalogue_sos",JSON.stringify(sosLib),true).catch(()=>{}); },[sosLib,dataLoaded]);
-  useEffect(()=>{ if(dataLoaded) window.storage.set("signalements",JSON.stringify(adminReports),true).catch(()=>{}); },[adminReports,dataLoaded]);
-  useEffect(()=>{ if(dataLoaded) window.storage.set("contributions",JSON.stringify(pendingContribs),true).catch(()=>{}); },[pendingContribs,dataLoaded]);
-  useEffect(()=>{ if(dataLoaded) window.storage.set("titres_supprimes",JSON.stringify([...deletedTitles]),true).catch(()=>{}); },[deletedTitles,dataLoaded]);
-  useEffect(()=>{ if(dataLoaded) window.storage.set("ideesmoment_config",JSON.stringify(ideesMomentConfig),true).catch(()=>{}); },[ideesMomentConfig,dataLoaded]);
-  useEffect(()=>{ if(dataLoaded) window.storage.set("evenements_saisonniers",JSON.stringify(evenementsSaisonniers),true).catch(()=>{}); },[evenementsSaisonniers,dataLoaded]);
-  useEffect(()=>{ if(dataLoaded) window.storage.set("sos_mode_actif",JSON.stringify(sosModeActif),true).catch(()=>{}); },[sosModeActif,dataLoaded]);
-  useEffect(()=>{ if(dataLoaded) window.storage.set("custom_cat_activites",JSON.stringify(customCatActivites),true).catch(()=>{}); },[customCatActivites,dataLoaded]);
-  useEffect(()=>{ if(dataLoaded) window.storage.set("popup_shown",JSON.stringify([...popupShown]),false).catch(()=>{}); },[popupShown,dataLoaded]);
-  useEffect(()=>{ if(dataLoaded&&onboardingDone) window.storage.set("onboarding_done",JSON.stringify(true),false).catch(()=>{}); },[onboardingDone,dataLoaded]);
-  useEffect(()=>{ if(dataLoaded&&premiumTrialUsed) window.storage.set("premium_trial_used",JSON.stringify(true),false).catch(()=>{}); },[premiumTrialUsed,dataLoaded]);
-  useEffect(()=>{ if(dataLoaded) window.storage.set("historique_activites",JSON.stringify(historiqueActivites),false).catch(()=>{}); },[historiqueActivites,dataLoaded]);
-  useEffect(()=>{ if(dataLoaded) window.storage.set("dark_mode",JSON.stringify(darkMode),false).catch(()=>{}); },[darkMode,dataLoaded]);
-  useEffect(()=>{ if(dataLoaded&&Object.keys(filtresMemoActiv).length>0) window.storage.set("filtres_memo_activ",JSON.stringify(filtresMemoActiv),false).catch(()=>{}); },[filtresMemoActiv,dataLoaded]);
-  useEffect(()=>{ if(dataLoaded&&Object.keys(filtresMemoSortie).length>0) window.storage.set("filtres_memo_sortie",JSON.stringify(filtresMemoSortie),false).catch(()=>{}); },[filtresMemoSortie,dataLoaded]);
-  useEffect(()=>{ if(dataLoaded) window.storage.set("custom_cat_sorties",JSON.stringify(customCatSorties),true).catch(()=>{}); },[customCatSorties,dataLoaded]);
-  useEffect(()=>{ if(dataLoaded) window.storage.set("custom_cat_evenements",JSON.stringify(customCatEvenements),true).catch(()=>{}); },[customCatEvenements,dataLoaded]);
+  // ── 2 sauvegardes groupées (1 privée + 1 partagée) pour éviter le rate limit ──
+  useEffect(()=>{
+    if(!dataLoaded)return;
+    const timer=setTimeout(()=>{
+      sauvegarderPrivé({favoris,enfants,onboarding_done:onboardingDone,popup_shown:[...popupShown],dark_mode:darkMode,historique_activites:historiqueActivites,premium_trial_used:premiumTrialUsed,filtres_memo_activ:filtresMemoActiv,filtres_memo_sortie:filtresMemoSortie});
+    },1500);
+    return()=>clearTimeout(timer);
+  },[favoris,enfants,popupShown,onboardingDone,premiumTrialUsed,historiqueActivites,darkMode,filtresMemoActiv,filtresMemoSortie,dataLoaded]);
+
+  useEffect(()=>{
+    if(!dataLoaded)return;
+    const timer=setTimeout(()=>{
+      sauvegarderPartagé({customEvents,ideesMomentConfig,evenementsSaisonniers,sosModeActif,pendingContribs,deletedTitles:[...deletedTitles],adminReports,customCatActivites,customCatSorties,customCatEvenements,adminActivites,adminSorties,adminEvenements,sosLib});
+    },2000);
+    return()=>clearTimeout(timer);
+  },[customEvents,ideesMomentConfig,evenementsSaisonniers,sosModeActif,pendingContribs,deletedTitles,adminReports,customCatActivites,customCatSorties,customCatEvenements,adminActivites,adminSorties,adminEvenements,sosLib,dataLoaded]);
 
   const leftTabs=[{k:"accueil",icon:"🏠",label:"Accueil"},{k:"biblio",icon:"📖",label:"Biblio"}];
   const rightTabs=[{k:"planning",icon:"📅",label:"Planning"},{k:"profil",icon:"👤",label:"Profil"}];
   if(authChecking||!dataLoaded) return <div style={{maxWidth:390,margin:"0 auto",minHeight:"100vh",background:BG,display:"flex",alignItems:"center",justifyContent:"center"}}><p style={{fontSize:13,color:TM}}>Chargement...</p></div>;
-  if(!onboardingDone) return <Onboarding onDone={()=>setOnboardingDone(true)}/>;
+  if(!onboardingDone) return <Onboarding onDone={()=>setOnboardingDone(true)} onDemo={()=>{setOnboardingDone(true);activerDemo();}}/>;
   const isLoggedIn=!!currentUser;
-  const isPremiumUser=!!currentUser?.premium;
   const requireAuth=()=>setShowAuthGate(true);
   const openPremium=()=>setShowPremiumPage(true);
   const handleSubscribe=async()=>{
@@ -8744,7 +9394,7 @@ export default function App(){
       `}</style>
       {showAuthGate&&(
         <div style={{position:"fixed",inset:0,background:BG,zIndex:920,overflowY:"auto"}}>
-          <PageAuth onCancel={()=>setShowAuthGate(false)} onAuthSuccess={(u)=>{setCurrentUser(u);setShowAuthGate(false);}} onAdminSuccess={()=>{setIsAdmin(true);setShowAuthGate(false);}}/>
+          <PageAuth onCancel={()=>{setShowAuthGate(false);activerDemo();}} onAuthSuccess={(u)=>{setCurrentUser(u);setShowAuthGate(false);}} onAdminSuccess={()=>{setIsAdmin(true);setShowAuthGate(false);}}/>
         </div>
       )}
       {showPremiumPage&&(
@@ -8756,11 +9406,18 @@ export default function App(){
       {!isOnline&&<div style={{position:"fixed",top:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:390,background:"#1F2937",color:"#fff",padding:"10px 16px",fontSize:13,fontWeight:600,textAlign:"center",zIndex:1000,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
         <span>📵</span> Pas de connexion — certaines fonctions peuvent être limitées
       </div>}
+      {/* Bannière démo pour non-connectés */}
+      {!currentUser&&!demoMode&&!showAuthGate&&!showPremiumPage&&(
+        <div style={{position:"fixed",bottom:72,left:"50%",transform:"translateX(-50%)",zIndex:500,display:"flex",alignItems:"center",gap:8,background:"linear-gradient(135deg,#F59E0B,#F97316)",borderRadius:28,padding:"10px 20px",boxShadow:"0 4px 20px rgba(249,115,22,0.4)",cursor:"pointer",whiteSpace:"nowrap"}} onClick={activerDemo}>
+          <span style={{fontSize:18}}>🚀</span>
+          <span style={{color:"#fff",fontWeight:700,fontSize:13}}>Accéder à la démo gratuite</span>
+        </div>
+      )}
       <Confetti active={showConfetti}/>
       <div style={{paddingBottom:72}}>
-        {page==="accueil"&&<PageAccueil favoris={favoris} setFavoris={setFavoris} setPage={setPage} customEvents={customEvents} popupShown={popupShown} setPopupShown={setPopupShown} ideesMomentConfig={ideesMomentConfig} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} evenementsSaisonniers={evenementsSaisonniers} isPremium={isPremiumUser} onOpenPremium={openPremium} customCatActivites={customCatActivites} customCatSorties={customCatSorties} customCatEvenements={customCatEvenements} adminActivites={adminActivites} adminSorties={adminSorties} pendingContribs={pendingContribs} setPendingContribs={setPendingContribs} deletedTitles={deletedTitles} currentUser={currentUser} sosModeActif={sosModeActif} enfants={enfants} enfantActif={enfantActif} onMarquerFait={(item)=>setHistoriqueActivites(prev=>[{id:item.id||Date.now(),nom:item.nom||item.titre||"",categorie:item.categorie||"",date:item._date||new Date().toISOString(),type:"activite",note:item._note||""},...prev.slice(0,99)])} historiqueActivites={historiqueActivites} filtresMemoActiv={filtresMemoActiv} setFiltresMemoActiv={setFiltresMemoActiv} filtresMemoSortie={filtresMemoSortie} setFiltresMemoSortie={setFiltresMemoSortie}/>}
+        {page==="accueil"&&<PageAccueil favoris={favoris} setFavoris={setFavoris} setPage={setPage} customEvents={customEvents} popupShown={popupShown} setPopupShown={setPopupShown} ideesMomentConfig={ideesMomentConfig} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} evenementsSaisonniers={evenementsSaisonniers} isPremium={isPremiumUser} onOpenPremium={openPremium} customCatActivites={customCatActivites} customCatSorties={customCatSorties} customCatEvenements={customCatEvenements} adminActivites={adminActivites} adminSorties={adminSorties} pendingContribs={pendingContribs} setPendingContribs={setPendingContribs} deletedTitles={deletedTitles} currentUser={currentUser} sosModeActif={sosModeActif} enfants={enfants} enfantActif={enfantActif} setEnfantActif={setEnfantActif} onMarquerFait={(item)=>setHistoriqueActivites(prev=>[{id:item.id||Date.now(),nom:item.nom||item.titre||"",categorie:item.categorie||"",date:item._date||new Date().toISOString(),type:"activite",note:item._note||""},...prev.slice(0,99)])} historiqueActivites={historiqueActivites} filtresMemoActiv={filtresMemoActiv} setFiltresMemoActiv={setFiltresMemoActiv} filtresMemoSortie={filtresMemoSortie} setFiltresMemoSortie={setFiltresMemoSortie}/>}
         {page==="biblio"&&<PageBiblio pendingContribs={pendingContribs} setPendingContribs={setPendingContribs} adminActivites={adminActivites} adminSorties={adminSorties} adminEvenements={adminEvenements} addReport={addReport} adminReports={adminReports} deletedTitles={deletedTitles} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} favoris={favoris} setFavoris={setFavoris} isPremium={isPremiumUser} onOpenPremium={openPremium} customCatActivites={customCatActivites} customCatSorties={customCatSorties} customCatEvenements={customCatEvenements} currentUser={currentUser}/>}
-        {page==="generer"&&<PageAccueil favoris={favoris} setFavoris={setFavoris} setPage={setPage} customEvents={customEvents} popupShown={popupShown} setPopupShown={setPopupShown} ideesMomentConfig={ideesMomentConfig} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} evenementsSaisonniers={evenementsSaisonniers} isPremium={isPremiumUser} onOpenPremium={openPremium} customCatActivites={customCatActivites} customCatSorties={customCatSorties} customCatEvenements={customCatEvenements} adminActivites={adminActivites} adminSorties={adminSorties} pendingContribs={pendingContribs} setPendingContribs={setPendingContribs} deletedTitles={deletedTitles} currentUser={currentUser} sosModeActif={sosModeActif} enfants={enfants} enfantActif={enfantActif} onMarquerFait={(item)=>setHistoriqueActivites(prev=>[{id:item.id||Date.now(),nom:item.nom||item.titre||"",categorie:item.categorie||"",date:item._date||new Date().toISOString(),type:"activite",note:item._note||""},...prev.slice(0,99)])} historiqueActivites={historiqueActivites} filtresMemoActiv={filtresMemoActiv} setFiltresMemoActiv={setFiltresMemoActiv} filtresMemoSortie={filtresMemoSortie} setFiltresMemoSortie={setFiltresMemoSortie}/>}
+        {page==="generer"&&<PageAccueil favoris={favoris} setFavoris={setFavoris} setPage={setPage} customEvents={customEvents} popupShown={popupShown} setPopupShown={setPopupShown} ideesMomentConfig={ideesMomentConfig} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} evenementsSaisonniers={evenementsSaisonniers} isPremium={isPremiumUser} onOpenPremium={openPremium} customCatActivites={customCatActivites} customCatSorties={customCatSorties} customCatEvenements={customCatEvenements} adminActivites={adminActivites} adminSorties={adminSorties} pendingContribs={pendingContribs} setPendingContribs={setPendingContribs} deletedTitles={deletedTitles} currentUser={currentUser} sosModeActif={sosModeActif} enfants={enfants} enfantActif={enfantActif} setEnfantActif={setEnfantActif} onMarquerFait={(item)=>setHistoriqueActivites(prev=>[{id:item.id||Date.now(),nom:item.nom||item.titre||"",categorie:item.categorie||"",date:item._date||new Date().toISOString(),type:"activite",note:item._note||""},...prev.slice(0,99)])} historiqueActivites={historiqueActivites} filtresMemoActiv={filtresMemoActiv} setFiltresMemoActiv={setFiltresMemoActiv} filtresMemoSortie={filtresMemoSortie} setFiltresMemoSortie={setFiltresMemoSortie}/>}
         {page==="planning"&&<PagePlanning sosLib={sosLib} enfants={enfants} enfantActif={enfantActif} setEnfantActif={setEnfantActif} isPremium={isPremiumUser} onOpenPremium={openPremium} sosModeActif={sosModeActif} adminActivites={adminActivites} pendingContribs={pendingContribs} deletedTitles={deletedTitles}/>}
         {page==="profil"&&<PageProfil setPage={setPage} enfants={enfants} setEnfants={setEnfants} enfantActif={enfantActif} setEnfantActif={setEnfantActif} showGestionEnfants={showGestionEnfants} setShowGestionEnfants={setShowGestionEnfants} currentUser={currentUser} onLogout={handleLogout} onRequireAuth={requireAuth} isPremium={isPremiumUser} setPremium={setPremiumDemo} evenementsSaisonniers={evenementsSaisonniers} onOpenPremium={openPremium} onDeleteAccount={handleDeleteAccount} favoris={favoris} adminEvenements={adminEvenements} pendingContribs={pendingContribs} darkMode={darkMode} setDarkMode={setDarkMode} historiqueActivites={historiqueActivites} setHistoriqueActivites={setHistoriqueActivites}/>}
         {page==="favoris"&&<PageFavoris favoris={favoris} setFavoris={setFavoris} isPremium={isPremiumUser} onBack={()=>setPage("profil")}/>}

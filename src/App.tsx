@@ -17,88 +17,184 @@ const ACTIVITES=[
   {id:1,nom:"Peinture avec les doigts",lieu:"interieur",energie:"fatigue",categorie:"Creatif",materiel:["peinture lavable","papier epais","tablier"],age:"2-8 ans",desc:"Une activite sensorielle parfaite.",tnd:{tsa:4,tdah:3,dys:5},duree:"20-30 min",nbEnfants:"1-4 enfants",
     niveauxSensoriels:{bruit:10,visuel:30,physique:10,attention:20},
     profilsTND:{tsa:true,tdah:false,dys:true,tous:false},
-    adaptations:["Peut se faire en silence","Rythme libre","Activité individuelle","Résultat concret","Stimulation douce","Adapté aux hypersensibles"]},
+    adaptations:["Peut se faire en silence","Rythme libre","Activité individuelle","Résultat concret","Stimulation douce","Adapté aux hypersensibles"],
+    caracteristiques:{calme:true,tactile:true,attention:true,previsible:true,visuel:true,bouger:false,verbal:false,frustration:false},
+    pointsAnticiper:["pa1","pa2","pa8"]},
 
   {id:2,nom:"Chasse au tresor jardin",lieu:"exterieur",energie:"motiv",categorie:"Jeu",materiel:["tresors","indices"],age:"4-10 ans",desc:"Creez un parcours avec des enigmes.",tnd:{tsa:3,tdah:5,dys:3},duree:"30-45 min",nbEnfants:"2+ enfants",
     niveauxSensoriels:{bruit:40,visuel:60,physique:70,attention:50},
     profilsTND:{tsa:false,tdah:true,dys:false,tous:false},
-    adaptations:["Résultat concret","Peut être interrompue","Activité individuelle"]},
+    adaptations:["Résultat concret","Peut être interrompue","Activité individuelle"],
+    caracteristiques:{calme:false,tactile:false,attention:false,previsible:false,visuel:true,bouger:true,verbal:false,frustration:true},
+    pointsAnticiper:["pa5","pa7","pa11"]},
 
   {id:3,nom:"Lecture sous la couette",lieu:"interieur",energie:"fatigue",categorie:"Calme",materiel:["livres","coussins"],age:"0-12 ans",desc:"Plongez dans une histoire ensemble.",tnd:{tsa:5,tdah:2,dys:4},duree:"15-20 min",nbEnfants:"1-2 enfants",
     niveauxSensoriels:{bruit:0,visuel:10,physique:0,attention:30},
     profilsTND:{tsa:true,tdah:false,dys:false,tous:false},
-    adaptations:["Peut se faire en silence","Rythme libre","Activité individuelle","Stimulation douce","Adapté aux hypersensibles"]},
+    adaptations:["Peut se faire en silence","Rythme libre","Activité individuelle","Stimulation douce","Adapté aux hypersensibles"],
+    caracteristiques:{calme:true,tactile:false,attention:true,previsible:true,visuel:false,bouger:false,verbal:true,frustration:false},
+    pointsAnticiper:["pa9"]},
 
   {id:4,nom:"Cuisine crepes",lieu:"interieur",energie:"motiv",categorie:"Cuisine",materiel:["farine","oeufs","lait","beurre"],age:"3-12 ans",desc:"Faites des crepes ensemble !",tnd:{tsa:3,tdah:4,dys:4},duree:"30-40 min",nbEnfants:"1-3 enfants",
     niveauxSensoriels:{bruit:30,visuel:40,physique:30,attention:50},
     profilsTND:{tsa:false,tdah:true,dys:true,tous:false},
-    adaptations:["Résultat concret","Peu de règles","Stimulation douce"]},
+    adaptations:["Résultat concret","Peu de règles","Stimulation douce"],
+    caracteristiques:{calme:false,tactile:true,attention:false,previsible:true,visuel:true,bouger:false,verbal:false,frustration:true},
+    pointsAnticiper:["pa2","pa8","pa13","pa14"]},
 
   {id:5,nom:"Balade nature collecte",lieu:"exterieur",energie:"motiv",categorie:"Nature",materiel:["sacs","loupe"],age:"2-12 ans",desc:"Ramassez feuilles et cailloux.",tnd:{tsa:5,tdah:4,dys:5},duree:"45-60 min",nbEnfants:"1-4 enfants",
     niveauxSensoriels:{bruit:15,visuel:50,physique:50,attention:30},
     profilsTND:{tsa:true,tdah:true,dys:true,tous:true},
-    adaptations:["Rythme libre","Peut être interrompue","Stimulation douce","Adapté aux hypersensibles"]},
+    adaptations:["Rythme libre","Peut être interrompue","Stimulation douce","Adapté aux hypersensibles"],
+    caracteristiques:{calme:true,tactile:true,attention:false,previsible:false,visuel:true,bouger:true,verbal:false,frustration:false},
+    pointsAnticiper:["pa1","pa5","pa12"]},
 
   {id:6,nom:"Construire des Lego",lieu:"interieur",energie:"fatigue",categorie:"Construction",materiel:["Lego"],age:"3-12 ans",desc:"Construisez librement ensemble.",tnd:{tsa:5,tdah:3,dys:4},duree:"20-40 min",nbEnfants:"1-3 enfants",
     niveauxSensoriels:{bruit:10,visuel:30,physique:10,attention:70},
     profilsTND:{tsa:true,tdah:false,dys:false,tous:false},
-    adaptations:["Peut se faire en silence","Rythme libre","Activité individuelle","Résultat concret"]},
+    adaptations:["Peut se faire en silence","Rythme libre","Activité individuelle","Résultat concret"],
+    caracteristiques:{calme:true,tactile:false,attention:false,previsible:true,visuel:true,bouger:false,verbal:false,frustration:true},
+    pointsAnticiper:["pa6","pa9","pa10"]},
 
   {id:7,nom:"Danse freestyle salon",lieu:"interieur",energie:"motiv",categorie:"Sport",materiel:["enceinte"],age:"0-12 ans",desc:"Mettez la musique et dansez !",tnd:{tsa:2,tdah:5,dys:5},duree:"10-20 min",nbEnfants:"1-4 enfants",
     niveauxSensoriels:{bruit:80,visuel:60,physique:80,attention:10},
     profilsTND:{tsa:false,tdah:true,dys:false,tous:false},
-    adaptations:["Rythme libre","Peu de règles","Peut être interrompue"]},
+    adaptations:["Rythme libre","Peu de règles","Peut être interrompue"],
+    caracteristiques:{calme:false,tactile:false,attention:true,previsible:false,visuel:false,bouger:true,verbal:false,frustration:false},
+    pointsAnticiper:["pa3"]},
 
   {id:8,nom:"Jardinage en pots",lieu:"exterieur",energie:"fatigue",categorie:"Nature",materiel:["terre","pots","graines"],age:"3-12 ans",desc:"Plantez des graines.",tnd:{tsa:4,tdah:3,dys:5},duree:"20-30 min",nbEnfants:"1-2 enfants",
     niveauxSensoriels:{bruit:10,visuel:20,physique:30,attention:40},
     profilsTND:{tsa:true,tdah:false,dys:true,tous:false},
-    adaptations:["Peut se faire en silence","Rythme libre","Résultat concret","Stimulation douce","Adapté aux hypersensibles"]},
+    adaptations:["Peut se faire en silence","Rythme libre","Résultat concret","Stimulation douce","Adapté aux hypersensibles"],
+    caracteristiques:{calme:true,tactile:true,attention:true,previsible:true,visuel:true,bouger:true,verbal:false,frustration:false},
+    pointsAnticiper:["pa1","pa13"]},
 
   {id:9,nom:"Origami papier",lieu:"interieur",energie:"fatigue",categorie:"Creatif",materiel:["papier couleur"],age:"5-12 ans",desc:"Pliez des formes en papier : animaux, bateaux, avions...",tnd:{tsa:5,tdah:2,dys:3},duree:"20-30 min",nbEnfants:"1-3 enfants",
     niveauxSensoriels:{bruit:0,visuel:20,physique:5,attention:60},
     profilsTND:{tsa:true,tdah:false,dys:false,tous:false},
-    adaptations:["Peut se faire en silence","Activité individuelle","Résultat concret","Adapté aux hypersensibles"]},
+    adaptations:["Peut se faire en silence","Activité individuelle","Résultat concret","Adapté aux hypersensibles"],
+    caracteristiques:{calme:true,tactile:false,attention:false,previsible:true,visuel:true,bouger:false,verbal:false,frustration:true},
+    pointsAnticiper:["pa6","pa8","pa10"]},
 
   {id:10,nom:"Jeu de memoire maison",lieu:"interieur",energie:"fatigue",categorie:"Jeu",materiel:["cartes ou images"],age:"3-10 ans",desc:"Fabriquez votre propre jeu de paires puis jouez ensemble.",tnd:{tsa:4,tdah:2,dys:4},duree:"20-30 min",nbEnfants:"1-4 enfants",
     niveauxSensoriels:{bruit:10,visuel:20,physique:5,attention:50},
     profilsTND:{tsa:true,tdah:false,dys:true,tous:false},
-    adaptations:["Peut se faire en silence","Peu de règles","Activité individuelle"]},
+    adaptations:["Peut se faire en silence","Peu de règles","Activité individuelle"],
+    caracteristiques:{calme:true,tactile:false,attention:true,previsible:true,visuel:true,bouger:false,verbal:false,frustration:false},
+    pointsAnticiper:["pa6","pa11"]},
 
   {id:11,nom:"Parcours moteur interieur",lieu:"interieur",energie:"motiv",categorie:"Sport",materiel:["coussins","cerceaux","ruban"],age:"2-8 ans",desc:"Creez un circuit avec obstacles : sauter, ramper, equilibre.",tnd:{tsa:3,tdah:5,dys:4},duree:"20-30 min",nbEnfants:"1-4 enfants",
     niveauxSensoriels:{bruit:40,visuel:50,physique:80,attention:20},
     profilsTND:{tsa:false,tdah:true,dys:false,tous:false},
-    adaptations:["Rythme libre","Peu de règles","Peut être interrompue"]},
+    adaptations:["Rythme libre","Peu de règles","Peut être interrompue"],
+    caracteristiques:{calme:false,tactile:false,attention:false,previsible:false,visuel:false,bouger:true,verbal:false,frustration:false},
+    pointsAnticiper:["pa3","pa5","pa9"]},
 
   {id:12,nom:"Atelier pate a sel",lieu:"interieur",energie:"fatigue",categorie:"Creatif",materiel:["farine","sel","eau","peinture"],age:"2-10 ans",desc:"Modelez des formes qui durciront et que vous pourrez peindre.",tnd:{tsa:4,tdah:3,dys:5},duree:"30-45 min",nbEnfants:"1-3 enfants",
     niveauxSensoriels:{bruit:10,visuel:20,physique:20,attention:40},
     profilsTND:{tsa:true,tdah:false,dys:true,tous:false},
-    adaptations:["Rythme libre","Résultat concret","Stimulation douce","Adapté aux hypersensibles"]},
+    adaptations:["Rythme libre","Résultat concret","Stimulation douce","Adapté aux hypersensibles"],
+    caracteristiques:{calme:true,tactile:true,attention:false,previsible:true,visuel:true,bouger:false,verbal:false,frustration:true},
+    pointsAnticiper:["pa1","pa2","pa8","pa14"]},
 
   {id:13,nom:"Yoga enfants",lieu:"interieur",energie:"fatigue",categorie:"Sport",materiel:["tapis"],age:"3-12 ans",desc:"Postures simples avec histoires : l arbre, le chat, le guerrier.",tnd:{tsa:5,tdah:3,dys:5},duree:"15-25 min",nbEnfants:"1-4 enfants",
     niveauxSensoriels:{bruit:5,visuel:10,physique:30,attention:30},
     profilsTND:{tsa:true,tdah:false,dys:true,tous:false},
-    adaptations:["Peut se faire en silence","Rythme libre","Activité individuelle","Stimulation douce","Adapté aux hypersensibles"]},
+    adaptations:["Peut se faire en silence","Rythme libre","Activité individuelle","Stimulation douce","Adapté aux hypersensibles"],
+    caracteristiques:{calme:true,tactile:false,attention:true,previsible:true,visuel:false,bouger:true,verbal:false,frustration:false},
+    pointsAnticiper:["pa6","pa9"]},
 
   {id:14,nom:"Atelier musique percussions",lieu:"interieur",energie:"motiv",categorie:"Musique",materiel:["casseroles","cuilleres","boites"],age:"1-8 ans",desc:"Fabriquez des instruments avec ce qu on a et faites un concert !",tnd:{tsa:2,tdah:5,dys:5},duree:"15-20 min",nbEnfants:"1-4 enfants",
     niveauxSensoriels:{bruit:90,visuel:40,physique:40,attention:10},
     profilsTND:{tsa:false,tdah:true,dys:false,tous:false},
-    adaptations:["Peu de règles","Rythme libre","Peut être interrompue"]},
+    adaptations:["Peu de règles","Rythme libre","Peut être interrompue"],
+    caracteristiques:{calme:false,tactile:true,attention:false,previsible:false,visuel:false,bouger:true,verbal:false,frustration:false},
+    pointsAnticiper:["pa3"]},
 
   {id:15,nom:"Tri et classification nature",lieu:"exterieur",energie:"fatigue",categorie:"Science",materiel:["boites","loupe"],age:"3-10 ans",desc:"Collectez cailloux, feuilles et glands puis classez-les par forme, couleur, taille.",tnd:{tsa:5,tdah:3,dys:4},duree:"30-45 min",nbEnfants:"1-3 enfants",
     niveauxSensoriels:{bruit:10,visuel:40,physique:30,attention:50},
     profilsTND:{tsa:true,tdah:false,dys:true,tous:false},
-    adaptations:["Rythme libre","Activité individuelle","Résultat concret","Adapté aux hypersensibles"]},
+    adaptations:["Rythme libre","Activité individuelle","Résultat concret","Adapté aux hypersensibles"],
+    caracteristiques:{calme:true,tactile:true,attention:false,previsible:true,visuel:true,bouger:true,verbal:false,frustration:false},
+    pointsAnticiper:["pa1","pa5","pa11"]},
 ];
 
+// ─── MATCHING ENFANT / ACTIVITÉ ──────────────────────────────────────────────
+const BESOIN_LABELS={
+  calme:{emoji:"🔇",ok:"Environnement calme",ko:"Peut être bruyant"},
+  tactile:{emoji:"✋",ok:"Pas de textures difficiles",ko:"Textures présentes"},
+  attention:{emoji:"⏱️",ok:"Courte durée",ko:"Peut être long"},
+  previsible:{emoji:"🗓️",ok:"Étapes claires",ko:"Imprévisible"},
+  visuel:{emoji:"👁️",ok:"Résultat visible",ko:"Pas de support visuel"},
+  bouger:{emoji:"🏃",ok:"Peut bouger",ko:"Rester assis"},
+  verbal:{emoji:"🗣️",ok:"Communication requise",ko:"Pas de parole nécessaire"},
+  frustration:{emoji:"😤",ok:"Peu de frustration",ko:"Risque de frustration"},
+};
+function calculerScoreMatch(activite,enfant){
+  const besoins=enfant?.besoinsMatching||[];
+  if(!activite?.caracteristiques||besoins.length===0)return 100;
+  let points=0;
+  besoins.forEach(b=>{if(activite.caracteristiques[b]===true)points++;});
+  return Math.round((points/besoins.length)*100);
+}
+function getMatchDetails(activite,enfant){
+  const besoins=enfant?.besoinsMatching||[];
+  if(!activite?.caracteristiques)return [];
+  return besoins.map(b=>{
+    const def=BESOIN_LABELS[b];
+    if(!def)return null;
+    const ok=activite.caracteristiques[b]===true;
+    return {emoji:def.emoji,label:ok?def.ok:def.ko,status:ok?"ok":"ko"};
+  }).filter(Boolean);
+}
+function getBadgeScoreMatch(score){
+  if(score>=70)return{label:"Bien adapté",color:"#3B6D11",bg:"#EAF3DE"};
+  if(score>=40)return{label:"Partiellement adapté",color:"#854F0B",bg:"#FAEEDA"};
+  return{label:"Peu adapté",color:"#A32D2D",bg:"#FCEBEB"};
+}
+
 const SORTIES=[
-  {id:1,nom:"Parc Asterix",dept:"60",type:"Parc d attraction",ville:"Plailly",prix:"45 euros/adulte",tnd:{tsa:2,tdah:5,dys:4},desc:"Le parc d attractions prefere des familles.",badge:"communaute",note:4.2},
-  {id:2,nom:"Zoo de Vincennes",dept:"75",type:"Zoo",ville:"Paris",prix:"22 euros/adulte",tnd:{tsa:4,tdah:4,dys:5},desc:"Le plus grand zoo de France.",badge:null,note:4.5},
-  {id:3,nom:"Musee des Arts et Metiers",dept:"75",type:"Musee",ville:"Paris",prix:"12 euros/adulte",tnd:{tsa:5,tdah:3,dys:3},desc:"Un musee fascinant sur les inventions.",badge:null,note:4.3},
-  {id:4,nom:"Aqualand Cap Agde",dept:"34",type:"Piscine",ville:"Agde",prix:"35 euros/adulte",tnd:{tsa:2,tdah:5,dys:5},desc:"Parc aquatique avec toboggans.",badge:"communaute",note:4.0},
-  {id:5,nom:"Ferme pedagogique La Boissiere",dept:"77",type:"Ferme pedagogique",ville:"La Boissiere",prix:"8 euros/enfant",tnd:{tsa:5,tdah:4,dys:5},desc:"Rencontrez animaux de la ferme.",badge:null,note:4.7},
-  {id:6,nom:"Bowling Etoile Sport",dept:"69",type:"Bowling",ville:"Lyon",prix:"6 euros/partie",tnd:{tsa:3,tdah:5,dys:4},desc:"Pistes modernes avec rampes.",badge:null,note:4.1},
-  {id:7,nom:"Plage de La Baule",dept:"44",type:"Plage",ville:"La Baule",prix:"Gratuit",tnd:{tsa:3,tdah:5,dys:5},desc:"Belle plage de la cote atlantique.",badge:null,note:4.8},
-  {id:8,nom:"Escape Game Kids",dept:"75",type:"Escape game",ville:"Paris",prix:"15 euros/joueur",tnd:{tsa:4,tdah:5,dys:3},desc:"Scenarios adaptes des 6 ans.",badge:"communaute",note:4.4},
+  {id:1,nom:"Parc Asterix",dept:"60",type:"Parc d attraction",ville:"Plailly",prix:"45 euros/adulte",tnd:{son:"forte",affluence:"forte",prevision:"moyenne",zonecalme:true},desc:"Le parc d attractions prefere des familles.",badge:"communaute",note:4.2,
+    accessibilite:{
+      signaux:{filePrioritaire:true,poussette:true,pmr:true,espacePause:true,environnementCalme:false,espaceBouger:true,supportsVisuels:true,personnelForme:null},
+      details:{filePrioritaire:"Carte Mobilité Inclusion acceptée. Demande possible en ligne 1 mois avant. Couvre l'accompagnateur.",poussette:"Sols accessibles partout, pas d'escaliers obligatoires.",pmr:"Accès fauteuil roulant, parking PMR disponible, sanitaires adaptés.",espacePause:"Zone calme disponible près de l'entrée principale.",environnementCalme:"Attractions avec sons forts et musique. Prévoir casque anti-bruit.",espaceBouger:"Aires de jeux extérieures accessibles librement.",supportsVisuels:"Pictogrammes téléchargeables sur le site avant la visite.",personnelForme:null,heuresCalmes:"Mardi et mercredi matin hors vacances scolaires",distanceMarche:"3 à 5 km pour le parc complet",conseilCommunaute:"Aller à l'ouverture, bien moins de monde. Le personnel est bienveillant."}
+    }},
+  {id:2,nom:"Zoo de Vincennes",dept:"75",type:"Zoo",ville:"Paris",prix:"22 euros/adulte",tnd:{son:"moyenne",affluence:"moyenne",prevision:"structuree",zonecalme:true},desc:"Le plus grand zoo de France.",badge:null,note:4.5,
+    accessibilite:{
+      signaux:{filePrioritaire:false,poussette:true,pmr:true,espacePause:true,environnementCalme:true,espaceBouger:true,supportsVisuels:false,personnelForme:null},
+      details:{filePrioritaire:"Pas de file prioritaire dédiée pour le moment.",poussette:"Allées larges et goudronnées, accessibles en poussette.",pmr:"Parcours accessible en fauteuil roulant sur la majorité du site.",espacePause:"Plusieurs bancs et zones ombragées de repos.",environnementCalme:"Environnement globalement calme, quelques zones plus animées près des enclos populaires.",espaceBouger:"Grand parc extérieur, possibilité de marcher librement.",supportsVisuels:"Pas de pictogrammes disponibles actuellement.",personnelForme:null,heuresCalmes:"Ouverture en semaine hors vacances scolaires",distanceMarche:"4 km pour le parcours complet",conseilCommunaute:"Prévoir de la patience aux heures de repas des animaux, plus de monde."}
+    }},
+  {id:3,nom:"Musee des Arts et Metiers",dept:"75",type:"Musee",ville:"Paris",prix:"12 euros/adulte",tnd:{son:"calme",affluence:"faible",prevision:"structuree",zonecalme:true},desc:"Un musee fascinant sur les inventions.",badge:null,note:4.3,
+    accessibilite:{
+      signaux:{filePrioritaire:true,poussette:true,pmr:true,espacePause:true,environnementCalme:true,espaceBouger:false,supportsVisuels:true,personnelForme:true},
+      details:{filePrioritaire:"Accès prioritaire sur présentation de la carte CMI.",poussette:"Ascenseurs disponibles à tous les étages.",pmr:"Musée entièrement accessible, ascenseurs et rampes.",espacePause:"Salle de repos calme au rez-de-chaussée.",environnementCalme:"Ambiance feutrée, idéal pour les enfants sensibles au bruit.",espaceBouger:"Espace limité, peu adapté pour se défouler.",supportsVisuels:"Livret-jeu avec pictogrammes disponible à l'accueil.",personnelForme:"Personnel formé à l'accueil des publics en situation de handicap.",heuresCalmes:"Dimanche matin à l'ouverture",distanceMarche:"1 à 2 km pour la visite complète",conseilCommunaute:"Le musée propose des visites adaptées sur réservation, se renseigner à l'avance."}
+    }},
+  {id:4,nom:"Aqualand Cap Agde",dept:"34",type:"Piscine",ville:"Agde",prix:"35 euros/adulte",tnd:{son:"forte",affluence:"forte",prevision:"imprev",zonecalme:true},desc:"Parc aquatique avec toboggans.",badge:"communaute",note:4.0,
+    accessibilite:{
+      signaux:{filePrioritaire:true,poussette:false,pmr:false,espacePause:true,environnementCalme:false,espaceBouger:true,supportsVisuels:false,personnelForme:null},
+      details:{filePrioritaire:"File prioritaire sur justificatif, à demander à l'accueil.",poussette:"Non adapté, nombreuses zones avec marches et sols glissants.",pmr:"Accès limité, peu d'aménagements PMR sur les toboggans.",espacePause:"Transats et zones ombragées disponibles.",environnementCalme:"Environnement très bruyant, cris et musique en continu.",espaceBouger:"Grand espace pour se défouler, bassins variés.",supportsVisuels:"Aucun support visuel disponible.",personnelForme:null,heuresCalmes:"Ouverture en semaine, éviter le week-end",distanceMarche:"2 km pour le parc complet",conseilCommunaute:"Prévoir des bouchons d'oreille, le niveau sonore est élevé toute la journée."}
+    }},
+  {id:5,nom:"Ferme pedagogique La Boissiere",dept:"77",type:"Ferme pedagogique",ville:"La Boissiere",prix:"8 euros/enfant",tnd:{son:"calme",affluence:"faible",prevision:"structuree",zonecalme:true},desc:"Rencontrez animaux de la ferme.",badge:null,note:4.7,
+    accessibilite:{
+      signaux:{filePrioritaire:false,poussette:true,pmr:true,espacePause:true,environnementCalme:true,espaceBouger:true,supportsVisuels:true,personnelForme:true},
+      details:{filePrioritaire:"Pas de file d'attente en général, faible affluence.",poussette:"Chemins stabilisés adaptés aux poussettes.",pmr:"Accès plat et stabilisé, adapté aux fauteuils roulants.",espacePause:"Grande aire de pique-nique calme.",environnementCalme:"Environnement rural très calme, peu de stimulations.",espaceBouger:"Grand espace extérieur pour courir et se défouler.",supportsVisuels:"Panneaux pictogrammes pour chaque animal.",personnelForme:"Équipe habituée à l'accueil de groupes spécialisés.",heuresCalmes:"Toute la semaine, faible affluence hors week-end",distanceMarche:"1 à 3 km selon le parcours choisi",conseilCommunaute:"Endroit idéal pour une première sortie, très rassurant pour les enfants anxieux."}
+    }},
+  {id:6,nom:"Bowling Etoile Sport",dept:"69",type:"Bowling",ville:"Lyon",prix:"6 euros/partie",tnd:{son:"forte",affluence:"moyenne",prevision:"structuree",zonecalme:true},desc:"Pistes modernes avec rampes.",badge:null,note:4.1,
+    accessibilite:{
+      signaux:{filePrioritaire:false,poussette:true,pmr:true,espacePause:true,environnementCalme:false,espaceBouger:true,supportsVisuels:false,personnelForme:null},
+      details:{filePrioritaire:"Pas de file prioritaire, réservation possible en ligne.",poussette:"Accès de plain-pied, adapté aux poussettes.",pmr:"Rampes disponibles pour joueurs en fauteuil roulant.",espacePause:"Espace bar/salon pour faire une pause.",environnementCalme:"Musique et bruits de quilles en continu, environnement animé.",espaceBouger:"Peu d'espace libre, activité assise pour l'essentiel.",supportsVisuels:"Aucun support visuel disponible.",personnelForme:null,heuresCalmes:"Ouverture en journée en semaine",distanceMarche:"Espace réduit, peu de marche",conseilCommunaute:"Privilégier les pistes du bout, moins de passage."}
+    }},
+  {id:7,nom:"Plage de La Baule",dept:"44",type:"Plage",ville:"La Baule",prix:"Gratuit",tnd:{son:"calme",affluence:"moyenne",prevision:"imprev",zonecalme:true},desc:"Belle plage de la cote atlantique.",badge:null,note:4.8,
+    accessibilite:{
+      signaux:{filePrioritaire:false,poussette:false,pmr:true,espacePause:true,environnementCalme:true,espaceBouger:true,supportsVisuels:false,personnelForme:null},
+      details:{filePrioritaire:"Non applicable, accès libre.",poussette:"Sable meuble, poussette tout-terrain recommandée.",pmr:"Tiralo (fauteuil de plage) disponible en saison sur demande.",espacePause:"Grande plage, nombreux espaces calmes en dehors des zones animées.",environnementCalme:"Calme hors saison, plus animé en été.",espaceBouger:"Immense espace pour courir et se défouler librement.",supportsVisuels:"Aucun support visuel disponible.",personnelForme:null,heuresCalmes:"Tôt le matin ou hors saison estivale",distanceMarche:"Illimité, selon l'envie",conseilCommunaute:"Venir tôt le matin en été pour éviter la foule et la chaleur."}
+    }},
+  {id:8,nom:"Escape Game Kids",dept:"75",type:"Escape game",ville:"Paris",prix:"15 euros/joueur",tnd:{son:"forte",affluence:"faible",prevision:"imprev",zonecalme:false},desc:"Scenarios adaptes des 6 ans.",badge:"communaute",note:4.4,
+    accessibilite:{
+      signaux:{filePrioritaire:false,poussette:false,pmr:false,espacePause:false,environnementCalme:false,espaceBouger:false,supportsVisuels:true,personnelForme:true},
+      details:{filePrioritaire:"Créneaux réservables à l'avance, pas de file d'attente.",poussette:"Non applicable, jeu en petit groupe dans espace fermé.",pmr:"Certaines salles avec marches, vérifier au préalable.",espacePause:"Pas d'espace de pause dédié pendant la partie.",environnementCalme:"Effets sonores et lumineux surprises pendant le jeu.",espaceBouger:"Espace confiné, peu de mouvement possible.",supportsVisuels:"Indices visuels et pictogrammes intégrés au jeu.",personnelForme:"Maîtres du jeu formés pour adapter le rythme si besoin.",heuresCalmes:"Créneaux du matin en semaine",distanceMarche:"Espace réduit, salle fermée",conseilCommunaute:"Prévenir l'équipe à l'avance pour adapter les effets sonores et lumineux."}
+    }},
 ];
 
 // ============================================================
@@ -234,6 +330,28 @@ const DEPTS_NAMED=[
 ];
 const DEPTS=DEPTS_NAMED.map(d=>d.k);
 const TYPES_SORTIE=["Parc","Balade","Musee","Aquarium","Zoo","Bowling","Cinema","Escape game","Piscine","Plage","Patinoire","Ferme pedagogique","Restaurant","Parc d attraction"];
+const POINTS_ANTICIPER=[
+  {id:"pa1",emoji:"🧤",label:"Textures potentiellement difficiles",desc:"Peinture, colle, pâte, sable... Prévoir gants ou outils alternatifs",categorie:"sensoriel"},
+  {id:"pa2",emoji:"👃",label:"Odeurs présentes",desc:"Peinture, colle ou matériaux avec odeurs fortes",categorie:"sensoriel"},
+  {id:"pa3",emoji:"🔊",label:"Sons inattendus possibles",desc:"Ciseaux, déchirements, bruits de manipulation",categorie:"sensoriel"},
+  {id:"pa4",emoji:"💡",label:"Lumière vive nécessaire",desc:"Activité qui demande un bon éclairage",categorie:"sensoriel"},
+  {id:"pa5",emoji:"⏱️",label:"Activité longue (+20 min)",desc:"Prévoir des pauses entre les étapes",categorie:"attention"},
+  {id:"pa6",emoji:"📋",label:"Plusieurs étapes à mémoriser",desc:"Préférer les instructions visuelles une à une",categorie:"attention"},
+  {id:"pa7",emoji:"😤",label:"Peut générer de la frustration",desc:"Si le résultat ne correspond pas à l'idée initiale",categorie:"emotion"},
+  {id:"pa8",emoji:"✂️",label:"Motricité fine requise",desc:"Couper, coller, enfiler... Prévoir matériel adapté (ciseaux ergonomiques, gros pinceaux)",categorie:"moteur"},
+  {id:"pa9",emoji:"🪑",label:"Rester assis prolongé",desc:"Prévoir des pauses motrices ou proposer debout",categorie:"moteur"},
+  {id:"pa10",emoji:"🙌",label:"Coordination des deux mains",desc:"Tenir et couper, tenir et coller simultanément",categorie:"moteur"},
+  {id:"pa11",emoji:"🗂️",label:"Espace délimité important",desc:"L'enfant a besoin de son propre espace bien défini",categorie:"structure"},
+  {id:"pa12",emoji:"🏁",label:"Fin de l'activité à définir",desc:"Préciser quand l'activité se termine pour éviter l'anxiété",categorie:"structure"},
+  {id:"pa13",emoji:"🎒",label:"Préparer le matériel à l'avance",desc:"Sortir tout le matériel avant de commencer",categorie:"structure"},
+  {id:"pa14",emoji:"🏆",label:"Valoriser chaque étape",desc:"Ne pas attendre la fin — féliciter à chaque petite réussite",categorie:"emotion"},
+  {id:"pa15",emoji:"👁️",label:"Résultat visible à chaque étape",desc:"L'enfant voit sa progression en temps réel",categorie:"emotion"},
+];
+const POINTS_ANTICIPER_MAP={
+  "Peinture avec une eponge":["pa1","pa2","pa8","pa14","pa15"],
+  "Faire des cupcakes":["pa2","pa5","pa6","pa8","pa13","pa14"],
+  "Puzzle geant":["pa5","pa7","pa11","pa12"],
+};
 const MATERIEL_MAP={"Peinture avec une eponge":["Eponge","Peinture lavable","Feuille A4"],"Faire des cupcakes":["Farine","Oeufs","Beurre","Sucre","Moules"],"Puzzle geant":["Puzzle"],"Lecture a voix haute":["Livre"],"Balade a velo":["Velo","Casque"],"Planter des graines":["Graines","Pot","Terre","Arrosoir"],"Foot dans le jardin":["Ballon"],"Jeu de role":["Deguisements"],"Soiree jeux de societe":["Jeu de societe"],"Jeu de flechettes mousse":["Flechettes mousse","Cible"]};
 const ETAPES_MAP={"Peinture avec une eponge":["Trempe l eponge","Tamponne sur la feuille","Laisse secher 5 min"],"Faire des cupcakes":["Prechauffe le four","Melange les ingredients","Verse dans les moules","Enfourne 20 min","Decore"],"Puzzle geant":["Etale les pieces","Commence par les bords","Assemble par zones"],"Lecture a voix haute":["Choisis un livre","Installez-vous","Lis avec le ton","Discutez"],"Balade a velo":["Verifiez les velos","Choisissez l itineraire","Partez","Pause gouter"],"Planter des graines":["Remplis le pot","Fais un trou","Depose les graines","Arrose","Place au soleil"],"Foot dans le jardin":["Delimitez le terrain","Formez les equipes","C est parti"],"Jeu de role":["Choisissez vos personnages","Inventez une situation","Jouez"],"Soiree jeux de societe":["Choisissez un jeu","Lisez les regles","Jouez"],"Jeu de flechettes mousse":["Accrochez la cible","Definissez les regles","Lancez"]};
 const AVIS_DEMO=[
@@ -246,17 +364,27 @@ function formatDateFR(d){if(!d)return"";const p=d.split("-");if(p.length<3)retur
 function detectPeriode(date){if(!date)return"semaine";const diff=Math.round((new Date(date)-new Date())/86400000);if(diff<=2)return"week-end";return"semaine";}
 
 function Stars({count,size}){const s=size||14;return <span>{[1,2,3,4,5].map(i=><span key={i} style={{color:i<=count?"#F5A623":"#E5E7EB",fontSize:s}}>★</span>)}</span>;}
-function TND({tnd}){if(!tnd)return null;return(<div style={{display:"flex",gap:6,flexWrap:"wrap",marginTop:8}}>{[{k:"tsa",l:"TSA",c:"#8B5CF6"},{k:"tdah",l:"TDAH",c:"#EC4899"},{k:"dys",l:"DYS",c:"#06B6D4"}].map(({k,l,c})=>tnd[k]!=null?(<span key={k} style={{background:c+"18",color:c,fontSize:11,fontWeight:500,padding:"2px 8px",borderRadius:20,border:"1px solid "+c+"40"}}>{l} {tnd[k]}/5</span>):null)}</div>);}
+
 function Chip({val,cur,set,label}){const on=cur===val;return(<button onClick={()=>set(on?null:val)} style={{padding:"7px 14px",borderRadius:20,border:"1.5px solid "+(on?V:"rgba(108,92,231,0.15)"),background:on?VL:WH,color:on?V:TX,fontSize:13,cursor:"pointer"}}>{label}</button>);}
 function Field({label,required,children,style}){return(<div style={style}><p style={{margin:"0 0 5px",fontSize:13,fontWeight:500,color:TX}}>{label}{required&&<span style={{color:RD,marginLeft:2}}>*</span>}</p>{children}</div>);}
 
 function TNDBadgesEvt({tnd}){
-  if(!tnd)return null;
+  if(!tnd||(!tnd.son&&!tnd.affluence&&!tnd.prevision&&tnd.zonecalme==null)){
+    return(
+      <div style={{display:"flex",alignItems:"center",gap:10,background:"#F9FAFB",borderRadius:12,padding:"12px 14px",marginTop:8}}>
+        <span style={{fontSize:18,flexShrink:0}}>ℹ️</span>
+        <div>
+          <p style={{margin:"0 0 2px",fontSize:12,fontWeight:600,color:TX}}>Informations TND non disponibles</p>
+          <p style={{margin:0,fontSize:11,color:TM}}>Les infos de compatibilité TND n'ont pas encore été renseignées pour cet événement.</p>
+        </div>
+      </div>
+    );
+  }
   const t=tnd||{};
   const items=[
     {l:"Son",v:t.son==="calme"?"Calme":t.son==="moyenne"?"Moyenne":"Forte",c:t.son==="calme"?"#065F46":"#92400E",bg:t.son==="calme"?"#D1FAE5":"#FEF3C7",icon:"🔈"},
     {l:"Affluence",v:t.affluence==="faible"?"Faible":t.affluence==="moyenne"?"Moyenne":"Forte",c:"#1E3A5F",bg:"#DBEAFE",icon:"👥"},
-    {l:"Previsibilite",v:t.prevision==="structuree"?"Structuree":"Imprevisible",c:t.prevision==="structuree"?"#065F46":"#991B1B",bg:t.prevision==="structuree"?"#D1FAE5":"#FEE2E2",icon:"🔮"},
+    {l:"Prévisibilité",v:t.prevision==="structuree"?"Structurée":"Imprévisible",c:t.prevision==="structuree"?"#065F46":"#991B1B",bg:t.prevision==="structuree"?"#D1FAE5":"#FEE2E2",icon:"🔮"},
     {l:"Zone calme",v:t.zonecalme?"Oui":"Non",c:"#374151",bg:"#F0FDF4",icon:"🌿"},
   ];
   return(<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6,marginTop:8}}>{items.map(({l,v,c,bg,icon})=>(<div key={l} style={{background:bg,borderRadius:10,padding:"6px 10px",display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:14}}>{icon}</span><div><div style={{fontSize:10,color:TM}}>{l}</div><div style={{fontSize:12,fontWeight:600,color:c}}>{v}</div></div></div>))}</div>);
@@ -376,42 +504,45 @@ function useAvis(itemType,itemId){
     try{ await window.storage.set(storageKey,JSON.stringify(maj),true); }catch(e){ /* l'avis reste visible localement meme si la sauvegarde echoue */ }
   };
   const tousLesAvis=[...avisAjoutes,...AVIS_DEMO];
-  const noteGlobale=tousLesAvis.length?tousLesAvis.reduce((s,a)=>s+(Number(a.stars)||0),0)/tousLesAvis.length:0;
+  const avisNotes=tousLesAvis.filter(a=>!a.pointsOnly);
+  const noteGlobale=avisNotes.length?avisNotes.reduce((s,a)=>s+(Number(a.stars)||0),0)/avisNotes.length:0;
   const noteParProfil=(profil)=>{
-    const subset=tousLesAvis.filter(a=>(a.profils||[]).includes(profil));
+    const subset=avisNotes.filter(a=>(a.profils||[]).includes(profil));
     return subset.length?{moyenne:subset.reduce((s,a)=>s+(Number(a.stars)||0),0)/subset.length,nb:subset.length}:null;
   };
   return{tousLesAvis,chargement,ajouterAvis,noteGlobale,noteParProfil};
 }
 
-function AvisForm({isLoggedIn=true,onRequireAuth,tousLesAvis=[],chargement=false,onAjouterAvis}){
-  const PROFILS=["General","TSA","TDAH","DYS","Bebe","PMR"];
-  const [selected,setSelected]=useState(["General"]);
+function AvisForm({isLoggedIn=true,onRequireAuth,tousLesAvis=[],chargement=false,onAjouterAvis,showPointsAnticiper=false,showAccessibilite=false}){
   const [stars,setStars]=useState(0);
   const [hover,setHover]=useState(0);
   const [text,setText]=useState("");
   const [justPublished,setJustPublished]=useState(false);
-  const toggle=(p)=>setSelected(prev=>prev.includes(p)?(prev.length===1?prev:prev.filter(x=>x!==p)):[...prev,p]);
+  const [ptsAvis,setPtsAvis]=useState([]);
+  const [showPts,setShowPts]=useState(false);
+  const [accessAvis,setAccessAvis]=useState([]);
+  const [showAccess,setShowAccess]=useState(false);
   const publier=()=>{
-    if(stars===0)return;
+    if(stars===0&&ptsAvis.length===0&&accessAvis.length===0)return;
     if(!isLoggedIn){ onRequireAuth&&onRequireAuth(); return; }
-    const nouvelAvis={profils:selected,stars,pseudo:"Toi",temps:"A l'instant",texte:text.trim()};
+    const nouvelAvis={stars,pseudo:"Toi",temps:"A l'instant",texte:text.trim(),pointsAnticiper:ptsAvis.length>0?ptsAvis:undefined,accessibiliteSignalee:accessAvis.length>0?accessAvis:undefined,pointsOnly:stars===0};
     onAjouterAvis&&onAjouterAvis(nouvelAvis);
-    setStars(0);setText("");setSelected(["General"]);
+    setStars(0);setText("");setPtsAvis([]);setShowPts(false);setAccessAvis([]);setShowAccess(false);
     setJustPublished(true);setTimeout(()=>setJustPublished(false),3000);
   };
   return(
     <div style={{background:WH,borderRadius:16,padding:16,marginBottom:12}}>
-      <p style={{margin:"0 0 14px",fontSize:15,fontWeight:600,color:TX}}>💬 Avis ({chargement?"...":tousLesAvis.length})</p>
-      {!chargement&&tousLesAvis.length>0&&(
+      {(() => {
+        const avisAffiches=tousLesAvis.filter(a=>!a.pointsOnly);
+        return(
+        <>
+      <p style={{margin:"0 0 14px",fontSize:15,fontWeight:600,color:TX}}>💬 Avis ({chargement?"...":avisAffiches.length})</p>
+      {!chargement&&avisAffiches.length>0&&(
         <div style={{display:"flex",flexDirection:"column",gap:12,marginBottom:16}}>
-          {tousLesAvis.map((a,i)=>(
-            <div key={i} style={{borderBottom:i<tousLesAvis.length-1?"0.5px solid #F3F4F6":"none",paddingBottom:i<tousLesAvis.length-1?12:0}}>
+          {avisAffiches.map((a,i)=>(
+            <div key={i} style={{borderBottom:i<avisAffiches.length-1?"0.5px solid #F3F4F6":"none",paddingBottom:i<avisAffiches.length-1?12:0}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:4}}>
-                <div>
-                  <span style={{fontSize:13,fontWeight:600,color:TX}}>{a.pseudo}</span>
-                  <div style={{display:"flex",gap:4,marginTop:2,flexWrap:"wrap"}}>{(a.profils||[]).map(p=><span key={p} style={{fontSize:10,background:VL,color:V,padding:"1px 7px",borderRadius:10}}>{p}</span>)}</div>
-                </div>
+                <span style={{fontSize:13,fontWeight:600,color:TX}}>{a.pseudo}</span>
                 <div style={{textAlign:"right",flexShrink:0}}><Stars count={a.stars} size={12}/><div style={{fontSize:11,color:"#9CA3AF"}}>{a.temps}</div></div>
               </div>
               {a.texte&&<p style={{fontSize:13,color:"#374151",lineHeight:1.5,margin:0}}>{a.texte}</p>}
@@ -419,20 +550,78 @@ function AvisForm({isLoggedIn=true,onRequireAuth,tousLesAvis=[],chargement=false
           ))}
         </div>
       )}
-      {justPublished&&<p style={{margin:"0 0 12px",fontSize:12,color:"#065F46",background:"#D1FAE5",borderRadius:10,padding:"8px 12px",fontWeight:600,textAlign:"center"}}>✅ Ton avis a été publié !</p>}
+        </>
+        );
+      })()}
+      {justPublished&&<p style={{margin:"0 0 12px",fontSize:12,color:"#065F46",background:"#D1FAE5",borderRadius:10,padding:"8px 12px",fontWeight:600,textAlign:"center"}}>✅ Merci pour ta contribution !</p>}
       <p style={{margin:"0 0 14px",fontSize:14,fontWeight:600,color:TX}}>Donner mon avis</p>
       <div style={{display:"flex",justifyContent:"center",gap:8,marginBottom:16}}>{[1,2,3,4,5].map(i=>(<span key={i} onMouseEnter={()=>setHover(i)} onMouseLeave={()=>setHover(0)} onClick={()=>setStars(i)} style={{fontSize:28,cursor:"pointer",color:(hover||stars)>=i?"#F5A623":"#E5E7EB"}}>★</span>))}</div>
-      <div style={{display:"flex",flexWrap:"wrap",gap:8,marginBottom:14,justifyContent:"center"}}>{PROFILS.map(p=>{const on=selected.includes(p);return(<button key={p} onClick={()=>toggle(p)} style={{padding:"6px 14px",borderRadius:20,border:"1.5px solid "+(on?V:"#E5E7EB"),background:on?VL:WH,color:on?V:"#6B7280",fontSize:13,cursor:"pointer"}}>{p}</button>);})}</div>
       <textarea value={text} onChange={e=>setText(e.target.value.slice(0,300))} placeholder="Partage ton experience" rows={4} style={{width:"100%",borderRadius:12,border:"1px solid #E5E7EB",padding:"12px 14px",fontSize:13,fontFamily:"inherit",resize:"none",boxSizing:"border-box",color:TX,outline:"none"}}/>
-      <div style={{textAlign:"right",fontSize:12,color:TM,marginBottom:14}}>{text.length}/300</div>
+      <div style={{textAlign:"right",fontSize:12,color:TM,marginBottom:showPointsAnticiper?8:14}}>{text.length}/300</div>
+
+      {showPointsAnticiper&&(
+        <div style={{marginBottom:14}}>
+          <button onClick={()=>setShowPts(p=>!p)} style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"space-between",background:"#FFF7ED",border:"1px solid #FDE7C8",borderRadius:12,padding:"10px 14px",cursor:"pointer"}}>
+            <span style={{fontSize:12,fontWeight:600,color:"#9A3412"}}>⚠️ Points à anticiper {ptsAvis.length>0?`(${ptsAvis.length} sélectionné${ptsAvis.length>1?"s":""})`:"(optionnel)"}</span>
+            <span style={{fontSize:12,color:"#9A3412"}}>{showPts?"▲":"▼"}</span>
+          </button>
+          {showPts&&(
+            <div style={{marginTop:8,display:"flex",flexDirection:"column",gap:6,maxHeight:260,overflowY:"auto",padding:"2px"}}>
+              <p style={{margin:"0 0 4px",fontSize:11,color:TM}}>Coche ce qui t'a semblé important à anticiper pour cette activité.</p>
+              {POINTS_ANTICIPER.map(pt=>{
+                const actif=ptsAvis.includes(pt.id);
+                return(
+                  <button key={pt.id} onClick={()=>setPtsAvis(p=>actif?p.filter(x=>x!==pt.id):[...p,pt.id])} style={{padding:"8px 10px",borderRadius:8,border:`1.5px solid ${actif?"#F59E0B":"#E5E7EB"}`,background:actif?"#FFF7ED":WH,cursor:"pointer",textAlign:"left",display:"flex",alignItems:"center",gap:8}}>
+                    <span style={{fontSize:14}}>{pt.emoji}</span>
+                    <span style={{fontSize:12,color:actif?"#9A3412":"#374151",flex:1}}>{pt.label}</span>
+                    <span style={{fontSize:12,color:actif?"#F59E0B":"#D1D5DB"}}>{actif?"☑":"☐"}</span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
+      {showAccessibilite&&(
+        <div style={{marginBottom:14}}>
+          <button onClick={()=>setShowAccess(p=>!p)} style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"space-between",background:"#EAF3DE",border:"1px solid #C8E0AE",borderRadius:12,padding:"10px 14px",cursor:"pointer"}}>
+            <span style={{fontSize:12,fontWeight:600,color:"#3B6D11"}}>♿ Accessibilité constatée {accessAvis.length>0?`(${accessAvis.length} sélectionné${accessAvis.length>1?"s":""})`:"(optionnel)"}</span>
+            <span style={{fontSize:12,color:"#3B6D11"}}>{showAccess?"▲":"▼"}</span>
+          </button>
+          {showAccess&&(
+            <div style={{marginTop:8,display:"flex",flexDirection:"column",gap:14,maxHeight:320,overflowY:"auto",padding:"2px"}}>
+              <p style={{margin:"0 0 -6px",fontSize:11,color:TM}}>Coche ce que tu as constaté sur place, pour aider les prochaines familles.</p>
+              {ACCESS_SIGNAUX_GROUPES.map(({titre,items})=>(
+                <div key={titre}>
+                  <p style={{margin:"0 0 6px",fontSize:11,fontWeight:700,color:"#3B6D11",textTransform:"uppercase",letterSpacing:"0.04em"}}>{titre}</p>
+                  <div style={{display:"flex",flexDirection:"column",gap:6}}>
+                    {items.map(def=>{
+                      const actif=accessAvis.includes(def.k);
+                      return(
+                        <button key={def.k} onClick={()=>setAccessAvis(p=>actif?p.filter(x=>x!==def.k):[...p,def.k])} style={{padding:"8px 10px",borderRadius:8,border:`1.5px solid ${actif?"#3B6D11":"#E5E7EB"}`,background:actif?"#EAF3DE":WH,cursor:"pointer",textAlign:"left",display:"flex",alignItems:"center",gap:8}}>
+                          <span style={{fontSize:14}}>{def.emoji}</span>
+                          <span style={{fontSize:12,color:actif?"#3B6D11":"#374151",flex:1}}>{def.label}</span>
+                          <span style={{fontSize:12,color:actif?"#3B6D11":"#D1D5DB"}}>{actif?"☑":"☐"}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
       {!isLoggedIn&&<p style={{margin:"0 0 10px",fontSize:11,color:"#92400E",background:"#FFFBEB",border:"1px solid #FDE68A",borderRadius:10,padding:"8px 12px"}}>🔒 Connecte-toi pour publier un avis (note + commentaire).</p>}
       <p style={{margin:"0 0 8px",fontSize:11,color:TM,textAlign:"center"}}>🌍 Votre avis sera visible par tous les parents</p>
-      <button onClick={publier} style={{width:"100%",padding:"14px 0",borderRadius:28,background:stars>0?V:"#C4B8F8",border:"none",color:WH,fontWeight:600,fontSize:15,cursor:stars>0?"pointer":"default"}}>Publier mon avis</button>
+      <button onClick={publier} style={{width:"100%",padding:"14px 0",borderRadius:28,background:(stars>0||ptsAvis.length>0||accessAvis.length>0)?V:"#C4B8F8",border:"none",color:WH,fontWeight:600,fontSize:15,cursor:(stars>0||ptsAvis.length>0||accessAvis.length>0)?"pointer":"default"}}>{stars===0&&(ptsAvis.length>0||accessAvis.length>0)?"Envoyer ma contribution":"Publier mon avis"}</button>
     </div>
   );
 }
 
-function ListePropositions({items,type,onChoisir,onClose,isPremium=false,enfantActif=null}){
+function ListePropositions({items,type,onChoisir,onClose,isPremium=false,enfantActif=null,onMasquer}){
   const [excluded,setExcluded]=useState(new Set());
   const visibles=items.filter(item=>!excluded.has(item.id||item.nom));
 
@@ -455,12 +644,32 @@ function ListePropositions({items,type,onChoisir,onClose,isPremium=false,enfantA
     <div onClick={onClose} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.45)",zIndex:500,display:"flex",alignItems:"center",justifyContent:"center",padding:"24px 20px"}}>
       <div onClick={e=>e.stopPropagation()} style={{background:WH,borderRadius:24,padding:"22px 18px 24px",width:"100%",maxWidth:390,maxHeight:"85vh",overflowY:"auto",boxSizing:"border-box",boxShadow:"0 12px 48px rgba(0,0,0,0.22)"}}>
         <p style={{margin:"0 0 4px",fontSize:18,fontWeight:800,color:TX,textAlign:"center"}}>{type==="sortie"?"3 sorties pour toi":"3 activités pour toi"}</p>
-        <p style={{margin:"0 0 18px",fontSize:12,color:TM,textAlign:"center"}}>
-          {isPremium&&enfantActif
-            ?`⭐ Triées par compatibilité avec le profil de ${enfantActif.prenom}`
-            :"Choisis celle qui te correspond !"}
-        </p>
-        {isPremium&&enfantActif&&(
+        {visibles.some(i=>i._isMatchFallback)?(
+          <div style={{textAlign:"center",marginBottom:16}}>
+            <p style={{fontSize:48,margin:"0 0 8px"}}>😔</p>
+            <p style={{fontSize:15,fontWeight:700,color:TX,margin:"0 0 6px"}}>Aucune activité ne correspond parfaitement au profil de {visibles[0]?._matchEnfant?.prenom}</p>
+            <p style={{fontSize:13,color:TM,margin:"0 0 12px"}}>Voici les 3 activités les plus proches de ses besoins :</p>
+          </div>
+        ):visibles.some(i=>i._isFallback)?(
+          <div style={{textAlign:"center",marginBottom:16}}>
+            <p style={{fontSize:48,margin:"0 0 8px"}}>😔</p>
+            <p style={{fontSize:15,fontWeight:700,color:TX,margin:"0 0 6px"}}>Désolé, aucune {type==="sortie"?"sortie":"activité"} ne correspond à votre demande</p>
+            <p style={{fontSize:13,color:TM,margin:"0 0 12px"}}>Mais nous vous proposons plutôt {type==="sortie"?"ces sorties":"ces activités"} dans ce secteur :</p>
+            <div style={{height:1,background:"rgba(108,92,231,0.12)",margin:"0 0 14px"}}/>
+            <p style={{fontSize:13,fontWeight:700,color:V,margin:"0 0 12px"}}>✨ Vous aimerez peut-être...</p>
+          </div>
+        ):visibles.some(i=>i._matchEnfant)?(
+          <div style={{textAlign:"center",marginBottom:14}}>
+            <span style={{display:"inline-block",background:"#EAF3DE",color:"#3B6D11",fontSize:12,fontWeight:700,padding:"5px 14px",borderRadius:20}}>✓ Adapté à {visibles[0]._matchEnfant.prenom}</span>
+          </div>
+        ):(
+          <p style={{margin:"0 0 18px",fontSize:12,color:TM,textAlign:"center"}}>
+            {isPremium&&enfantActif
+              ?`⭐ Triées par compatibilité avec le profil de ${enfantActif.prenom}`
+              :"Choisis celle qui te correspond !"}
+          </p>
+        )}
+        {isPremium&&enfantActif&&!visibles.some(i=>i._matchEnfant||i._isMatchFallback)&&(
           <div style={{background:"#ECFDF5",borderRadius:10,padding:"8px 12px",marginBottom:14,fontSize:11,color:"#065F46",textAlign:"center"}}>
             💡 En Premium, les activités sont filtrées et scorées selon le profil sensoriel de <strong>{enfantActif.prenom}</strong>
           </div>
@@ -473,6 +682,40 @@ function ListePropositions({items,type,onChoisir,onClose,isPremium=false,enfantA
             </div>
           ):visibles.map((item,i)=>{
             const badge=isPremium&&enfantActif?getCompatBadge(item._score):null;
+            const isMatchItem=item._matchEnfant!=null;
+            const matchScore=item._matchScore;
+            const matchBadge=isMatchItem?getBadgeScoreMatch(matchScore):null;
+            const matchDetails=isMatchItem?getMatchDetails(item,item._matchEnfant):[];
+            if(isMatchItem){
+              const barColor=matchScore>=70?"#10B981":matchScore>=40?"#F59E0B":"#EF4444";
+              return(
+                <div key={item.id||i} style={{background:BG,borderRadius:16,padding:14,border:matchScore>=70?"2px solid #10B981":BD}}>
+                  <div style={{display:"flex",alignItems:"flex-start",gap:12,marginBottom:8}}>
+                    <span style={{fontSize:28,flexShrink:0}}>{emojiFor(item)}</span>
+                    <div style={{flex:1,minWidth:0}}>
+                      <p style={{margin:"0 0 2px",fontSize:14,fontWeight:700,color:TX}}>{item.nom}</p>
+                      <p style={{margin:0,fontSize:12,color:TM}}>{item.age||""}{item.duree?" · "+item.duree:""}</p>
+                    </div>
+                    {matchBadge&&<span style={{fontSize:11,fontWeight:700,color:matchBadge.color,background:matchBadge.bg,padding:"3px 8px",borderRadius:10,flexShrink:0}}>{matchScore}% ✓</span>}
+                  </div>
+                  <div style={{height:5,background:"#E5E7EB",borderRadius:6,overflow:"hidden",marginBottom:10}}>
+                    <div style={{height:"100%",width:matchScore+"%",background:barColor,borderRadius:6}}/>
+                  </div>
+                  {matchDetails.length>0&&(
+                    <div style={{display:"flex",flexWrap:"wrap",gap:5,marginBottom:10}}>
+                      {matchDetails.map((d,j)=>(
+                        <span key={j} style={{fontSize:10,fontWeight:600,padding:"3px 8px",borderRadius:10,background:d.status==="ok"?"#EAF3DE":"#FCEBEB",color:d.status==="ok"?"#3B6D11":"#A32D2D"}}>{d.status==="ok"?"✓":"✗"} {d.emoji} {d.label}</span>
+                      ))}
+                    </div>
+                  )}
+                  <div style={{display:"flex",gap:8}}>
+                    <button onClick={()=>onChoisir(item)} style={{flex:1,padding:"10px 0",borderRadius:20,background:V,border:"none",color:WH,fontWeight:700,fontSize:13,cursor:"pointer"}}>Choisir cette activité</button>
+                    {visibles.length>1&&<button onClick={()=>setExcluded(prev=>new Set([...prev,item.id||item.nom]))} style={{padding:"10px 12px",borderRadius:20,background:WH,border:BD,color:TM,fontSize:12,cursor:"pointer"}} title="Pas celle-là">✕</button>}
+                  </div>
+                  {onMasquer&&<button onClick={()=>{onMasquer(item);setExcluded(prev=>new Set([...prev,item.id||item.nom]));}} style={{width:"100%",marginTop:6,background:"none",border:"none",color:TM,fontSize:11,cursor:"pointer",padding:0}}>🚫 Ne plus proposer</button>}
+                </div>
+              );
+            }
             return(
               <div key={item.id||i} style={{background:BG,borderRadius:16,padding:14,border:badge?.col==="#10B981"?"2px solid #10B981":BD}}>
                 <div style={{display:"flex",alignItems:"flex-start",gap:12,marginBottom:8}}>
@@ -487,43 +730,100 @@ function ListePropositions({items,type,onChoisir,onClose,isPremium=false,enfantA
                   <button onClick={()=>onChoisir(item)} style={{flex:1,padding:"10px 0",borderRadius:20,background:V,border:"none",color:WH,fontWeight:700,fontSize:13,cursor:"pointer"}}>{type==="sortie"?"Choisir cette sortie":"Choisir cette activité"}</button>
                   {isPremium&&visibles.length>1&&<button onClick={()=>setExcluded(prev=>new Set([...prev,item.id||item.nom]))} style={{padding:"10px 12px",borderRadius:20,background:WH,border:BD,color:TM,fontSize:12,cursor:"pointer"}} title="Pas celle-là">✕</button>}
                 </div>
+                {onMasquer&&<button onClick={()=>{onMasquer(item);setExcluded(prev=>new Set([...prev,item.id||item.nom]));}} style={{width:"100%",marginTop:6,background:"none",border:"none",color:TM,fontSize:11,cursor:"pointer",padding:0}}>🚫 Ne plus proposer</button>}
               </div>
             );
           })}
         </div>
-        <button onClick={onClose} style={{width:"100%",marginTop:16,padding:"10px 0",borderRadius:28,background:"none",border:"none",color:TM,fontSize:13,cursor:"pointer"}}>Annuler</button>
+        {visibles.some(i=>i._isFallback)&&(
+          <button onClick={onClose} style={{width:"100%",marginTop:4,marginBottom:8,padding:"11px 0",borderRadius:28,background:WH,border:`2px solid ${V}`,color:V,fontWeight:700,fontSize:13,cursor:"pointer"}}>🔄 Modifier mes filtres</button>
+        )}
+        <button onClick={onClose} style={{width:"100%",marginTop:visibles.some(i=>i._isFallback)?0:16,padding:"10px 0",borderRadius:28,background:"none",border:"none",color:TM,fontSize:13,cursor:"pointer"}}>Annuler</button>
       </div>
     </div>
   );
 }
 
-function BottomSheet({item,type,onClose,onFav,isFav,onDone}){
+function BottomSheet({item,type,onClose,onFav,isFav,onDone,onMasquer}){
   const [showNote,setShowNote]=useState(false);
   const [note,setNote]=useState("");
-  const NOTE_PRESETS=["👍 Super !","❤️ A adoré","🔄 À retenter","😴 Trop long","😬 Trop difficile","💡 Bonne idée"];
+  const [ptsSel,setPtsSel]=useState([]);
+  const [accessSel,setAccessSel]=useState([]);
 
   if(!item)return null;
-  if(showNote) return(
+  if(showNote){
+    const isActivite=type==="activite";
+    return(
     <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.5)",zIndex:100,display:"flex",alignItems:"center",justifyContent:"center",padding:"24px 20px"}} onClick={()=>setShowNote(false)}>
-      <div onClick={e=>e.stopPropagation()} style={{background:WH,borderRadius:24,padding:24,width:"100%",maxWidth:390,boxSizing:"border-box",boxShadow:"0 12px 48px rgba(0,0,0,0.22)"}}>
+      <div onClick={e=>e.stopPropagation()} style={{background:WH,borderRadius:24,padding:24,width:"100%",maxWidth:390,maxHeight:"85vh",overflowY:"auto",boxSizing:"border-box",boxShadow:"0 12px 48px rgba(0,0,0,0.22)"}}>
         <div style={{textAlign:"center",marginBottom:16}}>
           <span style={{fontSize:36}}>✅</span>
           <p style={{margin:"8px 0 4px",fontSize:16,fontWeight:800,color:TX}}>{item.nom||item.titre||""}</p>
-          <p style={{margin:0,fontSize:12,color:TM}}>Ajoutez une note (optionnel)</p>
+          <p style={{margin:0,fontSize:12,color:TM}}>{isActivite?"Aide les prochains parents à choisir selon les besoins de leur enfant":"Aide les prochaines familles à préparer leur visite"}</p>
         </div>
-        <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:12}}>
-          {NOTE_PRESETS.map(p=>(
-            <button key={p} onClick={()=>setNote(n=>n===p?"":p)} style={{padding:"6px 12px",borderRadius:20,border:`2px solid ${note===p?"#10B981":"rgba(0,0,0,0.1)"}`,background:note===p?"#ECFDF5":WH,color:note===p?"#065F46":TM,fontSize:12,fontWeight:600,cursor:"pointer"}}>{p}</button>
-          ))}
-        </div>
-        <textarea value={note} onChange={e=>setNote(e.target.value)} placeholder="Ou écrivez votre propre note..." rows={2} style={{width:"100%",padding:"10px 14px",borderRadius:12,border:BD,fontSize:13,resize:"none",boxSizing:"border-box",outline:"none",fontFamily:"inherit",marginBottom:12}}/>
+        {isActivite?(
+          <>
+            <p style={{margin:"0 0 10px",fontSize:13,fontWeight:700,color:"#9A3412"}}>⚠️ Points à anticiper (optionnel)</p>
+            <div style={{display:"flex",flexDirection:"column",gap:6,marginBottom:14}}>
+              {POINTS_ANTICIPER.map(pt=>{
+                const actif=ptsSel.includes(pt.id);
+                return(
+                  <button key={pt.id} onClick={()=>setPtsSel(p=>actif?p.filter(x=>x!==pt.id):[...p,pt.id])} style={{padding:"9px 11px",borderRadius:10,border:`1.5px solid ${actif?"#F59E0B":"#E5E7EB"}`,background:actif?"#FFF7ED":WH,cursor:"pointer",textAlign:"left",display:"flex",alignItems:"center",gap:8}}>
+                    <span style={{fontSize:15,flexShrink:0}}>{pt.emoji}</span>
+                    <span style={{fontSize:12,color:actif?"#9A3412":"#374151",flex:1}}>{pt.label}</span>
+                    <span style={{fontSize:13,flexShrink:0,color:actif?"#F59E0B":"#D1D5DB"}}>{actif?"☑":"☐"}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </>
+        ):(
+          <>
+            <p style={{margin:"0 0 10px",fontSize:13,fontWeight:700,color:"#3B6D11"}}>♿ Accessibilité constatée (optionnel)</p>
+            <div style={{display:"flex",flexDirection:"column",gap:14,marginBottom:14,maxHeight:320,overflowY:"auto"}}>
+              {ACCESS_SIGNAUX_GROUPES.map(({titre,items})=>(
+                <div key={titre}>
+                  <p style={{margin:"0 0 6px",fontSize:11,fontWeight:700,color:"#3B6D11",textTransform:"uppercase",letterSpacing:"0.04em"}}>{titre}</p>
+                  <div style={{display:"flex",flexDirection:"column",gap:6}}>
+                    {items.map(def=>{
+                      const actif=accessSel.includes(def.k);
+                      return(
+                        <button key={def.k} onClick={()=>setAccessSel(p=>actif?p.filter(x=>x!==def.k):[...p,def.k])} style={{padding:"9px 11px",borderRadius:10,border:`1.5px solid ${actif?"#3B6D11":"#E5E7EB"}`,background:actif?"#EAF3DE":WH,cursor:"pointer",textAlign:"left",display:"flex",alignItems:"center",gap:8}}>
+                          <span style={{fontSize:15,flexShrink:0}}>{def.emoji}</span>
+                          <span style={{fontSize:12,color:actif?"#3B6D11":"#374151",flex:1}}>{def.label}</span>
+                          <span style={{fontSize:13,flexShrink:0,color:actif?"#3B6D11":"#D1D5DB"}}>{actif?"☑":"☐"}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+        <textarea value={note} onChange={e=>setNote(e.target.value)} placeholder="Un conseil ou une remarque en plus ? (optionnel)" rows={2} style={{width:"100%",padding:"10px 14px",borderRadius:12,border:BD,fontSize:13,resize:"none",boxSizing:"border-box",outline:"none",fontFamily:"inherit",marginBottom:12}}/>
         <div style={{display:"flex",gap:10}}>
           <button onClick={()=>setShowNote(false)} style={{flex:1,padding:12,borderRadius:28,background:BG,border:"none",color:TM,fontWeight:600,cursor:"pointer"}}>Annuler</button>
-          <button onClick={()=>{onDone({...item,_note:note,_date:new Date().toISOString()});onClose();}} style={{flex:2,padding:12,borderRadius:28,background:"#10B981",border:"none",color:WH,fontWeight:700,fontSize:14,cursor:"pointer"}}>✓ Enregistrer !</button>
+          <button onClick={async()=>{
+            const selection=isActivite?ptsSel:accessSel;
+            if(selection.length>0&&item.id){
+              try{
+                const key=`avis_${isActivite?"activite":"sortie"}_${item.id}`;
+                const res=await window.storage.get(key,true).catch(()=>null);
+                const existants=res&&res.value?JSON.parse(res.value):[];
+                const contrib=isActivite
+                  ?{stars:0,pseudo:"Toi",temps:"A l'instant",texte:"",pointsAnticiper:selection,pointsOnly:true}
+                  :{stars:0,pseudo:"Toi",temps:"A l'instant",texte:"",accessibiliteSignalee:selection,pointsOnly:true};
+                await window.storage.set(key,JSON.stringify([contrib,...existants]),true);
+              }catch(e){ /* la contribution reste enregistrée localement dans l'historique même si le partage échoue */ }
+            }
+            onDone({...item,_note:note,_pointsAnticiper:isActivite?ptsSel:undefined,_accessibiliteSignalee:!isActivite?accessSel:undefined,_date:new Date().toISOString()});onClose();
+          }} style={{flex:2,padding:12,borderRadius:28,background:"#10B981",border:"none",color:WH,fontWeight:700,fontSize:14,cursor:"pointer"}}>✓ Enregistrer !</button>
         </div>
       </div>
     </div>
-  );
+    );
+  }
 
   return(
     <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.4)",zIndex:100,display:"flex",alignItems:"center",justifyContent:"center",padding:"24px 20px"}} onClick={onClose}>
@@ -533,12 +833,12 @@ function BottomSheet({item,type,onClose,onFav,isFav,onDone}){
         {type==="activite"&&<p style={{margin:0,fontSize:13,color:TM}}>{item.age||""}</p>}
         {type==="sortie"&&<p style={{margin:0,fontSize:13,color:TM}}>{item.ville||""}{item.prix?" - "+item.prix:""}</p>}
         <p style={{fontSize:14,color:TX,lineHeight:1.6,margin:"12px 0"}}>{item.desc||"Aucune description disponible."}</p>
-        <TND tnd={item.tnd}/>
         <div style={{display:"flex",gap:10,marginTop:16}}>
           <button onClick={onClose} style={{flex:1,padding:"11px 0",borderRadius:12,background:BG,border:"none",color:TX,fontWeight:500,fontSize:14,cursor:"pointer"}}>Relancer</button>
           <button onClick={()=>onFav(item)} style={{flex:1,padding:"11px 0",borderRadius:12,background:isFav?V:VL,border:"none",color:isFav?WH:V,fontWeight:500,fontSize:14,cursor:"pointer"}}>{isFav?"Sauvegardé":"Favoris"}</button>
-          {onDone&&type==="activite"&&<button onClick={()=>setShowNote(true)} style={{flex:1,padding:"11px 0",borderRadius:12,background:"#10B981",border:"none",color:WH,fontWeight:700,fontSize:14,cursor:"pointer"}}>✓ Fait !</button>}
+          {onDone&&(type==="activite"||type==="sortie")&&<button onClick={()=>setShowNote(true)} style={{flex:1,padding:"11px 0",borderRadius:12,background:"#10B981",border:"none",color:WH,fontWeight:700,fontSize:14,cursor:"pointer"}}>✓ Fait !</button>}
         </div>
+        {onMasquer&&<button onClick={()=>{onMasquer(item);onClose();}} style={{width:"100%",marginTop:10,padding:"9px 0",borderRadius:12,background:"none",border:"none",color:TM,fontSize:12,cursor:"pointer"}}>🚫 Ne plus proposer {type==="sortie"?"cette sortie":"cette activité"}</button>}
       </div>
     </div>
   );
@@ -591,6 +891,7 @@ function FormActivite({onClose,onSubmit,customCatActivites=[]}){
   const [profilsTND,setProfilsTND]=useState({tsa:false,tdah:false,dys:false,tous:false});
   const [niveauxSensoriels,setNiveauxSensoriels]=useState({bruit:0,visuel:0,physique:0,attention:0});
   const [adaptations,setAdaptations]=useState([]);
+  const [pointsAnticiperSel,setPointsAnticiperSel]=useState([]);
   const handlePhoto=async(e)=>{const file=e.target.files[0];if(!file)return;if(file.size>8*1024*1024){alert("Photo trop lourde (max 8MB)");return;}try{const compressed=await compresserImage(file);setPhotoPreview(compressed);}catch(err){alert("Impossible de lire cette image, réessaie avec une autre.");}};
   const validate=()=>{const e={};if(!titre.trim())e.titre="Champ obligatoire";if(!desc.trim())e.desc="Champ obligatoire";if(!duree)e.duree="Champ obligatoire";if(!difficulte)e.difficulte="Champ obligatoire";if(!lieu)e.lieu="Champ obligatoire";if(!motivation)e.motivation="Champ obligatoire";if(!categorie)e.categorie="Champ obligatoire";setLocalErrors(e);return Object.keys(e).length===0;};
   const handleSubmit=()=>{
@@ -598,7 +899,7 @@ function FormActivite({onClose,onSubmit,customCatActivites=[]}){
     const categorieFinale=categorie==="Autre"?(autreCategorie.trim()||"Autre"):categorie;
     const age=(ageMin&&ageMax)?`${ageMin.replace(" an","").replace(" ans","")} - ${ageMax}`:(ageMin||ageMax||"Tous ages");
     const tndData={tsa:profilsTND.tsa||profilsTND.tous?5:0,tdah:profilsTND.tdah||profilsTND.tous?5:0,dys:profilsTND.dys||profilsTND.tous?5:0};
-    if(onSubmit)onSubmit({nom:titre.trim(),categorie:categorieFinale,lieu,energie:motivation,age,duree,difficulte,materiel:materiel?materiel.split(",").map(m=>m.trim()).filter(Boolean):[],etapes:etapes?etapes.split("\n").map(s=>s.trim()).filter(Boolean):[],desc:desc.trim(),photo:photoPreview,tnd:tndData,profilsTND,niveauxSensoriels,adaptations,commentaireTND:commentaireTND.trim(),...accValues,_type:"activite"});
+    if(onSubmit)onSubmit({nom:titre.trim(),categorie:categorieFinale,lieu,energie:motivation,age,duree,difficulte,materiel:materiel?materiel.split(",").map(m=>m.trim()).filter(Boolean):[],etapes:etapes?etapes.split("\n").map(s=>s.trim()).filter(Boolean):[],desc:desc.trim(),photo:photoPreview,tnd:tndData,profilsTND,niveauxSensoriels,adaptations,commentaireTND:commentaireTND.trim(),pointsAnticiper:pointsAnticiperSel,...accValues,_type:"activite"});
   };
   const se=(err)=>({padding:"12px 14px",borderRadius:12,border:"1px solid "+(err?"#EF4444":"rgba(108,92,231,0.15)"),fontSize:14,width:"100%",boxSizing:"border-box",background:WH,fontFamily:"inherit"});
   const Err=({k})=>localErrors[k]?<p style={{margin:"3px 0 0",fontSize:11,color:"#EF4444"}}>{localErrors[k]}</p>:null;
@@ -711,21 +1012,28 @@ function FormActivite({onClose,onSubmit,customCatActivites=[]}){
             <div>
               <p style={{margin:"0 0 4px",fontSize:14,fontWeight:800,color:"#1a1a1a"}}>✅ Adaptations possibles</p>
               <p style={{margin:"0 0 12px",fontSize:12,color:TM}}>Cochez ce qui s'applique à cette activité</p>
-              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+              <div style={{display:"flex",flexDirection:"column",gap:6}}>
                 {[
-                  "Peut se faire en silence",
-                  "Rythme libre",
-                  "Activité individuelle",
-                  "Peu de règles",
-                  "Résultat concret",
-                  "Stimulation douce",
-                  "Peut être interrompue",
-                  "Adapté aux hypersensibles",
-                ].map(ad=>{
-                  const actif=adaptations.includes(ad);
+                  {id:"a1",label:"Ne nécessite pas de communication verbale",profil:"TSA"},
+                  {id:"a2",label:"Pas de contrainte de temps — l'enfant va à son rythme",profil:"TSA"},
+                  {id:"a3",label:"Peut se faire seul sans aide d'un adulte",profil:"Tous"},
+                  {id:"a4",label:"Peut s'arrêter et reprendre sans perdre le fil",profil:"Tous"},
+                  {id:"a5",label:"3 étapes maximum, facile à expliquer",profil:"DYS"},
+                  {id:"a6",label:"Ne nécessite pas de toucher des matières inconfortables",profil:"TSA"},
+                  {id:"a7",label:"Pas de contact physique imposé",profil:"TSA"},
+                  {id:"a8",label:"Pas de bruits forts ou soudains",profil:"TSA"},
+                  {id:"a9",label:"L'enfant voit ce qu'il crée (dessin, gâteau, construction...)",profil:"Tous"},
+                  {id:"a10",label:"Convient aux enfants qui ont du mal à rester assis",profil:"TDAH"},
+                  {id:"a11",label:"Pas de frustration si le résultat n'est pas parfait",profil:"TSA/DYS"},
+                  {id:"a12",label:"L'enfant peut choisir comment faire à sa façon",profil:"Tous"},
+                ].map(({id,label,profil})=>{
+                  const actif=adaptations.includes(id);
+                  const bs={TSA:{bg:"#EEEDFE",col:"#3C3489"},TDAH:{bg:"#E1F5EE",col:"#085041"},DYS:{bg:"#FAEEDA",col:"#633806"},"TSA/DYS":{bg:"#F3EFFF",col:"#4B3F8F"},Tous:{bg:"#F5F5F5",col:"#666"}}[profil]||{bg:"#F5F5F5",col:"#666"};
                   return(
-                    <button key={ad} onClick={()=>setAdaptations(p=>p.includes(ad)?p.filter(x=>x!==ad):[...p,ad])} style={{padding:"8px 10px",borderRadius:10,border:`1.5px solid ${actif?"#6C5CE7":"#E5E7EB"}`,background:actif?"#EEEDFE":WH,color:actif?"#3C3489":"#6B7280",fontSize:11,fontWeight:actif?700:400,cursor:"pointer",textAlign:"left",display:"flex",alignItems:"center",gap:6}}>
-                      <span style={{fontSize:14}}>{actif?"☑":"☐"}</span>{ad}
+                    <button key={id} onClick={()=>setAdaptations(p=>p.includes(id)?p.filter(x=>x!==id):[...p,id])} style={{padding:"10px 12px",borderRadius:8,border:`1.5px solid ${actif?"#6C5CE7":"#E5E7EB"}`,background:actif?"#EEEDFE":WH,cursor:"pointer",textAlign:"left",display:"flex",alignItems:"center",gap:8,width:"100%"}}>
+                      <span style={{fontSize:16,flexShrink:0,color:actif?"#6C5CE7":"#9CA3AF"}}>{actif?"☑":"☐"}</span>
+                      <span style={{fontSize:13,color:actif?"#3C3489":"#374151",flex:1,lineHeight:1.4}}>{label}</span>
+                      
                     </button>
                   );
                 })}
@@ -738,6 +1046,41 @@ function FormActivite({onClose,onSubmit,customCatActivites=[]}){
               <textarea value={commentaireTND} onChange={e=>setCommentaireTND(e.target.value.slice(0,200))} placeholder="Ex : Idéal pour les enfants TSA, activité calme sans surprise..." rows={2} style={FST}/>
               <p style={{margin:"4px 0 0",fontSize:11,color:TM,textAlign:"right"}}>{commentaireTND.length}/200</p>
             </div>
+          </div>
+
+          {/* ─── Points à anticiper ─── */}
+          <div style={{background:"#FFF7ED",borderRadius:16,padding:"16px",display:"flex",flexDirection:"column",gap:16}}>
+            <div>
+              <p style={{margin:"0 0 2px",fontSize:14,fontWeight:800,color:"#1a1a1a"}}>⚠️ Points à anticiper</p>
+              <p style={{margin:0,fontSize:12,color:TM}}>Aide les parents à préparer l'activité selon les besoins de leur enfant</p>
+            </div>
+            {[
+              {titre:"🎨 Sensoriel",ids:["pa1","pa2","pa3","pa4"]},
+              {titre:"🧠 Attention",ids:["pa5","pa6"]},
+              {titre:"💪 Moteur",ids:["pa8","pa9","pa10"]},
+              {titre:"🗓️ Structure & Émotion",ids:["pa7","pa11","pa12","pa13","pa14","pa15"]},
+            ].map(({titre,ids})=>(
+              <div key={titre}>
+                <p style={{margin:"0 0 8px",fontSize:12,fontWeight:700,color:"#9A3412"}}>{titre}</p>
+                <div style={{display:"flex",flexDirection:"column",gap:6}}>
+                  {ids.map(id=>{
+                    const pt=POINTS_ANTICIPER.find(p=>p.id===id);
+                    if(!pt)return null;
+                    const actif=pointsAnticiperSel.includes(id);
+                    return(
+                      <button key={id} onClick={()=>setPointsAnticiperSel(p=>actif?p.filter(x=>x!==id):[...p,id])} style={{padding:"10px 12px",borderRadius:10,border:`1.5px solid ${actif?"#F59E0B":"#E5E7EB"}`,background:actif?"#FFF7ED":WH,cursor:"pointer",textAlign:"left",display:"flex",alignItems:"flex-start",gap:10,width:"100%"}}>
+                        <span style={{fontSize:18,flexShrink:0}}>{pt.emoji}</span>
+                        <div style={{flex:1}}>
+                          <p style={{margin:"0 0 2px",fontSize:13,fontWeight:600,color:"#1a1a1a"}}>{pt.label}</p>
+                          <p style={{margin:0,fontSize:11,color:TM,lineHeight:1.4}}>{pt.desc}</p>
+                        </div>
+                        <span style={{fontSize:14,flexShrink:0,color:actif?"#F59E0B":"#D1D5DB"}}>{actif?"☑":"☐"}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
           </div>
 
           <button onClick={handleSubmit} style={{padding:14,borderRadius:14,background:V,border:"none",color:WH,fontWeight:700,fontSize:15,cursor:"pointer",width:"100%"}}>Envoyer ma suggestion</button>
@@ -759,15 +1102,28 @@ function FormSortie({onClose,onSubmit,customCatSorties=[]}){
   const [typeSortieSelected,setTypeSortieSelected]=useState("");
   const [tarif,setTarif]=useState("");
   const [horaires,setHoraires]=useState("");
-  const [accValues,setAccValues]=useState({});
+  const [pmrValues,setPmrValues]=useState({});
+  const [tndSon,setTndSon]=useState("");
+  const [tndAffluence,setTndAffluence]=useState("");
+  const [tndPrevision,setTndPrevision]=useState("");
+  const [tndZoneCalme,setTndZoneCalme]=useState(null);
   const [commentaireTND,setCommentaireTND]=useState("");
+  const [accessSignaux,setAccessSignaux]=useState({filePrioritaire:false,poussette:false,pmr:false,espacePause:false,environnementCalme:false,espaceBouger:false,supportsVisuels:false,personnelForme:false});
+  const [accessHeuresCalmes,setAccessHeuresCalmes]=useState("");
+  const [accessDistanceMarche,setAccessDistanceMarche]=useState("");
+  const [accessConseil,setAccessConseil]=useState("");
   const [localErrors,setLocalErrors]=useState({});
   const handlePhoto=async(e)=>{const file=e.target.files[0];if(!file)return;if(file.size>8*1024*1024){alert("Photo trop lourde (max 8MB)");return;}try{const compressed=await compresserImage(file);setPhotoPreview(compressed);}catch(err){alert("Impossible de lire cette image, réessaie avec une autre.");}};
   const validate=()=>{const e={};if(!nom.trim())e.nom="Champ obligatoire";if(!ville.trim())e.ville="Champ obligatoire";if(!dept)e.dept="Champ obligatoire";if(!typeSortieSelected)e.type="Champ obligatoire";setLocalErrors(e);return Object.keys(e).length===0;};
   const handleSubmit=()=>{
     if(!validate())return;
     const typeFinal=typeSortieSelected==="autre"?(typeAutreSortie.trim()||"Autre"):typeSortieSelected;
-    if(onSubmit)onSubmit({nom:nom.trim(),type:typeFinal,dept,ville:ville.trim(),desc:desc.trim(),photo:photoPreview,prix:tarif.trim()||"Gratuit",horaires:horaires.trim(),tnd:{tsa:3,tdah:3,dys:3},...accValues,commentaireTND:commentaireTND.trim(),_type:"sortie"});
+    const tnd=tndSon||tndAffluence||tndPrevision||tndZoneCalme!==null?{son:tndSon||undefined,affluence:tndAffluence||undefined,prevision:tndPrevision||undefined,zonecalme:tndZoneCalme!==null?tndZoneCalme:undefined}:undefined;
+    const accessibilite={
+      signaux:accessSignaux,
+      details:{...Object.fromEntries(Object.keys(accessSignaux).map(k=>[k,null])),heuresCalmes:accessHeuresCalmes.trim()||undefined,distanceMarche:accessDistanceMarche.trim()||undefined,conseilCommunaute:accessConseil.trim()||undefined},
+    };
+    if(onSubmit)onSubmit({nom:nom.trim(),type:typeFinal,dept,ville:ville.trim(),desc:desc.trim(),photo:photoPreview,prix:tarif.trim()||"Gratuit",horaires:horaires.trim(),tnd,...pmrValues,commentaireTND:commentaireTND.trim(),accessibilite,_type:"sortie"});
   };
   const se=(err)=>({padding:"12px 14px",borderRadius:12,border:"1px solid "+(err?"#EF4444":"rgba(108,92,231,0.15)"),fontSize:14,width:"100%",boxSizing:"border-box",background:WH,fontFamily:"inherit"});
   const Err=({k})=>localErrors[k]?<p style={{margin:"3px 0 0",fontSize:11,color:"#EF4444"}}>{localErrors[k]}</p>:null;
@@ -810,7 +1166,91 @@ function FormSortie({onClose,onSubmit,customCatSorties=[]}){
             <Field label="Tarif" style={{flex:1}}><input value={tarif} onChange={e=>setTarif(e.target.value)} placeholder="Tarif" style={FS}/></Field>
             <Field label="Horaires" style={{flex:1}}><input value={horaires} onChange={e=>setHoraires(e.target.value)} placeholder="Horaires" style={FS}/></Field>
           </div>
-          <SectionAccessibilite values={accValues} onChange={setAccValues} commentaire={commentaireTND} onCommentaireChange={setCommentaireTND}/>
+          {/* Accessibilité PMR */}
+          <div style={{background:"#F0F4FF",borderRadius:16,padding:"14px 16px"}}>
+            <p style={{margin:"0 0 10px",fontSize:14,fontWeight:700,color:TX}}>♿ Accessibilité PMR</p>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"8px 4px"}}>
+              {[["pmr_fauteuil","Accès fauteuil"],["pmr_escaliers","Sans escaliers"],["pmr_parking","Parking PMR"],["pmr_toilettes","Toilettes adaptées"],["pmr_personnel","Personnel formé"],["pmr_chemin","Chemin accessible"]].map(([k,label])=>(
+                <label key={k} style={{display:"flex",alignItems:"center",gap:8,fontSize:13,color:TX,cursor:"pointer",padding:"4px 0"}}>
+                  <input type="checkbox" checked={!!pmrValues[k]} onChange={()=>setPmrValues(p=>({...p,[k]:!p[k]}))} style={{accentColor:"#3B82F6",flexShrink:0,width:16,height:16}}/>
+                  {label}
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {/* Environnement TND */}
+          <div style={{background:"#F5F0EB",borderRadius:16,padding:"14px 16px",display:"flex",flexDirection:"column",gap:12}}>
+            <div>
+              <p style={{margin:"0 0 2px",fontSize:14,fontWeight:700,color:TX}}>🧩 Environnement TND</p>
+              <p style={{margin:0,fontSize:12,color:TM}}>Ces infos aident les familles TND à choisir les sorties adaptées (optionnel)</p>
+            </div>
+            {[
+              {label:"🔈 Niveau sonore",val:tndSon,set:setTndSon,opts:[{v:"calme",l:"🤫 Calme"},{v:"moyenne",l:"🔉 Moyen"},{v:"forte",l:"📢 Fort"}]},
+              {label:"👥 Affluence",val:tndAffluence,set:setTndAffluence,opts:[{v:"faible",l:"🚶 Faible"},{v:"moyenne",l:"👥 Moyenne"},{v:"forte",l:"🏃 Forte"}]},
+              {label:"🔮 Prévisibilité",val:tndPrevision,set:setTndPrevision,opts:[{v:"structuree",l:"📋 Structurée"},{v:"imprev",l:"🎲 Imprévisible"}]},
+            ].map(({label,val,set,opts})=>(
+              <div key={label}>
+                <p style={{margin:"0 0 6px",fontSize:12,fontWeight:600,color:TX}}>{label}</p>
+                <div style={{display:"flex",gap:6}}>
+                  {opts.map(({v,l})=>(
+                    <button key={v} onClick={()=>set(val===v?"":v)} style={{flex:1,padding:"8px 4px",borderRadius:10,border:`1.5px solid ${val===v?V:"rgba(108,92,231,0.15)"}`,background:val===v?VL:WH,color:val===v?V:TM,fontSize:12,cursor:"pointer",fontWeight:val===v?700:400}}>{l}</button>
+                  ))}
+                </div>
+              </div>
+            ))}
+            <div>
+              <p style={{margin:"0 0 6px",fontSize:12,fontWeight:600,color:TX}}>🌿 Zone calme disponible</p>
+              <div style={{display:"flex",gap:6}}>
+                {[{v:true,l:"✅ Oui"},{v:false,l:"❌ Non"}].map(({v,l})=>(
+                  <button key={String(v)} onClick={()=>setTndZoneCalme(tndZoneCalme===v?null:v)} style={{flex:1,padding:"8px 4px",borderRadius:10,border:`1.5px solid ${tndZoneCalme===v?V:"rgba(108,92,231,0.15)"}`,background:tndZoneCalme===v?VL:WH,color:tndZoneCalme===v?V:TM,fontSize:12,cursor:"pointer",fontWeight:tndZoneCalme===v?700:400}}>{l}</button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <label style={{fontSize:12,fontWeight:600,color:TX,display:"block",marginBottom:6}}>Conseil TND (optionnel)</label>
+              <textarea value={commentaireTND} onChange={e=>setCommentaireTND(e.target.value.slice(0,200))} placeholder="Ex : Zone calme à l'entrée, horaires calmes le matin..." rows={2} style={{...FST,fontSize:12}}/>
+              <p style={{margin:"3px 0 0",fontSize:10,color:TM,textAlign:"right"}}>{commentaireTND.length}/200</p>
+            </div>
+          </div>
+
+          {/* ─── Accessibilité (toggles) ─── */}
+          <div style={{background:"#F5F0EB",borderRadius:16,padding:"16px",display:"flex",flexDirection:"column",gap:12}}>
+            <div>
+              <p style={{margin:"0 0 2px",fontSize:14,fontWeight:800,color:"#1a1a1a"}}>♿ Accessibilité</p>
+              <p style={{margin:0,fontSize:12,color:TM}}>Ces informations aident les familles à choisir les sorties adaptées</p>
+            </div>
+            {[
+              {k:"filePrioritaire",l:"⏭️ File prioritaire disponible (sur justificatif handicap)"},
+              {k:"poussette",l:"👶 Adapté poussette (pas d'escaliers, sols accessibles)"},
+              {k:"pmr",l:"♿ Accessible mobilité réduite (fauteuil roulant, parking PMR)"},
+              {k:"espacePause",l:"🛋️ Espace de pause / zone calme sur place"},
+              {k:"environnementCalme",l:"🔇 Environnement calme (peu de bruit et stimulations)"},
+              {k:"espaceBouger",l:"🏃 Espace pour bouger librement (aire de jeux, défouloir)"},
+              {k:"supportsVisuels",l:"🗺️ Supports visuels disponibles en amont"},
+              {k:"personnelForme",l:"👥 Personnel sensibilisé au handicap"},
+            ].map(({k,l})=>(
+              <div key={k} onClick={()=>setAccessSignaux(p=>({...p,[k]:!p[k]}))} style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:10,cursor:"pointer"}}>
+                <span style={{fontSize:12,color:TX,flex:1}}>{l}</span>
+                <div style={{width:40,height:22,borderRadius:20,background:accessSignaux[k]?"#6C5CE7":"#D1D5DB",position:"relative",flexShrink:0,transition:"background 0.15s"}}>
+                  <div style={{position:"absolute",top:2,left:accessSignaux[k]?20:2,width:18,height:18,borderRadius:"50%",background:"#fff",transition:"left 0.15s",boxShadow:"0 1px 3px rgba(0,0,0,0.2)"}}/>
+                </div>
+              </div>
+            ))}
+            <div>
+              <label style={{fontSize:12,fontWeight:600,color:TX,display:"block",marginBottom:6}}>Heures/jours les plus calmes</label>
+              <input value={accessHeuresCalmes} onChange={e=>setAccessHeuresCalmes(e.target.value)} placeholder="Ex : Mardi matin hors vacances" style={{...FST,fontSize:12}}/>
+            </div>
+            <div>
+              <label style={{fontSize:12,fontWeight:600,color:TX,display:"block",marginBottom:6}}>Distance de marche approximative</label>
+              <input value={accessDistanceMarche} onChange={e=>setAccessDistanceMarche(e.target.value)} placeholder="Ex : 3-5 km pour le parc complet" style={{...FST,fontSize:12}}/>
+            </div>
+            <div>
+              <label style={{fontSize:12,fontWeight:600,color:TX,display:"block",marginBottom:6}}>Conseil accessibilité</label>
+              <textarea value={accessConseil} onChange={e=>setAccessConseil(e.target.value)} placeholder="Ex : Prévoir casque anti-bruit, éviter le week-end..." rows={2} style={{...FST,fontSize:12}}/>
+            </div>
+          </div>
+
           <div style={{background:"#FFFBEB",borderRadius:12,padding:"10px 14px",border:"1px solid #FDE68A",display:"flex",gap:10,alignItems:"flex-start"}}><span style={{fontSize:16,flexShrink:0}}>👶</span><p style={{margin:0,fontSize:12,color:"#92400E",lineHeight:1.5}}>Les sorties proposees doivent etre adaptees aux enfants.</p></div>
           <button onClick={handleSubmit} style={{padding:14,borderRadius:14,background:V,border:"none",color:WH,fontWeight:700,fontSize:15,cursor:"pointer",width:"100%"}}>Envoyer ma suggestion</button>
         </div>
@@ -831,12 +1271,23 @@ function FormEvenement({onClose,onSubmit,onOpenAutrePopup,typeAutre,typeEvt,setT
   const [horaires,setHoraires]=useState("");
   const [tarif,setTarif]=useState("");
   const [adresse,setAdresse]=useState("");
-  const [accValues,setAccValues]=useState({});
   const [commentaireTND,setCommentaireTND]=useState("");
+  const [tndSon,setTndSon]=useState("");
+  const [tndAffluence,setTndAffluence]=useState("");
+  const [tndPrevision,setTndPrevision]=useState("");
+  const [tndZoneCalme,setTndZoneCalme]=useState(null);
+  const [pmrValues,setPmrValues]=useState({});
   const [localErrors,setLocalErrors]=useState({});
   const handlePhoto=async(e)=>{const file=e.target.files[0];if(!file)return;if(file.size>8*1024*1024){alert("Photo trop lourde (max 8MB)");return;}try{const compressed=await compresserImage(file);setPhotoPreview(compressed);}catch(err){alert("Impossible de lire cette image, réessaie avec une autre.");}};
   const validate=()=>{const e={};if(!nom.trim())e.nom="Champ obligatoire";if(!desc.trim())e.desc="Champ obligatoire";if(!typeEvt)e.typeEvt="Champ obligatoire";if(!ville.trim())e.ville="Champ obligatoire";if(!dept)e.dept="Champ obligatoire";if(!dateDebut)e.dateDebut="Champ obligatoire";setLocalErrors(e);return Object.keys(e).length===0;};
-  const handleSubmit=()=>{if(!validate())return;const datesStr=dateFin?formatDateFR(dateDebut)+" - "+formatDateFR(dateFin):formatDateFR(dateDebut);const isGratuit=!tarif.trim()||tarif.toLowerCase().includes("gratuit");const categorieFinale=typeEvt==="autre"?(typeAutre||"autre"):typeEvt;onSubmit({nom:nom.trim(),desc:desc.trim(),categorie:categorieFinale,ville:ville.trim()+" ("+dept+")",dept,date:dateDebut,periode:detectPeriode(dateDebut),prix:tarif.trim()||"Non renseigne",gratuit:isGratuit,communaute:true,signalements:0,age:"Tous ages",dates:datesStr,photo:photoPreview,adresse:adresse.trim(),...accValues,commentaireTND:commentaireTND.trim(),tnd:{son:"moyenne",affluence:"moyenne",prevision:"moyenne",zonecalme:false}});};
+  const handleSubmit=()=>{
+    if(!validate())return;
+    const datesStr=dateFin?formatDateFR(dateDebut)+" - "+formatDateFR(dateFin):formatDateFR(dateDebut);
+    const isGratuit=!tarif.trim()||tarif.toLowerCase().includes("gratuit");
+    const categorieFinale=typeEvt==="autre"?(typeAutre||"autre"):typeEvt;
+    const tnd=tndSon||tndAffluence||tndPrevision||tndZoneCalme!==null?{son:tndSon||undefined,affluence:tndAffluence||undefined,prevision:tndPrevision||undefined,zonecalme:tndZoneCalme!==null?tndZoneCalme:undefined}:undefined;
+    onSubmit({nom:nom.trim(),desc:desc.trim(),categorie:categorieFinale,ville:ville.trim()+" ("+dept+")",dept,date:dateDebut,periode:detectPeriode(dateDebut),prix:tarif.trim()||"Non renseigne",gratuit:isGratuit,communaute:true,signalements:0,age:"Tous ages",dates:datesStr,photo:photoPreview,adresse:adresse.trim(),commentaireTND:commentaireTND.trim(),tnd,...pmrValues});
+  };
   const se=(err)=>({padding:"12px 14px",borderRadius:12,fontSize:14,width:"100%",boxSizing:"border-box",background:WH,border:"1px solid "+(err?"#EF4444":"rgba(108,92,231,0.15)")});
   const Err=({k})=>localErrors[k]?<p style={{margin:"3px 0 0",fontSize:11,color:"#EF4444"}}>{localErrors[k]}</p>:null;
   const lbl={fontSize:13,fontWeight:500,color:TX,display:"block",marginBottom:5};
@@ -858,7 +1309,62 @@ function FormEvenement({onClose,onSubmit,onOpenAutrePopup,typeAutre,typeEvt,setT
           <div><label style={lbl}>Horaires</label><input value={horaires} onChange={e=>setHoraires(e.target.value)} placeholder="Ex : 10h-20h" style={{padding:"12px 14px",borderRadius:12,fontSize:14,width:"100%",boxSizing:"border-box",background:WH,border:"1px solid rgba(108,92,231,0.15)"}}/></div>
           <div><label style={lbl}>Tarif</label><input value={tarif} onChange={e=>setTarif(e.target.value)} placeholder="Ex : Gratuit / 5 euros" style={{padding:"12px 14px",borderRadius:12,fontSize:14,width:"100%",boxSizing:"border-box",background:WH,border:"1px solid rgba(108,92,231,0.15)"}}/></div>
           <div><label style={lbl}>Adresse</label><input value={adresse} onChange={e=>setAdresse(e.target.value)} placeholder="Ex : Place du Capitole" style={{padding:"12px 14px",borderRadius:12,fontSize:14,width:"100%",boxSizing:"border-box",background:WH,border:"1px solid rgba(108,92,231,0.15)"}}/></div>
-          <SectionAccessibilite values={accValues} onChange={setAccValues} commentaire={commentaireTND} onCommentaireChange={setCommentaireTND}/>
+
+          {/* Accessibilité PMR */}
+          <div style={{background:"#F0F4FF",borderRadius:16,padding:"14px 16px"}}>
+            <p style={{margin:"0 0 10px",fontSize:14,fontWeight:700,color:TX}}>♿ Accessibilité PMR</p>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"8px 4px"}}>
+              {[
+                ["pmr_fauteuil","Accès fauteuil"],
+                ["pmr_escaliers","Sans escaliers"],
+                ["pmr_parking","Parking PMR"],
+                ["pmr_toilettes","Toilettes adaptées"],
+                ["pmr_personnel","Personnel formé"],
+                ["pmr_chemin","Chemin accessible"],
+              ].map(([k,label])=>(
+                <label key={k} style={{display:"flex",alignItems:"center",gap:8,fontSize:13,color:TX,cursor:"pointer",padding:"4px 0"}}>
+                  <input type="checkbox" checked={!!pmrValues[k]} onChange={()=>setPmrValues(p=>({...p,[k]:!p[k]}))} style={{accentColor:"#3B82F6",flexShrink:0,width:16,height:16}}/>
+                  {label}
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {/* Section Environnement TND */}
+          <div style={{background:"#F5F0EB",borderRadius:16,padding:"16px",display:"flex",flexDirection:"column",gap:14}}>
+            <div>
+              <p style={{margin:"0 0 2px",fontSize:14,fontWeight:800,color:"#1a1a1a"}}>🧩 Environnement TND</p>
+              <p style={{margin:0,fontSize:12,color:TM}}>Ces infos aident les familles TND à choisir les événements adaptés (optionnel)</p>
+            </div>
+            {[
+              {label:"🔈 Niveau sonore",val:tndSon,set:setTndSon,opts:[{v:"calme",l:"🤫 Calme"},{v:"moyenne",l:"🔉 Moyen"},{v:"forte",l:"📢 Fort"}]},
+              {label:"👥 Affluence",val:tndAffluence,set:setTndAffluence,opts:[{v:"faible",l:"🚶 Faible"},{v:"moyenne",l:"👥 Moyenne"},{v:"forte",l:"🏃 Forte"}]},
+              {label:"🔮 Prévisibilité",val:tndPrevision,set:setTndPrevision,opts:[{v:"structuree",l:"📋 Structurée"},{v:"imprev",l:"🎲 Imprévisible"}]},
+            ].map(({label,val,set,opts})=>(
+              <div key={label}>
+                <p style={{margin:"0 0 6px",fontSize:12,fontWeight:600,color:TX}}>{label}</p>
+                <div style={{display:"flex",gap:6}}>
+                  {opts.map(({v,l})=>(
+                    <button key={v} onClick={()=>set(val===v?"":v)} style={{flex:1,padding:"8px 4px",borderRadius:10,border:`1.5px solid ${val===v?V:"rgba(108,92,231,0.15)"}`,background:val===v?VL:WH,color:val===v?V:TM,fontSize:12,cursor:"pointer",fontWeight:val===v?700:400}}>{l}</button>
+                  ))}
+                </div>
+              </div>
+            ))}
+            <div>
+              <p style={{margin:"0 0 6px",fontSize:12,fontWeight:600,color:TX}}>🌿 Zone calme disponible</p>
+              <div style={{display:"flex",gap:6}}>
+                {[{v:true,l:"✅ Oui"},{v:false,l:"❌ Non"}].map(({v,l})=>(
+                  <button key={String(v)} onClick={()=>setTndZoneCalme(tndZoneCalme===v?null:v)} style={{flex:1,padding:"8px 4px",borderRadius:10,border:`1.5px solid ${tndZoneCalme===v?V:"rgba(108,92,231,0.15)"}`,background:tndZoneCalme===v?VL:WH,color:tndZoneCalme===v?V:TM,fontSize:12,cursor:"pointer",fontWeight:tndZoneCalme===v?700:400}}>{l}</button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <label style={{fontSize:12,fontWeight:600,color:TX,display:"block",marginBottom:6}}>Conseil TND (optionnel)</label>
+              <textarea value={commentaireTND} onChange={e=>setCommentaireTND(e.target.value.slice(0,200))} placeholder="Ex : Prévoir des casques antibruit, espace calme disponible à l'entrée..." rows={2} style={{width:"100%",padding:"10px 12px",borderRadius:10,border:"1px solid rgba(108,92,231,0.15)",fontSize:12,resize:"none",boxSizing:"border-box",fontFamily:"inherit",background:WH}}/>
+              <p style={{margin:"3px 0 0",fontSize:10,color:TM,textAlign:"right"}}>{commentaireTND.length}/200</p>
+            </div>
+          </div>
+
           <div style={{background:"#FFFBEB",borderRadius:12,padding:"10px 14px",border:"1px solid #FDE68A",display:"flex",gap:10,alignItems:"flex-start"}}><span style={{fontSize:16,flexShrink:0}}>👶</span><p style={{margin:0,fontSize:12,color:"#92400E",lineHeight:1.5}}>Les evenements proposes doivent etre destines aux enfants ou aux familles.</p></div>
           <div style={{display:"flex",gap:10}}><button onClick={onClose} style={{flex:1,padding:14,borderRadius:28,background:WH,border:"1.5px solid #E5E7EB",color:"#374151",fontWeight:500,fontSize:14,cursor:"pointer"}}>Annuler</button><button onClick={handleSubmit} style={{flex:2,padding:14,borderRadius:28,background:V,border:"none",color:WH,fontWeight:700,fontSize:14,cursor:"pointer"}}>Envoyer</button></div>
         </div>
@@ -946,7 +1452,176 @@ function PartageMenu({show,titre,texte,onClose}){
   );
 }
 
-function SortieDetailPage({sortie,isFavorite,onToggleFavorite,onBack,onReport,isLoggedIn=true,onRequireAuth}){
+// ─── ACCESSIBILITÉ SORTIE ──────────────────────────────────────────────────────
+const ACCESS_SIGNAUX_DEF=[
+  {k:"filePrioritaire",emoji:"⏭️",labelOn:"File prioritaire",labelOff:"File prioritaire"},
+  {k:"poussette",emoji:"👶",labelOn:"Poussette OK",labelOff:"Poussette"},
+  {k:"pmr",emoji:"♿",labelOn:"PMR OK",labelOff:"PMR"},
+  {k:"espacePause",emoji:"🛋️",labelOn:"Espace pause",labelOff:"Espace pause"},
+  {k:"environnementCalme",emoji:"🔇",labelOn:"Calme",labelOff:"Bruyant"},
+  {k:"espaceBouger",emoji:"🏃",labelOn:"Espace bouger",labelOff:"Espace bouger"},
+  {k:"supportsVisuels",emoji:"🗺️",labelOn:"Supports visuels",labelOff:"Supports visuels"},
+  {k:"personnelForme",emoji:"👥",labelOn:"Personnel formé",labelOff:"Personnel formé"},
+];
+
+// Liste complète groupée par section — utilisée pour la contribution communautaire détaillée
+const ACCESS_SIGNAUX_GROUPES=[
+  {titre:"⏭️ Accès et attente",items:[
+    {k:"filePrioritaire",emoji:"⏭️",label:"File prioritaire disponible"},
+    {k:"demandeAvance",emoji:"📅",label:"Demande en avance possible"},
+  ]},
+  {titre:"🔇 Environnement sensoriel",items:[
+    {k:"environnementCalme",emoji:"🔇",label:"Environnement calme"},
+    {k:"effetsStroboscopiques",emoji:"⚡",label:"Effets stroboscopiques présents"},
+  ]},
+  {titre:"🛋️ Espaces de régulation",items:[
+    {k:"espacePause",emoji:"🛋️",label:"Espace de pause"},
+    {k:"espaceBouger",emoji:"🏃",label:"Espace pour bouger"},
+    {k:"sanitairesAdaptes",emoji:"🚻",label:"Sanitaires adaptés"},
+  ]},
+  {titre:"🗺️ Préparation",items:[
+    {k:"supportsVisuels",emoji:"🗺️",label:"Supports visuels disponibles"},
+    {k:"contactAccessibilite",emoji:"📞",label:"Contact accessibilité disponible"},
+  ]},
+  {titre:"🚶 Rythme et trajets",items:[
+    {k:"parcoursLibre",emoji:"🔀",label:"Parcours libre (pas de sens imposé)"},
+    {k:"zonesPauseFrequentes",emoji:"🛑",label:"Zones de pause fréquentes"},
+    {k:"poussette",emoji:"👶",label:"Adapté poussette"},
+    {k:"pmr",emoji:"♿",label:"Accessible PMR"},
+  ]},
+  {titre:"👥 Personnel et flexibilité",items:[
+    {k:"personnelForme",emoji:"👥",label:"Personnel formé"},
+    {k:"sortieUrgence",emoji:"🚪",label:"Sortie d'urgence possible"},
+  ]},
+];
+
+function AccessPill({def,val}){
+  const style=val===true?{bg:"#EAF3DE",col:"#3B6D11"}:val===false?{bg:"#FAEEDA",col:"#854F0B"}:{bg:"#F3F4F6",col:"#9CA3AF"};
+  const label=val===true?def.labelOn:val===false?def.labelOff:def.labelOn;
+  return(
+    <span style={{flexShrink:0,display:"inline-flex",alignItems:"center",gap:5,background:style.bg,color:style.col,fontSize:11,fontWeight:600,padding:"6px 12px",borderRadius:20,whiteSpace:"nowrap"}}>
+      <span>{def.emoji}</span>{label}{val===false&&" ⚠️"}{val===null&&" ?"}
+    </span>
+  );
+}
+
+function FicheAccessibiliteComplete({accessibilite,onClose}){
+  const {signaux={},details={}}=accessibilite||{};
+  const StatusIcon=({val})=>val===true?<span style={{color:"#3B6D11",fontSize:16,flexShrink:0}}>✓</span>:val===false?<span style={{color:"#854F0B",fontSize:16,flexShrink:0}}>⚠️</span>:<span style={{color:"#9CA3AF",fontSize:16,flexShrink:0}}>?</span>;
+  const Item=({emoji,titre,desc,val})=>(
+    <div style={{display:"flex",gap:10,alignItems:"flex-start",padding:"10px 0",borderBottom:"0.5px solid #F3F4F6"}}>
+      <span style={{fontSize:16,flexShrink:0,width:20}}>{emoji}</span>
+      <div style={{flex:1}}>
+        <p style={{margin:"0 0 2px",fontSize:13,fontWeight:600,color:"#1a1a1a"}}>{titre}</p>
+        {desc&&<p style={{margin:0,fontSize:12,color:"#6B7280",lineHeight:1.5}}>{desc}</p>}
+      </div>
+      <StatusIcon val={val}/>
+    </div>
+  );
+  return(
+    <div onClick={onClose} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.5)",zIndex:650,display:"flex",alignItems:"flex-end"}}>
+      <div onClick={e=>e.stopPropagation()} style={{background:WH,borderRadius:"24px 24px 0 0",width:"100%",maxHeight:"85vh",overflowY:"auto",padding:"20px 20px 32px"}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
+          <p style={{margin:0,fontSize:16,fontWeight:800,color:"#1a1a1a"}}>🔍 Fiche accessibilité complète</p>
+          <button onClick={onClose} style={{background:BG,border:"none",borderRadius:"50%",width:32,height:32,cursor:"pointer",fontSize:14,flexShrink:0}}>✕</button>
+        </div>
+
+        <div style={{marginBottom:18}}>
+          <p style={{margin:"0 0 4px",fontSize:12,fontWeight:700,color:V,textTransform:"uppercase",letterSpacing:"0.05em"}}>⏭️ Accès et attente</p>
+          <Item emoji="⏭️" titre="File prioritaire disponible" desc={details.filePrioritaire} val={signaux.filePrioritaire}/>
+          {signaux.filePrioritaire&&<Item emoji="👤" titre="Accompagnateur inclus" desc="L'accompagnateur bénéficie du même accès prioritaire." val={true}/>}
+          <Item emoji="🕙" titre="Heures calmes" desc={details.heuresCalmes} val={details.heuresCalmes?true:null}/>
+          <Item emoji="📅" titre="Demande en avance possible" desc="Certains dispositifs nécessitent une réservation préalable." val={signaux.filePrioritaire}/>
+        </div>
+
+        <div style={{marginBottom:18}}>
+          <p style={{margin:"0 0 4px",fontSize:12,fontWeight:700,color:V,textTransform:"uppercase",letterSpacing:"0.05em"}}>🔇 Environnement sensoriel</p>
+          <Item emoji="🔇" titre="Environnement calme" desc={details.environnementCalme} val={signaux.environnementCalme}/>
+          <Item emoji="⚡" titre="Effets stroboscopiques" desc="À vérifier selon les attractions ou animations présentes sur place." val={null}/>
+        </div>
+
+        <div style={{marginBottom:18}}>
+          <p style={{margin:"0 0 4px",fontSize:12,fontWeight:700,color:V,textTransform:"uppercase",letterSpacing:"0.05em"}}>🛋️ Espaces de régulation</p>
+          <Item emoji="🛋️" titre="Espace de pause" desc={details.espacePause} val={signaux.espacePause}/>
+          <Item emoji="🏃" titre="Espace pour bouger" desc={details.espaceBouger} val={signaux.espaceBouger}/>
+          {signaux.pmr&&<Item emoji="🚻" titre="Sanitaires adaptés" desc="Sanitaires accessibles aux personnes à mobilité réduite." val={true}/>}
+        </div>
+
+        <div style={{marginBottom:18}}>
+          <p style={{margin:"0 0 4px",fontSize:12,fontWeight:700,color:V,textTransform:"uppercase",letterSpacing:"0.05em"}}>🗺️ Préparation</p>
+          <Item emoji="🗺️" titre="Supports visuels" desc={details.supportsVisuels} val={signaux.supportsVisuels}/>
+          <Item emoji="🧭" titre="Plan simplifié disponible" desc="Un plan simplifié peut aider à anticiper le parcours." val={signaux.supportsVisuels}/>
+          <Item emoji="📞" titre="Contact accessibilité disponible" desc="Un référent accessibilité peut être contacté avant la visite." val={signaux.personnelForme}/>
+        </div>
+
+        <div style={{marginBottom:18}}>
+          <p style={{margin:"0 0 4px",fontSize:12,fontWeight:700,color:V,textTransform:"uppercase",letterSpacing:"0.05em"}}>🚶 Rythme et trajets</p>
+          <Item emoji="🚶" titre="Distance de marche" desc={details.distanceMarche} val={details.distanceMarche?true:null}/>
+          <Item emoji="🔀" titre="Parcours libre" desc="Aucun sens de visite imposé, l'enfant peut avancer à son rythme." val={null}/>
+          <Item emoji="🛑" titre="Zones de pause fréquentes" desc="Présence régulière de zones d'arrêt sur le parcours." val={signaux.espacePause}/>
+          <Item emoji="👶" titre="Poussette" desc={details.poussette} val={signaux.poussette}/>
+          <Item emoji="♿" titre="PMR" desc={details.pmr} val={signaux.pmr}/>
+        </div>
+
+        <div style={{marginBottom:18}}>
+          <p style={{margin:"0 0 4px",fontSize:12,fontWeight:700,color:V,textTransform:"uppercase",letterSpacing:"0.05em"}}>👥 Personnel et flexibilité</p>
+          <Item emoji="👥" titre="Personnel formé" desc={details.personnelForme||"Non renseigné"} val={signaux.personnelForme}/>
+          <Item emoji="💶" titre="Tarif accompagnateur" desc="Se renseigner directement auprès du lieu pour les conditions tarifaires." val={null}/>
+          <Item emoji="🚪" titre="Sortie d'urgence possible" desc="Possibilité de quitter facilement en cas de besoin." val={null}/>
+        </div>
+
+        {details.conseilCommunaute&&(
+          <div style={{background:"#F5F0FF",borderRadius:12,padding:"12px 14px",marginBottom:14,border:"1px solid rgba(108,92,231,0.15)"}}>
+            <p style={{margin:0,fontSize:12,color:"#3C3489",fontStyle:"italic",lineHeight:1.6}}>💬 {details.conseilCommunaute}</p>
+          </div>
+        )}
+
+        <p style={{margin:0,fontSize:11,color:"#9CA3AF",lineHeight:1.5,textAlign:"center"}}>📝 Informations renseignées par la communauté Parent'Hèse. Vérifiez directement auprès du lieu avant votre visite.</p>
+      </div>
+    </div>
+  );
+}
+
+function AccessibiliteSortieSection({accessibilite,tousLesAvis=[]}){
+  const [showComplet,setShowComplet]=useState(false);
+  const signauxCreateur=accessibilite?.signaux;
+  // Tous les items possibles (8 signaux de base + items détaillés), aplatis et dédupliqués
+  const TOUS_ITEMS=[...ACCESS_SIGNAUX_DEF.map(d=>({k:d.k,emoji:d.emoji,label:d.labelOn})),...ACCESS_SIGNAUX_GROUPES.flatMap(g=>g.items)];
+  const itemsUniques=Object.values(TOUS_ITEMS.reduce((acc,it)=>{if(!acc[it.k])acc[it.k]=it;return acc;},{}));
+  // Agrégation des signaux confirmés par la communauté via les avis
+  const compteComm={};
+  tousLesAvis.forEach(a=>{(a.accessibiliteSignalee||[]).forEach(k=>{compteComm[k]=(compteComm[k]||0)+1;});});
+  const hasComm=Object.keys(compteComm).length>0;
+  if(!signauxCreateur&&!hasComm)return null;
+  const signaux=signauxCreateur||{};
+  const signauxComm=itemsUniques.filter(def=>compteComm[def.k]>0&&signaux[def.k]!==true);
+  return(
+    <div style={{background:WH,borderRadius:16,padding:14,marginBottom:12,boxShadow:"0 1px 3px rgba(0,0,0,0.06)"}}>
+      <div style={{fontSize:12,fontWeight:600,color:V,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:10}}>🔍 Accessibilité</div>
+      {signauxCreateur&&(
+        <div style={{display:"flex",gap:6,overflowX:"auto",paddingBottom:6,scrollbarWidth:"none"}}>
+          {ACCESS_SIGNAUX_DEF.map(def=><AccessPill key={def.k} def={def} val={signaux[def.k]}/>)}
+        </div>
+      )}
+      {signauxComm.length>0&&(
+        <div style={{marginTop:signauxCreateur?10:0}}>
+          <p style={{margin:"0 0 6px",fontSize:11,fontWeight:700,color:"#3B6D11",textTransform:"uppercase",letterSpacing:"0.04em"}}>👥 Constaté par la communauté</p>
+          <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+            {signauxComm.map(def=>(
+              <span key={def.k} style={{display:"inline-flex",alignItems:"center",gap:5,background:"#EAF3DE",color:"#3B6D11",fontSize:11,fontWeight:600,padding:"5px 12px",borderRadius:20}}>
+                {def.emoji} {def.label} <span style={{fontSize:10,opacity:0.8}}>({compteComm[def.k]})</span>
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+      {signauxCreateur&&<button onClick={()=>setShowComplet(true)} style={{background:"none",border:"none",color:"#6C5CE7",fontSize:12,fontWeight:600,cursor:"pointer",padding:"10px 0 0"}}>📋 Voir la fiche accessibilité complète →</button>}
+      {showComplet&&<FicheAccessibiliteComplete accessibilite={accessibilite} onClose={()=>setShowComplet(false)}/>}
+    </div>
+  );
+}
+
+function SortieDetailPage({sortie,isFavorite,onToggleFavorite,onBack,onReport,isLoggedIn=true,onRequireAuth,onMasquer,estMasque=false}){
   const card={background:WH,borderRadius:16,padding:14,marginBottom:12,boxShadow:"0 1px 3px rgba(0,0,0,0.06)"};
   const sec=(t)=>(<div style={{fontSize:12,fontWeight:600,color:V,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:10}}>{t}</div>);
   const emo=sortie.type==="Zoo"?"🦁":sortie.type==="Musee"?"🏛️":sortie.type==="Parc d attraction"?"🎢":sortie.type==="Plage"?"🏖️":sortie.type==="Bowling"?"🎳":sortie.type==="Escape game"?"🔐":sortie.type==="Ferme pedagogique"?"🐄":sortie.type==="Piscine"?"🏊":"🗺️";
@@ -963,11 +1638,22 @@ function SortieDetailPage({sortie,isFavorite,onToggleFavorite,onBack,onReport,is
       <div style={{background:sortie.photo?`center/cover url(${sortie.photo})`:"linear-gradient(135deg,#E8F4FF,#D6EAFF)",padding:"28px 20px",textAlign:"center"}}><div style={{fontSize:56,marginBottom:8,lineHeight:1,filter:sortie.photo?"drop-shadow(0 2px 8px rgba(0,0,0,0.4))":"none"}}>{sortie.photo?"":emo}</div><div style={{display:"inline-block",background:sortie.photo?"rgba(0,0,0,0.5)":V,color:WH,fontSize:11,padding:"3px 12px",borderRadius:20,marginBottom:8}}>{sortie.type}</div><div style={{fontSize:20,fontWeight:700,color:sortie.photo?WH:"#1a1a1a",marginBottom:6,textShadow:sortie.photo?"0 2px 6px rgba(0,0,0,0.5)":"none"}}>{sortie.nom}</div><div style={{fontSize:12,color:sortie.photo?WH:"#6B7280",textShadow:sortie.photo?"0 1px 4px rgba(0,0,0,0.5)":"none",display:"flex",justifyContent:"center",gap:12,flexWrap:"wrap"}}><span>{sortie.ville}</span><span>{sortie.prix}</span>{!chargement&&tousLesAvis.length>0&&<span>{noteGlobale.toFixed(1)}/5</span>}</div></div>
       <div style={{padding:16}}>
         <div style={card}>{sec("Informations")}{[{label:"Adresse",val:sortie.ville+", Dept "+sortie.dept,icon:"📍"},{label:"Horaires",val:"10h00 - 18h00",icon:"🕙"},{label:"Tarifs",val:sortie.prix,icon:"🎫"},{label:"Type",val:sortie.type,icon:"🏷️"}].map(({label,val,icon},i,arr)=>(<div key={label} style={{display:"flex",alignItems:"flex-start",gap:10,padding:"7px 0",borderBottom:i<arr.length-1?"0.5px solid #F3F4F6":"none"}}><span style={{fontSize:14,width:20,flexShrink:0,marginTop:1}}>{icon}</span><div style={{flex:1}}><div style={{fontSize:11,color:"#9CA3AF",marginBottom:2}}>{label}</div><div style={{fontSize:13,color:"#1a1a1a",fontWeight:500}}>{val}</div></div></div>))}</div>
+        <AccessibiliteSortieSection accessibilite={sortie.accessibilite} tousLesAvis={tousLesAvis}/>
         <div style={card}>{sec("A propos")}<p style={{fontSize:13,color:"#374151",lineHeight:1.6,margin:0}}>{sortie.desc||"Aucune description disponible."}</p></div>
-        <div style={card}>{sec("Adapte TND")}<p style={{margin:"-4px 0 10px",fontSize:11,color:"#9CA3AF"}}>Moyenne calculee a partir des avis laisses par des familles concernees</p><div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:12}}>{[{label:"TSA",bg:"#EEEDFE",col:"#3C3489"},{label:"TDAH",bg:"#E1F5EE",col:"#085041"},{label:"DYS",bg:"#FAEEDA",col:"#633806"},{label:"PMR",bg:"#F0F4FF",col:"#1D4ED8"},{label:"Bebe",bg:"#FFF0F5",col:"#9D174D"}].map(({label,bg,col})=>(<span key={label} style={{background:bg,color:col,fontSize:11,fontWeight:600,padding:"3px 10px",borderRadius:20}}>{label}</span>))}</div>{tndRows.map(({label,bg,col,stars,moyenne,avis},i,arr)=>(<div key={label} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"6px 0",borderBottom:i<arr.length-1?"0.5px solid #F3F4F6":"none"}}><span style={{background:bg,color:col,fontSize:11,fontWeight:600,padding:"2px 8px",borderRadius:20}}>{label}</span>{moyenne!=null?(<><Stars count={stars} size={13}/><span style={{fontSize:11,color:"#9CA3AF"}}>{moyenne.toFixed(1)} · {avis}</span></>):(<><span style={{fontSize:11,color:"#9CA3AF"}}>Pas encore</span><span/></>)}</div>))}</div>
+        <div style={card}>
+          {sec("🧩 Environnement TND")}
+          <TNDBadgesEvt tnd={sortie.tnd}/>
+          {sortie.commentaireTND&&(
+            <div style={{display:"flex",gap:8,background:"#F5F0FF",borderRadius:10,padding:"10px 12px",marginTop:10,border:"1px solid rgba(108,92,231,0.15)"}}>
+              <span style={{fontSize:16,flexShrink:0}}>💬</span>
+              <p style={{margin:0,fontSize:12,color:"#3C3489",fontStyle:"italic",lineHeight:1.6}}>{sortie.commentaireTND}</p>
+            </div>
+          )}
+        </div>
         <div style={card}>{sec("Notes")}<div style={{display:"flex",alignItems:"center",gap:12,marginBottom:8}}><span style={{fontSize:36,fontWeight:700,color:"#1a1a1a"}}>{chargement?"...":noteGlobale.toFixed(1)}</span><div><Stars count={Math.round(noteGlobale)} size={18}/><div style={{fontSize:11,color:"#9CA3AF",marginTop:2}}>Sur {tousLesAvis.length} avis</div></div></div>{[5,4,3,2,1].map(n=>{const cnt=tousLesAvis.filter(a=>Number(a.stars)===n).length;const pct=tousLesAvis.length?Math.round((cnt/tousLesAvis.length)*100):0;return(<div key={n} style={{display:"flex",alignItems:"center",gap:8,marginBottom:4}}><span style={{fontSize:11,color:"#9CA3AF",width:8}}>{n}</span><span style={{color:"#F5A623",fontSize:11}}>★</span><div style={{flex:1,height:6,background:BG2,borderRadius:10,overflow:"hidden"}}><div style={{width:pct+"%",height:"100%",background:"#F5A623",borderRadius:10}}/></div><span style={{fontSize:11,color:"#9CA3AF",width:16}}>{cnt}</span></div>);})}</div>
-        <AvisForm isLoggedIn={isLoggedIn} onRequireAuth={onRequireAuth} tousLesAvis={tousLesAvis} chargement={chargement} onAjouterAvis={ajouterAvis}/>
+        <AvisForm isLoggedIn={isLoggedIn} onRequireAuth={onRequireAuth} tousLesAvis={tousLesAvis} chargement={chargement} onAjouterAvis={ajouterAvis} showAccessibilite={true}/>
         <button onClick={onToggleFavorite} style={{width:"100%",background:isFavorite?"#FCEBEB":V,color:isFavorite?"#A32D2D":WH,border:"none",borderRadius:28,padding:14,fontSize:14,fontWeight:600,cursor:"pointer",marginBottom:8}}>{isFavorite?"Retirer des favoris":"Ajouter aux favoris"}</button>
+        {onMasquer&&<button onClick={onMasquer} style={{width:"100%",background:estMasque?VL:WH,color:estMasque?V:TM,border:BD,borderRadius:28,padding:12,fontSize:13,fontWeight:600,cursor:"pointer",marginBottom:8}}>{estMasque?"↩️ Reproposer cette sortie":"🚫 Ne plus proposer cette sortie"}</button>}
         <button onClick={()=>setShowPartageMenu(true)} style={{width:"100%",background:WH,color:V,border:"1.5px solid "+V,borderRadius:28,padding:12,fontSize:14,cursor:"pointer"}}>Partager</button>
         <SignalementButton type="sortie" onSignaler={(raison,detail)=>{if(onReport)onReport({type:"sortie",titre:sortie.nom,raison,detail:detail||"",signalePar:"utilisateur@parentales.fr",dept:sortie.dept,prix:sortie.prix,ville:sortie.ville,categorie:sortie.type});}}/>
       </div>
@@ -976,7 +1662,57 @@ function SortieDetailPage({sortie,isFavorite,onToggleFavorite,onBack,onReport,is
   );
 }
 
-function ActivityDetailPage({activity,isFavorite,onToggleFavorite,onBack,onReport,isLoggedIn=true,onRequireAuth}){
+function AAnticiperVide(){
+  const [showMini,setShowMini]=useState(false);
+  const [sel,setSel]=useState([]);
+  const [envoye,setEnvoye]=useState(false);
+  const card={background:WH,borderRadius:16,padding:14,marginBottom:12,boxShadow:"0 1px 3px rgba(0,0,0,0.06)"};
+  return(
+    <div style={card}>
+      <p style={{margin:0,fontSize:13,color:TM}}>💡 Pas encore d'infos sur les points à anticiper pour cette activité.</p>
+      <button onClick={()=>setShowMini(true)} style={{background:"none",border:"none",color:V,fontSize:12,fontWeight:600,cursor:"pointer",padding:"8px 0 0"}}>Contribuer →</button>
+
+      {showMini&&(
+        <div onClick={()=>setShowMini(false)} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.5)",zIndex:650,display:"flex",alignItems:"flex-end"}}>
+          <div onClick={e=>e.stopPropagation()} style={{background:WH,borderRadius:"24px 24px 0 0",width:"100%",maxHeight:"85vh",overflowY:"auto",padding:"20px 20px 32px"}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
+              <p style={{margin:0,fontSize:16,fontWeight:800,color:"#1a1a1a"}}>⚠️ Points à anticiper</p>
+              <button onClick={()=>setShowMini(false)} style={{background:BG,border:"none",borderRadius:"50%",width:32,height:32,cursor:"pointer",fontSize:14,flexShrink:0}}>✕</button>
+            </div>
+            {envoye?(
+              <div style={{textAlign:"center",padding:"20px 0"}}>
+                <p style={{fontSize:36,margin:"0 0 10px"}}>✅</p>
+                <p style={{fontSize:14,fontWeight:700,color:TX,margin:0}}>Merci pour ta contribution !</p>
+              </div>
+            ):(
+              <>
+                <p style={{margin:"0 0 14px",fontSize:12,color:TM}}>Coche ce qui s'applique à cette activité pour aider les autres familles.</p>
+                <div style={{display:"flex",flexDirection:"column",gap:6,marginBottom:16}}>
+                  {POINTS_ANTICIPER.map(pt=>{
+                    const actif=sel.includes(pt.id);
+                    return(
+                      <button key={pt.id} onClick={()=>setSel(p=>actif?p.filter(x=>x!==pt.id):[...p,pt.id])} style={{padding:"10px 12px",borderRadius:10,border:`1.5px solid ${actif?"#F59E0B":"#E5E7EB"}`,background:actif?"#FFF7ED":WH,cursor:"pointer",textAlign:"left",display:"flex",alignItems:"flex-start",gap:10,width:"100%"}}>
+                        <span style={{fontSize:18,flexShrink:0}}>{pt.emoji}</span>
+                        <div style={{flex:1}}>
+                          <p style={{margin:"0 0 2px",fontSize:13,fontWeight:600,color:"#1a1a1a"}}>{pt.label}</p>
+                          <p style={{margin:0,fontSize:11,color:TM,lineHeight:1.4}}>{pt.desc}</p>
+                        </div>
+                        <span style={{fontSize:14,flexShrink:0,color:actif?"#F59E0B":"#D1D5DB"}}>{actif?"☑":"☐"}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+                <button onClick={()=>setEnvoye(true)} disabled={sel.length===0} style={{width:"100%",padding:14,borderRadius:28,background:sel.length===0?"#D1D5DB":V,border:"none",color:WH,fontWeight:700,fontSize:14,cursor:sel.length===0?"default":"pointer"}}>Envoyer ma contribution</button>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ActivityDetailPage({activity,isFavorite,onToggleFavorite,onBack,onReport,isLoggedIn=true,onRequireAuth,matchEnfant=null,onMasquer,estMasque=false}){
   const titre=activity.titre||activity.title||activity.nom||"";
   const emoji=activity.emoji||"🎨";
   const categorie=activity.categorie||activity.category||"";
@@ -1002,9 +1738,99 @@ function ActivityDetailPage({activity,isFavorite,onToggleFavorite,onBack,onRepor
       <div style={{background:WH,padding:16,display:"flex",alignItems:"center",gap:10,borderBottom:"0.5px solid #E5E5E5",position:"sticky",top:0,zIndex:10}}><button onClick={onBack} style={{width:32,height:32,borderRadius:"50%",background:BG,border:"none",cursor:"pointer",fontSize:14}}>←</button><span style={{fontSize:14,fontWeight:500,color:"#1a1a1a"}}>Detail de l activite</span></div>
       <div style={{background:activity.photo?`center/cover url(${activity.photo})`:"linear-gradient(135deg,#EEEDFE,#DDD9FD)",padding:"28px 20px",textAlign:"center"}}><div style={{fontSize:64,marginBottom:8,lineHeight:1}}>{activity.photo?"":emoji}</div><div style={{display:"inline-block",background:activity.photo?"rgba(0,0,0,0.5)":V,color:WH,fontSize:11,padding:"3px 12px",borderRadius:20,marginBottom:8}}>{categorie}</div><div style={{fontSize:20,fontWeight:700,color:activity.photo?WH:"#1a1a1a",marginBottom:6,textShadow:activity.photo?"0 2px 6px rgba(0,0,0,0.5)":"none"}}>{titre}</div><div style={{fontSize:12,color:activity.photo?WH:"#6B7280",textShadow:activity.photo?"0 1px 4px rgba(0,0,0,0.5)":"none",display:"flex",justifyContent:"center",gap:12}}>{duree&&<span>{duree}</span>}{difficulte&&<span>{difficulte}</span>}{lieuLabel&&<span>{lieuLabel}</span>}</div></div>
       <div style={{padding:16}}>
+        {matchEnfant&&(()=>{
+          const score=calculerScoreMatch(activity,matchEnfant);
+          const details=getMatchDetails(activity,matchEnfant);
+          const oks=details.filter(d=>d.status==="ok");
+          const kos=details.filter(d=>d.status==="ko");
+          if(score>=70){
+            return(
+              <div style={{background:"#EAF3DE",border:"1.5px solid #3B6D11",borderRadius:12,padding:10,marginBottom:12}}>
+                <p style={{margin:"0 0 6px",fontSize:13,fontWeight:700,color:"#3B6D11"}}>✓ Bien adapté au profil de {matchEnfant.prenom}</p>
+                {oks.length>0&&<div style={{display:"flex",flexWrap:"wrap",gap:5}}>{oks.map((d,i)=><span key={i} style={{fontSize:10,fontWeight:600,padding:"3px 8px",borderRadius:10,background:"#fff",color:"#3B6D11"}}>{d.emoji} {d.label}</span>)}</div>}
+              </div>
+            );
+          }
+          if(score>=40){
+            return(
+              <div style={{background:"#FFF7ED",border:"1.5px solid #F59E0B",borderRadius:12,padding:10,marginBottom:12}}>
+                <p style={{margin:"0 0 6px",fontSize:13,fontWeight:700,color:"#9A3412"}}>⚠️ Partiellement adapté à {matchEnfant.prenom}</p>
+                <div style={{display:"flex",flexWrap:"wrap",gap:5}}>
+                  {oks.map((d,i)=><span key={"ok"+i} style={{fontSize:10,fontWeight:600,padding:"3px 8px",borderRadius:10,background:"#EAF3DE",color:"#3B6D11"}}>✓ {d.emoji} {d.label}</span>)}
+                  {kos.map((d,i)=><span key={"ko"+i} style={{fontSize:10,fontWeight:600,padding:"3px 8px",borderRadius:10,background:"#FCEBEB",color:"#A32D2D"}}>✗ {d.emoji} {d.label}</span>)}
+                </div>
+              </div>
+            );
+          }
+          return(
+            <div style={{background:"#FCEBEB",border:"1.5px solid #A32D2D",borderRadius:12,padding:10,marginBottom:12}}>
+              <p style={{margin:"0 0 6px",fontSize:13,fontWeight:700,color:"#A32D2D"}}>⚠️ Peu adapté au profil de {matchEnfant.prenom}</p>
+              {kos.length>0&&(
+                <>
+                  <p style={{margin:"0 0 5px",fontSize:11,color:"#78716C"}}>Points non couverts :</p>
+                  <div style={{display:"flex",flexWrap:"wrap",gap:5}}>{kos.map((d,i)=><span key={i} style={{fontSize:10,fontWeight:600,padding:"3px 8px",borderRadius:10,background:"#fff",color:"#A32D2D"}}>{d.emoji} {d.label}</span>)}</div>
+                </>
+              )}
+            </div>
+          );
+        })()}
         <div style={card}>{sec("Informations")}{[{label:"Motivation",val:motLabel},{label:"Age conseille",val:activity.age||"Tous ages"},{label:"Difficulte",val:difficulte||"-"}].map(({label,val},i)=>(<div key={label} style={{display:"flex",alignItems:"center",gap:10,padding:"6px 0",borderBottom:i<2?"0.5px solid #F3F4F6":"none"}}><span style={{fontSize:12,color:"#9CA3AF",width:80,flexShrink:0}}>{label}</span><span style={{fontSize:13,color:"#1a1a1a",fontWeight:500}}>{val}</span></div>))}</div>
         <div style={card}>{sec("Materiel")}{materiel?<div>{materiel.map((m,i)=>(<span key={i} style={{display:"inline-flex",alignItems:"center",gap:4,background:BG,borderRadius:20,padding:"4px 10px",fontSize:12,color:"#374151",margin:3}}>{m}</span>))}</div>:<span style={{fontSize:13,color:TM}}>Aucun materiel necessaire !</span>}</div>
         <div style={card}>{sec("Etapes")}{etapes?etapes.map((e,i)=>(<div key={i} style={{display:"flex",gap:10,padding:"6px 0"}}><div style={{width:22,height:22,borderRadius:"50%",background:V,color:WH,fontSize:11,fontWeight:600,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginTop:1}}>{i+1}</div><div style={{fontSize:13,color:"#374151",lineHeight:1.5}}>{e}</div></div>)):<span style={{fontSize:13,color:TM}}>Laissez parler votre creativite !</span>}</div>
+
+        {/* Points à anticiper */}
+        {(()=>{
+          const ptsCreateur=activity.pointsAnticiper||POINTS_ANTICIPER_MAP[titre]||[];
+          // Agrégation des points signalés par la communauté via les avis
+          const compteComm={};
+          tousLesAvis.forEach(a=>{(a.pointsAnticiper||[]).forEach(id=>{compteComm[id]=(compteComm[id]||0)+1;});});
+          const ptsCommunaute=Object.keys(compteComm).filter(id=>!ptsCreateur.includes(id));
+          if(ptsCreateur.length===0&&ptsCommunaute.length===0) return <AAnticiperVide/>;
+          const pts=ptsCreateur.map(id=>POINTS_ANTICIPER.find(p=>p.id===id)).filter(Boolean);
+          const groupes={sensoriel:{titre:"🎨 Sensoriel",items:[]},attention:{titre:"🧠 Attention",items:[]},moteur:{titre:"💪 Moteur",items:[]},structure:{titre:"🗓️ Structure",items:[]},emotion:{titre:"💛 Émotion",items:[]}};
+          pts.forEach(p=>{if(groupes[p.categorie])groupes[p.categorie].items.push(p);});
+          const ptsCommList=ptsCommunaute.map(id=>({...POINTS_ANTICIPER.find(p=>p.id===id),nb:compteComm[id]})).filter(p=>p.id);
+          return(
+            <div style={card}>
+              {sec("⚠️ À anticiper")}
+              {Object.values(groupes).filter(g=>g.items.length>0).map(g=>(
+                <div key={g.titre} style={{marginBottom:12}}>
+                  <p style={{margin:"0 0 8px",fontSize:11,fontWeight:700,color:"#9A3412",textTransform:"uppercase",letterSpacing:"0.04em"}}>{g.titre}</p>
+                  <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                    {g.items.map(p=>(
+                      <div key={p.id} style={{background:"#FFF7ED",borderRadius:10,borderLeft:"3px solid #F59E0B",padding:"10px 12px",display:"flex",gap:10,alignItems:"flex-start"}}>
+                        <span style={{fontSize:24,flexShrink:0,lineHeight:1}}>{p.emoji}</span>
+                        <div style={{flex:1}}>
+                          <p style={{margin:"0 0 2px",fontSize:13,fontWeight:700,color:"#1a1a1a"}}>{p.label}</p>
+                          <p style={{margin:0,fontSize:12,color:"#78716C",lineHeight:1.5}}>{p.desc}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+              {ptsCommList.length>0&&(
+                <div>
+                  <p style={{margin:"0 0 8px",fontSize:11,fontWeight:700,color:"#9A3412",textTransform:"uppercase",letterSpacing:"0.04em"}}>👥 Signalé par la communauté</p>
+                  <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                    {ptsCommList.map(p=>(
+                      <div key={p.id} style={{background:"#FFF7ED",borderRadius:10,borderLeft:"3px solid #F59E0B",padding:"10px 12px",display:"flex",gap:10,alignItems:"flex-start"}}>
+                        <span style={{fontSize:24,flexShrink:0,lineHeight:1}}>{p.emoji}</span>
+                        <div style={{flex:1}}>
+                          <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:2}}>
+                            <p style={{margin:0,fontSize:13,fontWeight:700,color:"#1a1a1a"}}>{p.label}</p>
+                            <span style={{fontSize:10,fontWeight:700,color:"#9A3412",background:"#FDE7C8",padding:"1px 7px",borderRadius:10}}>{p.nb} famille{p.nb>1?"s":""}</span>
+                          </div>
+                          <p style={{margin:0,fontSize:12,color:"#78716C",lineHeight:1.5}}>{p.desc}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })()}
 
         {/* Section TND */}
         {(()=>{
@@ -1013,25 +1839,20 @@ function ActivityDetailPage({activity,isFavorite,onToggleFavorite,onBack,onRepor
           const adaps=activity.adaptations||[];
           const hasData=p.tsa||p.tdah||p.dys||p.tous||Object.values(n).some(v=>v>0)||adaps.length>0||activity.commentaireTND;
           if(!hasData) return(
-            <div style={{...card,textAlign:"center",padding:"20px 14px"}}>
+            <div style={{...card,padding:"16px"}}>
               {sec("🧩 Infos TND")}
-              <p style={{fontSize:13,color:TM,margin:"0 0 12px"}}>Pas encore d'infos TND pour cette activité — sois le premier à contribuer !</p>
-              <button onClick={()=>onReport&&onReport({...activity,_action:"tnd_request"})} style={{padding:"8px 20px",borderRadius:20,background:VL,border:"none",color:V,fontWeight:700,fontSize:12,cursor:"pointer"}}>✏️ Proposer des infos TND</button>
-              <p style={{margin:"8px 0 0",fontSize:11,color:TM}}>Ta contribution sera examinée par notre équipe</p>
+              <div style={{display:"flex",alignItems:"center",gap:10,background:"#F9FAFB",borderRadius:12,padding:"12px 14px"}}>
+                <span style={{fontSize:22,flexShrink:0}}>ℹ️</span>
+                <div>
+                  <p style={{margin:"0 0 2px",fontSize:13,fontWeight:600,color:TX}}>Informations TND non disponibles</p>
+                  <p style={{margin:0,fontSize:11,color:TM}}>Les infos de compatibilité TND n'ont pas encore été renseignées pour cette activité.</p>
+                </div>
+              </div>
             </div>
           );
           return(
             <div style={card}>
               {sec("🧩 Infos TND")}
-              {/* Profils */}
-              {(p.tsa||p.tdah||p.dys||p.tous)&&(
-                <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:14}}>
-                  {p.tous&&<span style={{background:"#EAF3DE",color:"#3B6D11",fontSize:11,fontWeight:700,padding:"4px 12px",borderRadius:20}}>🌱 Tous profils</span>}
-                  {p.tsa&&<span style={{background:"#EEEDFE",color:"#3C3489",fontSize:11,fontWeight:700,padding:"4px 12px",borderRadius:20}}>🧩 TSA</span>}
-                  {p.tdah&&<span style={{background:"#E1F5EE",color:"#085041",fontSize:11,fontWeight:700,padding:"4px 12px",borderRadius:20}}>⚡ TDAH</span>}
-                  {p.dys&&<span style={{background:"#FAEEDA",color:"#633806",fontSize:11,fontWeight:700,padding:"4px 12px",borderRadius:20}}>📖 DYS</span>}
-                </div>
-              )}
               {/* Niveaux sensoriels */}
               {Object.values(n).some(v=>v>0)&&(
                 <div style={{marginBottom:14}}>
@@ -1064,9 +1885,10 @@ function ActivityDetailPage({activity,isFavorite,onToggleFavorite,onBack,onRepor
             </div>
           );
         })()}
-        <div style={card}>{sec("Notes")}<div style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}><span style={{fontSize:28,fontWeight:700,color:"#1a1a1a"}}>{chargement?"...":noteGlobale.toFixed(1)}</span><div><Stars count={Math.round(noteGlobale)} size={14}/><div style={{fontSize:11,color:"#9CA3AF"}}>{tousLesAvis.length} avis</div></div></div><p style={{margin:"0 0 8px",fontSize:11,color:"#9CA3AF"}}>Moyenne par profil, calculee a partir des avis</p>{tndRows.map(({label,bg,col,stars,moyenne,avis},i,arr)=>(<div key={label} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"6px 0",borderBottom:i<arr.length-1?"0.5px solid #F3F4F6":"none"}}><span style={{background:bg,color:col,fontSize:11,fontWeight:600,padding:"2px 8px",borderRadius:20}}>{label}</span>{moyenne!=null?(<><Stars count={stars} size={12}/><span style={{fontSize:11,color:"#9CA3AF"}}>{moyenne.toFixed(1)} · {avis}</span></>):(<><span style={{fontSize:11,color:"#9CA3AF"}}>Pas encore</span><span/></>)}</div>))}</div>
-        <AvisForm isLoggedIn={isLoggedIn} onRequireAuth={onRequireAuth} tousLesAvis={tousLesAvis} chargement={chargement} onAjouterAvis={ajouterAvis}/>
+        <div style={card}>{sec("Notes")}<div style={{display:"flex",alignItems:"center",gap:10}}><span style={{fontSize:28,fontWeight:700,color:"#1a1a1a"}}>{chargement?"...":noteGlobale.toFixed(1)}</span><div><Stars count={Math.round(noteGlobale)} size={14}/><div style={{fontSize:11,color:"#9CA3AF"}}>{tousLesAvis.length} avis</div></div></div></div>
+        <AvisForm isLoggedIn={isLoggedIn} onRequireAuth={onRequireAuth} tousLesAvis={tousLesAvis} chargement={chargement} onAjouterAvis={ajouterAvis} showPointsAnticiper={true}/>
         <button onClick={onToggleFavorite} style={{width:"100%",background:isFavorite?"#FCEBEB":V,color:isFavorite?"#A32D2D":WH,border:"none",borderRadius:28,padding:14,fontSize:14,fontWeight:600,cursor:"pointer",marginBottom:8}}>{isFavorite?"Retirer des favoris":"Ajouter aux favoris"}</button>
+        {onMasquer&&<button onClick={onMasquer} style={{width:"100%",background:estMasque?VL:WH,color:estMasque?V:TM,border:BD,borderRadius:28,padding:12,fontSize:13,fontWeight:600,cursor:"pointer",marginBottom:8}}>{estMasque?"↩️ Reproposer cette activité":"🚫 Ne plus proposer cette activité"}</button>}
         <button onClick={()=>setShowPartageMenu(true)} style={{width:"100%",background:WH,color:V,border:"1.5px solid "+V,borderRadius:28,padding:12,fontSize:14,cursor:"pointer"}}>Partager</button>
         <SignalementButton type="activite" onSignaler={(raison,detail)=>{if(onReport)onReport({type:"activite",titre:activity.nom||activity.titre||activity.title,raison,detail:detail||"",signalePar:"utilisateur@parentales.fr",categorie:activity.categorie,lieu:activity.lieu,age:activity.age});}}/>
       </div>
@@ -1093,8 +1915,16 @@ function EvenementDetail({evt,onBack,onReport,isFavorite,onToggleFavorite,isLogg
       <div style={{padding:16}}>
         <div style={card}>{sec("Informations")}{[{icon:"📍",label:"Lieu",val:evt.ville},{icon:"📅",label:"Date",val:evt.date},{icon:"🎫",label:"Tarif",val:evt.prix},{icon:"👶",label:"Age",val:evt.age}].map(({icon,label,val},i,arr)=>(<div key={label} style={{display:"flex",alignItems:"flex-start",gap:10,padding:"7px 0",borderBottom:i<arr.length-1?"0.5px solid #F3F4F6":"none"}}><span style={{fontSize:14,width:20,flexShrink:0,marginTop:1}}>{icon}</span><div style={{flex:1}}><div style={{fontSize:11,color:"#9CA3AF",marginBottom:2}}>{label}</div><div style={{fontSize:13,color:"#1a1a1a",fontWeight:500}}>{val}</div></div></div>))}</div>
         <div style={card}>{sec("A propos")}<p style={{fontSize:13,color:"#374151",lineHeight:1.6,margin:0}}>{evt.desc||"Aucune description disponible."}</p></div>
-        <div style={card}>{sec("Profil sensoriel du lieu")}<TNDBadgesEvt tnd={evt.tnd}/></div>
-        <div style={card}>{sec("Adapte TND")}<p style={{margin:"-4px 0 10px",fontSize:11,color:"#9CA3AF"}}>Moyenne calculee a partir des avis laisses par des familles concernees</p><div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:12}}>{[{label:"TSA",bg:"#EEEDFE",col:"#3C3489"},{label:"TDAH",bg:"#E1F5EE",col:"#085041"},{label:"DYS",bg:"#FAEEDA",col:"#633806"},{label:"PMR",bg:"#F0F4FF",col:"#1D4ED8"},{label:"Bebe",bg:"#FFF0F5",col:"#9D174D"}].map(({label,bg,col})=>(<span key={label} style={{background:bg,color:col,fontSize:11,fontWeight:600,padding:"3px 10px",borderRadius:20}}>{label}</span>))}</div>{tndRows.map(({label,bg,col,stars,moyenne,avis},i,arr)=>(<div key={label} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"6px 0",borderBottom:i<arr.length-1?"0.5px solid #F3F4F6":"none"}}><span style={{background:bg,color:col,fontSize:11,fontWeight:600,padding:"2px 8px",borderRadius:20}}>{label}</span>{moyenne!=null?(<><Stars count={stars} size={13}/><span style={{fontSize:11,color:"#9CA3AF"}}>{moyenne.toFixed(1)} · {avis}</span></>):(<><span style={{fontSize:11,color:"#9CA3AF"}}>Pas encore</span><span/></>)}</div>))}</div>
+        <div style={card}>
+          {sec("🧩 Environnement TND")}
+          <TNDBadgesEvt tnd={evt.tnd}/>
+          {evt.commentaireTND&&(
+            <div style={{display:"flex",gap:8,background:"#F5F0FF",borderRadius:10,padding:"10px 12px",marginTop:10,border:"1px solid rgba(108,92,231,0.15)"}}>
+              <span style={{fontSize:16,flexShrink:0}}>💬</span>
+              <p style={{margin:0,fontSize:12,color:"#3C3489",fontStyle:"italic",lineHeight:1.6}}>{evt.commentaireTND}</p>
+            </div>
+          )}
+        </div>
         <div style={card}>{sec("Notes")}<div style={{display:"flex",alignItems:"center",gap:12,marginBottom:8}}><span style={{fontSize:36,fontWeight:700,color:"#1a1a1a"}}>{chargement?"...":noteGlobale.toFixed(1)}</span><div><Stars count={Math.round(noteGlobale)} size={18}/><div style={{fontSize:11,color:"#9CA3AF",marginTop:2}}>Sur {tousLesAvis.length} avis</div></div></div>{[5,4,3,2,1].map(n=>{const cnt=tousLesAvis.filter(a=>Number(a.stars)===n).length;const pct=tousLesAvis.length?Math.round((cnt/tousLesAvis.length)*100):0;return(<div key={n} style={{display:"flex",alignItems:"center",gap:8,marginBottom:4}}><span style={{fontSize:11,color:"#9CA3AF",width:8}}>{n}</span><span style={{color:"#F5A623",fontSize:11}}>★</span><div style={{flex:1,height:6,background:BG2,borderRadius:10,overflow:"hidden"}}><div style={{width:pct+"%",height:"100%",background:"#F5A623",borderRadius:10}}/></div><span style={{fontSize:11,color:"#9CA3AF",width:16}}>{cnt}</span></div>);})}</div>
         <AvisForm isLoggedIn={isLoggedIn} onRequireAuth={onRequireAuth} tousLesAvis={tousLesAvis} chargement={chargement} onAjouterAvis={ajouterAvis}/>
         <button onClick={onToggleFavorite} style={{width:"100%",background:isFavorite?"#FCEBEB":V,color:isFavorite?"#A32D2D":WH,border:"none",borderRadius:28,padding:14,fontSize:14,fontWeight:600,cursor:"pointer",marginBottom:8}}>{isFavorite?"Retirer des favoris":"Ajouter aux favoris"}</button>
@@ -1139,37 +1969,29 @@ function EvtCard({e,onClick,onReport,customCatEvenements=[]}){
   );
 }
 
-function TNDGrid({tnd}){
-  if(!tnd)return null;
-  const items=[{k:"tsa",l:"TSA",c:"#7C3AED",bg:"#EDE9FE"},{k:"tdah",l:"TDAH",c:"#DB2777",bg:"#FCE7F3"},{k:"dys",l:"DYS",c:"#0891B2",bg:"#E0F7FA"}];
-  return(
-    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:6,marginBottom:10}}>
-      {items.map(({k,l,c,bg})=>tnd[k]!=null?(
-        <div key={k} style={{background:bg,borderRadius:10,padding:"6px 4px",textAlign:"center"}}>
-          <div style={{fontSize:10,color:TM}}>{l}</div>
-          <div style={{fontSize:13,fontWeight:700,color:c}}>{tnd[k]}/5</div>
-        </div>
-      ):null)}
-    </div>
-  );
-}
-
-function ActiviteCard({a,onClick,onReport,isFav,onToggleFav,verrouille=false,customCatActivites=[]}){
+function ActiviteCard({a,onClick,onReport,isFav,onToggleFav,verrouille=false,customCatActivites=[],matchScore,onMasquer,estMasque=false}){
   const tile=iconTileAct(a.categorie,customCatActivites);
   const isNew=a._createdAt&&(Date.now()-new Date(a._createdAt).getTime())<7*24*60*60*1000;
   const isCommunity=!!a._auteur||!!a.communaute;
-  const isPending=a._statut==="pending";
+  const matchBadge=matchScore!==undefined?getBadgeScoreMatch(matchScore):null;
+  const nbPointsAnticiper=(a.pointsAnticiper||POINTS_ANTICIPER_MAP[a.nom||a.titre]||[]).length;
   return(
     <div style={{background:WH,borderRadius:16,overflow:"hidden",border:BD,marginBottom:12,boxShadow:"0 2px 8px rgba(0,0,0,0.06)",opacity:verrouille?0.75:1}}>
       <div style={{position:"relative",height:160,background:a.photo&&!verrouille?"#000":`linear-gradient(135deg,${tile.bg},${tile.bg})`,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",overflow:"hidden"}} onClick={onClick}>
         {a.photo&&!verrouille?<img src={a.photo} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/>:<span style={{fontSize:64,filter:verrouille?"grayscale(0.5)":"none"}}>{tile.emoji}</span>}
         {verrouille&&<div style={{position:"absolute",inset:0,background:"rgba(0,0,0,0.15)",display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{fontSize:32}}>🔒</span></div>}
         <button onClick={e=>{e.stopPropagation();onToggleFav&&onToggleFav();}} style={{position:"absolute",top:10,right:10,width:32,height:32,borderRadius:"50%",background:WH,border:"none",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 2px 6px rgba(0,0,0,0.15)",cursor:"pointer",padding:0}}><span style={{fontSize:16}}>{isFav?"❤️":"🤍"}</span></button>
+        {matchBadge&&<span style={{position:"absolute",top:10,right:50,background:matchBadge.bg,color:matchBadge.color,borderRadius:20,padding:"3px 10px",fontSize:11,fontWeight:700,boxShadow:"0 2px 6px rgba(0,0,0,0.1)"}}>{matchScore}%</span>}
         <div style={{position:"absolute",top:10,left:10,display:"flex",gap:6,flexWrap:"wrap"}}>
           <span style={{background:WH,borderRadius:20,padding:"3px 10px",fontSize:11,fontWeight:600,color:V}}>{verrouille?"👑 Premium":a.categorie}</span>
           {isNew&&<span style={{background:"#10B981",borderRadius:20,padding:"3px 10px",fontSize:10,fontWeight:700,color:"#fff"}}>🆕 Nouveau</span>}
           {isCommunity&&<span style={{background:"#8B5CF6",borderRadius:20,padding:"3px 10px",fontSize:10,fontWeight:700,color:"#fff"}}>👥 Communauté</span>}
         </div>
+        {nbPointsAnticiper>0&&(
+          <span style={{position:"absolute",bottom:10,left:10,background:"#FFF7ED",border:"1px solid #F59E0B",borderRadius:20,padding:"3px 10px",fontSize:10,fontWeight:700,color:"#9A3412",display:"flex",alignItems:"center",gap:3}}>
+            ⚠️ {nbPointsAnticiper} à anticiper
+          </span>
+        )}
       </div>
       <div style={{padding:"12px 14px"}} onClick={onClick}>
         <h3 style={{fontSize:16,fontWeight:700,color:TX,margin:"0 0 4px"}}>{a.nom}</h3>
@@ -1179,21 +2001,21 @@ function ActiviteCard({a,onClick,onReport,isFav,onToggleFav,verrouille=false,cus
           {a.duree&&<span style={{fontSize:12,color:TM}}>⏱ {a.duree}</span>}
           <span style={{fontSize:12,color:TM}}>{a.lieu==="interieur"?"🏠 Intérieur":"🌳 Extérieur"}</span>
         </div>
-        <TNDGrid tnd={a.tnd}/>
         {a.etiquettes?.length>0&&<div style={{display:"flex",gap:4,flexWrap:"wrap",marginBottom:6}}>{a.etiquettes.map((e,i)=><span key={i} style={{fontSize:10,background:e.bg||"#EDE9FF",color:e.color||V,padding:"2px 8px",borderRadius:10,fontWeight:600,border:`1px solid ${(e.color||V)+"33"}`}}>{e.label}</span>)}</div>}
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
           <span style={{fontSize:12,color:TM}}>👥 {a.nbEnfants||"1+ enfants"}</span>
           <span style={{background:verrouille?"#FEF3C7":VL,color:verrouille?"#92400E":V,fontSize:12,fontWeight:700,padding:"5px 12px",borderRadius:20}}>{verrouille?"🔒 Débloquer":"Voir l'activité →"}</span>
         </div>
       </div>
-      <div style={{borderTop:"1px solid #F3F4F6",padding:"8px 14px",display:"flex",justifyContent:"flex-end"}}>
+      <div style={{borderTop:"1px solid #F3F4F6",padding:"8px 14px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+        {onMasquer&&<button onClick={e=>{e.stopPropagation();onMasquer();}} style={{background:"none",border:"none",color:estMasque?V:TM,fontSize:11,cursor:"pointer",display:"flex",alignItems:"center",gap:4,padding:0}}>{estMasque?"↩️ Reproposer":"🚫 Ne plus proposer"}</button>}
         <SignalCardBtn id={"act_"+a.id} titre={a.nom} type="activite" onReport={onReport}/>
       </div>
     </div>
   );
 }
 
-function SortieCard({s,onClick,onReport,isFav,onToggleFav,customCatSorties=[]}){
+function SortieCard({s,onClick,onReport,isFav,onToggleFav,customCatSorties=[],onMasquer,estMasque=false}){
   const tile=iconTileSortie(s.type,customCatSorties);
   const {tousLesAvis,chargement,noteGlobale}=useAvis("sortie",s.id);
   const isNew=s._createdAt&&(Date.now()-new Date(s._createdAt).getTime())<7*24*60*60*1000;
@@ -1213,14 +2035,22 @@ function SortieCard({s,onClick,onReport,isFav,onToggleFav,customCatSorties=[]}){
           {s.badge==="communaute"&&<span style={{fontSize:10,background:"#FFF3E0",color:OR,padding:"2px 8px",borderRadius:10,fontWeight:600,flexShrink:0}}>Communaute</span>}
         </div>
         <div style={{display:"flex",gap:12,marginBottom:10,flexWrap:"wrap"}}><span style={{fontSize:12,color:TM}}>📍 {s.ville}</span><span style={{fontSize:12,color:TM}}>🗺️ {s.type}</span></div>
-        <TNDGrid tnd={s.tnd}/>
+        {s.tnd&&(s.tnd.son||s.tnd.affluence||s.tnd.prevision||s.tnd.zonecalme!=null)?(
+          <TNDBadgesEvt tnd={s.tnd}/>
+        ):(
+          <div style={{display:"flex",alignItems:"center",gap:6,background:"#F9FAFB",borderRadius:10,padding:"8px 10px",marginBottom:8}}>
+            <span style={{fontSize:14}}>ℹ️</span>
+            <p style={{margin:0,fontSize:11,color:TM}}>Informations TND non disponibles</p>
+          </div>
+        )}
         {s.etiquettes?.length>0&&<div style={{display:"flex",gap:4,flexWrap:"wrap",marginBottom:6}}>{s.etiquettes.map((e,i)=><span key={i} style={{fontSize:10,background:e.bg||"#EDE9FF",color:e.color||V,padding:"2px 8px",borderRadius:10,fontWeight:600,border:`1px solid ${(e.color||V)+"33"}`}}>{e.label}</span>)}</div>}
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
           <span style={{fontSize:12,color:TM}}>Dept {s.dept}</span>
           <div style={{display:"flex",alignItems:"center",gap:4}}><span style={{color:"#F5A623",fontSize:13}}>★</span><span style={{fontSize:12,fontWeight:600,color:TX}}>{chargement?"...":noteGlobale.toFixed(1)}</span><span style={{fontSize:11,color:TM}}>({tousLesAvis.length})</span></div>
         </div>
       </div>
-      <div style={{borderTop:"1px solid #F3F4F6",padding:"8px 14px",display:"flex",justifyContent:"flex-end"}}>
+      <div style={{borderTop:"1px solid #F3F4F6",padding:"8px 14px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+        {onMasquer&&<button onClick={e=>{e.stopPropagation();onMasquer();}} style={{background:"none",border:"none",color:estMasque?V:TM,fontSize:11,cursor:"pointer",display:"flex",alignItems:"center",gap:4,padding:0}}>{estMasque?"↩️ Reproposer":"🚫 Ne plus proposer"}</button>}
         <SignalCardBtn id={"sort_"+s.id} titre={s.nom} type="sortie" onReport={onReport}/>
       </div>
     </div>
@@ -1317,10 +2147,155 @@ function CalendrierMensuel({evtFiltered=[],setEvtDetail,addReport,customCatEvene
   );
 }
 
-function PageBiblio({pendingContribs=[],setPendingContribs,adminActivites=[],adminSorties=[],adminEvenements=[],addReport,adminReports=[],deletedTitles=new Set(),isLoggedIn=true,onRequireAuth,favoris=[],setFavoris,isPremium=false,onOpenPremium,customCatActivites=[],customCatSorties=[],customCatEvenements=[],currentUser=null}){
+// ─── CARTE INTERACTIVE (OpenStreetMap / Leaflet) ──────────────────────────────
+const _geocodeCache={};
+async function geocodeVille(query){
+  if(!query)return null;
+  const key=query.trim().toLowerCase();
+  if(_geocodeCache[key]!==undefined)return _geocodeCache[key];
+  try{
+    const res=await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=fr&q=${encodeURIComponent(query)}`,{headers:{"Accept-Language":"fr"}});
+    const data=await res.json();
+    const result=data&&data[0]?{lat:parseFloat(data[0].lat),lon:parseFloat(data[0].lon)}:null;
+    _geocodeCache[key]=result;
+    return result;
+  }catch(e){_geocodeCache[key]=null;return null;}
+}
+function distanceKm(lat1,lon1,lat2,lon2){
+  const R=6371;
+  const dLat=(lat2-lat1)*Math.PI/180;
+  const dLon=(lon2-lon1)*Math.PI/180;
+  const a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+let _leafletLoading=null;
+function loadLeaflet(){
+  if(window.L)return Promise.resolve(true);
+  if(_leafletLoading)return _leafletLoading;
+  _leafletLoading=new Promise((resolve)=>{
+    let resolved=false;
+    const finish=(ok)=>{if(resolved)return;resolved=true;resolve(ok);};
+    const link=document.createElement("link");
+    link.rel="stylesheet";
+    link.href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
+    document.head.appendChild(link);
+    const script=document.createElement("script");
+    script.src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
+    script.onload=()=>finish(!!window.L);
+    script.onerror=()=>finish(false);
+    document.body.appendChild(script);
+    setTimeout(()=>finish(!!window.L),4000); // timeout de sécurité (réseau bloqué en sandbox)
+  });
+  return _leafletLoading;
+}
+
+function CarteInteractive({items,type,onClose,onOpenItem}){
+  const mapRef=useRef(null);
+  const mapInstanceRef=useRef(null);
+  const markersRef=useRef([]);
+  const [villeInput,setVilleInput]=useState("");
+  const [statut,setStatut]=useState("idle"); // idle | loading | done | error
+  const [nbTrouves,setNbTrouves]=useState(null);
+  const [leafletState,setLeafletState]=useState(window.L?"ready":"loading"); // loading | ready | failed
+
+  useEffect(()=>{
+    let cancelled=false;
+    loadLeaflet().then((ok)=>{
+      if(cancelled)return;
+      setLeafletState(ok&&window.L?"ready":"failed");
+    });
+    return ()=>{cancelled=true;};
+  },[]);
+
+  useEffect(()=>{
+    if(leafletState!=="ready"||!mapRef.current||mapInstanceRef.current||!window.L)return;
+    try{
+      const L=window.L;
+      const map=L.map(mapRef.current).setView([46.6,2.4],5.5); // centre France par défaut
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution:"© OpenStreetMap"}).addTo(map);
+      mapInstanceRef.current=map;
+    }catch(e){
+      setLeafletState("failed");
+    }
+  },[leafletState]);
+
+  const rechercher=async()=>{
+    if(!villeInput.trim()||!mapInstanceRef.current)return;
+    setStatut("loading");
+    const center=await geocodeVille(villeInput.trim());
+    if(!center){setStatut("error");return;}
+    const L=window.L;
+    const map=mapInstanceRef.current;
+
+    // Nettoyer anciens marqueurs
+    markersRef.current.forEach(m=>map.removeLayer(m));
+    markersRef.current=[];
+
+    map.setView([center.lat,center.lon],11);
+    const userIcon=L.divIcon({html:'<div style="width:18px;height:18px;border-radius:50%;background:#6C5CE7;border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.4)"></div>',className:"",iconSize:[18,18]});
+    const userMarker=L.marker([center.lat,center.lon],{icon:userIcon}).addTo(map).bindPopup("📍 Vous êtes ici");
+    markersRef.current.push(userMarker);
+
+    // Géocoder chaque item (avec cache) et placer les marqueurs
+    let trouve=0;
+    for(const item of items){
+      const ville=(item.ville||"").split("(")[0].trim();
+      if(!ville)continue;
+      const pos=await geocodeVille(ville);
+      if(!pos)continue;
+      const dist=distanceKm(center.lat,center.lon,pos.lat,pos.lon);
+      if(dist>80)continue; // filtre rayon 80km
+      trouve++;
+      const emoji=type==="sortie"?"🗺️":"📅";
+      const color=type==="sortie"?"#EC4899":"#F97316";
+      const icon=L.divIcon({html:`<div style="width:32px;height:32px;border-radius:50% 50% 50% 0;background:${color};transform:rotate(-45deg);display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,0.3)"><span style="transform:rotate(45deg);font-size:15px">${emoji}</span></div>`,className:"",iconSize:[32,32],iconAnchor:[16,32]});
+      const marker=L.marker([pos.lat+((Math.random()-0.5)*0.01),pos.lon+((Math.random()-0.5)*0.01)],{icon}).addTo(map);
+      const popupDiv=document.createElement("div");
+      popupDiv.style.cssText="font-family:system-ui;min-width:160px;";
+      popupDiv.innerHTML=`<div style="font-weight:700;font-size:13px;margin-bottom:2px;">${item.nom||item.titre}</div><div style="font-size:11px;color:#888;margin-bottom:8px;">${ville} · ${dist.toFixed(1)} km</div><button style="width:100%;padding:6px 0;border-radius:14px;background:#6C5CE7;color:#fff;border:none;font-size:11px;font-weight:700;cursor:pointer;">Voir la fiche</button>`;
+      popupDiv.querySelector("button").onclick=()=>onOpenItem&&onOpenItem(item);
+      marker.bindPopup(popupDiv);
+      markersRef.current.push(marker);
+    }
+    setNbTrouves(trouve);
+    setStatut("done");
+  };
+
+  return(
+    <div style={{position:"fixed",inset:0,background:BG,zIndex:700,display:"flex",flexDirection:"column"}}>
+      <div style={{background:WH,padding:"14px 16px",display:"flex",alignItems:"center",gap:10,borderBottom:BD,flexShrink:0}}>
+        <button onClick={onClose} style={{width:32,height:32,borderRadius:"50%",background:BG,border:"none",cursor:"pointer",fontSize:14}}>←</button>
+        <span style={{fontSize:14,fontWeight:700,color:TX,flex:1,textAlign:"center"}}>🗺️ {type==="sortie"?"Sorties":"Événements"} autour de chez vous</span>
+        <div style={{width:32}}/>
+      </div>
+      <div style={{padding:"12px 16px",background:WH,borderBottom:BD,display:"flex",gap:8,flexShrink:0}}>
+        <input value={villeInput} onChange={e=>setVilleInput(e.target.value)} onKeyDown={e=>e.key==="Enter"&&rechercher()} placeholder="Tapez votre ville..." style={{flex:1,padding:"10px 14px",borderRadius:12,border:"1.5px solid rgba(108,92,231,0.2)",fontSize:14,outline:"none"}}/>
+        <button onClick={rechercher} disabled={statut==="loading"} style={{padding:"10px 18px",borderRadius:12,background:V,border:"none",color:"#fff",fontWeight:700,fontSize:13,cursor:"pointer",whiteSpace:"nowrap",opacity:statut==="loading"?0.6:1}}>
+          {statut==="loading"?"…":"Localiser"}
+        </button>
+      </div>
+      {statut==="error"&&<div style={{padding:"8px 16px",background:"#FEF2F2",color:"#DC2626",fontSize:12,textAlign:"center"}}>Ville introuvable, vérifiez l'orthographe.</div>}
+      {statut==="done"&&<div style={{padding:"6px 16px",background:"#F5F0FF",color:V,fontSize:12,textAlign:"center"}}>{nbTrouves>0?`${nbTrouves} résultat${nbTrouves>1?"s":""} trouvé${nbTrouves>1?"s":""} dans un rayon de 80km`:"Aucun résultat dans un rayon de 80km"}</div>}
+      <div style={{flex:1,position:"relative"}}>
+        {leafletState==="loading"&&<div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",background:BG}}><p style={{fontSize:13,color:TM}}>Chargement de la carte...</p></div>}
+        {leafletState==="failed"&&(
+          <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",background:BG,padding:"0 32px",textAlign:"center"}}>
+            <p style={{fontSize:36,margin:"0 0 10px"}}>🗺️</p>
+            <p style={{fontSize:14,fontWeight:700,color:TX,margin:"0 0 6px"}}>Carte indisponible ici</p>
+            <p style={{fontSize:12,color:TM,margin:0,lineHeight:1.5}}>La carte interactive nécessite un accès réseau externe. Elle fonctionne une fois l'application déployée (Vercel), mais pas dans cet aperçu.</p>
+          </div>
+        )}
+        <div ref={mapRef} style={{width:"100%",height:"100%"}}/>
+      </div>
+    </div>
+  );
+}
+
+function PageBiblio({pendingContribs=[],setPendingContribs,adminActivites=[],adminSorties=[],adminEvenements=[],addReport,adminReports=[],deletedTitles=new Set(),isLoggedIn=true,onRequireAuth,favoris=[],setFavoris,isPremium=false,onOpenPremium,customCatActivites=[],customCatSorties=[],customCatEvenements=[],currentUser=null,enfants=[],enfantActif=null,masquees=[],toggleMasquer,estMasque}){
   const [tab,setTab]=useState("activites");
   const [globalSearch,setGlobalSearch]=useState("");
   const [detail,setDetail]=useState(null);
+  const [showCarte,setShowCarte]=useState(null); // "sortie" | "evenement" | null
   const [evtDetail,setEvtDetail]=useState(null);
   const [filterLieu,setFilterLieu]=useState("");
   const [filterMotiv,setFilterMotiv]=useState("");
@@ -1328,6 +2303,7 @@ function PageBiblio({pendingContribs=[],setPendingContribs,adminActivites=[],adm
   const [sortActiv,setSortActiv]=useState("pertinence"); // pertinence | alpha | recent | communaute
   const [filterDept,setFilterDept]=useState("");
   const [filterType,setFilterType]=useState("");
+  const [filterAccess,setFilterAccess]=useState([]); // array de clés signaux sélectionnées
   const [sigSort,setSigSort]=useState({});
   const [evenements,setEvenements]=useState(EVENEMENTS_INIT);
   const [evtView,setEvtView]=useState("calendrier");
@@ -1361,7 +2337,7 @@ function PageBiblio({pendingContribs=[],setPendingContribs,adminActivites=[],adm
   };
 
   const showToast=(msg)=>{setToast(msg);setTimeout(()=>setToast(""),3000);};
-  const handleSubmitEvt=(data)=>{setPendingContribs(prev=>[{...data,id:Date.now(),_type:"evenement",_createdAt:new Date().toISOString(),_statut:"pending",_signalements:0,_raisonSignalement:"",_auteur:currentUser?.nom||"Anonyme",_auteurEmail:currentUser?.email||"non connecté"},...prev]);setShowFormEvt(false);setTypeEvtForm("");setTypeAutreForm("");showToast("Evenement soumis, en attente de validation !");};
+  const handleSubmitEvt=(data)=>{setPendingContribs(prev=>[{...data,id:Date.now(),_type:"evenement",_createdAt:new Date().toISOString(),_statut:"published",_signalements:0,_raisonSignalement:"",_auteur:currentUser?.nom||"Anonyme",_auteurEmail:currentUser?.email||"non connecté"},...prev]);setShowFormEvt(false);setTypeEvtForm("");setTypeAutreForm("");showToast("✅ Événement publié et visible dans la bibliothèque !");};
   const CATEGORIES_ACT=[...CATEGORIES_ACT_ALL,...customCatActivites.map(c=>c.label)];
   const approvedActs=pendingContribs.filter(c=>c._type==="activite"&&c._statut!=="rejected");
   const adminPublished=(adminActivites||[]).filter(a=>a.statut==="published"&&!ACTIVITES.find(x=>x.id===a.id)).map(a=>{
@@ -1383,13 +2359,17 @@ function PageBiblio({pendingContribs=[],setPendingContribs,adminActivites=[],adm
   // Items avec signalement pending -> masqués jusqu'à résolution
   const blockedTitles=new Set([...adminReports.filter(r=>r.statut==="pending").map(r=>r.titre),...deletedTitles]);
   const searchQ=globalSearch.toLowerCase();
-  const actFilteredBase=[...ACTIVITES,...adminPublished,...approvedActs].filter(a=>!blockedTitles.has(a.nom)&&!blockedTitles.has(a.titre)).filter(a=>
+  const masqueesActKeys=new Set(masquees.filter(m=>m._type==="activite").map(m=>m.id||m.nom||m.titre));
+  const actFilteredBase=[...ACTIVITES,...adminPublished,...approvedActs].filter(a=>!blockedTitles.has(a.nom)&&!blockedTitles.has(a.titre)).filter(a=>!masqueesActKeys.has(a.id||a.nom||a.titre)).filter(a=>
     (!filterLieu||a.lieu===filterLieu)&&
     (!filterMotiv||a.energie===filterMotiv)&&
     (!filterCategorie||a.categorie===filterCategorie)&&
     (!searchQ||(a.nom||a.titre||"").toLowerCase().includes(searchQ)||(a.categorie||"").toLowerCase().includes(searchQ))
   );
+  const enfantCourantBiblio=enfants.find(e=>e.id===enfantActif);
+  const matchActif=isPremium&&enfantCourantBiblio&&(enfantCourantBiblio.besoinsMatching||[]).length>0;
   const actFiltered=[...actFilteredBase].sort((a,b)=>{
+    if(matchActif&&sortActiv==="pertinence")return calculerScoreMatch(b,enfantCourantBiblio)-calculerScoreMatch(a,enfantCourantBiblio);
     if(sortActiv==="alpha")return(a.nom||a.titre||"").localeCompare(b.nom||b.titre||"");
     if(sortActiv==="recent")return(b._createdAt||b.date||"").localeCompare(a._createdAt||a.date||"");
     if(sortActiv==="communaute")return(b.communaute?1:0)-(a.communaute?1:0);
@@ -1413,7 +2393,8 @@ function PageBiblio({pendingContribs=[],setPendingContribs,adminActivites=[],adm
     return{id:e.id,nom:e.titre,titre:e.titre,categorie:e.type,ville:e.ville,dept:e.dept,date:e.date,prix:prixStr,gratuit:isGratuit,age:"Tous ages",desc:e.desc,tnd:{tsa:3,tdah:3,dys:3},etiquettes:e.etiquettes||[]};
   });
   const approvedSorts=pendingContribs.filter(c=>c._type==="sortie"&&c._statut!=="rejected");
-  const sortFiltered=[...SORTIES,...adminSortiesPubliees,...approvedSorts].filter(s=>!blockedTitles.has(s.nom)).filter(s=>(!filterDept||s.dept===filterDept)&&(!filterType||s.type===filterType)&&(!searchQ||(s.nom||"").toLowerCase().includes(searchQ)||(s.type||"").toLowerCase().includes(searchQ)||(s.ville||"").toLowerCase().includes(searchQ)));
+  const masqueesSortKeys=new Set(masquees.filter(m=>m._type==="sortie").map(m=>m.id||m.nom||m.titre));
+  const sortFiltered=[...SORTIES,...adminSortiesPubliees,...approvedSorts].filter(s=>!blockedTitles.has(s.nom)).filter(s=>!masqueesSortKeys.has(s.id||s.nom||s.titre)).filter(s=>(!filterDept||s.dept===filterDept)&&(!filterType||s.type===filterType)&&(!searchQ||(s.nom||"").toLowerCase().includes(searchQ)||(s.type||"").toLowerCase().includes(searchQ)||(s.ville||"").toLowerCase().includes(searchQ))&&(filterAccess.length===0||filterAccess.every(k=>s.accessibilite?.signaux?.[k]===true)));
   const signaler=(id)=>setSigSort(prev=>({...prev,[id]:(prev[id]||0)+1}));
   const cardStyle={background:WH,borderRadius:14,padding:"14px 16px",border:BD,cursor:"pointer"};
   const selStyle={flex:1,padding:"8px 10px",borderRadius:10,border:BD,background:WH,fontSize:13};
@@ -1529,6 +2510,21 @@ function PageBiblio({pendingContribs=[],setPendingContribs,adminActivites=[],adm
               </div>
             </div>
 
+            {matchActif&&(
+              <div style={{background:VL,borderRadius:14,padding:"12px 16px",marginBottom:14}}>
+                <p style={{margin:0,fontSize:13,fontWeight:700,color:V}}>✨ Triées pour {enfantCourantBiblio.prenom}</p>
+                <p style={{margin:0,fontSize:11,color:TM}}>Selon ses besoins</p>
+              </div>
+            )}
+            {!isPremium&&enfantCourantBiblio&&(
+              <div style={{background:"#F5F0FF",borderRadius:14,padding:"12px 16px",marginBottom:14,display:"flex",alignItems:"center",gap:10}}>
+                <span style={{fontSize:20,flexShrink:0}}>✨</span>
+                <div style={{flex:1}}>
+                  <p style={{margin:0,fontSize:12,color:"#3C3489"}}>Active Premium pour voir les activités triées pour ton enfant</p>
+                </div>
+                <button onClick={()=>onOpenPremium&&onOpenPremium()} style={{padding:"6px 14px",borderRadius:20,background:V,border:"none",color:"#fff",fontWeight:700,fontSize:11,cursor:"pointer",flexShrink:0}}>Découvrir</button>
+              </div>
+            )}
             <div>
               {actFiltered.length===0&&(
                 <div style={{textAlign:"center",padding:"40px 16px",background:WH,borderRadius:16,border:BD,marginBottom:16}}>
@@ -1542,7 +2538,7 @@ function PageBiblio({pendingContribs=[],setPendingContribs,adminActivites=[],adm
                 </div>
               )}
               {actFiltered.map(a=>(
-                <ActiviteCard key={a.id} a={a} onClick={()=>{if(a.premium&&!isPremium){onOpenPremium&&onOpenPremium();return;}setDetail({item:a,type:"activite"});}} onReport={addReport} isFav={isFavBiblio(a,"activite")} onToggleFav={()=>toggleFavBiblio(a,"activite")} verrouille={!!a.premium&&!isPremium} customCatActivites={customCatActivites}/>
+                <ActiviteCard key={a.id} a={a} onClick={()=>{if(a.premium&&!isPremium){onOpenPremium&&onOpenPremium();return;}setDetail({item:a,type:"activite"});}} onReport={addReport} isFav={isFavBiblio(a,"activite")} onToggleFav={()=>toggleFavBiblio(a,"activite")} verrouille={!!a.premium&&!isPremium} customCatActivites={customCatActivites} matchScore={matchActif?calculerScoreMatch(a,enfantCourantBiblio):undefined} onMasquer={toggleMasquer?()=>toggleMasquer(a,"activite"):undefined} estMasque={estMasque?estMasque(a,"activite"):false}/>
               ))}
             </div>
             <div style={{background:"#FFFBEB",borderRadius:12,padding:"10px 14px",marginTop:14,border:"1px solid #FDE68A",display:"flex",gap:10,alignItems:"flex-start"}}><span style={{fontSize:16,flexShrink:0}}>👶</span><p style={{margin:0,fontSize:12,color:"#92400E",lineHeight:1.5}}>Les activites proposees doivent etre destinees aux enfants.</p></div>
@@ -1552,6 +2548,9 @@ function PageBiblio({pendingContribs=[],setPendingContribs,adminActivites=[],adm
         )}
         {tab==="sorties"&&(
           <>
+            <button onClick={()=>setShowCarte("sortie")} style={{width:"100%",marginBottom:16,padding:"12px 0",borderRadius:14,background:"linear-gradient(135deg,#EC4899,#F472B6)",border:"none",color:"#fff",fontWeight:700,fontSize:13,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+              🗺️ Voir sur la carte autour de chez moi
+            </button>
             <div style={{marginBottom:18}}>
               <FilterSectionTitle icon="📍" label="Département"/>
               <select value={filterDept} onChange={e=>setFilterDept(e.target.value)} style={{display:"block",width:"100%",padding:"9px 12px",borderRadius:14,border:"1.5px solid #E7E4F2",background:WH,fontSize:12,color:TX,boxSizing:"border-box",marginBottom:18,textAlign:"center"}}>
@@ -1566,6 +2565,19 @@ function PageBiblio({pendingContribs=[],setPendingContribs,adminActivites=[],adm
               {(filterDept||filterType)&&(
                 <div style={{textAlign:"center"}}><button onClick={()=>{setFilterDept("");setFilterType("");}} style={{background:"none",border:"none",color:V,fontSize:12,cursor:"pointer",padding:"10px 0 0",fontWeight:600}}>Effacer les filtres ×</button></div>
               )}
+            </div>
+
+            <div style={{marginBottom:18}}>
+              <FilterSectionTitle icon="♿" label="Besoins spécifiques"/>
+              <div style={{display:"flex",gap:6,overflowX:"auto",paddingBottom:4,scrollbarWidth:"none"}}>
+                <button onClick={()=>setFilterAccess([])} style={{flexShrink:0,padding:"6px 14px",borderRadius:20,border:`1.5px solid ${filterAccess.length===0?V:"#E7E4F2"}`,background:filterAccess.length===0?VL:WH,color:filterAccess.length===0?V:TM,fontSize:12,fontWeight:filterAccess.length===0?700:400,cursor:"pointer",whiteSpace:"nowrap"}}>Tous</button>
+                {ACCESS_SIGNAUX_DEF.map(({k,emoji,labelOn})=>{
+                  const actif=filterAccess.includes(k);
+                  return(
+                    <button key={k} onClick={()=>setFilterAccess(p=>actif?p.filter(x=>x!==k):[...p,k])} style={{flexShrink:0,padding:"6px 14px",borderRadius:20,border:`1.5px solid ${actif?V:"#E7E4F2"}`,background:actif?VL:WH,color:actif?V:TM,fontSize:12,fontWeight:actif?700:400,cursor:"pointer",whiteSpace:"nowrap"}}>{emoji} {labelOn}</button>
+                  );
+                })}
+              </div>
             </div>
 
             <div style={{display:"flex",alignItems:"center",gap:8,margin:"0 0 14px"}}>
@@ -1589,7 +2601,7 @@ function PageBiblio({pendingContribs=[],setPendingContribs,adminActivites=[],adm
                 </div>
               )}
               {sortFiltered.filter(s=>(sigSort[s.id]||0)<3).map(s=>(
-                <SortieCard key={s.id} s={s} onClick={()=>setDetail({item:s,type:"sortie"})} onReport={addReport} isFav={isFavBiblio(s,"sortie")} onToggleFav={()=>toggleFavBiblio(s,"sortie")} customCatSorties={customCatSorties}/>
+                <SortieCard key={s.id} s={s} onClick={()=>setDetail({item:s,type:"sortie"})} onReport={addReport} isFav={isFavBiblio(s,"sortie")} onToggleFav={()=>toggleFavBiblio(s,"sortie")} customCatSorties={customCatSorties} onMasquer={toggleMasquer?()=>toggleMasquer(s,"sortie"):undefined} estMasque={estMasque?estMasque(s,"sortie"):false}/>
               ))}
             </div>
             <div style={{background:"#FFFBEB",borderRadius:12,padding:"10px 14px",marginTop:14,border:"1px solid #FDE68A",display:"flex",gap:10,alignItems:"flex-start"}}><span style={{fontSize:16,flexShrink:0}}>👶</span><p style={{margin:0,fontSize:12,color:"#92400E",lineHeight:1.5}}>Les sorties proposees doivent etre adaptees aux enfants.</p></div>
@@ -1599,6 +2611,9 @@ function PageBiblio({pendingContribs=[],setPendingContribs,adminActivites=[],adm
         )}
         {tab==="evenements"&&(
           <>
+            <button onClick={()=>setShowCarte("evenement")} style={{width:"100%",marginBottom:14,padding:"12px 0",borderRadius:14,background:"linear-gradient(135deg,#F97316,#FBBF24)",border:"none",color:"#fff",fontWeight:700,fontSize:13,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+              🗺️ Voir sur la carte autour de chez moi
+            </button>
             <div style={{display:"flex",gap:6,marginBottom:14}}>{[{k:"calendrier",l:"📋 Liste"},{k:"mensuel",l:"📅 Mois"},{k:"generateur",l:"🪄 Générateur"}].map(({k,l})=>(<button key={k} onClick={()=>setEvtView(k)} style={{flex:1,padding:"8px 4px",borderRadius:12,border:"1.5px solid "+(evtView===k?V:BD),background:evtView===k?VL:WH,color:evtView===k?V:TM,fontSize:12,cursor:"pointer",fontWeight:evtView===k?700:400}}>{l}</button>))}</div>
             <div style={{display:"flex",gap:8,overflowX:"auto",paddingBottom:8,marginBottom:8,scrollbarWidth:"none"}}>
               <button onClick={()=>setEvtCat("")} style={{padding:"5px 12px",borderRadius:20,border:"1.5px solid "+(evtCat===""?V:BD),background:evtCat===""?VL:WH,color:evtCat===""?V:TM,fontSize:12,cursor:"pointer",whiteSpace:"nowrap",flexShrink:0}}>Tout</button>
@@ -1645,10 +2660,12 @@ function PageBiblio({pendingContribs=[],setPendingContribs,adminActivites=[],adm
           </>
         )}
       </div>
-      {detail&&detail.type==="activite"&&<ActivityDetailPage activity={detail.item} isFavorite={isFavBiblio(detail.item,"activite")} onToggleFavorite={()=>toggleFavBiblio(detail.item,"activite")} onBack={()=>setDetail(null)} onReport={addReport} isLoggedIn={isLoggedIn} onRequireAuth={onRequireAuth}/>}
-      {detail&&detail.type==="sortie"&&<SortieDetailPage sortie={detail.item} isFavorite={isFavBiblio(detail.item,"sortie")} onToggleFavorite={()=>toggleFavBiblio(detail.item,"sortie")} onBack={()=>setDetail(null)} onReport={addReport} isLoggedIn={isLoggedIn} onRequireAuth={onRequireAuth}/>}
-      {detail&&detail.type==="form_activite"&&<FormActivite customCatActivites={customCatActivites} onClose={()=>setDetail(null)} onSubmit={(item)=>{setPendingContribs(prev=>[{...item,id:Date.now(),_type:"activite",_createdAt:new Date().toISOString(),_statut:"pending",_signalements:0,_raisonSignalement:"",_auteur:currentUser?.nom||"Anonyme",_auteurEmail:currentUser?.email||"non connecté"},...prev]);setDetail(null);showToast("Activite soumise, en attente de validation !");}}/>}
-      {detail&&detail.type==="form_sortie"&&<FormSortie customCatSorties={customCatSorties} onClose={()=>setDetail(null)} onSubmit={(item)=>{setPendingContribs(prev=>[{...item,id:Date.now(),_type:"sortie",_createdAt:new Date().toISOString(),_statut:"pending",_signalements:0,_raisonSignalement:"",_auteur:currentUser?.nom||"Anonyme",_auteurEmail:currentUser?.email||"non connecté"},...prev]);setDetail(null);showToast("Sortie soumise, en attente de validation !");}}/>}
+      {showCarte==="sortie"&&<CarteInteractive items={sortFiltered} type="sortie" onClose={()=>setShowCarte(null)} onOpenItem={(item)=>{setShowCarte(null);setDetail({item,type:"sortie"});}}/>}
+      {showCarte==="evenement"&&<CarteInteractive items={evtFiltered} type="evenement" onClose={()=>setShowCarte(null)} onOpenItem={(item)=>{setShowCarte(null);setEvtDetail(item);}}/>}
+      {detail&&detail.type==="activite"&&<ActivityDetailPage activity={detail.item} isFavorite={isFavBiblio(detail.item,"activite")} onToggleFavorite={()=>toggleFavBiblio(detail.item,"activite")} onBack={()=>setDetail(null)} onReport={addReport} isLoggedIn={isLoggedIn} onRequireAuth={onRequireAuth} matchEnfant={matchActif?enfantCourantBiblio:null} onMasquer={toggleMasquer?()=>toggleMasquer(detail.item,"activite"):undefined} estMasque={estMasque?estMasque(detail.item,"activite"):false}/>}
+      {detail&&detail.type==="sortie"&&<SortieDetailPage sortie={detail.item} isFavorite={isFavBiblio(detail.item,"sortie")} onToggleFavorite={()=>toggleFavBiblio(detail.item,"sortie")} onBack={()=>setDetail(null)} onReport={addReport} isLoggedIn={isLoggedIn} onRequireAuth={onRequireAuth} onMasquer={toggleMasquer?()=>toggleMasquer(detail.item,"sortie"):undefined} estMasque={estMasque?estMasque(detail.item,"sortie"):false}/>}
+      {detail&&detail.type==="form_activite"&&<FormActivite customCatActivites={customCatActivites} onClose={()=>setDetail(null)} onSubmit={(item)=>{setPendingContribs(prev=>[{...item,id:Date.now(),_type:"activite",_createdAt:new Date().toISOString(),_statut:"published",_signalements:0,_raisonSignalement:"",_auteur:currentUser?.nom||"Anonyme",_auteurEmail:currentUser?.email||"non connecté"},...prev]);setDetail(null);showToast("✅ Activité publiée et visible dans la bibliothèque !");}}/>}
+      {detail&&detail.type==="form_sortie"&&<FormSortie customCatSorties={customCatSorties} onClose={()=>setDetail(null)} onSubmit={(item)=>{setPendingContribs(prev=>[{...item,id:Date.now(),_type:"sortie",_createdAt:new Date().toISOString(),_statut:"published",_signalements:0,_raisonSignalement:"",_auteur:currentUser?.nom||"Anonyme",_auteurEmail:currentUser?.email||"non connecté"},...prev]);setDetail(null);showToast("✅ Sortie publiée et visible dans la bibliothèque !");}}/>}
       {evtDetail&&<EvenementDetail evt={evtDetail} onBack={()=>setEvtDetail(null)} onReport={addReport} isFavorite={isFavBiblio(evtDetail,"evenement")} onToggleFavorite={()=>toggleFavBiblio(evtDetail,"evenement")} isLoggedIn={isLoggedIn} onRequireAuth={onRequireAuth} customCatEvenements={customCatEvenements}/>}
       {showFormEvt&&(<FormEvenement customCatEvenements={customCatEvenements} onClose={()=>{setShowFormEvt(false);setTypeEvtForm("");setTypeAutreForm("");}} onSubmit={handleSubmitEvt} onOpenAutrePopup={()=>{setTypeAutreTemp(typeAutreForm);setShowAutrePopup(true);}} typeAutre={typeAutreForm} typeEvt={typeEvtForm} setTypeEvt={setTypeEvtForm}/>)}
       {showAutrePopup&&(<div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.6)",zIndex:9999,display:"flex",alignItems:"center",justifyContent:"center",padding:"0 24px"}}><div style={{background:WH,borderRadius:20,padding:24,width:"100%",maxWidth:320,boxShadow:"0 8px 40px rgba(0,0,0,0.25)"}}><p style={{margin:"0 0 4px",fontSize:16,fontWeight:700,color:TX,textAlign:"center"}}>Autre type</p><input value={typeAutreTemp} onChange={e=>setTypeAutreTemp(e.target.value)} placeholder="Ex : Festival, Portes ouvertes..." style={{padding:"12px 14px",borderRadius:12,border:"1.5px solid "+V,fontSize:14,width:"100%",boxSizing:"border-box",fontFamily:"inherit",outline:"none",marginBottom:16}}/><div style={{display:"flex",gap:10}}><button onClick={()=>setShowAutrePopup(false)} style={{flex:1,padding:"11px 0",borderRadius:28,background:BG,border:"1px solid #E5E7EB",color:TX,fontSize:14,cursor:"pointer"}}>Annuler</button><button onClick={()=>{if(typeAutreTemp.trim()){setTypeAutreForm(typeAutreTemp.trim());setTypeEvtForm("autre");}setShowAutrePopup(false);}} style={{flex:1,padding:"11px 0",borderRadius:28,background:V,border:"none",color:WH,fontWeight:600,fontSize:14,cursor:"pointer"}}>Confirmer</button></div></div></div>)}
@@ -2114,9 +3131,17 @@ function EvtGenerateur({evt,activites,favoris,setFavoris,isPremium=false}){
   );
 }
 
-function PageAccueil({favoris,setFavoris,setPage,customEvents=[],popupShown=new Set(),setPopupShown,ideesMomentConfig=[],isLoggedIn=true,onRequireAuth,evenementsSaisonniers=[],isPremium=false,onOpenPremium,customCatActivites=[],customCatSorties=[],customCatEvenements=[],adminActivites=[],adminSorties=[],pendingContribs=[],setPendingContribs,deletedTitles=new Set(),currentUser=null,sosModeActif=true,enfants=[],enfantActif=null,setEnfantActif,onMarquerFait,historiqueActivites=[],filtresMemoActiv={},setFiltresMemoActiv,filtresMemoSortie={},setFiltresMemoSortie}){
+function PageAccueil({favoris,setFavoris,setPage,customEvents=[],popupShown=new Set(),setPopupShown,ideesMomentConfig=[],isLoggedIn=true,onRequireAuth,evenementsSaisonniers=[],isPremium=false,onOpenPremium,customCatActivites=[],customCatSorties=[],customCatEvenements=[],adminActivites=[],adminSorties=[],pendingContribs=[],setPendingContribs,deletedTitles=new Set(),currentUser=null,sosModeActif=true,enfants=[],enfantActif=null,setEnfantActif,onMarquerFait,historiqueActivites=[],filtresMemoActiv={},setFiltresMemoActiv,filtresMemoSortie={},setFiltresMemoSortie,adminComms=[],masquees=[],toggleMasquer,estMasque}){
   const FAVORIS_LIMITE_GRATUIT=10;
   const [showFavorisLimitMsg,setShowFavorisLimitMsg]=useState(false);
+  const [rappelAnticiper,setRappelAnticiper]=useState(null); // item activité récemment marquée "fait"
+  const [rappelType,setRappelType]=useState("activite");
+  const handleMarquerFait=(item,itemType="activite")=>{
+    onMarquerFait&&onMarquerFait(item);
+    setRappelAnticiper(item);
+    setRappelType(itemType);
+    setTimeout(()=>setRappelAnticiper(prev=>prev===item?null:prev),8000);
+  };
   const setFavorisGuarded=(updater)=>{
     if(!isLoggedIn){ onRequireAuth&&onRequireAuth(); return; }
     setFavoris(prev=>{
@@ -2167,8 +3192,10 @@ function PageAccueil({favoris,setFavoris,setPage,customEvents=[],popupShown=new 
   const approvedSortsGen=(pendingContribs||[]).filter(c=>c._type==="sortie"&&c._statut==="published");
   const adminPublishedActs=(adminActivites||[]).filter(a=>a.statut==="published").map(a=>({...a,nom:a.nom||a.titre}));
   const adminPublishedSortsGen=(adminSorties||[]).filter(o=>o.statut==="published");
-  const toutesActivites=[...ACTIVITES,...adminPublishedActs,...approvedActs].filter(a=>!blockedTitles.has(a.nom)&&!blockedTitles.has(a.titre));
-  const toutesSorties=[...SORTIES,...adminPublishedSortsGen,...approvedSortsGen].filter(s=>!blockedTitles.has(s.nom)&&!blockedTitles.has(s.titre));
+  const masqueesActKeysGen=new Set(masquees.filter(m=>m._type==="activite").map(m=>m.id||m.nom||m.titre));
+  const masqueesSortKeysGen=new Set(masquees.filter(m=>m._type==="sortie").map(m=>m.id||m.nom||m.titre));
+  const toutesActivites=[...ACTIVITES,...adminPublishedActs,...approvedActs].filter(a=>!blockedTitles.has(a.nom)&&!blockedTitles.has(a.titre)).filter(a=>!masqueesActKeysGen.has(a.id||a.nom||a.titre));
+  const toutesSorties=[...SORTIES,...adminPublishedSortsGen,...approvedSortsGen].filter(s=>!blockedTitles.has(s.nom)&&!blockedTitles.has(s.titre)).filter(s=>!masqueesSortKeysGen.has(s.id||s.nom||s.titre));
   const [resultsAList,setResultsAList]=useState(null);
   const genActivite=()=>{
     const ageNum=ageEnfant?parseInt(ageEnfant):null;
@@ -2194,10 +3221,45 @@ function PageAccueil({favoris,setFavoris,setPage,customEvents=[],popupShown=new 
       }
       return true;
     });
-    const source=pool.length?pool:toutesActivites;
+    const source=pool.length?pool:null;
+    if(!source){
+      // Fallback intelligent — pas de résultat strict → propose 3 alternatives souples
+      const getFallback=()=>{
+        return [...toutesActivites]
+          .filter(a=>!dislikedIds.has(a.id||a.nom))
+          .filter(a=>{
+            if(energie&&lieu)return a.energie===energie||a.lieu===lieu;
+            if(energie)return a.energie===energie;
+            if(lieu)return a.lieu===lieu;
+            return true;
+          })
+          .sort(()=>Math.random()-0.5)
+          .slice(0,3);
+      };
+      setResultsAList(getFallback().map(a=>({...a,_isFallback:true})));
+      setResultA(null);
+      setShowFiltres(false);
+      if(setFiltresMemoActiv)setFiltresMemoActiv({lieu,energie,ageEnfant});
+      return;
+    }
     const shuffled=[...source].sort(()=>Math.random()-0.5);
     // 3 activités pour tout le monde
-    // Premium : triées par score de compatibilité TND avec l'enfant actif
+    // Premium + besoinsMatching renseignés : nouveau système de matching par score
+    if(isPremium&&enfantCourant&&(enfantCourant.besoinsMatching||[]).length>0){
+      const basePool=toutesActivites.filter(a=>!dislikedIds.has(a.id||a.nom));
+      const scored=basePool.map(a=>({...a,_matchScore:calculerScoreMatch(a,enfantCourant)})).sort((a,b)=>b._matchScore-a._matchScore);
+      const meilleur=scored[0];
+      if(meilleur&&meilleur._matchScore>=70){
+        setResultsAList(scored.slice(0,3).map(a=>({...a,_matchEnfant:enfantCourant})));
+      }else{
+        setResultsAList(scored.slice(0,3).map(a=>({...a,_matchEnfant:enfantCourant,_isMatchFallback:true})));
+      }
+      setResultA(null);
+      setShowFiltres(false);
+      if(setFiltresMemoActiv)setFiltresMemoActiv({lieu,energie,ageEnfant});
+      return;
+    }
+    // Premium : triées par score de compatibilité TND avec l'enfant actif (ancien système, sans besoinsMatching)
     if(isPremium&&enfantCourant){
       const score=(a)=>{
         let s=0;
@@ -2251,7 +3313,19 @@ function PageAccueil({favoris,setFavoris,setPage,customEvents=[],popupShown=new 
       if(ageNum!=null&&s.age){const m=s.age.match(/(\d+)-(\d+)/);if(m&&(ageNum<parseInt(m[1])||ageNum>parseInt(m[2])))return false;}
       return true;
     });
-    const source=pool.length?pool:toutesSorties;
+    const source=pool.length?pool:null;
+    if(!source){
+      const fallback=[...toutesSorties]
+        .filter(s=>typeS?s.type===typeS:true)
+        .sort(()=>Math.random()-0.5)
+        .slice(0,3)
+        .map(s=>({...s,_isFallback:true}));
+      setResultsSList(fallback);
+      setResultS(null);
+      setShowFiltresSortie(false);
+      if(setFiltresMemoSortie)setFiltresMemoSortie({deptS,typeS,ageS,prixS});
+      return;
+    }
     if(isPremium){
       setResultS(source[Math.floor(Math.random()*source.length)]);
       setResultsSList(null);
@@ -2331,12 +3405,23 @@ function PageAccueil({favoris,setFavoris,setPage,customEvents=[],popupShown=new 
           </div>
         </div>
       )}
-      <div style={{padding:"18px 16px 0"}}>
+      <div style={{padding:"18px 16px 0",position:"relative"}}>
         {/* Titre principal centre */}
         <div style={{textAlign:"center",padding:"24px 8px 16px"}}>
           <p style={{margin:"0 0 6px",fontSize:26,fontWeight:800,color:TX,lineHeight:1.2}}>Que souhaitez-vous<br/>faire aujourd hui ? 🪄</p>
           <p style={{margin:0,fontSize:14,color:TM}}>Trouvez l inspiration parfaite en deux clics pour vos enfants.</p>
-          {/* Rappel créer profil enfant */}
+          {/* Bandeaux admin actifs */}
+        {(adminComms||[]).filter(c=>c.actif&&c.type==="banner").map(c=>(
+          <div key={c.id} style={{background:"linear-gradient(135deg,#6C5CE7,#a78bfa)",borderRadius:14,padding:"12px 16px",marginBottom:10,display:"flex",alignItems:"center",gap:10}}>
+            <span style={{fontSize:20,flexShrink:0}}>📢</span>
+            <div style={{flex:1}}>
+              <p style={{margin:"0 0 2px",fontSize:13,fontWeight:700,color:"#fff"}}>{c.titre}</p>
+              <p style={{margin:0,fontSize:12,color:"rgba(255,255,255,0.85)"}}>{c.message}</p>
+            </div>
+          </div>
+        ))}
+
+        {/* Rappel créer profil enfant */}
           {isLoggedIn&&enfants.length===0&&(
             <div onClick={()=>setPage("profil")} style={{background:"linear-gradient(135deg,#EDE9FF,#F5F0FF)",borderRadius:16,padding:"14px 16px",marginBottom:14,display:"flex",alignItems:"center",gap:12,cursor:"pointer",border:"1.5px solid rgba(108,92,231,0.2)"}}>
               <span style={{fontSize:32,flexShrink:0}}>👶</span>
@@ -2826,7 +3911,7 @@ function PageAccueil({favoris,setFavoris,setPage,customEvents=[],popupShown=new 
         </div>
       )}
 
-      {resultA&&<BottomSheet item={resultA} type="activite" onClose={()=>setResultA(null)} onFav={toggleFav} isFav={favoris.some(f=>f.id===resultA.id&&f._type==="activite")} onDone={onMarquerFait}/>}
+      {resultA&&<BottomSheet item={resultA} type="activite" onClose={()=>setResultA(null)} onFav={toggleFav} isFav={favoris.some(f=>f.id===resultA.id&&f._type==="activite")} onDone={(item)=>handleMarquerFait(item,"activite")} onMasquer={toggleMasquer?(item)=>{toggleMasquer(item,"activite");setResultA(null);}:undefined}/>}
       {resultA&&(
         <div style={{position:"fixed",bottom:82,left:"50%",transform:"translateX(-50%)",background:WH,borderRadius:28,padding:"8px 16px",boxShadow:"0 4px 20px rgba(0,0,0,0.15)",display:"flex",alignItems:"center",gap:12,zIndex:99,border:BD}}>
           <span style={{fontSize:12,color:TM,fontWeight:500}}>Cette idée ?</span>
@@ -2839,12 +3924,25 @@ function PageAccueil({favoris,setFavoris,setPage,customEvents=[],popupShown=new 
             });
             setTimeout(genActivite,0); // micro-delay pour que React ait appliqué le nouveau state
           }} style={{background:"#FEE2E2",border:"none",borderRadius:20,padding:"6px 14px",fontSize:14,cursor:"pointer"}} title="Pas pour moi">👎 Autre</button>
-          <button onClick={()=>{onMarquerFait&&onMarquerFait(resultA);setResultA(null);}} style={{background:"#D1FAE5",border:"none",borderRadius:20,padding:"6px 14px",fontSize:14,cursor:"pointer"}} title="Parfait !">👍 Parfait</button>
+          <button onClick={()=>{handleMarquerFait(resultA,"activite");setResultA(null);}} style={{background:"#D1FAE5",border:"none",borderRadius:20,padding:"6px 14px",fontSize:14,cursor:"pointer"}} title="Parfait !">👍 Parfait</button>
         </div>
       )}
-      {resultS&&<BottomSheet item={resultS} type="sortie" onClose={()=>setResultS(null)} onFav={toggleFav} isFav={favoris.some(f=>f.id===resultS.id&&f._type==="sortie")}/>}
-      {resultsAList&&<ListePropositions items={resultsAList} type="activite" onChoisir={choisirDansListeA} onClose={()=>setResultsAList(null)} isPremium={isPremium} enfantActif={enfants.find(e=>e.id===enfantActif)||null}/>}
-      {resultsSList&&<ListePropositions items={resultsSList} type="sortie" onChoisir={choisirDansListeS} onClose={()=>setResultsSList(null)} isPremium={isPremium} enfantActif={enfants.find(e=>e.id===enfantActif)||null}/>}
+
+      {/* Rappel : renseigner les points à anticiper / l'accessibilité */}
+      {rappelAnticiper&&(
+        <div style={{position:"fixed",bottom:82,left:"50%",transform:"translateX(-50%)",width:"calc(100% - 32px)",maxWidth:360,background:rappelType==="sortie"?"#EAF3DE":"#FFF7ED",border:`1.5px solid ${rappelType==="sortie"?"#3B6D11":"#F59E0B"}`,borderRadius:20,padding:"12px 16px",boxShadow:"0 6px 24px rgba(0,0,0,0.15)",zIndex:150,display:"flex",gap:10,alignItems:"flex-start"}}>
+          <span style={{fontSize:20,flexShrink:0}}>{rappelType==="sortie"?"♿":"⚠️"}</span>
+          <div style={{flex:1}}>
+            <p style={{margin:"0 0 2px",fontSize:12,fontWeight:700,color:rappelType==="sortie"?"#3B6D11":"#9A3412"}}>{rappelType==="sortie"?"N'oublie pas de renseigner l'accessibilité":"N'oublie pas de renseigner les points à anticiper"}</p>
+            <p style={{margin:"0 0 6px",fontSize:11,color:"#78716C",lineHeight:1.4}}>Pour aider les prochaines familles avec "{rappelAnticiper.nom||rappelAnticiper.titre}"</p>
+            <button onClick={()=>{setPage("biblio");setRappelAnticiper(null);}} style={{background:"none",border:"none",color:rappelType==="sortie"?"#3B6D11":"#9A3412",fontSize:11,fontWeight:700,cursor:"pointer",padding:0,textDecoration:"underline"}}>Compléter →</button>
+          </div>
+          <button onClick={()=>setRappelAnticiper(null)} style={{background:"none",border:"none",color:rappelType==="sortie"?"#3B6D11":"#9A3412",fontSize:14,cursor:"pointer",flexShrink:0,padding:0}}>✕</button>
+        </div>
+      )}
+      {resultS&&<BottomSheet item={resultS} type="sortie" onClose={()=>setResultS(null)} onFav={toggleFav} isFav={favoris.some(f=>f.id===resultS.id&&f._type==="sortie")} onDone={(item)=>handleMarquerFait(item,"sortie")} onMasquer={toggleMasquer?(item)=>{toggleMasquer(item,"sortie");setResultS(null);}:undefined}/>}
+      {resultsAList&&<ListePropositions items={resultsAList} type="activite" onChoisir={choisirDansListeA} onClose={()=>setResultsAList(null)} isPremium={isPremium} enfantActif={enfants.find(e=>e.id===enfantActif)||null} onMasquer={toggleMasquer?(item)=>toggleMasquer(item,"activite"):undefined}/>}
+      {resultsSList&&<ListePropositions items={resultsSList} type="sortie" onChoisir={choisirDansListeS} onClose={()=>setResultsSList(null)} isPremium={isPremium} enfantActif={enfants.find(e=>e.id===enfantActif)||null} onMasquer={toggleMasquer?(item)=>toggleMasquer(item,"sortie"):undefined}/>}
 
       {showFiltresSortie&&(
         <div onClick={()=>setShowFiltresSortie(false)} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.45)",zIndex:500,display:"flex",alignItems:"flex-end",justifyContent:"center"}}>
@@ -2872,13 +3970,6 @@ function PageAccueil({favoris,setFavoris,setPage,customEvents=[],popupShown=new 
               ))}
             </div>
 
-            <p style={{margin:"0 0 10px",fontSize:13,fontWeight:700,color:TX}}>🧩 Adapté TND</p>
-            <div style={{display:"flex",gap:10,marginBottom:20}}>
-              {TND_OPTIONS.map(o=>(
-                <button key={o.val} onClick={()=>setTndS(tndS===o.val?null:o.val)} style={{flex:1,padding:"10px 0",borderRadius:14,border:"2px solid "+(tndS===o.val?o.color:"rgba(108,92,231,0.15)"),background:tndS===o.val?o.color+"18":BG,color:tndS===o.val?o.color:TX,fontWeight:700,fontSize:13,cursor:"pointer"}}>{o.label}</button>
-              ))}
-            </div>
-
             <p style={{margin:"0 0 10px",fontSize:13,fontWeight:700,color:TX}}>💶 Prix</p>
             <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:24}}>
               {PRIX_OPTIONS.map(o=>(
@@ -2887,7 +3978,7 @@ function PageAccueil({favoris,setFavoris,setPage,customEvents=[],popupShown=new 
             </div>
 
             <button onClick={genSortie} style={{width:"100%",padding:"14px 0",borderRadius:28,background:"#27AE60",border:"none",color:WH,fontWeight:700,fontSize:15,cursor:"pointer"}}>🗺️ Générer une sortie</button>
-            <button onClick={()=>{setDeptS("");setTypeS("");setAgeS(null);setTndS(null);setPrixS(null);}} style={{width:"100%",marginTop:10,padding:"10px 0",borderRadius:28,background:"none",border:"none",color:TM,fontSize:13,cursor:"pointer"}}>Réinitialiser les filtres</button>
+            <button onClick={()=>{setDeptS("");setTypeS("");setAgeS(null);setPrixS(null);}} style={{width:"100%",marginTop:10,padding:"10px 0",borderRadius:28,background:"none",border:"none",color:TM,fontSize:13,cursor:"pointer"}}>Réinitialiser les filtres</button>
           </div>
         </div>
       )}
@@ -2944,10 +4035,106 @@ function PageAccueil({favoris,setFavoris,setPage,customEvents=[],popupShown=new 
           </div>
         </div>
       )}
-      {/* Bouton SOS flottant */}
-      {sosModeActif&&(
-        <button onClick={()=>{if(!isPremium){onOpenPremium&&onOpenPremium();return;}setPage("planning");}} style={{position:"fixed",bottom:80,right:16,zIndex:400,width:52,height:52,borderRadius:"50%",background:isPremium?"linear-gradient(135deg,#dc2626,#ef4444)":"#9ca3af",border:"none",color:"#fff",fontSize:22,cursor:"pointer",boxShadow:"0 4px 16px rgba(239,68,68,0.45)",display:"flex",alignItems:"center",justifyContent:"center"}} title="Mode SOS">🆘</button>
-      )}
+    </div>
+  );
+}
+
+function PageSOS({sosLib=[],isPremium=false,onOpenPremium,onBack}){
+  const [sosCrise,setSosCrise]=useState(null);
+  const [sosResults,setSosResults]=useState(null);
+  const sosPublished=sosLib.filter(a=>a.statut==="published");
+  const FALLBACK_ACTIVITIES=[
+    {titre:"Respiration des bulles",desc:"Souffler lentement dans un tube imaginaire pour faire de grosses bulles. Focalise l'attention et régule la respiration.",duree:"1 min",tags:["Silencieux","Partout"],emoji:"🫧"},
+    {titre:"Technique de la tortue",desc:"Se recroqueviller comme une tortue dans sa carapace, respirer 3 fois, puis ressortir. Technique validée pour les crises émotionnelles.",duree:"2 min",tags:["Partout","Tous profils"],emoji:"🐢"},
+    {titre:"Squeeze imaginaire",desc:"Serrer et relâcher les poings 10 fois en imaginant presser une balle. Décharge l'énergie sans bouger.",duree:"1 min",tags:["Voiture OK","TDAH ✓"],emoji:"✊"},
+  ];
+  const genSOS=()=>{
+    let pool=[...sosPublished];
+    if(sosCrise){
+      const criseKey={sensorielle:"crise_sensorielle",emotionnelle:"crise_emotionnelle",agitation:"crise_agitation",concentration:"crise_concentration"}[sosCrise];
+      if(criseKey){const m=pool.filter(a=>a[criseKey]);if(m.length>0)pool=m;}
+    }
+    if(pool.length===0){setSosResults({main:null,alt:null,fallback:FALLBACK_ACTIVITIES});return;}
+    const shuffle=[...pool].sort(()=>Math.random()-0.5);
+    setSosResults({main:shuffle[0],alt:shuffle[1]||null,fallback:null});
+  };
+  const reset=()=>{setSosResults(null);setSosCrise(null);};
+  const ActivityCard=({act,isMain=false})=>(<div style={{background:isMain?"rgba(255,255,255,0.08)":"rgba(255,255,255,0.04)",borderRadius:18,padding:"16px 16px",marginBottom:10,border:`1px solid ${isMain?"rgba(239,68,68,0.35)":"rgba(255,255,255,0.08)"}`}}>
+    {isMain&&<div style={{display:"flex",alignItems:"center",gap:6,marginBottom:8}}><div style={{width:6,height:6,borderRadius:"50%",background:"#ef4444"}}/><span style={{fontSize:10,color:"#fca5a5",fontWeight:700,textTransform:"uppercase",letterSpacing:"0.5px"}}>Suggestion principale</span></div>}
+    {!isMain&&<div style={{display:"flex",alignItems:"center",gap:6,marginBottom:8}}><span style={{fontSize:10,color:"rgba(255,255,255,0.35)",textTransform:"uppercase",letterSpacing:"0.5px"}}>Alternative</span></div>}
+    <div style={{display:"flex",gap:6,marginBottom:8,flexWrap:"wrap"}}>
+      {act.duree&&<span style={{fontSize:10,background:"rgba(239,68,68,0.15)",color:"#fca5a5",padding:"2px 8px",borderRadius:10,fontWeight:600}}>⏱ {act.duree}</span>}
+      {act.age&&<span style={{fontSize:10,background:"rgba(255,255,255,0.07)",color:"rgba(255,255,255,0.5)",padding:"2px 8px",borderRadius:10}}>👶 {act.age}</span>}
+      {act.tags&&act.tags.map((t,i)=><span key={i} style={{fontSize:10,background:"rgba(255,255,255,0.05)",color:"rgba(255,255,255,0.4)",padding:"2px 8px",borderRadius:10}}>{t}</span>)}
+    </div>
+    <p style={{margin:"0 0 6px",fontSize:act.emoji?32:18,marginBottom:act.emoji?4:6}}>{act.emoji||""}</p>
+    <p style={{margin:"0 0 6px",fontSize:16,fontWeight:700,color:"#fff"}}>{act.titre}</p>
+    <p style={{margin:"0 0 8px",fontSize:12,color:"rgba(255,255,255,0.65)",lineHeight:1.5}}>{act.desc}</p>
+    {Array.isArray(act.materiel)&&act.materiel.length>0&&<p style={{margin:0,fontSize:11,color:"rgba(255,255,255,0.35)"}}>Matériel : {act.materiel.join(", ")}</p>}
+  </div>);
+
+  if(!isPremium){
+    return(
+      <div style={{background:"#0f0505",minHeight:"100vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"0 32px",textAlign:"center",fontFamily:"system-ui,-apple-system,sans-serif"}}>
+        <button onClick={onBack} style={{position:"absolute",top:16,left:16,background:"rgba(255,255,255,0.1)",border:"none",borderRadius:"50%",width:36,height:36,fontSize:18,cursor:"pointer",color:"#fff"}}>←</button>
+        <div style={{fontSize:48,marginBottom:16}}>🆘</div>
+        <p style={{margin:"0 0 8px",fontSize:16,fontWeight:700,color:"#fff"}}>Mode SOS — Fonctionnalité Premium</p>
+        <p style={{margin:"0 0 24px",fontSize:13,color:"rgba(255,255,255,0.6)",lineHeight:1.5}}>Trouve une activité adaptée en quelques secondes pour désamorcer une crise.</p>
+        <button onClick={()=>onOpenPremium&&onOpenPremium()} style={{padding:"13px 28px",borderRadius:28,background:"linear-gradient(135deg,#dc2626,#ef4444)",border:"none",color:"#fff",fontWeight:700,fontSize:14,cursor:"pointer"}}>Débloquer avec Premium ⭐</button>
+      </div>
+    );
+  }
+
+  return(
+    <div style={{background:"#0f0505",minHeight:"100vh",display:"flex",flexDirection:"column",fontFamily:"system-ui,-apple-system,sans-serif"}}>
+      <div style={{background:"linear-gradient(135deg,#7f1d1d,#dc2626)",padding:"16px 16px 20px",position:"relative"}}>
+        <button onClick={()=>{reset();onBack&&onBack();}} style={{position:"absolute",top:14,left:14,width:34,height:34,borderRadius:"50%",background:"rgba(255,255,255,0.15)",border:"none",color:"#fff",fontSize:18,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>←</button>
+        <div style={{textAlign:"center"}}>
+          <div style={{fontSize:36,marginBottom:4}}>🆘</div>
+          <p style={{margin:"0 0 2px",fontSize:19,fontWeight:800,color:"#fff"}}>Mode SOS</p>
+          <p style={{margin:0,fontSize:11,color:"rgba(255,255,255,0.65)"}}>Activité adaptée en quelques secondes</p>
+        </div>
+      </div>
+      <div style={{flex:1,padding:"16px 16px 24px",overflowY:"auto"}}>
+        {!sosResults?(
+          <div>
+            {/* Filtre 1 — Type de crise */}
+            <div style={{marginBottom:18}}>
+              <p style={{fontSize:12,fontWeight:700,color:"#fca5a5",margin:"0 0 4px",textTransform:"uppercase",letterSpacing:"0.5px"}}>😰 Type de crise</p>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+                {[{v:"sensorielle",l:"🌊 Surcharge sensorielle",sub:"Trop de bruit, lumière, stimulations"},{v:"emotionnelle",l:"🌋 Crise émotionnelle",sub:"Colère, pleurs, frustration"},{v:"agitation",l:"🌪️ Agitation / hyperactivité",sub:"Impossible de rester en place"},{v:"concentration",l:"🌫️ Difficulté concentration",sub:"Dispersé, n'arrive pas à se poser"}].map(c=>(
+                  <button key={c.v} onClick={()=>setSosCrise(sosCrise===c.v?null:c.v)} style={{padding:"10px 12px",borderRadius:14,border:`2px solid ${sosCrise===c.v?"#ef4444":"rgba(255,255,255,0.1)"}`,background:sosCrise===c.v?"rgba(239,68,68,0.15)":"rgba(255,255,255,0.03)",color:"rgba(255,255,255,0.8)",cursor:"pointer",textAlign:"left",transition:"all 0.15s"}}>
+                    <p style={{margin:"0 0 2px",fontSize:12,fontWeight:sosCrise===c.v?700:500}}>{c.l}</p>
+                    <p style={{margin:0,fontSize:10,color:"rgba(255,255,255,0.4)"}}>{c.sub}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <button onClick={genSOS} style={{width:"100%",padding:"16px 0",borderRadius:28,background:"linear-gradient(135deg,#dc2626,#ef4444)",border:"none",color:"#fff",fontWeight:800,fontSize:16,cursor:"pointer",boxShadow:"0 6px 20px rgba(239,68,68,0.4)"}}>
+              🆘 Trouver une activité maintenant !
+            </button>
+          </div>
+        ):(
+          <div>
+            {sosResults.fallback?(
+              <div>
+                <div style={{background:"rgba(239,68,68,0.08)",borderRadius:12,padding:"10px 14px",marginBottom:16,display:"flex",gap:8}}><span>💡</span><p style={{margin:0,fontSize:12,color:"#fca5a5"}}>Aucune activité spécifique trouvée — voici 3 techniques universelles validées.</p></div>
+                {sosResults.fallback.map((a,i)=><ActivityCard key={i} act={a} isMain={i===0}/>)}
+              </div>
+            ):(
+              <div>
+                {sosResults.main&&<ActivityCard act={sosResults.main} isMain={true}/>}
+                {sosResults.alt&&<ActivityCard act={sosResults.alt} isMain={false}/>}
+              </div>
+            )}
+            <div style={{display:"flex",gap:10,marginTop:4}}>
+              <button onClick={genSOS} style={{flex:1,padding:"13px 0",borderRadius:28,background:"rgba(255,255,255,0.07)",border:"1px solid rgba(255,255,255,0.15)",color:"#fff",fontWeight:600,fontSize:13,cursor:"pointer"}}>🔄 Autre suggestion</button>
+              <button onClick={()=>{reset();onBack&&onBack();}} style={{flex:1,padding:"13px 0",borderRadius:28,background:"linear-gradient(135deg,#dc2626,#ef4444)",border:"none",color:"#fff",fontWeight:700,fontSize:13,cursor:"pointer"}}>✅ C'est parti !</button>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -2960,48 +4147,10 @@ function PagePlanning({sosLib=[],enfants=[],enfantActif,setEnfantActif,isPremium
   const [planning,setPlanning]=useState([]);
   const [showFiltresMat,setShowFiltresMat]=useState(false);
   const [materielDispo,setMaterielDispo]=useState([]);
-  const [showSOS,setShowSOS]=useState(false);
-  const [sosProfils,setSosProfils]=useState([]);
-  const [sosCrise,setSosCrise]=useState(null);
-  const [sosLieu,setSosLieu]=useState(null);
-  const [sosTemps,setSosTemps]=useState(null);
-  const [sosResults,setSosResults]=useState(null); // {main, alt}
   const [enfantsSelectionnes,setEnfantsSelectionnes]=useState(enfantActif?[enfantActif]:[]);
   const PROFIL_TO_TND={TSA:"tsa",TDAH:"tdah",DYS:"dys"};
   const tndKeysSelection=[...new Set(enfants.filter(e=>enfantsSelectionnes.includes(e.id)).flatMap(e=>e.profils||[]).map(p=>PROFIL_TO_TND[p]).filter(Boolean))];
   const scoreActivite=(a)=>tndKeysSelection.length===0?0:tndKeysSelection.reduce((s,k)=>s+(a.tnd?.[k]||0),0);
-  const sosPublished=sosLib.filter(a=>a.statut==="published");
-  const FALLBACK_ACTIVITIES=[
-    {titre:"Respiration des bulles",desc:"Souffler lentement dans un tube imaginaire pour faire de grosses bulles. Focalise l'attention et régule la respiration.",duree:"1 min",tags:["Silencieux","Partout"],emoji:"🫧"},
-    {titre:"Technique de la tortue",desc:"Se recroqueviller comme une tortue dans sa carapace, respirer 3 fois, puis ressortir. Technique validée pour les crises émotionnelles.",duree:"2 min",tags:["Partout","Tous profils"],emoji:"🐢"},
-    {titre:"Squeeze imaginaire",desc:"Serrer et relâcher les poings 10 fois en imaginant presser une balle. Décharge l'énergie sans bouger.",duree:"1 min",tags:["Voiture OK","TDAH ✓"],emoji:"✊"},
-  ];
-  const toggleProfil=(p)=>setSosProfils(prev=>prev.includes(p)?prev.filter(k=>k!==p):[...prev,p]);
-  const genSOS=()=>{
-    let pool=[...sosPublished];
-    // Filtre 1 — Profil
-    if(sosProfils.length>0){
-      const profMap={ordinaire:["profil_ordinaire"],tsa:["profil_tsa","profil_tsa_tdah"],tdah:["profil_tdah","profil_tsa_tdah"],dys:["profil_dys"],tsa_tdah:["profil_tsa_tdah"],bas_age:["profil_bas_age"]};
-      const relevantKeys=sosProfils.flatMap(p=>profMap[p]||[]);
-      const scored=pool.map(a=>({a,score:relevantKeys.filter(k=>a[k]).length})).sort((x,y)=>y.score-x.score);
-      const best=scored.filter(x=>x.score>0).map(x=>x.a);
-      if(best.length>0)pool=best;
-    }
-    // Filtre 2 — Type de crise
-    if(sosCrise){
-      const criseKey={sensorielle:"crise_sensorielle",emotionnelle:"crise_emotionnelle",agitation:"crise_agitation",concentration:"crise_concentration"}[sosCrise];
-      if(criseKey){const m=pool.filter(a=>a[criseKey]);if(m.length>0)pool=m;}
-    }
-    // Filtre 3 — Lieu
-    if(sosLieu&&sosLieu!=="all"){
-      const lieuKey={maison:"lieu_maison",voiture:"lieu_voiture",ecole:"lieu_ecole",public:"lieu_public",dehors:"lieu_dehors"}[sosLieu];
-      if(lieuKey){const m=pool.filter(a=>a[lieuKey]);if(m.length>0)pool=m;}
-    }
-
-    if(pool.length===0){setSosResults({main:null,alt:null,fallback:FALLBACK_ACTIVITIES});return;}
-    const shuffle=[...pool].sort(()=>Math.random()-0.5);
-    setSosResults({main:shuffle[0],alt:shuffle[1]||null,fallback:null});
-  };
   const joursBase=["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"];
   const joursSemaine=["Lundi","Mardi","Mercredi","Jeudi","Vendredi"];
   const joursWeekend=["Samedi","Dimanche"];
@@ -3088,93 +4237,6 @@ function PagePlanning({sosLib=[],enfants=[],enfantActif,setEnfantActif,isPremium
     );
   }
   const FilterBtn=({active,onClick,children,color="#ef4444"})=>(<button onClick={onClick} style={{padding:"9px 14px",borderRadius:12,border:`2px solid ${active?color:"rgba(255,255,255,0.12)"}`,background:active?color+"22":"rgba(255,255,255,0.04)",color:active?color:"rgba(255,255,255,0.55)",fontSize:12,cursor:"pointer",fontWeight:active?700:400,transition:"all 0.15s",textAlign:"left"}}>{children}</button>);
-  const ActivityCard=({act,isMain=false})=>(<div style={{background:isMain?"rgba(255,255,255,0.08)":"rgba(255,255,255,0.04)",borderRadius:18,padding:"16px 16px",marginBottom:10,border:`1px solid ${isMain?"rgba(239,68,68,0.35)":"rgba(255,255,255,0.08)"}`}}>
-    {isMain&&<div style={{display:"flex",alignItems:"center",gap:6,marginBottom:8}}><div style={{width:6,height:6,borderRadius:"50%",background:"#ef4444"}}/><span style={{fontSize:10,color:"#fca5a5",fontWeight:700,textTransform:"uppercase",letterSpacing:"0.5px"}}>Suggestion principale</span></div>}
-    {!isMain&&<div style={{display:"flex",alignItems:"center",gap:6,marginBottom:8}}><span style={{fontSize:10,color:"rgba(255,255,255,0.35)",textTransform:"uppercase",letterSpacing:"0.5px"}}>Alternative</span></div>}
-    <div style={{display:"flex",gap:6,marginBottom:8,flexWrap:"wrap"}}>
-      {act.duree&&<span style={{fontSize:10,background:"rgba(239,68,68,0.15)",color:"#fca5a5",padding:"2px 8px",borderRadius:10,fontWeight:600}}>⏱ {act.duree}</span>}
-      {act.age&&<span style={{fontSize:10,background:"rgba(255,255,255,0.07)",color:"rgba(255,255,255,0.5)",padding:"2px 8px",borderRadius:10}}>👶 {act.age}</span>}
-      {act.tags&&act.tags.map((t,i)=><span key={i} style={{fontSize:10,background:"rgba(255,255,255,0.05)",color:"rgba(255,255,255,0.4)",padding:"2px 8px",borderRadius:10}}>{t}</span>)}
-    </div>
-    <p style={{margin:"0 0 6px",fontSize:act.emoji?32:18,marginBottom:act.emoji?4:6}}>{act.emoji||""}</p>
-    <p style={{margin:"0 0 6px",fontSize:16,fontWeight:700,color:"#fff"}}>{act.titre}</p>
-    <p style={{margin:"0 0 8px",fontSize:12,color:"rgba(255,255,255,0.65)",lineHeight:1.5}}>{act.desc}</p>
-    {Array.isArray(act.materiel)&&act.materiel.length>0&&<p style={{margin:0,fontSize:11,color:"rgba(255,255,255,0.35)"}}>Matériel : {act.materiel.join(", ")}</p>}
-  </div>);
-  if(showSOS) return(
-    <div style={{background:"#0f0505",minHeight:"100vh",display:"flex",flexDirection:"column",fontFamily:"system-ui,-apple-system,sans-serif"}}>
-      <div style={{background:"linear-gradient(135deg,#7f1d1d,#dc2626)",padding:"16px 16px 20px",position:"relative"}}>
-        <button onClick={()=>{setShowSOS(false);setSosResults(null);setSosProfils([]);setSosCrise(null);setSosLieu(null);setSosTemps(null);}} style={{position:"absolute",top:14,left:14,width:34,height:34,borderRadius:"50%",background:"rgba(255,255,255,0.15)",border:"none",color:"#fff",fontSize:18,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>←</button>
-        <div style={{textAlign:"center"}}>
-          <div style={{fontSize:36,marginBottom:4}}>🆘</div>
-          <p style={{margin:"0 0 2px",fontSize:19,fontWeight:800,color:"#fff"}}>Mode SOS</p>
-          <p style={{margin:0,fontSize:11,color:"rgba(255,255,255,0.65)"}}>Activité adaptée en quelques secondes</p>
-        </div>
-      </div>
-      <div style={{flex:1,padding:"16px 16px 24px",overflowY:"auto"}}>
-        {!sosResults?(
-          <div>
-            {/* Filtre 1 — Profil */}
-            <div style={{marginBottom:18}}>
-              <p style={{fontSize:12,fontWeight:700,color:"#c4b5fd",margin:"0 0 4px",textTransform:"uppercase",letterSpacing:"0.5px"}}>🧩 Filtre 1 — Profil de l'enfant</p>
-              <p style={{fontSize:10,color:"rgba(255,255,255,0.35)",margin:"0 0 10px"}}>Plusieurs profils possibles</p>
-              <div style={{display:"flex",flexWrap:"wrap",gap:7}}>
-                {[{v:"ordinaire",l:"😊 Profil ordinaire",c:"#10b981"},{v:"tsa",l:"🧩 TSA",c:"#a78bfa"},{v:"tdah",l:"⚡ TDAH",c:"#f472b6"},{v:"dys",l:"📖 DYS",c:"#67e8f9"},{v:"tsa_tdah",l:"🌀 TSA + TDAH",c:"#c084fc"},{v:"bas_age",l:"👶 Bas âge (- 4 ans)",c:"#fbbf24"}].map(p=>(
-                  <button key={p.v} onClick={()=>toggleProfil(p.v)} style={{padding:"8px 14px",borderRadius:20,border:`2px solid ${sosProfils.includes(p.v)?p.c:"rgba(255,255,255,0.12)"}`,background:sosProfils.includes(p.v)?p.c+"22":"rgba(255,255,255,0.04)",color:sosProfils.includes(p.v)?p.c:"rgba(255,255,255,0.55)",fontSize:12,cursor:"pointer",fontWeight:sosProfils.includes(p.v)?700:400}}>{p.l}</button>
-                ))}
-              </div>
-            </div>
-
-            {/* Filtre 2 — Type de crise */}
-            <div style={{marginBottom:18}}>
-              <p style={{fontSize:12,fontWeight:700,color:"#fca5a5",margin:"0 0 4px",textTransform:"uppercase",letterSpacing:"0.5px"}}>😰 Filtre 2 — Type de crise</p>
-              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
-                {[{v:"sensorielle",l:"🌊 Surcharge sensorielle",sub:"Trop de bruit, lumière, stimulations"},{v:"emotionnelle",l:"🌋 Crise émotionnelle",sub:"Colère, pleurs, frustration"},{v:"agitation",l:"🌪️ Agitation / hyperactivité",sub:"Impossible de rester en place"},{v:"concentration",l:"🌫️ Difficulté concentration",sub:"Dispersé, n'arrive pas à se poser"}].map(c=>(
-                  <button key={c.v} onClick={()=>setSosCrise(sosCrise===c.v?null:c.v)} style={{padding:"10px 12px",borderRadius:14,border:`2px solid ${sosCrise===c.v?"#ef4444":"rgba(255,255,255,0.1)"}`,background:sosCrise===c.v?"rgba(239,68,68,0.15)":"rgba(255,255,255,0.03)",color:"rgba(255,255,255,0.8)",cursor:"pointer",textAlign:"left",transition:"all 0.15s"}}>
-                    <p style={{margin:"0 0 2px",fontSize:12,fontWeight:sosCrise===c.v?700:500}}>{c.l}</p>
-                    <p style={{margin:0,fontSize:10,color:"rgba(255,255,255,0.4)"}}>{c.sub}</p>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Filtre 3 — Lieu */}
-            <div style={{marginBottom:18}}>
-              <p style={{fontSize:12,fontWeight:700,color:"#6ee7b7",margin:"0 0 4px",textTransform:"uppercase",letterSpacing:"0.5px"}}>📍 Filtre 3 — Lieu</p>
-              <p style={{fontSize:10,color:"rgba(255,255,255,0.35)",margin:"0 0 10px"}}>Le lieu filtre les activités faisables</p>
-              <div style={{display:"flex",flexWrap:"wrap",gap:7}}>
-                {[{v:"maison",l:"🏠 Maison"},{v:"voiture",l:"🚗 Voiture"},{v:"ecole",l:"🏫 École / extérieur"},{v:"public",l:"🛒 Lieu public"},{v:"dehors",l:"🌳 Dehors"}].map(o=>(
-                  <button key={o.v} onClick={()=>setSosLieu(sosLieu===o.v?null:o.v)} style={{padding:"8px 14px",borderRadius:20,border:`2px solid ${sosLieu===o.v?"#6ee7b7":"rgba(255,255,255,0.12)"}`,background:sosLieu===o.v?"rgba(110,231,183,0.12)":"rgba(255,255,255,0.04)",color:sosLieu===o.v?"#6ee7b7":"rgba(255,255,255,0.55)",fontSize:12,cursor:"pointer",fontWeight:sosLieu===o.v?700:400}}>{o.l}</button>
-                ))}
-              </div>
-            </div>
-
-            <button onClick={genSOS} style={{width:"100%",padding:"16px 0",borderRadius:28,background:"linear-gradient(135deg,#dc2626,#ef4444)",border:"none",color:"#fff",fontWeight:800,fontSize:16,cursor:"pointer",boxShadow:"0 6px 20px rgba(239,68,68,0.4)"}}>
-              🆘 Trouver une activité maintenant !
-            </button>
-          </div>
-        ):(
-          <div>
-            {sosResults.fallback?(
-              <div>
-                <div style={{background:"rgba(239,68,68,0.08)",borderRadius:12,padding:"10px 14px",marginBottom:16,display:"flex",gap:8}}><span>💡</span><p style={{margin:0,fontSize:12,color:"#fca5a5"}}>Aucune activité spécifique trouvée — voici 3 techniques universelles validées.</p></div>
-                {sosResults.fallback.map((a,i)=><ActivityCard key={i} act={a} isMain={i===0}/>)}
-              </div>
-            ):(
-              <div>
-                {sosResults.main&&<ActivityCard act={sosResults.main} isMain={true}/>}
-                {sosResults.alt&&<ActivityCard act={sosResults.alt} isMain={false}/>}
-              </div>
-            )}
-            <div style={{display:"flex",gap:10,marginTop:4}}>
-              <button onClick={genSOS} style={{flex:1,padding:"13px 0",borderRadius:28,background:"rgba(255,255,255,0.07)",border:"1px solid rgba(255,255,255,0.15)",color:"#fff",fontWeight:600,fontSize:13,cursor:"pointer"}}>🔄 Autre suggestion</button>
-              <button onClick={()=>{setShowSOS(false);setSosResults(null);setSosProfils([]);setSosCrise(null);setSosLieu(null);setSosTemps(null);}} style={{flex:1,padding:"13px 0",borderRadius:28,background:"linear-gradient(135deg,#dc2626,#ef4444)",border:"none",color:"#fff",fontWeight:700,fontSize:13,cursor:"pointer"}}>✅ C'est parti !</button>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
 
   return(
     <div style={{padding:"20px 16px",background:BG,minHeight:"100vh"}}>
@@ -3183,11 +4245,6 @@ function PagePlanning({sosLib=[],enfants=[],enfantActif,setEnfantActif,isPremium
           <h1 style={{fontSize:20,fontWeight:600,color:TX,margin:0}}>Planning hebdo</h1>
           {enfants.length>0&&<EnfantMultiSelecteur enfants={enfants} selection={enfantsSelectionnes} setSelection={setEnfantsSelectionnes}/>}
         </div>
-        {sosModeActif&&(
-          <button onClick={()=>{if(!isPremium){onOpenPremium&&onOpenPremium();return;}setShowSOS(true);setSosResults(null);setSosProfils([]);setSosCrise(null);setSosLieu(null);setSosTemps(null);}} style={{display:"flex",alignItems:"center",gap:6,padding:"9px 14px",borderRadius:28,background:isPremium?"linear-gradient(135deg,#dc2626,#ef4444)":"linear-gradient(135deg,#9ca3af,#6b7280)",border:"none",color:"#fff",fontWeight:700,fontSize:13,cursor:"pointer",boxShadow:isPremium?"0 4px 12px rgba(239,68,68,0.35)":"none"}}>
-            🆘 Mode SOS{!isPremium&&" ⭐"}
-          </button>
-        )}
       </div>
       <div style={{background:WH,borderRadius:16,padding:16,border:BD,marginBottom:12}}>
         {/* Filtre semaine / weekend */}
@@ -3262,7 +4319,7 @@ function PagePlanning({sosLib=[],enfants=[],enfantActif,setEnfantActif,isPremium
             </button>
             <button onClick={()=>{
               const win=window.open("","_blank");
-              if(!win)return;
+              if(!win){setSaveToast("⚠️ Bloqué par le navigateur — autorisez les pop-ups pour ce site puis réessayez.");setTimeout(()=>setSaveToast(null),4000);return;}
               const html=`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Planning Parent'Hèse</title><style>body{font-family:system-ui,sans-serif;max-width:600px;margin:0 auto;padding:24px;color:#2C2A3E}h1{color:#6C5CE7;font-size:22px;margin-bottom:4px}.subtitle{color:#7A7690;font-size:13px;margin-bottom:20px}.day{display:flex;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid #EDE9FF}.day-name{font-weight:700;color:#6C5CE7;width:80px;flex-shrink:0}.act-name{font-size:15px}.courses{margin-top:24px;background:#F8FAFC;border-radius:12px;padding:16px}.courses h2{color:#6C5CE7;font-size:16px;margin:0 0 12px}.item{padding:4px 0;font-size:14px}@media print{body{margin:0}}</style></head><body><h1>📅 Mon Planning Parent'Hèse</h1><p class="subtitle">Généré le ${new Date().toLocaleDateString("fr-FR")}</p>${planning.map(p=>`<div class="day"><span class="day-name">${p.jour}</span><span class="act-name">${p.activite.nom||""}</span></div>`).join("")}${allMateriel.length>0?`<div class="courses"><h2>🛒 Liste de courses</h2>${allMateriel.map(m=>`<div class="item">☐ ${m}</div>`).join("")}</div>`:""}</body></html>`;
               win.document.write(html);
               win.document.close();
@@ -4481,35 +5538,25 @@ function FormulaireEnfant({enfant,onSave,onCancel,isPremium=false,onOpenPremium}
     ...enfant,
     niveauxSensoriels:enfant.niveauxSensoriels||{bruit:50,lumiere:50,foule:50,imprevu:50},
     besoins:enfant.besoins||[],
+    besoinsMatching:enfant.besoinsMatching||[],
     notesParent:enfant.notesParent||"",
   }:{
     prenom:"",age:0,emoji:"👦",couleur:"#6C5CE7",profils:[],
     niveauxSensoriels:{bruit:50,lumiere:50,foule:50,imprevu:50},
-    besoins:[],notesParent:"",
+    besoins:[],besoinsMatching:[],notesParent:"",
   });
-  const toggleProfil=(v)=>setForm(p=>({...p,profils:p.profils.includes(v)?p.profils.filter(x=>x!==v):[...p.profils,v]}));
   const toggleBesoin=(v)=>setForm(p=>({...p,besoins:(p.besoins||[]).includes(v)?(p.besoins||[]).filter(x=>x!==v):[...(p.besoins||[]),v]}));
+  const toggleBesoinMatching=(v)=>setForm(p=>({...p,besoinsMatching:(p.besoinsMatching||[]).includes(v)?(p.besoinsMatching||[]).filter(x=>x!==v):[...(p.besoinsMatching||[]),v]}));
 
-  // Besoins disponibles selon profils sélectionnés
-  const BESOINS_PAR_PROFIL={
-    TSA:[
-      "Peu de bruit","Lumière douce","Espace de retrait possible","Pas de foule","Transitions préparées","Emploi du temps visuel","Peu d'imprévus","Rituel d'entrée/sortie","Personnel formé TSA",
-    ],
-    TDAH:[
-      "Activité physique possible","Grand espace","Peu d'attente","Stimulation variée","Pauses fréquentes","Règles simples","Retour rapide","Activité courte",
-    ],
-    DYS:[
-      "Supports visuels","Pas de lecture requise","Rythme libre","Pas de contrainte d'écriture","Instructions orales","Personnel formé DYS",
-    ],
-    Haut_potentiel:[
-      "Activité stimulante","Complexité adaptée","Autonomie possible","Défis intellectuels",
-    ],
-    Troubles_anxieux:[
-      "Environnement prévisible","Pas de surprise","Cadre rassurant","Possibilité de quitter","Peu de monde",
-    ],
-  };
-
-  const tousBesoins=[...new Set(form.profils.flatMap(p=>BESOINS_PAR_PROFIL[p]||[]))];
+  // Besoins regroupés par thème (indépendant de tout diagnostic)
+  const BESOINS_GROUPES=[
+    {titre:"🔇 Environnement sensoriel",items:["Peu de bruit","Lumière douce","Espace de retrait possible","Pas de foule"]},
+    {titre:"🗓️ Structure & prévisibilité",items:["Transitions préparées","Emploi du temps visuel","Peu d'imprévus","Rituel d'entrée/sortie","Environnement prévisible","Pas de surprise"]},
+    {titre:"🏃 Mouvement & rythme",items:["Activité physique possible","Grand espace","Peu d'attente","Pauses fréquentes","Activité courte","Stimulation variée"]},
+    {titre:"📖 Communication & apprentissage",items:["Supports visuels","Pas de lecture requise","Rythme libre","Pas de contrainte d'écriture","Instructions orales","Règles simples","Retour rapide"]},
+    {titre:"🧠 Stimulation & autonomie",items:["Activité stimulante","Complexité adaptée","Autonomie possible","Défis intellectuels"]},
+    {titre:"💛 Sécurité affective",items:["Cadre rassurant","Possibilité de quitter","Peu de monde","Personnel formé"]},
+  ];
 
   return(
     <div style={{background:BG,minHeight:"100vh",fontFamily:"system-ui,-apple-system,sans-serif"}}>
@@ -4540,28 +5587,6 @@ function FormulaireEnfant({enfant,onSave,onCancel,isPremium=false,onOpenPremium}
           <div>
             <label style={{fontSize:12,color:TM,display:"block",marginBottom:8}}>Couleur</label>
             <div style={{display:"flex",gap:10}}>{COULEURS_ENFANT.map(c=><button key={c} onClick={()=>setForm(p=>({...p,couleur:c}))} style={{width:32,height:32,borderRadius:"50%",background:c,border:form.couleur===c?"3px solid #fff":"2px solid transparent",outline:form.couleur===c?`2px solid ${c}`:"none",cursor:"pointer"}}/>)}</div>
-          </div>
-        </div>
-
-        {/* Profil TND */}
-        <div style={{background:WH,borderRadius:16,padding:"16px",marginBottom:12,border:BD}}>
-          <p style={{margin:"0 0 4px",fontSize:14,fontWeight:700,color:TX}}>🧩 Profil TND</p>
-          <p style={{margin:"0 0 12px",fontSize:12,color:TM}}>Sélectionne le ou les profils de ton enfant</p>
-          <div style={{display:"flex",flexDirection:"column",gap:8}}>
-            {[
-              ...PROFILS_TND,
-              {val:"Haut_potentiel",label:"🌟 Haut potentiel (HPI/HPE)",color:"#F59E0B",sub:"Intellectuellement ou émotionnellement précoce"},
-              {val:"Troubles_anxieux",label:"😰 Troubles anxieux",color:"#06B6D4",sub:"Anxiété, phobie scolaire..."},
-            ].map(p=>{
-              const active=form.profils.includes(p.val);
-              return(
-                <button key={p.val} onClick={()=>toggleProfil(p.val)} style={{display:"flex",alignItems:"center",gap:12,padding:"10px 14px",borderRadius:12,border:`2px solid ${active?p.color:"rgba(0,0,0,0.08)"}`,background:active?p.color+"15":BG,cursor:"pointer",textAlign:"left"}}>
-                  <span style={{fontSize:14,fontWeight:700,color:active?p.color:TM}}>{p.label}</span>
-                  {p.sub&&<span style={{fontSize:11,color:TM}}>{p.sub}</span>}
-                  {active&&<span style={{marginLeft:"auto",fontSize:12,color:p.color}}>✓</span>}
-                </button>
-              );
-            })}
           </div>
         </div>
 
@@ -4607,17 +5632,51 @@ function FormulaireEnfant({enfant,onSave,onCancel,isPremium=false,onOpenPremium}
           )}
         </div>
 
-        {/* Besoins spécifiques selon profil */}
-        {isPremium&&tousBesoins.length>0&&(
+        {/* Besoins spécifiques */}
+        {isPremium&&(
           <div style={{background:WH,borderRadius:16,padding:"16px",marginBottom:12,border:BD}}>
             <p style={{margin:"0 0 4px",fontSize:14,fontWeight:700,color:TX}}>✅ Besoins spécifiques</p>
-            <p style={{margin:"0 0 12px",fontSize:12,color:TM}}>Cochez ce qui correspond à votre enfant — le générateur en tiendra compte</p>
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>
-              {tousBesoins.map(b=>{
-                const actif=(form.besoins||[]).includes(b);
+            <p style={{margin:"0 0 14px",fontSize:12,color:TM}}>Cochez ce qui correspond à votre enfant — le générateur en tiendra compte</p>
+            {BESOINS_GROUPES.map(({titre,items})=>(
+              <div key={titre} style={{marginBottom:14}}>
+                <p style={{margin:"0 0 8px",fontSize:12,fontWeight:700,color:"#6B7280"}}>{titre}</p>
+                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>
+                  {items.map(b=>{
+                    const actif=(form.besoins||[]).includes(b);
+                    return(
+                      <button key={b} onClick={()=>toggleBesoin(b)} style={{padding:"8px 10px",borderRadius:10,border:`1.5px solid ${actif?V:"#E5E7EB"}`,background:actif?VL:BG,color:actif?V:TM,fontSize:11,fontWeight:actif?700:400,cursor:"pointer",textAlign:"left",display:"flex",alignItems:"center",gap:6}}>
+                        <span>{actif?"☑":"☐"}</span>{b}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Besoins pour les recommandations d'activités */}
+        {isPremium&&(
+          <div style={{background:WH,borderRadius:16,padding:"16px",marginBottom:12,border:BD}}>
+            <p style={{margin:"0 0 4px",fontSize:14,fontWeight:700,color:TX}}>🎯 Besoins pour les recommandations</p>
+            <p style={{margin:"0 0 14px",fontSize:12,color:TM}}>Utilisé pour trier et noter les activités selon les besoins de {form.prenom||"votre enfant"}</p>
+            <div style={{display:"flex",flexDirection:"column",gap:6}}>
+              {[
+                {v:"calme",emoji:"🔇",l:"Environnement calme"},
+                {v:"tactile",emoji:"✋",l:"Sensibilité au toucher"},
+                {v:"attention",emoji:"⏱️",l:"Attention courte"},
+                {v:"previsible",emoji:"🗓️",l:"Besoin de prévisibilité"},
+                {v:"visuel",emoji:"👁️",l:"Support visuel nécessaire"},
+                {v:"bouger",emoji:"🏃",l:"Besoin de bouger"},
+                {v:"verbal",emoji:"🗣️",l:"À l'aise avec la communication"},
+                {v:"frustration",emoji:"😤",l:"Sensible à la frustration"},
+              ].map(({v,emoji,l})=>{
+                const actif=(form.besoinsMatching||[]).includes(v);
                 return(
-                  <button key={b} onClick={()=>toggleBesoin(b)} style={{padding:"8px 10px",borderRadius:10,border:`1.5px solid ${actif?V:"#E5E7EB"}`,background:actif?VL:BG,color:actif?V:TM,fontSize:11,fontWeight:actif?700:400,cursor:"pointer",textAlign:"left",display:"flex",alignItems:"center",gap:6}}>
-                    <span>{actif?"☑":"☐"}</span>{b}
+                  <button key={v} onClick={()=>toggleBesoinMatching(v)} style={{padding:"10px 12px",borderRadius:10,border:`1.5px solid ${actif?V:"#E5E7EB"}`,background:actif?VL:BG,cursor:"pointer",display:"flex",alignItems:"center",gap:10,textAlign:"left"}}>
+                    <span style={{fontSize:16,flexShrink:0}}>{emoji}</span>
+                    <span style={{fontSize:13,color:actif?V:TX,fontWeight:actif?700:400,flex:1}}>{l}</span>
+                    <span style={{fontSize:14,color:actif?V:"#D1D5DB"}}>{actif?"☑":"☐"}</span>
                   </button>
                 );
               })}
@@ -4676,9 +5735,7 @@ function GestionEnfants({enfants,setEnfants,enfantActif,setEnfantActif,onBack,is
                   <div style={{width:52,height:52,borderRadius:"50%",background:(e.couleur||"#6C5CE7")+"22",border:`3px solid ${e.couleur||"#6C5CE7"}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:26,flexShrink:0}}>{e.emoji||"👦"}</div>
                   <div style={{flex:1}}>
                     <p style={{margin:"0 0 4px",fontSize:16,fontWeight:700,color:TX}}>{e.prenom||"Enfant"}, {e.age||0} an{(e.age||0)>1?"s":""}</p>
-                    <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
-                      {(e.profils||[]).map(p=>{const pt=PROFILS_TND.find(x=>x.val===p);return (<span key={p} style={{fontSize:10,background:pt?pt.color+"18":"#EDE9FF",color:pt?pt.color:V,padding:"1px 8px",borderRadius:8,fontWeight:600}}>{pt?pt.label:p}</span>);})}
-                    </div>
+                    {(e.besoins||[]).length>0&&<span style={{fontSize:10,background:VL,color:V,padding:"1px 8px",borderRadius:8,fontWeight:600}}>{e.besoins.length} besoin{e.besoins.length>1?"s":""} renseigné{e.besoins.length>1?"s":""}</span>}
                   </div>
                 </div>
                 {/* Niveaux sensoriels — affichage visuel */}
@@ -5544,12 +6601,31 @@ function PageProfil({setPage,enfants=[],setEnfants,enfantActif,setEnfantActif,sh
           </div>
         )}
 
+        {/* 🧪 Bouton Essai Démo Premium */}
+        {!isPremium&&(
+          <div style={{background:"linear-gradient(135deg,#6C5CE7,#a78bfa)",borderRadius:16,padding:"14px 16px",marginBottom:12,display:"flex",alignItems:"center",gap:12}}>
+            <span style={{fontSize:28,flexShrink:0}}>⭐</span>
+            <div style={{flex:1}}>
+              <p style={{margin:"0 0 2px",fontSize:13,fontWeight:700,color:"#fff"}}>Tester le mode Premium</p>
+              <p style={{margin:0,fontSize:11,color:"rgba(255,255,255,0.8)"}}>Accès à toutes les fonctionnalités sans compte</p>
+            </div>
+            <button onClick={()=>setPremium&&setPremium(true)} style={{background:"#fff",border:"none",borderRadius:20,padding:"8px 16px",color:"#6C5CE7",fontWeight:700,fontSize:12,cursor:"pointer",flexShrink:0}}>Essai démo</button>
+          </div>
+        )}
+        {isPremium&&(
+          <div style={{background:"#ECFDF5",borderRadius:16,padding:"12px 16px",marginBottom:12,display:"flex",alignItems:"center",gap:10,border:"1px solid #A7F3D0"}}>
+            <span style={{fontSize:20}}>✅</span>
+            <p style={{margin:0,fontSize:13,fontWeight:600,color:"#065F46",flex:1}}>Mode Premium actif</p>
+            <button onClick={()=>setPremium&&setPremium(false)} style={{background:"none",border:"1px solid #A7F3D0",borderRadius:20,padding:"6px 12px",color:"#065F46",fontSize:11,cursor:"pointer"}}>Désactiver</button>
+          </div>
+        )}
+
         {/* 🎯 Barre de complétion du profil */}
         {(()=>{
           const steps=[
             {done:isLoggedIn,label:"Se connecter",emoji:"🔐"},
             {done:enfants.length>0,label:"Ajouter un enfant",emoji:"👶"},
-            {done:enfants.some(e=>((e.profils||[]).length>0)),label:"Renseigner les profils TND",emoji:"🧩"},
+            {done:enfants.some(e=>((e.besoins||[]).length>0)),label:"Renseigner les besoins de l'enfant",emoji:"✅"},
             {done:isPremium?enfants.some(e=>Object.values(e.niveauxSensoriels||{}).some(v=>v!==50)):true,label:"Compléter le carnet sensoriel",emoji:"🧠",premium:true},
             {done:historiqueActivites.length>0,label:"Réaliser une première activité",emoji:"✅"},
             {done:favoris.length>0,label:"Sauvegarder un favori",emoji:"❤️"},
@@ -5929,7 +7005,181 @@ const MOCK_SEASONAL = [
   { id:"4", type:"summer", nom:"Vacances d'été", emoji:"☀️", color:"#0ea5e9", actif:false, banner:false, popup:false, debut:"01/07", fin:"31/08" },
 ];
 
-// ─── THEME ────────────────────────────────────────────────────────────────────
+// ─── PAGE RESSOURCES ──────────────────────────────────────────────────────────
+const MOCK_RESSOURCES_SITES=[
+  {nom:"Autisme France",url:"https://www.autisme-france.fr",desc:"Association nationale d'information sur l'autisme. Fiches pratiques, annuaire, droits.",emoji:"🔵"},
+  {nom:"HyperSupers TDAH France",url:"https://www.tdah-france.fr",desc:"Association de référence sur le TDAH. Forum, ressources, groupes de parole.",emoji:"🟠"},
+  {nom:"Fédération Française des DYS",url:"https://www.ffdys.com",desc:"Informations et soutien pour les troubles DYS (dyslexie, dyspraxie, dysorthographie...).",emoji:"🟢"},
+  {nom:"Retz — Outils pédagogiques TND",url:"https://www.editions-retz.com",desc:"Maison d'édition spécialisée en outils pédagogiques adaptés, pictogrammes, supports visuels.",emoji:"📚"},
+  {nom:"CRA Île-de-France",url:"https://www.craif.org",desc:"Centre de Ressources Autisme. Diagnostic, accompagnement, formations pour les familles.",emoji:"🏥"},
+  {nom:"MDPH — Mon Parcours Handicap",url:"https://www.monparcourshandicap.gouv.fr",desc:"Portail officiel pour les démarches MDPH, AEEH, RQTH et droits des enfants TND.",emoji:"🇫🇷"},
+];
+const MOCK_RESSOURCES_CONTACTS=[
+  {nom:"Numéro National Autisme",tel:"0 800 71 40 40",desc:"Ligne nationale d'écoute et d'orientation pour les familles touchées par l'autisme. Gratuit.",emoji:"📞"},
+  {nom:"TDAH France — Ligne écoute",tel:"01 74 51 56 11",desc:"Ligne d'information et d'écoute pour les familles d'enfants TDAH.",emoji:"📱"},
+  {nom:"MDPH — Renseignements",tel:"3960",desc:"Numéro national pour toutes questions sur les droits et démarches auprès de la MDPH.",emoji:"🏛️"},
+  {nom:"CRIPH — Handicap et emploi",tel:"0 800 11 10 09",desc:"Ligne d'information pour les parents concernant l'aménagement scolaire et professionnel.",emoji:"🎓"},
+];
+const MOCK_RESSOURCES_PDF=[
+  {nom:"Carnet de suivi TND",type:"pdf",acces:"gratuit",prix:"",desc:"Tableau de suivi hebdomadaire des comportements, émotions et progrès de l'enfant. À imprimer.",emoji:"📋",tag:"À imprimer"},
+  {nom:"Pictogrammes du quotidien",type:"pdf",acces:"payant",prix:"4,90 €",desc:"Planche de 60 pictogrammes pour la routine quotidienne (matin, repas, école, soir). Format A4.",emoji:"🖼️",tag:"À acheter"},
+  {nom:"Guide des droits MDPH",type:"pdf",acces:"gratuit",prix:"",desc:"Synthèse des droits, démarches et aides disponibles pour les enfants TND. Mis à jour 2024.",emoji:"📄",tag:"À imprimer"},
+  {nom:"Emploi du temps visuel",type:"pdf",acces:"premium",prix:"2,90 €",desc:"Emploi du temps hebdomadaire illustré pour les enfants TSA. Personnalisable avant impression.",emoji:"📅",tag:"À acheter"},
+  {nom:"Fiches gestion de crise",type:"pdf",acces:"gratuit",prix:"",desc:"5 fiches pratiques pour gérer les crises sensorielles et émotionnelles à la maison et à l'école.",emoji:"🆘",tag:"À imprimer"},
+  {nom:"Affiche — La roue des émotions",type:"affiche",acces:"premium",prix:"3,50 €",desc:"Affiche colorée à imprimer en A3 pour aider l'enfant à identifier et nommer ses émotions.",emoji:"🎨",tag:"Affiche A3"},
+  {nom:"Affiche — Les 5 sens en images",type:"affiche",acces:"gratuit",prix:"",desc:"Affiche pédagogique illustrée sur les 5 sens, idéale pour la chambre ou la salle de classe.",emoji:"🖼️",tag:"Affiche A3"},
+  {nom:"5 conseils pour une transition sans crise",type:"article",acces:"gratuit",prix:"",emoji:"📝",tag:"Article",desc:"Des astuces simples pour préparer les changements d'activité en douceur.",contenu:"Les transitions — passer d'une activité à une autre — sont souvent des moments difficiles pour les enfants TND, en particulier TSA. Voici 5 conseils concrets :\n\n1. Anticiper à voix haute\nPrévenez l'enfant plusieurs minutes avant le changement : \"Dans 5 minutes on range les jouets pour aller manger\". Un timer visuel renforce ce repère.\n\n2. Créer un rituel de transition\nUne phrase, un geste ou une chanson toujours identique avant de changer d'activité aide l'enfant à se préparer mentalement.\n\n3. Utiliser un support visuel\nUn pictogramme ou une image de la prochaine activité rend le changement plus concret et moins anxiogène.\n\n4. Proposer un objet de transition\nUn doudou, une peluche ou un objet familier que l'enfant peut porter d'une pièce à l'autre peut sécuriser le passage.\n\n5. Valoriser chaque transition réussie\nUn mot d'encouragement, même petit, renforce la confiance de l'enfant pour la prochaine fois.\n\nCes techniques demandent de la régularité : plus elles sont répétées, plus elles deviennent efficaces."},
+  {nom:"Comprendre l'hypersensibilité sensorielle",type:"article",acces:"gratuit",prix:"",emoji:"🔊",tag:"Article",desc:"Ce que ressent un enfant hypersensible et comment l'accompagner au quotidien.",contenu:"L'hypersensibilité sensorielle touche une grande partie des enfants TSA et beaucoup d'enfants TDAH. Elle se manifeste par une réaction disproportionnée à certains stimuli : bruit, lumière, texture, odeur.\n\nCe que vit l'enfant\nUn bruit ordinaire pour vous (aspirateur, sonnerie, brouhaha) peut être vécu comme une agression physique par un enfant hypersensible. Ce n'est pas un caprice : c'est une réalité neurologique.\n\nComment repérer une surcharge sensorielle\nL'enfant se bouche les oreilles, se recroqueville, devient agité ou au contraire se fige, refuse le contact, pleure sans raison apparente identifiable pour un adulte.\n\nCe qui aide\n- Réduire les stimuli quand c'est possible (lumière tamisée, casque anti-bruit)\n- Prévenir avant un environnement bruyant ou nouveau\n- Proposer un espace de retrait disponible à tout moment\n- Ne jamais forcer le contact ou l'exposition brutale\n\nCe qu'il faut éviter\nMinimiser (\"ce n'est pas si fort\"), forcer l'enfant à \"s'habituer\", ou le gronder pour sa réaction. La régulation vient avec le temps et un environnement rassurant, pas avec la contrainte."},
+];
+
+function PageRessources({sites,contacts,pdfs,setPdfs,isPremium=false,onOpenPremium}){
+  const RESSOURCES_SITES=sites&&sites.length>0?sites:MOCK_RESSOURCES_SITES;
+  const RESSOURCES_CONTACTS=contacts&&contacts.length>0?contacts:MOCK_RESSOURCES_CONTACTS;
+  const RESSOURCES_PDF=(pdfs&&pdfs.length>0?pdfs:MOCK_RESSOURCES_PDF).map((p,i)=>({...p,_idx:i}));
+  const parsePrix=(str)=>{if(!str)return 0;const n=parseFloat(String(str).replace(",",".").replace(/[^\d.]/g,""));return isNaN(n)?0:n;};
+  const enregistrerInteraction=(item,type)=>{
+    if(!setPdfs)return;
+    setPdfs(prev=>{
+      const base=prev&&prev.length>0?prev:MOCK_RESSOURCES_PDF;
+      return base.map((it,idx)=>{
+        if(idx!==item._idx)return it;
+        const telechargements=(it.telechargements||0)+1;
+        const revenu=type==="achat"?(it.revenu||0)+parsePrix(it.prix):(it.revenu||0);
+        return {...it,telechargements,revenu};
+      });
+    });
+  };
+  const [onglet,setOnglet]=useState("sites");
+  const [articleOuvert,setArticleOuvert]=useState(null);
+  const onglets=[{k:"sites",l:"🌐 Sites",},{k:"contacts",l:"📞 Contacts"},{k:"pdf",l:"📄 Documents"}];
+  const filtresPDF=[{k:"tous",l:"Tout"},{k:"pdf",l:"📄 PDF"},{k:"affiche",l:"🖼️ Affiches"},{k:"article",l:"📝 Articles"}];
+  const [filtreType,setFiltreType]=useState("tous");
+  const pdfsAffiches=RESSOURCES_PDF.filter(p=>filtreType==="tous"||(p.type||"pdf")===filtreType);
+
+  const accesInfo=(p)=>{
+    const acces=p.acces||(p.prix&&p.prix!=="Gratuit"?"payant":"gratuit");
+    if(acces==="gratuit")return{label:"Gratuit",bg:"#ECFDF5",col:"#065F46",locked:false};
+    if(acces==="premium")return isPremium?{label:"⭐ Inclus Premium",bg:"#F5F0FF",col:"#6C5CE7",locked:false}:{label:"⭐ Premium",bg:"#F5F0FF",col:"#6C5CE7",locked:true};
+    return{label:p.prix||"Payant",bg:"#EFF6FF",col:"#1D4ED8",locked:false};
+  };
+
+  return(
+    <div style={{background:BG,minHeight:"100vh",fontFamily:"system-ui,-apple-system,sans-serif",paddingBottom:80}}>
+      {/* Header */}
+      <div style={{background:WH,padding:"20px 16px 0",borderBottom:BD,position:"sticky",top:0,zIndex:10}}>
+        <p style={{margin:"0 0 14px",fontSize:20,fontWeight:800,color:TX}}>🧠 Ressources TND</p>
+        <div style={{display:"flex",gap:6,overflowX:"auto",scrollbarWidth:"none",paddingBottom:1}}>
+          {onglets.map(o=>(
+            <button key={o.k} onClick={()=>setOnglet(o.k)} style={{flexShrink:0,padding:"8px 16px",borderRadius:"12px 12px 0 0",border:"none",background:onglet===o.k?V:"transparent",color:onglet===o.k?"#fff":TM,fontWeight:onglet===o.k?700:400,fontSize:13,cursor:"pointer"}}>
+              {o.l}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div style={{padding:"16px 16px 0"}}>
+
+        {/* Sites TND */}
+        {onglet==="sites"&&(
+          <div style={{display:"flex",flexDirection:"column",gap:12}}>
+            <p style={{margin:"0 0 4px",fontSize:12,color:TM}}>Sélection de sites de référence sur les TND et le handicap</p>
+            {RESSOURCES_SITES.map(s=>(
+              <a key={s.nom} href={s.url} target="_blank" rel="noreferrer" style={{textDecoration:"none"}}>
+                <div style={{background:WH,borderRadius:16,padding:"14px 16px",border:BD,display:"flex",gap:12,alignItems:"flex-start",boxShadow:"0 2px 8px rgba(0,0,0,0.05)"}}>
+                  <span style={{fontSize:28,flexShrink:0}}>{s.emoji}</span>
+                  <div style={{flex:1}}>
+                    <p style={{margin:"0 0 4px",fontSize:14,fontWeight:700,color:V}}>{s.nom}</p>
+                    <p style={{margin:"0 0 8px",fontSize:12,color:TM,lineHeight:1.5}}>{s.desc}</p>
+                    <span style={{fontSize:11,color:V,background:VL,padding:"2px 10px",borderRadius:20}}>Visiter →</span>
+                  </div>
+                </div>
+              </a>
+            ))}
+          </div>
+        )}
+
+        {/* Contacts */}
+        {onglet==="contacts"&&(
+          <div style={{display:"flex",flexDirection:"column",gap:12}}>
+            <p style={{margin:"0 0 4px",fontSize:12,color:TM}}>Numéros utiles pour les familles d'enfants TND</p>
+            {RESSOURCES_CONTACTS.map(c=>(
+              <a key={c.nom} href={`tel:${c.tel.replace(/\s/g,"")}`} style={{textDecoration:"none"}}>
+                <div style={{background:WH,borderRadius:16,padding:"14px 16px",border:BD,display:"flex",gap:12,alignItems:"flex-start",boxShadow:"0 2px 8px rgba(0,0,0,0.05)"}}>
+                  <span style={{fontSize:28,flexShrink:0}}>{c.emoji}</span>
+                  <div style={{flex:1}}>
+                    <p style={{margin:"0 0 2px",fontSize:14,fontWeight:700,color:TX}}>{c.nom}</p>
+                    <p style={{margin:"0 0 6px",fontSize:16,fontWeight:800,color:V}}>{c.tel}</p>
+                    <p style={{margin:0,fontSize:12,color:TM,lineHeight:1.5}}>{c.desc}</p>
+                  </div>
+                  <span style={{fontSize:22,flexShrink:0}}>📲</span>
+                </div>
+              </a>
+            ))}
+          </div>
+        )}
+
+        {/* PDF / Affiches / Articles */}
+        {onglet==="pdf"&&(
+          <div style={{display:"flex",flexDirection:"column",gap:12}}>
+            <p style={{margin:"0 0 4px",fontSize:12,color:TM}}>Documents, affiches pédagogiques et articles pratiques</p>
+            <div style={{display:"flex",gap:6,marginBottom:2,flexWrap:"wrap"}}>
+              {filtresPDF.map(f=>(
+                <button key={f.k} onClick={()=>setFiltreType(f.k)} style={{padding:"6px 14px",borderRadius:20,border:`1.5px solid ${filtreType===f.k?V:BD.split(" ")[2]||"#E5E7EB"}`,background:filtreType===f.k?VL:WH,color:filtreType===f.k?V:TM,fontSize:12,fontWeight:filtreType===f.k?700:400,cursor:"pointer"}}>{f.l}</button>
+              ))}
+            </div>
+            {pdfsAffiches.map((p,idx)=>{
+              const acc=accesInfo(p);
+              const isArticle=(p.type||"pdf")==="article";
+              return(
+                <div key={p.nom+idx} style={{background:WH,borderRadius:16,padding:"14px 16px",border:BD,boxShadow:"0 2px 8px rgba(0,0,0,0.05)"}}>
+                  <div style={{display:"flex",gap:12,alignItems:"flex-start",marginBottom:12}}>
+                    <span style={{fontSize:28,flexShrink:0}}>{p.emoji}</span>
+                    <div style={{flex:1}}>
+                      <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:4,flexWrap:"wrap"}}>
+                        <p style={{margin:0,fontSize:14,fontWeight:700,color:TX}}>{p.nom}</p>
+                        {p.tag&&<span style={{fontSize:10,fontWeight:700,padding:"2px 8px",borderRadius:20,background:"#F3F4F6",color:"#6B7280"}}>{p.tag}</span>}
+                      </div>
+                      <p style={{margin:"0 0 6px",fontSize:12,color:TM,lineHeight:1.5}}>{p.desc}</p>
+                      <span style={{fontSize:12,fontWeight:800,padding:"3px 10px",borderRadius:20,background:acc.bg,color:acc.col}}>{acc.label}</span>
+                    </div>
+                  </div>
+                  {isArticle?(
+                    <button onClick={()=>{if(acc.locked){onOpenPremium&&onOpenPremium();}else{enregistrerInteraction(p,"lecture");setArticleOuvert(p);}}} style={{width:"100%",padding:"10px 0",borderRadius:28,background:acc.locked?"#F5F0FF":V,border:"none",color:acc.locked?"#6C5CE7":"#fff",fontWeight:700,fontSize:13,cursor:"pointer"}}>
+                      {acc.locked?"⭐ Débloquer avec Premium":"📖 Lire l'article"}
+                    </button>
+                  ):(
+                    <button onClick={()=>{if(acc.locked){onOpenPremium&&onOpenPremium();}else{enregistrerInteraction(p,(p.acces||"gratuit")==="payant"?"achat":"telechargement");}}} style={{width:"100%",padding:"10px 0",borderRadius:28,background:acc.locked?"#F5F0FF":(acc.label==="Gratuit"?"#ECFDF5":V),border:"none",color:acc.locked?"#6C5CE7":(acc.label==="Gratuit"?"#065F46":"#fff"),fontWeight:700,fontSize:13,cursor:"pointer"}}>
+                      {acc.locked?"⭐ Débloquer avec Premium":acc.label==="Gratuit"?"⬇️ Télécharger gratuitement":"🛒 Acheter et télécharger"}
+                    </button>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+      </div>
+
+      {/* Lecteur d'article */}
+      {articleOuvert&&(
+        <div onClick={()=>setArticleOuvert(null)} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.5)",zIndex:600,display:"flex",alignItems:"flex-end"}}>
+          <div onClick={e=>e.stopPropagation()} style={{background:WH,borderRadius:"24px 24px 0 0",width:"100%",maxHeight:"85vh",overflowY:"auto",padding:"20px 20px 32px"}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:16}}>
+              <div style={{display:"flex",gap:10,alignItems:"center"}}>
+                <span style={{fontSize:28}}>{articleOuvert.emoji}</span>
+                <p style={{margin:0,fontSize:16,fontWeight:800,color:TX}}>{articleOuvert.nom}</p>
+              </div>
+              <button onClick={()=>setArticleOuvert(null)} style={{background:BG,border:"none",borderRadius:"50%",width:32,height:32,cursor:"pointer",fontSize:14,flexShrink:0}}>✕</button>
+            </div>
+            <p style={{fontSize:14,color:TX,lineHeight:1.8,whiteSpace:"pre-line",margin:0}}>{articleOuvert.contenu}</p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+
 const C = {
   bg: "#0d1117", sidebar: "#0d1117", card: "#161b22", border: "#30363d",
   text: "#e6edf3", muted: "#8b949e", accent: "#7c3aed",
@@ -6012,6 +7262,7 @@ const MENU = [
   {k:"evenements",label:"Événements",emoji:"📅"},
   {k:"saisonnier",label:"Saisonnier",emoji:"🎄"},
   {k:"categories",label:"Catégories",emoji:"🏷️"},
+  {k:"ressources",label:"Ressources",emoji:"🧠"},
   {k:"utilisateurs",label:"Utilisateurs",emoji:"👥"},
   {k:"abonnements",label:"Abonnements",emoji:"💳"},
   {k:"signalements",label:"Signalements",emoji:"🚩"},
@@ -6482,7 +7733,7 @@ function Activites({sharedActivites,setSharedActivites,customCatActivites=[]}) {
   const [search,setSearch] = useState("");
   const [filterStatut,setFilterStatut] = useState("");
   const [modal,setModal] = useState(null);
-  const emptyForm = {titre:"",desc:"",duree:"",difficulte:"",lieu:"",energie:"",categorie:"",ageMin:"",ageMax:"",materielStr:"",etapes:"",premium:false,statut:"draft",programmation:{date:"",heure:""},etiquettes:[],acc_poussette:false,acc_bebe:false,acc_allaitement:false,acc_langer:false,acc_aire03:false,acc_peubruyant:false,pmr_fauteuil:false,pmr_escaliers:false,pmr_parking:false,pmr_toilettes:false,pmr_personnel:false,pmr_chemin:false,tsa_foule:false,tsa_calme:false,tsa_lumiere:false,tsa_retrait:false,tsa_bruit:false,tsa_personnel:false,tdah_espace:false,tdah_physique:false,tdah_attente:false,tdah_stimulation:false,dys_visuels:false,dys_nonecrite:false,dys_rythme:false,dys_personnel:false};
+  const emptyForm = {titre:"",desc:"",duree:"",difficulte:"",lieu:"",energie:"",categorie:"",ageMin:"",ageMax:"",materielStr:"",etapes:"",premium:false,statut:"published",programmation:{date:"",heure:""},etiquettes:[],acc_poussette:false,acc_bebe:false,acc_allaitement:false,acc_langer:false,acc_aire03:false,acc_peubruyant:false,pmr_fauteuil:false,pmr_escaliers:false,pmr_parking:false,pmr_toilettes:false,pmr_personnel:false,pmr_chemin:false,tsa_foule:false,tsa_calme:false,tsa_lumiere:false,tsa_retrait:false,tsa_bruit:false,tsa_personnel:false,tdah_espace:false,tdah_physique:false,tdah_attente:false,tdah_stimulation:false,dys_visuels:false,dys_nonecrite:false,dys_rythme:false,dys_personnel:false};
   const [form,setForm] = useState(emptyForm);
   const tf = (key) => setForm(prev=>({...prev,[key]:!prev[key]}));
   const filtered = items.filter(a=>(filterStatut===""||a.statut===filterStatut)&&(!search||((a.titre||a.nom||"").toLowerCase()).includes(search.toLowerCase())));
@@ -6636,12 +7887,28 @@ function Activites({sharedActivites,setSharedActivites,customCatActivites=[]}) {
 
             {/* Adaptations */}
             <p style={{margin:"0 0 8px",fontSize:12,fontWeight:700,color:C.text}}>Adaptations possibles :</p>
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6,marginBottom:14}}>
-              {["Peut se faire en silence","Rythme libre","Activité individuelle","Peu de règles","Résultat concret","Stimulation douce","Peut être interrompue","Adapté aux hypersensibles"].map(ad=>{
-                const actif=(form.adaptations||[]).includes(ad);
+            <div style={{display:"flex",flexDirection:"column",gap:6,marginBottom:14}}>
+              {[
+                {id:"a1",label:"Ne nécessite pas de communication verbale",profil:"TSA"},
+                {id:"a2",label:"Pas de contrainte de temps — l'enfant va à son rythme",profil:"TSA"},
+                {id:"a3",label:"Peut se faire seul sans aide d'un adulte",profil:"Tous"},
+                {id:"a4",label:"Peut s'arrêter et reprendre sans perdre le fil",profil:"Tous"},
+                {id:"a5",label:"3 étapes maximum, facile à expliquer",profil:"DYS"},
+                {id:"a6",label:"Ne nécessite pas de toucher des matières inconfortables",profil:"TSA"},
+                {id:"a7",label:"Pas de contact physique imposé",profil:"TSA"},
+                {id:"a8",label:"Pas de bruits forts ou soudains",profil:"TSA"},
+                {id:"a9",label:"L'enfant voit ce qu'il crée (dessin, gâteau, construction...)",profil:"Tous"},
+                {id:"a10",label:"Convient aux enfants qui ont du mal à rester assis",profil:"TDAH"},
+                {id:"a11",label:"Pas de frustration si le résultat n'est pas parfait",profil:"TSA/DYS"},
+                {id:"a12",label:"L'enfant peut choisir comment faire à sa façon",profil:"Tous"},
+              ].map(({id,label,profil})=>{
+                const actif=(form.adaptations||[]).includes(id);
+                const badgeStyle={TSA:{bg:"#EEEDFE",col:"#3C3489"},TDAH:{bg:"#E1F5EE",col:"#085041"},DYS:{bg:"#FAEEDA",col:"#633806"},"TSA/DYS":{bg:"#F3EFFF",col:"#4B3F8F"},Tous:{bg:"#F5F5F5",col:"#666"}}[profil]||{bg:"#F5F5F5",col:"#666"};
                 return(
-                  <div key={ad} onClick={()=>setForm(p=>({...p,adaptations:actif?(p.adaptations||[]).filter(x=>x!==ad):[...(p.adaptations||[]),ad]}))} style={{padding:"7px 10px",borderRadius:8,border:`1.5px solid ${actif?"#6C5CE7":"#E5E7EB"}`,background:actif?"#EEEDFE":WH,color:actif?"#3C3489":"#9CA3AF",fontSize:11,fontWeight:actif?700:400,cursor:"pointer",display:"flex",alignItems:"center",gap:6}}>
-                    <span>{actif?"☑":"☐"}</span>{ad}
+                  <div key={id} onClick={()=>setForm(p=>({...p,adaptations:actif?(p.adaptations||[]).filter(x=>x!==id):[...(p.adaptations||[]),id]}))} style={{padding:"10px 12px",borderRadius:8,border:`1.5px solid ${actif?"#6C5CE7":"#E5E7EB"}`,background:actif?"#EEEDFE":WH,cursor:"pointer",display:"flex",alignItems:"center",gap:8}}>
+                    <span style={{fontSize:16,flexShrink:0,color:actif?"#6C5CE7":"#9CA3AF"}}>{actif?"☑":"☐"}</span>
+                    <span style={{fontSize:13,color:actif?"#3C3489":"#374151",flex:1,lineHeight:1.4}}>{label}</span>
+                    
                   </div>
                 );
               })}
@@ -6653,6 +7920,40 @@ function Activites({sharedActivites,setSharedActivites,customCatActivites=[]}) {
               <p style={{margin:"4px 0 0",fontSize:10,color:C.muted,textAlign:"right"}}>{(form.commentaireTND||"").length}/200</p>
             </AdminField>
           </div>
+
+          {/* Points à anticiper */}
+          <div style={{borderTop:`1px solid ${C.border}`,paddingTop:16,marginBottom:14}}>
+            <p style={{margin:"0 0 4px",fontSize:14,fontWeight:800,color:"#1a1a1a"}}>⚠️ Points à anticiper</p>
+            <p style={{margin:"0 0 14px",fontSize:11,color:C.muted}}>Aide les parents à préparer l'activité selon les besoins de leur enfant</p>
+            {[
+              {titre:"🎨 Sensoriel",ids:["pa1","pa2","pa3","pa4"]},
+              {titre:"🧠 Attention",ids:["pa5","pa6"]},
+              {titre:"💪 Moteur",ids:["pa8","pa9","pa10"]},
+              {titre:"🗓️ Structure & Émotion",ids:["pa7","pa11","pa12","pa13","pa14","pa15"]},
+            ].map(({titre,ids})=>(
+              <div key={titre} style={{marginBottom:12}}>
+                <p style={{margin:"0 0 8px",fontSize:12,fontWeight:700,color:"#9A3412"}}>{titre}</p>
+                <div style={{display:"flex",flexDirection:"column",gap:6}}>
+                  {ids.map(id=>{
+                    const pt=POINTS_ANTICIPER.find(p=>p.id===id);
+                    if(!pt)return null;
+                    const actif=(form.pointsAnticiper||[]).includes(id);
+                    return(
+                      <div key={id} onClick={()=>setForm(p=>({...p,pointsAnticiper:actif?(p.pointsAnticiper||[]).filter(x=>x!==id):[...(p.pointsAnticiper||[]),id]}))} style={{padding:"10px 12px",borderRadius:8,border:`1.5px solid ${actif?"#F59E0B":"#E5E7EB"}`,background:actif?"#FFF7ED":WH,cursor:"pointer",display:"flex",alignItems:"flex-start",gap:10}}>
+                        <span style={{fontSize:18,flexShrink:0}}>{pt.emoji}</span>
+                        <div style={{flex:1}}>
+                          <p style={{margin:"0 0 2px",fontSize:13,fontWeight:600,color:"#1a1a1a"}}>{pt.label}</p>
+                          <p style={{margin:0,fontSize:11,color:C.muted,lineHeight:1.4}}>{pt.desc}</p>
+                        </div>
+                        <span style={{fontSize:14,flexShrink:0,color:actif?"#F59E0B":"#D1D5DB"}}>{actif?"☑":"☐"}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+
           <div style={{background:"#FFFBEB",borderRadius:10,padding:"10px 14px",marginBottom:14,display:"flex",gap:8,alignItems:"flex-start"}}><span style={{fontSize:16}}>👶</span><p style={{margin:0,fontSize:12,color:"#92400E",lineHeight:1.5}}>Les activites proposees doivent etre destinees aux enfants.</p></div>
           <EtiquettesField value={form.etiquettes||[]} onChange={v=>setForm({...form,etiquettes:v})}/>
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14,padding:"10px 14px",background:"rgba(124,58,237,0.08)",borderRadius:10}}>
@@ -6674,9 +7975,9 @@ function Activites({sharedActivites,setSharedActivites,customCatActivites=[]}) {
   );
 }
 
-function Sorties({sharedSorties=[],setSharedSorties,customCatSorties=[]}) {
+function Sorties({sharedSorties=[],setSharedSorties,customCatSorties=[],setCustomCatSorties}) {
   const DEPTS_ALL=[["01","Ain"],["02","Aisne"],["03","Allier"],["04","Alpes-de-Haute-Provence"],["05","Hautes-Alpes"],["06","Alpes-Maritimes"],["07","Ardeche"],["08","Ardennes"],["09","Ariege"],["10","Aube"],["11","Aude"],["12","Aveyron"],["13","Bouches-du-Rhone"],["14","Calvados"],["15","Cantal"],["16","Charente"],["17","Charente-Maritime"],["18","Cher"],["19","Correze"],["20","Corse"],["21","Cote-d-Or"],["22","Cotes-d-Armor"],["23","Creuse"],["24","Dordogne"],["25","Doubs"],["26","Drome"],["27","Eure"],["28","Eure-et-Loir"],["29","Finistere"],["30","Gard"],["31","Haute-Garonne"],["32","Gers"],["33","Gironde"],["34","Herault"],["35","Ille-et-Vilaine"],["36","Indre"],["37","Indre-et-Loire"],["38","Isere"],["39","Jura"],["40","Landes"],["41","Loir-et-Cher"],["42","Loire"],["43","Haute-Loire"],["44","Loire-Atlantique"],["45","Loiret"],["46","Lot"],["47","Lot-et-Garonne"],["48","Lozere"],["49","Maine-et-Loire"],["50","Manche"],["51","Marne"],["52","Haute-Marne"],["53","Mayenne"],["54","Meurthe-et-Moselle"],["55","Meuse"],["56","Morbihan"],["57","Moselle"],["58","Nievre"],["59","Nord"],["60","Oise"],["61","Orne"],["62","Pas-de-Calais"],["63","Puy-de-Dome"],["64","Pyrenees-Atlantiques"],["65","Hautes-Pyrenees"],["66","Pyrenees-Orientales"],["67","Bas-Rhin"],["68","Haut-Rhin"],["69","Rhone"],["70","Haute-Saone"],["71","Saone-et-Loire"],["72","Sarthe"],["73","Savoie"],["74","Haute-Savoie"],["75","Paris"],["76","Seine-Maritime"],["77","Seine-et-Marne"],["78","Yvelines"],["79","Deux-Sevres"],["80","Somme"],["81","Tarn"],["82","Tarn-et-Garonne"],["83","Var"],["84","Vaucluse"],["85","Vendee"],["86","Vienne"],["87","Haute-Vienne"],["88","Vosges"],["89","Yonne"],["90","Territoire de Belfort"],["91","Essonne"],["92","Hauts-de-Seine"],["93","Seine-Saint-Denis"],["94","Val-de-Marne"],["95","Val-d-Oise"],["971","Guadeloupe"],["972","Martinique"],["973","Guyane"],["974","La Reunion"]];
-  const emptyForm={titre:"",dept:"",adresse:"",horaires:"",prix:"",categorie:"",statut:"draft",programmation:{date:"",heure:""},etiquettes:[],acc_poussette:false,acc_bebe:false,acc_allaitement:false,acc_langer:false,acc_aire03:false,acc_peubruyant:false,pmr_fauteuil:false,pmr_escaliers:false,pmr_parking:false,pmr_toilettes:false,pmr_personnel:false,pmr_chemin:false,tsa_foule:false,tsa_calme:false,tsa_lumiere:false,tsa_retrait:false,tsa_bruit:false,tsa_personnel:false,tdah_espace:false,tdah_physique:false,tdah_attente:false,tdah_stimulation:false,dys_visuels:false,dys_nonecrite:false,dys_rythme:false,dys_personnel:false};
+  const emptyForm={titre:"",dept:"",adresse:"",horaires:"",prix:"",categorie:"",statut:"published",programmation:{date:"",heure:""},etiquettes:[],acc_poussette:false,acc_bebe:false,acc_allaitement:false,acc_langer:false,acc_aire03:false,acc_peubruyant:false,pmr_fauteuil:false,pmr_escaliers:false,pmr_parking:false,pmr_toilettes:false,pmr_personnel:false,pmr_chemin:false,tsa_foule:false,tsa_calme:false,tsa_lumiere:false,tsa_retrait:false,tsa_bruit:false,tsa_personnel:false,tdah_espace:false,tdah_physique:false,tdah_attente:false,tdah_stimulation:false,dys_visuels:false,dys_nonecrite:false,dys_rythme:false,dys_personnel:false};
   const MOCK_IDS=new Set(MOCK_SORTIES.map(o=>o.id));
   const [items,setItems] = useState(()=>[...MOCK_SORTIES,...(sharedSorties||[]).filter(o=>!MOCK_IDS.has(o.id))]);
   const syncItems=(newItems)=>{setItems(newItems);if(setSharedSorties)setSharedSorties(newItems.filter(o=>!MOCK_IDS.has(o.id)));};
@@ -6684,14 +7985,19 @@ function Sorties({sharedSorties=[],setSharedSorties,customCatSorties=[]}) {
   const [search,setSearch] = useState("");
   const [modal,setModal] = useState(null);
   const [form,setForm] = useState(emptyForm);
-  const tf=key=>setForm(p=>({...p,[key]:!p[key]}));
   const filtered = items.filter(a=>!search||((a.titre||a.nom||"").toLowerCase()).includes(search.toLowerCase()));
   const {slice:filteredPageS,Pagination:PagSort,reset:resetPagSort}=usePagination(filtered,8);
   useEffect(()=>resetPagSort(),[search]);
   const save = () => {
     if(!form.titre) return;
-    if(modal?.mode==="edit") syncItems(items.map(a=>a.id===modal.item.id?{...a,...form}:a));
-    else syncItems([...items,{id:Date.now().toString(),...form}]);
+    // Si le type est personnalisé (pas dans les types prédéfinis), l'ajouter aux catégories
+    const typeVal=(form.categorie||"").trim();
+    if(typeVal&&typeVal!==" "&&![...TYPES_SORTIE,...(customCatSorties||[]).map(c=>c.label)].includes(typeVal)){
+      const k=typeVal.toLowerCase().replace(/\s+/g,"_").replace(/[^a-z0-9_]/g,"");
+      setCustomCatSorties&&setCustomCatSorties(prev=>[...prev,{k,label:typeVal,emoji:"🗺️"}]);
+    }
+    if(modal?.mode==="edit") syncItems(items.map(a=>a.id===modal.item.id?{...a,...form,categorie:typeVal||form.categorie}:a));
+    else syncItems([...items,{id:Date.now().toString(),...form,categorie:typeVal||form.categorie}]);
     setModal(null);
   };
   return (
@@ -6720,7 +8026,6 @@ function Sorties({sharedSorties=[],setSharedSorties,customCatSorties=[]}) {
         <PagSort/>
       </div>
       {modal&&(()=>{
-        const chkStyle=(active)=>({display:"flex",alignItems:"center",gap:7,padding:"6px 10px",borderRadius:8,border:`1px solid ${active?"rgba(236,72,153,0.4)":C.border}`,background:active?"rgba(236,72,153,0.1)":"transparent",color:active?"#f472b6":C.muted,fontSize:12,cursor:"pointer",userSelect:"none"});
         const toutesCategories=[...TYPES_SORTIE,...customCatSorties.map(c=>c.label)];
         const estAutre=form.categorie!==""&&!toutesCategories.includes(form.categorie);
         return(
@@ -6739,7 +8044,7 @@ function Sorties({sharedSorties=[],setSharedSorties,customCatSorties=[]}) {
               <option value="__autre__">Autre...</option>
             </select>
             {estAutre&&(
-              <input style={{...s.input,marginTop:8}} value={form.categorie.trim()} onChange={e=>setForm({...form,categorie:e.target.value||" "})} placeholder="Precise le type de sortie" autoFocus/>
+              <input style={{...s.input,marginTop:8}} value={form.categorie===" "?"":form.categorie} onChange={e=>setForm({...form,categorie:e.target.value||" "})} placeholder="Precise le type de sortie" autoFocus/>
             )}
           </AdminField>
           <AdminField label="Adresse"><input style={s.input} value={form.adresse||""} onChange={e=>setForm({...form,adresse:e.target.value})} placeholder="123 rue de la Paix, Paris"/></AdminField>
@@ -6750,35 +8055,25 @@ function Sorties({sharedSorties=[],setSharedSorties,customCatSorties=[]}) {
 
           {/* Accessibilité */}
           <div style={{borderTop:`1px solid ${C.border}`,paddingTop:16,marginTop:4}}>
-            <p style={{margin:"0 0 8px",fontSize:13,fontWeight:700,color:"#3b82f6"}}>♿ Mobilité réduite PMR</p>
-            <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:14}}>
-              {[["pmr_fauteuil","Accès fauteuil"],["pmr_escaliers","Sans escaliers"],["pmr_parking","Parking PMR"],["pmr_toilettes","Toilettes adaptées"],["pmr_personnel","Personnel formé"],["pmr_chemin","Chemin accessible"]].map(([k,l])=>(
-                <div key={k} onClick={()=>tf(k)} style={chkStyle(!!form[k])}><span style={{fontSize:14}}>{form[k]?"☑":"☐"}</span>{l}</div>
-              ))}
-            </div>
-            <p style={{margin:"0 0 4px",fontSize:13,fontWeight:700,color:"#a78bfa"}}>🧩 Troubles du neurodéveloppement TND</p>
-            <p style={{margin:"0 0 10px",fontSize:11,color:C.muted}}>Ces infos aident les familles TND</p>
-            <p style={{margin:"0 0 6px",fontSize:12,fontWeight:600,color:"#8b5cf6"}}>TSA Autisme</p>
-            <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:10}}>
-              {[["tsa_foule","Peu de foule"],["tsa_calme","Env calme"],["tsa_lumiere","Lumière douce"],["tsa_retrait","Espace retrait"],["tsa_bruit","Peu de bruit"],["tsa_personnel","Personnel TSA"]].map(([k,l])=>(
-                <div key={k} onClick={()=>tf(k)} style={chkStyle(!!form[k])}><span style={{fontSize:14}}>{form[k]?"☑":"☐"}</span>{l}</div>
-              ))}
-            </div>
-            <p style={{margin:"0 0 6px",fontSize:12,fontWeight:600,color:"#ec4899"}}>TDAH</p>
-            <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:10}}>
-              {[["tdah_espace","Grand espace"],["tdah_physique","Activité physique"],["tdah_attente","Peu attente"],["tdah_stimulation","Stimulation variée"]].map(([k,l])=>(
-                <div key={k} onClick={()=>tf(k)} style={chkStyle(!!form[k])}><span style={{fontSize:14}}>{form[k]?"☑":"☐"}</span>{l}</div>
-              ))}
-            </div>
-            <p style={{margin:"0 0 6px",fontSize:12,fontWeight:600,color:"#06b6d4"}}>DYS</p>
-            <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:14}}>
-              {[["dys_visuels","Supports visuels"],["dys_nonecrite","Non écrite"],["dys_rythme","Rythme libre"],["dys_personnel","Personnel DYS"]].map(([k,l])=>(
-                <div key={k} onClick={()=>tf(k)} style={chkStyle(!!form[k])}><span style={{fontSize:14}}>{form[k]?"☑":"☐"}</span>{l}</div>
-              ))}
-            </div>
+            <p style={{margin:"0 0 2px",fontSize:14,fontWeight:800,color:"#1a1a1a"}}>♿ Accessibilité</p>
+            <p style={{margin:"0 0 14px",fontSize:11,color:C.muted}}>Ces informations aident les familles à choisir les sorties adaptées</p>
+            {ACCESS_SIGNAUX_DEF.map(def=>{
+              const actif=!!(form.accessibilite?.signaux||{})[def.k];
+              return(
+                <div key={def.k} onClick={()=>setForm(p=>({...p,accessibilite:{signaux:{...(p.accessibilite?.signaux||{}),[def.k]:!actif},details:p.accessibilite?.details||{}}}))} style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:10,padding:"9px 2px",cursor:"pointer",borderBottom:`1px solid ${C.border}`}}>
+                  <span style={{fontSize:13,color:C.text,flex:1}}>{def.emoji} {def.labelOn}</span>
+                  <div style={{width:40,height:22,borderRadius:20,background:actif?"#6C5CE7":"#D1D5DB",position:"relative",flexShrink:0,transition:"background 0.15s"}}>
+                    <div style={{position:"absolute",top:2,left:actif?20:2,width:18,height:18,borderRadius:"50%",background:"#fff",transition:"left 0.15s"}}/>
+                  </div>
+                </div>
+              );
+            })}
+            <AdminField label="Conseil accessibilité (optionnel)">
+              <textarea style={{...s.input,minHeight:60,resize:"vertical"}} value={form.accessibilite?.details?.conseilCommunaute||""} onChange={e=>setForm(p=>({...p,accessibilite:{signaux:p.accessibilite?.signaux||{},details:{...(p.accessibilite?.details||{}),conseilCommunaute:e.target.value}}}))} placeholder="Ex : Prévoir casque anti-bruit, éviter le week-end..."/>
+            </AdminField>
           </div>
 
-          <div style={{background:"rgba(245,158,11,0.08)",borderRadius:10,padding:"10px 14px",marginBottom:14,display:"flex",gap:8,alignItems:"center"}}>
+          <div style={{background:"rgba(245,158,11,0.08)",borderRadius:10,padding:"10px 14px",marginBottom:14,marginTop:14,display:"flex",gap:8,alignItems:"center"}}>
             <span style={{fontSize:16}}>👶</span>
             <p style={{margin:0,fontSize:12,color:"#f59e0b"}}>Les sorties proposées doivent être adaptées aux enfants.</p>
           </div>
@@ -6799,7 +8094,7 @@ function Sorties({sharedSorties=[],setSharedSorties,customCatSorties=[]}) {
   );
 }
 
-function Evenements({sharedEvenements=[],setSharedEvenements,customCatEvenements=[]}) {
+function Evenements({sharedEvenements=[],setSharedEvenements,customCatEvenements=[],setCustomCatEvenements}) {
   const MOCK_IDS=new Set(MOCK_EVENTS.map(o=>o.id));
   const [items,setItems] = useState(()=>[...MOCK_EVENTS,...(sharedEvenements||[]).filter(o=>!MOCK_IDS.has(o.id))]);
   const syncItems=(newItems)=>{setItems(newItems);if(setSharedEvenements)setSharedEvenements(newItems.filter(o=>!MOCK_IDS.has(o.id)));};
@@ -6809,15 +8104,22 @@ function Evenements({sharedEvenements=[],setSharedEvenements,customCatEvenements
   const [form,setForm] = useState({titre:"",desc:"",type:"",ville:"",dept:"",date:"",fin:"",horaires:"",prix:"",adresse:"",organisateur:"",statut:"draft",programmation:{date:"",heure:""},etiquettes:[],acc_poussette:false,acc_bebe:false,acc_allaitement:false,acc_langer:false,acc_aire03:false,acc_peubruyant:false,pmr_fauteuil:false,pmr_escaliers:false,pmr_parking:false,pmr_toilettes:false,pmr_personnel:false,pmr_chemin:false,tsa_foule:false,tsa_calme:false,tsa_lumiere:false,tsa_retrait:false,tsa_bruit:false,tsa_personnel:false,tdah_espace:false,tdah_physique:false,tdah_attente:false,tdah_stimulation:false,dys_visuels:false,dys_nonecrite:false,dys_rythme:false,dys_personnel:false});
   const save = () => {
     if(!form.titre) return;
-    if(modal?.mode==="edit") syncItems(items.map(a=>a.id===modal.item.id?{...a,...form}:a));
-    else syncItems([...items,{id:Date.now().toString(),...form}]);
+    // Si le type est personnalisé, l'ajouter aux catégories événements
+    const typeVal=(form.type||"").trim();
+    const existingTypes=[...EVT_CATEGORIES,...(customCatEvenements||[])].map(c=>c.k||c.label);
+    if(typeVal&&!existingTypes.includes(typeVal)){
+      const k=typeVal.toLowerCase().replace(/\s+/g,"_").replace(/[^a-z0-9_]/g,"");
+      setCustomCatEvenements&&setCustomCatEvenements(prev=>[...prev,{k,label:typeVal,emoji:"🎪"}]);
+    }
+    if(modal?.mode==="edit") syncItems(items.map(a=>a.id===modal.item.id?{...a,...form,type:typeVal||form.type}:a));
+    else syncItems([...items,{id:Date.now().toString(),...form,type:typeVal||form.type}]);
     setModal(null);
   };
   return (
     <div>
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:20}}>
         <div><h1 style={{fontSize:22,fontWeight:800,color:C.text,margin:0}}>Événements</h1><p style={{fontSize:13,color:C.muted,margin:"4px 0 0"}}>Gérez les événements ponctuels</p></div>
-        <button style={s.btn(C.orange)} onClick={()=>{setForm({titre:"",date:"",fin:"",ville:"",organisateur:"",prix:"",type:"spectacle",statut:"draft"});setModal({mode:"add"});}}>+ Nouvel événement</button>
+        <button style={s.btn(C.orange)} onClick={()=>{setForm({titre:"",date:"",fin:"",ville:"",organisateur:"",prix:"",type:"spectacle",statut:"published"});setModal({mode:"add"});}}>+ Nouvel événement</button>
       </div>
       <SearchBar value={search} onChange={setSearch} placeholder="Rechercher un événement..."/>
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))",gap:14}}>
@@ -6843,7 +8145,8 @@ function Evenements({sharedEvenements=[],setSharedEvenements,customCatEvenements
       </div>
       {modal&&(()=>{
         const DEPTS_EVT=[["01","Ain"],["02","Aisne"],["03","Allier"],["04","Alpes-de-Haute-Provence"],["05","Hautes-Alpes"],["06","Alpes-Maritimes"],["07","Ardeche"],["08","Ardennes"],["09","Ariege"],["10","Aube"],["11","Aude"],["12","Aveyron"],["13","Bouches-du-Rhone"],["14","Calvados"],["15","Cantal"],["16","Charente"],["17","Charente-Maritime"],["18","Cher"],["19","Correze"],["20","Corse"],["21","Cote-d-Or"],["22","Cotes-d-Armor"],["23","Creuse"],["24","Dordogne"],["25","Doubs"],["26","Drome"],["27","Eure"],["28","Eure-et-Loir"],["29","Finistere"],["30","Gard"],["31","Haute-Garonne"],["32","Gers"],["33","Gironde"],["34","Herault"],["35","Ille-et-Vilaine"],["36","Indre"],["37","Indre-et-Loire"],["38","Isere"],["39","Jura"],["40","Landes"],["41","Loir-et-Cher"],["42","Loire"],["43","Haute-Loire"],["44","Loire-Atlantique"],["45","Loiret"],["46","Lot"],["47","Lot-et-Garonne"],["48","Lozere"],["49","Maine-et-Loire"],["50","Manche"],["51","Marne"],["52","Haute-Marne"],["53","Mayenne"],["54","Meurthe-et-Moselle"],["55","Meuse"],["56","Morbihan"],["57","Moselle"],["58","Nievre"],["59","Nord"],["60","Oise"],["61","Orne"],["62","Pas-de-Calais"],["63","Puy-de-Dome"],["64","Pyrenees-Atlantiques"],["65","Hautes-Pyrenees"],["66","Pyrenees-Orientales"],["67","Bas-Rhin"],["68","Haut-Rhin"],["69","Rhone"],["70","Haute-Saone"],["71","Saone-et-Loire"],["72","Sarthe"],["73","Savoie"],["74","Haute-Savoie"],["75","Paris"],["76","Seine-Maritime"],["77","Seine-et-Marne"],["78","Yvelines"],["79","Deux-Sevres"],["80","Somme"],["81","Tarn"],["82","Tarn-et-Garonne"],["83","Var"],["84","Vaucluse"],["85","Vendee"],["86","Vienne"],["87","Haute-Vienne"],["88","Vosges"],["89","Yonne"],["90","Territoire de Belfort"],["91","Essonne"],["92","Hauts-de-Seine"],["93","Seine-Saint-Denis"],["94","Val-de-Marne"],["95","Val-d-Oise"],["971","Guadeloupe"],["972","Martinique"],["973","Guyane"],["974","La Reunion"]];
-        const TYPES_EVT=[...EVT_CATEGORIES,...customCatEvenements].map(c=>({val:c.k,label:c.emoji+" "+c.label}));
+        const TYPES_EVT=EVT_CATEGORIES.map(c=>({val:c.k,label:c.emoji+" "+c.label}));
+        const TYPES_EVT_CUSTOM=(customCatEvenements||[]).map(c=>({val:c.k,label:(c.emoji||"🎪")+" "+c.label}));
         const chkStyle=(active)=>({display:"flex",alignItems:"center",gap:7,padding:"6px 10px",borderRadius:8,border:`1px solid ${active?"rgba(249,115,22,0.4)":C.border}`,background:active?"rgba(249,115,22,0.1)":"transparent",color:active?"#fb923c":C.muted,fontSize:12,cursor:"pointer",userSelect:"none"});
         const tf=key=>setForm(p=>({...p,[key]:!p[key]}));
         return(
@@ -6869,11 +8172,15 @@ function Evenements({sharedEvenements=[],setSharedEvenements,customCatEvenements
           </AdminField>
           <AdminField label="Description *"><textarea style={{...s.input,minHeight:70,resize:"vertical"}} value={form.desc||""} onChange={e=>setForm({...form,desc:e.target.value})} placeholder="Décris l'événement..."/></AdminField>
           <AdminField label="Type *">
-            <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
-              {TYPES_EVT.map(t=>(
+            <div style={{display:"flex",flexWrap:"wrap",gap:8,marginBottom:8}}>
+              {[...TYPES_EVT,...TYPES_EVT_CUSTOM].map(t=>(
                 <button key={t.val} onClick={()=>setForm({...form,type:t.val})} style={{padding:"8px 14px",borderRadius:20,border:`2px solid ${form.type===t.val?C.orange:C.border}`,background:form.type===t.val?"rgba(249,115,22,0.12)":"transparent",color:form.type===t.val?"#fb923c":C.muted,fontSize:12,cursor:"pointer",fontWeight:form.type===t.val?700:400}}>{t.label}</button>
               ))}
+              <button onClick={()=>setForm({...form,type:"__autre_evt__"})} style={{padding:"8px 14px",borderRadius:20,border:`2px solid ${form.type==="__autre_evt__"?C.orange:C.border}`,background:"transparent",color:C.muted,fontSize:12,cursor:"pointer"}}>✏️ Autre...</button>
             </div>
+            {(form.type==="__autre_evt__"||(form.type&&![...TYPES_EVT,...TYPES_EVT_CUSTOM].map(t=>t.val).includes(form.type)))&&(
+              <input style={{...s.input,marginTop:4}} value={form.type==="__autre_evt__"?"":form.type} onChange={e=>setForm({...form,type:e.target.value})} placeholder="Ex : Festival, Fête de quartier, Conférence..." autoFocus/>
+            )}
           </AdminField>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
             <AdminField label="Ville *"><input style={s.input} value={form.ville||""} onChange={e=>setForm({...form,ville:e.target.value})} placeholder="Paris"/></AdminField>
@@ -6916,6 +8223,41 @@ function Evenements({sharedEvenements=[],setSharedEvenements,customCatEvenements
           {(form.statut==="scheduled"||(form.programmation?.date||form.programmation?.heure))&&(
             <ProgrammedField value={form.programmation||{date:"",heure:""}} onChange={v=>setForm({...form,programmation:v})}/>
           )}
+
+          {/* Section TND événement */}
+          <div style={{borderTop:`1px solid ${C.border}`,paddingTop:16,marginBottom:14}}>
+            <p style={{margin:"0 0 4px",fontSize:14,fontWeight:800,color:"#1a1a1a"}}>🧩 Environnement TND</p>
+            <p style={{margin:"0 0 14px",fontSize:11,color:C.muted}}>Ces infos aident les familles TND à choisir les événements adaptés</p>
+            <AdminField label="🔈 Niveau sonore">
+              <div style={{display:"flex",gap:8}}>
+                {[{v:"calme",l:"🤫 Calme"},{v:"moyenne",l:"🔉 Moyen"},{v:"forte",l:"📢 Fort"}].map(({v,l})=>(
+                  <button key={v} onClick={()=>setForm(p=>({...p,tnd:{...(p.tnd||{}),son:v}}))} style={{flex:1,padding:"8px 4px",borderRadius:10,border:`1.5px solid ${(form.tnd||{}).son===v?C.orange:C.border}`,background:(form.tnd||{}).son===v?"rgba(249,115,22,0.1)":"transparent",color:(form.tnd||{}).son===v?"#fb923c":C.muted,fontSize:12,cursor:"pointer",fontWeight:(form.tnd||{}).son===v?700:400}}>{l}</button>
+                ))}
+              </div>
+            </AdminField>
+            <AdminField label="👥 Affluence">
+              <div style={{display:"flex",gap:8}}>
+                {[{v:"faible",l:"🚶 Faible"},{v:"moyenne",l:"👥 Moyenne"},{v:"forte",l:"🏃 Forte"}].map(({v,l})=>(
+                  <button key={v} onClick={()=>setForm(p=>({...p,tnd:{...(p.tnd||{}),affluence:v}}))} style={{flex:1,padding:"8px 4px",borderRadius:10,border:`1.5px solid ${(form.tnd||{}).affluence===v?C.orange:C.border}`,background:(form.tnd||{}).affluence===v?"rgba(249,115,22,0.1)":"transparent",color:(form.tnd||{}).affluence===v?"#fb923c":C.muted,fontSize:12,cursor:"pointer",fontWeight:(form.tnd||{}).affluence===v?700:400}}>{l}</button>
+                ))}
+              </div>
+            </AdminField>
+            <AdminField label="🔮 Prévisibilité">
+              <div style={{display:"flex",gap:8}}>
+                {[{v:"structuree",l:"📋 Structurée"},{v:"imprev",l:"🎲 Imprévisible"}].map(({v,l})=>(
+                  <button key={v} onClick={()=>setForm(p=>({...p,tnd:{...(p.tnd||{}),prevision:v}}))} style={{flex:1,padding:"8px 4px",borderRadius:10,border:`1.5px solid ${(form.tnd||{}).prevision===v?C.orange:C.border}`,background:(form.tnd||{}).prevision===v?"rgba(249,115,22,0.1)":"transparent",color:(form.tnd||{}).prevision===v?"#fb923c":C.muted,fontSize:12,cursor:"pointer",fontWeight:(form.tnd||{}).prevision===v?700:400}}>{l}</button>
+                ))}
+              </div>
+            </AdminField>
+            <AdminField label="🌿 Zone calme disponible">
+              <div style={{display:"flex",gap:8}}>
+                {[{v:true,l:"✅ Oui"},{v:false,l:"❌ Non"}].map(({v,l})=>(
+                  <button key={String(v)} onClick={()=>setForm(p=>({...p,tnd:{...(p.tnd||{}),zonecalme:v}}))} style={{flex:1,padding:"8px 4px",borderRadius:10,border:`1.5px solid ${(form.tnd||{}).zonecalme===v?C.orange:C.border}`,background:(form.tnd||{}).zonecalme===v?"rgba(249,115,22,0.1)":"transparent",color:(form.tnd||{}).zonecalme===v?"#fb923c":C.muted,fontSize:12,cursor:"pointer",fontWeight:(form.tnd||{}).zonecalme===v?700:400}}>{l}</button>
+                ))}
+              </div>
+            </AdminField>
+          </div>
+
           <div style={{display:"flex",justifyContent:"flex-end",gap:8,marginTop:4}}>
             <button style={s.btnOutline(C.muted)} onClick={()=>setModal(null)}>Annuler</button>
             <button style={s.btn(C.orange)} onClick={save}>{modal.mode==="edit"?"Modifier":"Créer"}</button>
@@ -8342,8 +9684,10 @@ function BiblioSearchPicker({onSelect,allActs=[]}) {
   );
 }
 
-function Communication({ideesMomentConfig=[],setIdeesMomentConfig}) {
-  const [comms,setComms] = useState(MOCK_COMMS);
+function Communication({ideesMomentConfig=[],setIdeesMomentConfig,adminComms=[],setAdminComms}) {
+  const [comms,setComms] = useState(adminComms.length>0?adminComms:MOCK_COMMS);
+  // Synchroniser avec App quand comms change
+  useEffect(()=>{if(setAdminComms)setAdminComms(comms);},[comms]);
   const [previewComm,setPreviewComm] = useState(null);
   const [modal,setModal] = useState(null);
   const [form,setForm] = useState({type:"banner",titre:"",message:"",debut:"",fin:"",actif:false});
@@ -8421,21 +9765,38 @@ function Communication({ideesMomentConfig=[],setIdeesMomentConfig}) {
           );
         })}
       </div>
-      {modal&&<Modal title={modal.mode==="edit"?"Modifier":"Nouveau message"} onClose={()=>setModal(null)}>
-        <AdminField label="Type"><select style={s.input} value={form.type||"banner"} onChange={e=>setForm({...form,type:e.target.value})}><option value="banner">📢 Bandeau</option><option value="popup">💬 Pop-up</option><option value="push">🔔 Notification push</option></select></AdminField>
-        <AdminField label="Titre"><input style={s.input} value={form.titre||""} onChange={e=>setForm({...form,titre:e.target.value})} placeholder="Titre du message"/></AdminField>
-        <AdminField label="Message"><textarea style={{...s.input,minHeight:80,resize:"vertical"}} value={form.message||""} onChange={e=>setForm({...form,message:e.target.value})} placeholder="Contenu du message..."/></AdminField>
+      {modal&&<Modal title={modal.mode==="edit"?"Modifier le message":"Nouveau message"} onClose={()=>setModal(null)}>
+        <AdminField label="Type">
+          <select style={s.input} value={form.type||"banner"} onChange={e=>setForm({...form,type:e.target.value})}>
+            <option value="banner">📢 Bandeau (affiché sur l'accueil)</option>
+            <option value="popup">💬 Pop-up</option>
+            <option value="push">🔔 Notification push</option>
+          </select>
+        </AdminField>
+        <AdminField label="Titre *">
+          <input style={s.input} value={form.titre||""} onChange={e=>setForm({...form,titre:e.target.value})} placeholder="Ex : Nouveauté, Maintenance, Promo..."/>
+        </AdminField>
+        <AdminField label="Message *">
+          <textarea style={{...s.input,minHeight:80,resize:"vertical"}} value={form.message||""} onChange={e=>setForm({...form,message:e.target.value})} placeholder="Contenu du message visible par les utilisateurs..."/>
+        </AdminField>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
-          <AdminField label="Début"><input style={s.input} value={form.debut||""} onChange={e=>setForm({...form,debut:e.target.value})} placeholder="JJ/MM/AAAA"/></AdminField>
-          <AdminField label="Fin"><input style={s.input} value={form.fin||""} onChange={e=>setForm({...form,fin:e.target.value})} placeholder="JJ/MM/AAAA"/></AdminField>
+          <AdminField label="Date de début">
+            <input style={s.input} type="date" value={form.debut||""} onChange={e=>setForm({...form,debut:e.target.value})}/>
+          </AdminField>
+          <AdminField label="Date de fin">
+            <input style={s.input} type="date" value={form.fin||""} onChange={e=>setForm({...form,fin:e.target.value})}/>
+          </AdminField>
         </div>
-        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"12px 14px",background:"rgba(59,130,246,0.08)",borderRadius:10,marginBottom:14}}>
-          <p style={{margin:0,fontSize:13,color:C.text,fontWeight:500}}>Activer immédiatement</p>
-          <Tog on={form.actif} onChange={()=>setForm({...form,actif:!form.actif})}/>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"12px 14px",background:form.actif?"rgba(16,185,129,0.1)":"rgba(59,130,246,0.06)",borderRadius:10,marginBottom:14,border:`1px solid ${form.actif?"#10b981":"rgba(59,130,246,0.2)"}`}}>
+          <div>
+            <p style={{margin:0,fontSize:13,color:C.text,fontWeight:600}}>{form.actif?"✅ Visible par les utilisateurs":"⭕ Non publié"}</p>
+            <p style={{margin:"2px 0 0",fontSize:11,color:C.muted}}>{form.actif?"Le bandeau s'affiche sur l'accueil":"Cliquez pour activer et publier"}</p>
+          </div>
+          <Tog on={!!form.actif} onChange={()=>setForm({...form,actif:!form.actif})}/>
         </div>
         <div style={{display:"flex",justifyContent:"flex-end",gap:8}}>
           <button style={s.btnOutline(C.muted)} onClick={()=>setModal(null)}>Annuler</button>
-          <button style={s.btn(C.blue)} onClick={save}>{modal.mode==="edit"?"Modifier":"Créer"}</button>
+          <button style={s.btn(form.actif?"#10b981":C.blue)} onClick={save}>{modal.mode==="edit"?"Enregistrer":form.actif?"Créer et publier":"Créer (brouillon)"}</button>
         </div>
       </Modal>}
 
@@ -8473,6 +9834,184 @@ function Communication({ideesMomentConfig=[],setIdeesMomentConfig}) {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function RessourcesAdmin({ressourcesSites=[],setRessourcesSites,ressourcesContacts=[],setRessourcesContacts,ressourcesPdf=[],setRessourcesPdf}) {
+  const sites=ressourcesSites.length>0?ressourcesSites:MOCK_RESSOURCES_SITES;
+  const contacts=ressourcesContacts.length>0?ressourcesContacts:MOCK_RESSOURCES_CONTACTS;
+  const pdfs=ressourcesPdf.length>0?ressourcesPdf:MOCK_RESSOURCES_PDF;
+  const [tab,setTab]=useState("sites");
+  const [modal,setModal]=useState(null);
+  const [form,setForm]=useState({});
+
+  const configs={
+    sites:{data:sites,setData:setRessourcesSites,fields:[{k:"nom",l:"Nom",ph:"Ex : Autisme France"},{k:"url",l:"URL",ph:"https://..."},{k:"emoji",l:"Emoji",ph:"🔵"},{k:"desc",l:"Description",ph:"Description courte du site...",area:true}]},
+    contacts:{data:contacts,setData:setRessourcesContacts,fields:[{k:"nom",l:"Nom",ph:"Ex : Numéro National Autisme"},{k:"tel",l:"Téléphone",ph:"0 800 71 40 40"},{k:"emoji",l:"Emoji",ph:"📞"},{k:"desc",l:"Description",ph:"Description courte...",area:true}]},
+    pdf:{data:pdfs,setData:setRessourcesPdf,fields:null},
+  };
+  const cfg=configs[tab];
+
+  const openAdd=()=>{setForm(tab==="pdf"?{type:"pdf",acces:"gratuit"}:{});setModal({mode:"add"});};
+  const openEdit=(item,i)=>{setForm({...item,_i:i});setModal({mode:"edit"});};
+  const save=()=>{
+    if(!form.nom)return;
+    const {_i,...clean}=form;
+    if(modal.mode==="edit")cfg.setData&&cfg.setData(cfg.data.map((it,i)=>i===_i?clean:it));
+    else cfg.setData&&cfg.setData([...cfg.data,clean]);
+    setModal(null);
+  };
+  const remove=(i)=>{if(cfg.setData)cfg.setData(cfg.data.filter((_,j)=>j!==i));};
+
+  const accesLabel={gratuit:"🟢 Gratuit",payant:"🔵 Payant",premium:"⭐ Premium"};
+  const typeLabel={pdf:"📄 PDF",affiche:"🖼️ Affiche",article:"📝 Article"};
+
+  return(
+    <div>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:20}}>
+        <div><h1 style={{fontSize:22,fontWeight:800,color:C.text,margin:0}}>Ressources</h1><p style={{fontSize:13,color:C.muted,margin:"4px 0 0"}}>Sites, contacts, PDF, affiches et articles pour les familles TND</p></div>
+        {tab!=="stats"&&<button style={s.btn(C.accent)} onClick={openAdd}>+ Ajouter</button>}
+      </div>
+
+      <div style={{display:"flex",gap:8,marginBottom:20}}>
+        {[{k:"sites",l:"🌐 Sites"},{k:"contacts",l:"📞 Contacts"},{k:"pdf",l:"📄 PDF / Affiches / Articles"},{k:"stats",l:"📊 Statistiques"}].map(t=>(
+          <button key={t.k} onClick={()=>setTab(t.k)} style={{padding:"8px 16px",borderRadius:10,border:"none",background:tab===t.k?C.accent:C.card,color:tab===t.k?"#fff":C.muted,fontWeight:tab===t.k?700:400,fontSize:13,cursor:"pointer"}}>{t.l}</button>
+        ))}
+      </div>
+
+      {tab==="stats"?(()=>{
+        const parsePrix=(str)=>{if(!str)return 0;const n=parseFloat(String(str).replace(",",".").replace(/[^\d.]/g,""));return isNaN(n)?0:n;};
+        const revenuTotal=pdfs.reduce((sum,it)=>sum+(it.revenu||0),0);
+        const totalTelechargements=pdfs.reduce((sum,it)=>sum+(it.telechargements||0),0);
+        const topItems=[...pdfs].sort((a,b)=>(b.telechargements||0)-(a.telechargements||0));
+        return(
+          <div>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))",gap:14,marginBottom:24}}>
+              <div style={s.card}>
+                <p style={{margin:"0 0 4px",fontSize:12,color:C.muted}}>💰 Revenu total</p>
+                <p style={{margin:0,fontSize:26,fontWeight:800,color:C.green}}>{revenuTotal.toFixed(2).replace(".",",")} €</p>
+              </div>
+              <div style={s.card}>
+                <p style={{margin:"0 0 4px",fontSize:12,color:C.muted}}>⬇️ Téléchargements/lectures totaux</p>
+                <p style={{margin:0,fontSize:26,fontWeight:800,color:C.text}}>{totalTelechargements}</p>
+              </div>
+              <div style={s.card}>
+                <p style={{margin:"0 0 4px",fontSize:12,color:C.muted}}>📦 Ressources publiées</p>
+                <p style={{margin:0,fontSize:26,fontWeight:800,color:C.text}}>{pdfs.length}</p>
+              </div>
+            </div>
+
+            <p style={{margin:"0 0 12px",fontSize:15,fontWeight:700,color:C.text}}>🏆 Classement par téléchargements</p>
+            <div style={{display:"flex",flexDirection:"column",gap:8}}>
+              {topItems.map((item,i)=>(
+                <div key={item.nom+i} style={{...s.card,display:"flex",alignItems:"center",gap:12,padding:"12px 16px"}}>
+                  <span style={{fontSize:16,fontWeight:800,color:i===0?"#F59E0B":i===1?"#9CA3AF":i===2?"#B45309":C.muted,width:24,flexShrink:0}}>{i===0?"🥇":i===1?"🥈":i===2?"🥉":`#${i+1}`}</span>
+                  <span style={{fontSize:22,flexShrink:0}}>{item.emoji||"📌"}</span>
+                  <div style={{flex:1,minWidth:0}}>
+                    <p style={{margin:"0 0 2px",fontSize:13,fontWeight:700,color:C.text}}>{item.nom}</p>
+                    <p style={{margin:0,fontSize:11,color:C.muted}}>{typeLabel[item.type||"pdf"]} · {accesLabel[item.acces||"gratuit"]}</p>
+                  </div>
+                  <div style={{textAlign:"right",flexShrink:0}}>
+                    <p style={{margin:"0 0 2px",fontSize:15,fontWeight:800,color:C.text}}>{item.telechargements||0}</p>
+                    <p style={{margin:0,fontSize:10,color:C.muted}}>téléch.</p>
+                  </div>
+                  {(item.revenu||0)>0&&(
+                    <div style={{textAlign:"right",flexShrink:0,borderLeft:`1px solid ${C.border}`,paddingLeft:12}}>
+                      <p style={{margin:"0 0 2px",fontSize:15,fontWeight:800,color:C.green}}>{(item.revenu||0).toFixed(2).replace(".",",")} €</p>
+                      <p style={{margin:0,fontSize:10,color:C.muted}}>revenu</p>
+                    </div>
+                  )}
+                </div>
+              ))}
+              {topItems.length===0&&<p style={{fontSize:13,color:C.muted}}>Aucune ressource publiée pour le moment.</p>}
+            </div>
+          </div>
+        );
+      })():(
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(300px,1fr))",gap:14}}>
+        {cfg.data.map((item,i)=>(
+          <div key={item.nom+i} style={s.card}>
+            <div style={{display:"flex",alignItems:"flex-start",gap:10,marginBottom:10}}>
+              <span style={{fontSize:24,flexShrink:0}}>{item.emoji||"📌"}</span>
+              <div style={{flex:1,minWidth:0}}>
+                <p style={{margin:"0 0 4px",fontSize:14,fontWeight:700,color:C.text}}>{item.nom}</p>
+                {tab==="sites"&&<p style={{margin:"0 0 4px",fontSize:11,color:C.accent,wordBreak:"break-all"}}>{item.url}</p>}
+                {tab==="contacts"&&<p style={{margin:"0 0 4px",fontSize:13,fontWeight:700,color:C.accent}}>{item.tel}</p>}
+                {tab==="pdf"&&(
+                  <div style={{display:"flex",gap:6,marginBottom:4,flexWrap:"wrap"}}>
+                    <span style={{fontSize:10,fontWeight:700,padding:"2px 8px",borderRadius:20,background:"#F3F4F6",color:"#6B7280"}}>{typeLabel[item.type||"pdf"]}</span>
+                    <span style={{fontSize:10,fontWeight:700,padding:"2px 8px",borderRadius:20,background:item.acces==="premium"?"#F5F0FF":item.acces==="payant"?"#EFF6FF":"#ECFDF5",color:item.acces==="premium"?"#6C5CE7":item.acces==="payant"?"#1D4ED8":"#065F46"}}>{accesLabel[item.acces||"gratuit"]}{item.acces&&item.acces!=="gratuit"&&item.prix?" · "+item.prix:""}</span>
+                  </div>
+                )}
+                <p style={{margin:0,fontSize:12,color:C.muted,lineHeight:1.5}}>{item.desc}</p>
+              </div>
+            </div>
+            <div style={{display:"flex",gap:6}}>
+              <button style={{...s.btnOutline(C.accent),flex:1}} onClick={()=>openEdit(item,i)}>✏️ Modifier</button>
+              <button style={s.btnOutline(C.red)} onClick={()=>remove(i)}>🗑️</button>
+            </div>
+          </div>
+        ))}
+      </div>
+      )}
+
+      {modal&&tab!=="stats"&&<Modal title={modal.mode==="edit"?"Modifier":"Ajouter"} onClose={()=>setModal(null)}>
+        {tab!=="pdf"?(
+          <>
+            {(tab==="sites"?[{k:"nom",l:"Nom",ph:"Ex : Autisme France"},{k:"url",l:"URL",ph:"https://..."},{k:"emoji",l:"Emoji",ph:"🔵"},{k:"desc",l:"Description",ph:"Description courte du site...",area:true}]:[{k:"nom",l:"Nom",ph:"Ex : Numéro National Autisme"},{k:"tel",l:"Téléphone",ph:"0 800 71 40 40"},{k:"emoji",l:"Emoji",ph:"📞"},{k:"desc",l:"Description",ph:"Description courte...",area:true}]).map(f=>(
+              <AdminField key={f.k} label={f.l}>
+                {f.area?(
+                  <textarea style={{...s.input,minHeight:70,resize:"vertical"}} value={form[f.k]||""} onChange={e=>setForm({...form,[f.k]:e.target.value})} placeholder={f.ph}/>
+                ):(
+                  <input style={s.input} value={form[f.k]||""} onChange={e=>setForm({...form,[f.k]:e.target.value})} placeholder={f.ph}/>
+                )}
+              </AdminField>
+            ))}
+          </>
+        ):(
+          <>
+            <AdminField label="Type de contenu">
+              <div style={{display:"flex",gap:8}}>
+                {[{v:"pdf",l:"📄 PDF"},{v:"affiche",l:"🖼️ Affiche"},{v:"article",l:"📝 Article"}].map(({v,l})=>(
+                  <button key={v} onClick={()=>setForm({...form,type:v})} style={{flex:1,padding:"8px 4px",borderRadius:10,border:`1.5px solid ${form.type===v?C.accent:C.border}`,background:form.type===v?"rgba(108,92,231,0.1)":"transparent",color:form.type===v?C.accent:C.muted,fontSize:12,cursor:"pointer",fontWeight:form.type===v?700:400}}>{l}</button>
+                ))}
+              </div>
+            </AdminField>
+            <AdminField label="Nom *"><input style={s.input} value={form.nom||""} onChange={e=>setForm({...form,nom:e.target.value})} placeholder="Ex : Affiche — La roue des émotions"/></AdminField>
+            <AdminField label="Emoji"><input style={s.input} value={form.emoji||""} onChange={e=>setForm({...form,emoji:e.target.value})} placeholder="🎨"/></AdminField>
+            <AdminField label="Tag (optionnel)"><input style={s.input} value={form.tag||""} onChange={e=>setForm({...form,tag:e.target.value})} placeholder="Ex : Affiche A3, À imprimer, Article..."/></AdminField>
+            <AdminField label="Description"><textarea style={{...s.input,minHeight:60,resize:"vertical"}} value={form.desc||""} onChange={e=>setForm({...form,desc:e.target.value})} placeholder="Description courte visible dans la liste..."/></AdminField>
+
+            <AdminField label="Accès">
+              <div style={{display:"flex",gap:8}}>
+                {[{v:"gratuit",l:"🟢 Gratuit"},{v:"payant",l:"🔵 Payant"},{v:"premium",l:"⭐ Premium"}].map(({v,l})=>(
+                  <button key={v} onClick={()=>setForm({...form,acces:v})} style={{flex:1,padding:"8px 4px",borderRadius:10,border:`1.5px solid ${form.acces===v?C.accent:C.border}`,background:form.acces===v?"rgba(108,92,231,0.1)":"transparent",color:form.acces===v?C.accent:C.muted,fontSize:12,cursor:"pointer",fontWeight:form.acces===v?700:400}}>{l}</button>
+                ))}
+              </div>
+              <p style={{margin:"6px 0 0",fontSize:11,color:C.muted}}>
+                {form.acces==="gratuit"&&"Accessible gratuitement à tous les utilisateurs."}
+                {form.acces==="payant"&&"Achat requis pour tous les utilisateurs, y compris Premium."}
+                {form.acces==="premium"&&"Gratuit pour les utilisateurs Premium. Payant (ou verrouillé) pour les autres."}
+              </p>
+            </AdminField>
+
+            {form.acces&&form.acces!=="gratuit"&&(
+              <AdminField label="Prix affiché (si accès non gratuit)"><input style={s.input} value={form.prix||""} onChange={e=>setForm({...form,prix:e.target.value})} placeholder="Ex : 3,50 €"/></AdminField>
+            )}
+
+            {form.type==="article"&&(
+              <AdminField label="Contenu de l'article">
+                <textarea style={{...s.input,minHeight:180,resize:"vertical"}} value={form.contenu||""} onChange={e=>setForm({...form,contenu:e.target.value})} placeholder="Texte complet de l'article, visible quand l'utilisateur clique sur 'Lire l'article'..."/>
+              </AdminField>
+            )}
+          </>
+        )}
+        <div style={{display:"flex",justifyContent:"flex-end",gap:8}}>
+          <button style={s.btnOutline(C.muted)} onClick={()=>setModal(null)}>Annuler</button>
+          <button style={s.btn(C.accent)} onClick={save}>{modal.mode==="edit"?"Enregistrer":"Ajouter"}</button>
+        </div>
+      </Modal>}
     </div>
   );
 }
@@ -8679,7 +10218,7 @@ function Contributions({items,updateContrib}){
   );
 }
 
-const PAGES_FN = {dashboard:(props)=><Dashboard {...props}/>,sos:(props)=><AdminSOS {...props}/>,activites:(props)=><Activites {...props}/>,sorties:(props)=><Sorties {...props}/>,evenements:(props)=><Evenements {...props}/>,saisonnier:(props)=><Saisonnier {...props}/>,categories:(props)=><Categories {...props}/>,utilisateurs:()=><Utilisateurs/>,abonnements:()=><Abonnements/>,signalements:(props)=><Signalements {...props}/>,communication:(props)=><Communication key="comm" {...props}/>,admins:()=><Admins/>};
+const PAGES_FN = {dashboard:(props)=><Dashboard {...props}/>,sos:(props)=><AdminSOS {...props}/>,activites:(props)=><Activites {...props}/>,sorties:(props)=><Sorties {...props}/>,evenements:(props)=><Evenements {...props}/>,saisonnier:(props)=><Saisonnier {...props}/>,categories:(props)=><Categories {...props}/>,ressources:(props)=><RessourcesAdmin {...props}/>,utilisateurs:()=><Utilisateurs/>,abonnements:()=><Abonnements/>,signalements:(props)=><Signalements {...props}/>,communication:(props)=><Communication key="comm" {...props}/>,admins:()=><Admins/>};
 
 function AdminSOS({sosLib=[],setSosLib,sosModeActif=true,setSosModeActif}){
   const [modal,setModal]=useState(null);
@@ -8826,7 +10365,7 @@ function AdminSOS({sosLib=[],setSosLib,sosModeActif=true,setSosModeActif}){
   );
 }
 
-function PageAdmin({onLogout,pendingContribs=[],updateContrib,adminActivites=[],setAdminActivites,adminSorties=[],setAdminSorties,adminEvenements=[],setAdminEvenements,adminReports=[],setAdminReports,addDeletedTitle,adminCustomEvents=[],setAdminCustomEvents,sosLib=[],setSosLib,sosModeActif=true,setSosModeActif,ideesMomentConfig=[],setIdeesMomentConfig,evenementsSaisonniers=[],setEvenementsSaisonniers,customCatActivites=[],setCustomCatActivites,customCatSorties=[],setCustomCatSorties,customCatEvenements=[],setCustomCatEvenements}) {
+function PageAdmin({onLogout,pendingContribs=[],updateContrib,adminActivites=[],setAdminActivites,adminSorties=[],setAdminSorties,adminEvenements=[],setAdminEvenements,adminReports=[],setAdminReports,addDeletedTitle,adminCustomEvents=[],setAdminCustomEvents,sosLib=[],setSosLib,sosModeActif=true,setSosModeActif,ideesMomentConfig=[],setIdeesMomentConfig,evenementsSaisonniers=[],setEvenementsSaisonniers,customCatActivites=[],setCustomCatActivites,customCatSorties=[],setCustomCatSorties,customCatEvenements=[],setCustomCatEvenements,adminComms=[],setAdminComms,ressourcesSites=[],setRessourcesSites,ressourcesContacts=[],setRessourcesContacts,ressourcesPdf=[],setRessourcesPdf}) {
   const [page,setPage] = useState("dashboard");
   const [collapsed,setCollapsed] = useState(false);
   const pendingReports = [...adminReports,...MOCK_REPORTS].filter(r=>r.statut==="pending").length;
@@ -8870,7 +10409,7 @@ function PageAdmin({onLogout,pendingContribs=[],updateContrib,adminActivites=[],
           </div>
         </header>
         <main style={{flex:1,overflowY:"auto",padding:24}}>
-          {page==="contributions"?<Contributions items={pendingContribs} updateContrib={updateContrib}/>:PAGES_FN[page]?PAGES_FN[page]({sharedActivites:adminActivites,setSharedActivites:setAdminActivites,sharedSorties:adminSorties,setSharedSorties:setAdminSorties,sharedEvenements:adminEvenements,setSharedEvenements:setAdminEvenements,userReports:adminReports,setUserReports:setAdminReports,onDeleteTitle:addDeletedTitle,sharedCustomEvents:adminCustomEvents,setSharedCustomEvents:setAdminCustomEvents,pendingContribs,dashUserReports:adminReports,sosLib,setSosLib,sosModeActif,setSosModeActif,ideesMomentConfig,setIdeesMomentConfig,evenementsSaisonniers,setEvenementsSaisonniers,customCatActivites,setCustomCatActivites,customCatSorties,setCustomCatSorties,customCatEvenements,setCustomCatEvenements}):null}
+          {page==="contributions"?<Contributions items={pendingContribs} updateContrib={updateContrib}/>:PAGES_FN[page]?PAGES_FN[page]({sharedActivites:adminActivites,setSharedActivites:setAdminActivites,sharedSorties:adminSorties,setSharedSorties:setAdminSorties,sharedEvenements:adminEvenements,setSharedEvenements:setAdminEvenements,userReports:adminReports,setUserReports:setAdminReports,onDeleteTitle:addDeletedTitle,sharedCustomEvents:adminCustomEvents,setSharedCustomEvents:setAdminCustomEvents,pendingContribs,dashUserReports:adminReports,sosLib,setSosLib,sosModeActif,setSosModeActif,ideesMomentConfig,setIdeesMomentConfig,evenementsSaisonniers,setEvenementsSaisonniers,customCatActivites,setCustomCatActivites,customCatSorties,setCustomCatSorties,customCatEvenements,setCustomCatEvenements,adminComms,setAdminComms,ressourcesSites,setRessourcesSites,ressourcesContacts,setRessourcesContacts,ressourcesPdf,setRessourcesPdf}):null}
         </main>
       </div>
     </div>
@@ -9205,6 +10744,19 @@ export default function App(){
   };
   const [page,setPage]=useState("accueil");
   const [favoris,setFavoris]=useState([]);
+  const [masquees,setMasquees]=useState([]); // items "ne plus proposer" {id, nom, _type}
+  const toggleMasquer=(item,itemType)=>{
+    const key=item.id||item.nom||item.titre;
+    setMasquees(prev=>{
+      const existe=prev.some(m=>(m.id||m.nom||m.titre)===key&&m._type===itemType);
+      if(existe)return prev.filter(m=>!((m.id||m.nom||m.titre)===key&&m._type===itemType));
+      return [...prev,{...item,_type:itemType}];
+    });
+  };
+  const estMasque=(item,itemType)=>{
+    const key=item?.id||item?.nom||item?.titre;
+    return masquees.some(m=>(m.id||m.nom||m.titre)===key&&m._type===itemType);
+  };
   const [enfants,setEnfants]=useState([
     {id:"1",prenom:"Lucas",age:7,emoji:"👦",profils:["TSA"],couleur:"#6C5CE7",niveauxSensoriels:{bruit:30,lumiere:60,foule:80,imprevu:20}},
     {id:"2",prenom:"Emma",age:5,emoji:"👧",profils:["TDAH"],couleur:"#10B981",niveauxSensoriels:{bruit:70,lumiere:40,foule:50,imprevu:60}},
@@ -9235,8 +10787,11 @@ export default function App(){
   const [adminReports,setAdminReports]=useState([]);
   const [deletedTitles,setDeletedTitles]=useState(new Set());
   const [customEvents,setCustomEvents]=useState([]);
-  const [ideesMomentConfig,setIdeesMomentConfig]=useState([
-    {id:"activites",label:"Activités créatives",emoji:"🎨",gradient:"linear-gradient(135deg,#a78bfa 0%,#7c3aed 100%)",actif:true},
+  const [adminComms,setAdminComms]=useState(MOCK_COMMS);
+  const [ressourcesSites,setRessourcesSites]=useState(MOCK_RESSOURCES_SITES);
+  const [ressourcesContacts,setRessourcesContacts]=useState(MOCK_RESSOURCES_CONTACTS);
+  const [ressourcesPdf,setRessourcesPdf]=useState(MOCK_RESSOURCES_PDF);
+  const [ideesMomentConfig,setIdeesMomentConfig]=useState([    {id:"activites",label:"Activités créatives",emoji:"🎨",gradient:"linear-gradient(135deg,#a78bfa 0%,#7c3aed 100%)",actif:true},
     {id:"nature",label:"Sorties nature",emoji:"🌳",gradient:"linear-gradient(135deg,#6ee7b7 0%,#059669 100%)",actif:true},
     {id:"evenements",label:"Événements",emoji:"📅",gradient:"linear-gradient(135deg,#fde68a 0%,#f59e0b 100%)",actif:true},
   ]);
@@ -9267,7 +10822,7 @@ export default function App(){
   ]);
   const addReport=(report)=>setAdminReports(prev=>[{...report,id:Date.now(),date:new Date().toLocaleDateString("fr-FR"),statut:"pending",signalePar:currentUser?.email||report.signalePar||"anonyme"},...prev]);
   const addDeletedTitle=(titre)=>setDeletedTitles(prev=>new Set([...prev,titre]));
-  const addPendingContrib=(item)=>setPendingContribs(prev=>[{...item,id:Date.now(),_createdAt:new Date().toISOString(),_statut:"pending",_signalements:0,_raisonSignalement:"",_auteur:currentUser?.nom||"Anonyme",_auteurEmail:currentUser?.email||"non connecté"},  ...prev]);
+  const addPendingContrib=(item)=>setPendingContribs(prev=>[{...item,id:Date.now(),_createdAt:new Date().toISOString(),_statut:"published",_signalements:0,_raisonSignalement:"",_auteur:currentUser?.nom||"Anonyme",_auteurEmail:currentUser?.email||"non connecté"},...prev]);
   const updateContrib=(id,changes)=>setPendingContribs(prev=>prev.map(c=>c.id===id?{...c,...changes}:c));
 
   // ── Persistance : donnees personnelles (privees) + catalogue admin (partage entre tous) ──
@@ -9303,6 +10858,7 @@ export default function App(){
         if(prv&&prv.value){
           const d=JSON.parse(prv.value);
           if(d.favoris)setFavoris(d.favoris);
+          if(d.masquees)setMasquees(d.masquees);
           if(d.enfants)setEnfants(d.enfants);
           if(d.onboarding_done)setOnboardingDone(d.onboarding_done);
           if(d.popup_shown)setPopupShown(new Set(Array.isArray(d.popup_shown)?d.popup_shown:[]));
@@ -9345,10 +10901,10 @@ export default function App(){
   useEffect(()=>{
     if(!dataLoaded)return;
     const timer=setTimeout(()=>{
-      sauvegarderPrivé({favoris,enfants,onboarding_done:onboardingDone,popup_shown:[...popupShown],dark_mode:darkMode,historique_activites:historiqueActivites,premium_trial_used:premiumTrialUsed,filtres_memo_activ:filtresMemoActiv,filtres_memo_sortie:filtresMemoSortie});
+      sauvegarderPrivé({favoris,enfants,onboarding_done:onboardingDone,popup_shown:[...popupShown],dark_mode:darkMode,historique_activites:historiqueActivites,premium_trial_used:premiumTrialUsed,filtres_memo_activ:filtresMemoActiv,filtres_memo_sortie:filtresMemoSortie,masquees});
     },1500);
     return()=>clearTimeout(timer);
-  },[favoris,enfants,popupShown,onboardingDone,premiumTrialUsed,historiqueActivites,darkMode,filtresMemoActiv,filtresMemoSortie,dataLoaded]);
+  },[favoris,enfants,popupShown,onboardingDone,premiumTrialUsed,historiqueActivites,darkMode,filtresMemoActiv,filtresMemoSortie,masquees,dataLoaded]);
 
   useEffect(()=>{
     if(!dataLoaded)return;
@@ -9358,7 +10914,7 @@ export default function App(){
     return()=>clearTimeout(timer);
   },[customEvents,ideesMomentConfig,evenementsSaisonniers,sosModeActif,pendingContribs,deletedTitles,adminReports,customCatActivites,customCatSorties,customCatEvenements,adminActivites,adminSorties,adminEvenements,sosLib,dataLoaded]);
 
-  const leftTabs=[{k:"accueil",icon:"🏠",label:"Accueil"},{k:"biblio",icon:"📖",label:"Biblio"}];
+  const leftTabs=[{k:"biblio",icon:"📖",label:"Biblio"},{k:"ressources",icon:"🧠",label:"Ressources"}];
   const rightTabs=[{k:"planning",icon:"📅",label:"Planning"},{k:"profil",icon:"👤",label:"Profil"}];
   if(authChecking||!dataLoaded) return <div style={{maxWidth:390,margin:"0 auto",minHeight:"100vh",background:BG,display:"flex",alignItems:"center",justifyContent:"center"}}><p style={{fontSize:13,color:TM}}>Chargement...</p></div>;
   if(!onboardingDone) return <Onboarding onDone={()=>setOnboardingDone(true)} onDemo={()=>{setOnboardingDone(true);activerDemo();}}/>;
@@ -9373,7 +10929,7 @@ export default function App(){
     setTimeout(()=>setGlobalToast(null),3000);
     setTimeout(()=>setShowConfetti(false),4500);
   };
-  if(isAdmin) return <PageAdmin onLogout={()=>{ setIsAdmin(false); setPage("profil"); }} pendingContribs={pendingContribs} updateContrib={updateContrib} adminActivites={adminActivites} setAdminActivites={setAdminActivites} adminSorties={adminSorties} setAdminSorties={setAdminSorties} adminEvenements={adminEvenements} setAdminEvenements={setAdminEvenements} adminReports={adminReports} setAdminReports={setAdminReports} addDeletedTitle={addDeletedTitle} adminCustomEvents={customEvents} setAdminCustomEvents={setCustomEvents} sosLib={sosLib} setSosLib={setSosLib} sosModeActif={sosModeActif} setSosModeActif={setSosModeActif} ideesMomentConfig={ideesMomentConfig} setIdeesMomentConfig={setIdeesMomentConfig} evenementsSaisonniers={evenementsSaisonniers} setEvenementsSaisonniers={setEvenementsSaisonniers} customCatActivites={customCatActivites} setCustomCatActivites={setCustomCatActivites} customCatSorties={customCatSorties} setCustomCatSorties={setCustomCatSorties} customCatEvenements={customCatEvenements} setCustomCatEvenements={setCustomCatEvenements}/>;
+  if(isAdmin) return <PageAdmin onLogout={()=>{ setIsAdmin(false); setPage("profil"); }} pendingContribs={pendingContribs} updateContrib={updateContrib} adminActivites={adminActivites} setAdminActivites={setAdminActivites} adminSorties={adminSorties} setAdminSorties={setAdminSorties} adminEvenements={adminEvenements} setAdminEvenements={setAdminEvenements} adminReports={adminReports} setAdminReports={setAdminReports} addDeletedTitle={addDeletedTitle} adminCustomEvents={customEvents} setAdminCustomEvents={setCustomEvents} sosLib={sosLib} setSosLib={setSosLib} sosModeActif={sosModeActif} setSosModeActif={setSosModeActif} ideesMomentConfig={ideesMomentConfig} setIdeesMomentConfig={setIdeesMomentConfig} evenementsSaisonniers={evenementsSaisonniers} setEvenementsSaisonniers={setEvenementsSaisonniers} customCatActivites={customCatActivites} setCustomCatActivites={setCustomCatActivites} customCatSorties={customCatSorties} setCustomCatSorties={setCustomCatSorties} customCatEvenements={customCatEvenements} setCustomCatEvenements={setCustomCatEvenements} adminComms={adminComms} setAdminComms={setAdminComms} ressourcesSites={ressourcesSites} setRessourcesSites={setRessourcesSites} ressourcesContacts={ressourcesContacts} setRessourcesContacts={setRessourcesContacts} ressourcesPdf={ressourcesPdf} setRessourcesPdf={setRessourcesPdf}/>;
   return(
     <div style={{maxWidth:390,margin:"0 auto",background:BG,minHeight:"100vh",position:"relative",fontFamily:"system-ui,-apple-system,sans-serif",color:TX,transition:"background 0.3s,color 0.3s"}} className={darkMode?"dm":""}>
       <style>{`
@@ -9392,6 +10948,21 @@ export default function App(){
         }
         .dm input::placeholder, .dm textarea::placeholder { color: #6b7280 !important; }
       `}</style>
+
+      {/* Bouton profil rond — visible en permanence */}
+      {page!=="profil"&&page!=="sos"&&!showAuthGate&&!showPremiumPage&&(
+        <div style={{position:"fixed",top:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:390,zIndex:300,pointerEvents:"none"}}>
+          <button onClick={()=>setPage("profil")} style={{position:"absolute",top:18,right:16,width:44,height:44,borderRadius:"50%",background:currentUser?`linear-gradient(135deg,${V},#8B7FF0)`:WH,border:currentUser?"none":BD,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 2px 10px rgba(0,0,0,0.15)",pointerEvents:"auto"}}>
+            {currentUser?(
+              <span style={{fontSize:16,fontWeight:800,color:"#fff"}}>{(currentUser.nom||currentUser.prenom||"?").charAt(0).toUpperCase()}</span>
+            ):(
+              <span style={{fontSize:18}}>👤</span>
+            )}
+            {favoris.length>0&&<span style={{position:"absolute",top:-2,right:-2,background:"#F97316",color:"#fff",borderRadius:"50%",width:16,height:16,fontSize:9,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",border:"2px solid "+WH}}>{favoris.length>9?"9+":favoris.length}</span>}
+          </button>
+        </div>
+      )}
+
       {showAuthGate&&(
         <div style={{position:"fixed",inset:0,background:BG,zIndex:920,overflowY:"auto"}}>
           <PageAuth onCancel={()=>{setShowAuthGate(false);activerDemo();}} onAuthSuccess={(u)=>{setCurrentUser(u);setShowAuthGate(false);}} onAdminSuccess={()=>{setIsAdmin(true);setShowAuthGate(false);}}/>
@@ -9415,33 +10986,48 @@ export default function App(){
       )}
       <Confetti active={showConfetti}/>
       <div style={{paddingBottom:72}}>
-        {page==="accueil"&&<PageAccueil favoris={favoris} setFavoris={setFavoris} setPage={setPage} customEvents={customEvents} popupShown={popupShown} setPopupShown={setPopupShown} ideesMomentConfig={ideesMomentConfig} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} evenementsSaisonniers={evenementsSaisonniers} isPremium={isPremiumUser} onOpenPremium={openPremium} customCatActivites={customCatActivites} customCatSorties={customCatSorties} customCatEvenements={customCatEvenements} adminActivites={adminActivites} adminSorties={adminSorties} pendingContribs={pendingContribs} setPendingContribs={setPendingContribs} deletedTitles={deletedTitles} currentUser={currentUser} sosModeActif={sosModeActif} enfants={enfants} enfantActif={enfantActif} setEnfantActif={setEnfantActif} onMarquerFait={(item)=>setHistoriqueActivites(prev=>[{id:item.id||Date.now(),nom:item.nom||item.titre||"",categorie:item.categorie||"",date:item._date||new Date().toISOString(),type:"activite",note:item._note||""},...prev.slice(0,99)])} historiqueActivites={historiqueActivites} filtresMemoActiv={filtresMemoActiv} setFiltresMemoActiv={setFiltresMemoActiv} filtresMemoSortie={filtresMemoSortie} setFiltresMemoSortie={setFiltresMemoSortie}/>}
-        {page==="biblio"&&<PageBiblio pendingContribs={pendingContribs} setPendingContribs={setPendingContribs} adminActivites={adminActivites} adminSorties={adminSorties} adminEvenements={adminEvenements} addReport={addReport} adminReports={adminReports} deletedTitles={deletedTitles} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} favoris={favoris} setFavoris={setFavoris} isPremium={isPremiumUser} onOpenPremium={openPremium} customCatActivites={customCatActivites} customCatSorties={customCatSorties} customCatEvenements={customCatEvenements} currentUser={currentUser}/>}
-        {page==="generer"&&<PageAccueil favoris={favoris} setFavoris={setFavoris} setPage={setPage} customEvents={customEvents} popupShown={popupShown} setPopupShown={setPopupShown} ideesMomentConfig={ideesMomentConfig} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} evenementsSaisonniers={evenementsSaisonniers} isPremium={isPremiumUser} onOpenPremium={openPremium} customCatActivites={customCatActivites} customCatSorties={customCatSorties} customCatEvenements={customCatEvenements} adminActivites={adminActivites} adminSorties={adminSorties} pendingContribs={pendingContribs} setPendingContribs={setPendingContribs} deletedTitles={deletedTitles} currentUser={currentUser} sosModeActif={sosModeActif} enfants={enfants} enfantActif={enfantActif} setEnfantActif={setEnfantActif} onMarquerFait={(item)=>setHistoriqueActivites(prev=>[{id:item.id||Date.now(),nom:item.nom||item.titre||"",categorie:item.categorie||"",date:item._date||new Date().toISOString(),type:"activite",note:item._note||""},...prev.slice(0,99)])} historiqueActivites={historiqueActivites} filtresMemoActiv={filtresMemoActiv} setFiltresMemoActiv={setFiltresMemoActiv} filtresMemoSortie={filtresMemoSortie} setFiltresMemoSortie={setFiltresMemoSortie}/>}
+        {page==="accueil"&&<PageAccueil favoris={favoris} setFavoris={setFavoris} setPage={setPage} customEvents={customEvents} popupShown={popupShown} setPopupShown={setPopupShown} ideesMomentConfig={ideesMomentConfig} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} evenementsSaisonniers={evenementsSaisonniers} isPremium={isPremiumUser} onOpenPremium={openPremium} customCatActivites={customCatActivites} customCatSorties={customCatSorties} customCatEvenements={customCatEvenements} adminActivites={adminActivites} adminSorties={adminSorties} pendingContribs={pendingContribs} setPendingContribs={setPendingContribs} deletedTitles={deletedTitles} currentUser={currentUser} sosModeActif={sosModeActif} enfants={enfants} enfantActif={enfantActif} setEnfantActif={setEnfantActif} onMarquerFait={(item)=>setHistoriqueActivites(prev=>[{id:item.id||Date.now(),nom:item.nom||item.titre||"",categorie:item.categorie||"",date:item._date||new Date().toISOString(),type:"activite",note:item._note||""},...prev.slice(0,99)])} historiqueActivites={historiqueActivites} filtresMemoActiv={filtresMemoActiv} setFiltresMemoActiv={setFiltresMemoActiv} filtresMemoSortie={filtresMemoSortie} setFiltresMemoSortie={setFiltresMemoSortie} adminComms={adminComms} masquees={masquees} toggleMasquer={toggleMasquer} estMasque={estMasque}/>}
+        {page==="biblio"&&<PageBiblio pendingContribs={pendingContribs} setPendingContribs={setPendingContribs} adminActivites={adminActivites} adminSorties={adminSorties} adminEvenements={adminEvenements} addReport={addReport} adminReports={adminReports} deletedTitles={deletedTitles} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} favoris={favoris} setFavoris={setFavoris} isPremium={isPremiumUser} onOpenPremium={openPremium} customCatActivites={customCatActivites} customCatSorties={customCatSorties} customCatEvenements={customCatEvenements} currentUser={currentUser} enfants={enfants} enfantActif={enfantActif} masquees={masquees} toggleMasquer={toggleMasquer} estMasque={estMasque}/>}
+        {page==="generer"&&<PageAccueil favoris={favoris} setFavoris={setFavoris} setPage={setPage} customEvents={customEvents} popupShown={popupShown} setPopupShown={setPopupShown} ideesMomentConfig={ideesMomentConfig} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} evenementsSaisonniers={evenementsSaisonniers} isPremium={isPremiumUser} onOpenPremium={openPremium} customCatActivites={customCatActivites} customCatSorties={customCatSorties} customCatEvenements={customCatEvenements} adminActivites={adminActivites} adminSorties={adminSorties} pendingContribs={pendingContribs} setPendingContribs={setPendingContribs} deletedTitles={deletedTitles} currentUser={currentUser} sosModeActif={sosModeActif} enfants={enfants} enfantActif={enfantActif} setEnfantActif={setEnfantActif} onMarquerFait={(item)=>setHistoriqueActivites(prev=>[{id:item.id||Date.now(),nom:item.nom||item.titre||"",categorie:item.categorie||"",date:item._date||new Date().toISOString(),type:"activite",note:item._note||""},...prev.slice(0,99)])} historiqueActivites={historiqueActivites} filtresMemoActiv={filtresMemoActiv} setFiltresMemoActiv={setFiltresMemoActiv} filtresMemoSortie={filtresMemoSortie} setFiltresMemoSortie={setFiltresMemoSortie} adminComms={adminComms} masquees={masquees} toggleMasquer={toggleMasquer} estMasque={estMasque}/>}
         {page==="planning"&&<PagePlanning sosLib={sosLib} enfants={enfants} enfantActif={enfantActif} setEnfantActif={setEnfantActif} isPremium={isPremiumUser} onOpenPremium={openPremium} sosModeActif={sosModeActif} adminActivites={adminActivites} pendingContribs={pendingContribs} deletedTitles={deletedTitles}/>}
+        {page==="sos"&&<PageSOS sosLib={sosLib} isPremium={isPremiumUser} onOpenPremium={openPremium} onBack={()=>setPage("accueil")}/>}
+        {page==="ressources"&&<PageRessources sites={ressourcesSites} contacts={ressourcesContacts} pdfs={ressourcesPdf} setPdfs={setRessourcesPdf} isPremium={isPremiumUser} onOpenPremium={openPremium}/>}
         {page==="profil"&&<PageProfil setPage={setPage} enfants={enfants} setEnfants={setEnfants} enfantActif={enfantActif} setEnfantActif={setEnfantActif} showGestionEnfants={showGestionEnfants} setShowGestionEnfants={setShowGestionEnfants} currentUser={currentUser} onLogout={handleLogout} onRequireAuth={requireAuth} isPremium={isPremiumUser} setPremium={setPremiumDemo} evenementsSaisonniers={evenementsSaisonniers} onOpenPremium={openPremium} onDeleteAccount={handleDeleteAccount} favoris={favoris} adminEvenements={adminEvenements} pendingContribs={pendingContribs} darkMode={darkMode} setDarkMode={setDarkMode} historiqueActivites={historiqueActivites} setHistoriqueActivites={setHistoriqueActivites}/>}
         {page==="favoris"&&<PageFavoris favoris={favoris} setFavoris={setFavoris} isPremium={isPremiumUser} onBack={()=>setPage("profil")}/>}
       </div>
       <div style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:390,background:WH,borderTop:BD,display:"flex",alignItems:"flex-end",zIndex:200,paddingBottom:4}}>
         {leftTabs.map(t=>{
-          const streak=(()=>{if(historiqueActivites.length===0)return 0;const dates=[...new Set(historiqueActivites.map(h=>h.date?.slice(0,10)).filter(Boolean))].sort().reverse();let s=0,cur=new Date();for(const d of dates){const diff=Math.floor((cur-new Date(d))/(1000*60*60*24));if(diff>1)break;s++;cur=new Date(d);}return s;})();
-          const badge=t.k==="accueil"&&streak>=2?`🔥${streak}`:null;
           return(
             <button key={t.k} onClick={()=>setPage(t.k)} style={{flex:1,padding:"10px 0 6px",background:"none",border:"none",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:2,position:"relative"}}>
               <span style={{fontSize:20,filter:page===t.k?"none":"grayscale(1) opacity(0.5)"}}>{t.icon}</span>
               <span style={{fontSize:10,color:page===t.k?V:TM,fontWeight:page===t.k?700:400}}>{t.label}</span>
-              {badge&&<span style={{position:"absolute",top:6,right:"18%",background:"#F97316",color:"#fff",borderRadius:10,padding:"1px 5px",fontSize:9,fontWeight:800}}>{badge}</span>}
             </button>
           );
         })}
+
+        {/* Accueil — bouton central en relief */}
+        {(()=>{
+          const streak=(()=>{if(historiqueActivites.length===0)return 0;const dates=[...new Set(historiqueActivites.map(h=>h.date?.slice(0,10)).filter(Boolean))].sort().reverse();let s=0,cur=new Date();for(const d of dates){const diff=Math.floor((cur-new Date(d))/(1000*60*60*24));if(diff>1)break;s++;cur=new Date(d);}return s;})();
+          const badge=streak>=2?`🔥${streak}`:null;
+          const actif=page==="accueil";
+          return(
+            <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",position:"relative"}}>
+              <button onClick={()=>setPage("accueil")} style={{position:"absolute",top:-26,width:58,height:58,borderRadius:"50%",background:actif?`linear-gradient(135deg,${V},#8B7FF0)`:`linear-gradient(135deg,${V},#8B7FF0)`,border:"4px solid "+WH,boxShadow:actif?"0 6px 18px rgba(108,92,231,0.5)":"0 4px 14px rgba(108,92,231,0.35)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",transition:"transform 0.15s"}}>
+                <span style={{fontSize:26}}>🏠</span>
+                {badge&&<span style={{position:"absolute",top:-6,right:-6,background:"#F97316",color:"#fff",borderRadius:10,padding:"1px 5px",fontSize:9,fontWeight:800,border:"2px solid "+WH}}>{badge}</span>}
+              </button>
+              <span style={{fontSize:10,color:actif?V:TM,fontWeight:actif?700:400,marginTop:34}}>Accueil</span>
+            </div>
+          );
+        })()}
+
         <button onClick={()=>setPage("planning")} style={{flex:1,padding:"10px 0 6px",background:"none",border:"none",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:2,position:"relative"}}>
           <span style={{fontSize:22,filter:page==="planning"?"none":"grayscale(1) opacity(0.5)"}}>⚡</span>
           <span style={{fontSize:10,color:page==="planning"?V:TM,fontWeight:page==="planning"?700:400}}>Planning</span>
         </button>
-        <button onClick={()=>setPage("profil")} style={{flex:1,padding:"10px 0 6px",background:"none",border:"none",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:2,position:"relative"}}>
-          <span style={{fontSize:20,filter:page==="profil"?"none":"grayscale(1) opacity(0.5)"}}>👤</span>
-          <span style={{fontSize:10,color:page==="profil"?V:TM,fontWeight:page==="profil"?700:400}}>Profil</span>
-          {favoris.length>0&&<span style={{position:"absolute",top:6,right:"18%",background:V,color:"#fff",borderRadius:"50%",width:14,height:14,fontSize:8,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center"}}>{favoris.length>9?"9+":favoris.length}</span>}
+        <button onClick={()=>{if(!sosModeActif)return;setPage("sos");}} style={{flex:1,padding:"10px 0 6px",background:"none",border:"none",cursor:sosModeActif?"pointer":"default",display:"flex",flexDirection:"column",alignItems:"center",gap:2,position:"relative",opacity:sosModeActif?1:0.35}}>
+          <span style={{fontSize:20}}>🆘</span>
+          <span style={{fontSize:10,color:"#DC2626",fontWeight:700}}>SOS</span>
         </button>
       </div>
     </div>

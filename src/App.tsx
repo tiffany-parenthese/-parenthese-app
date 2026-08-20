@@ -954,28 +954,6 @@ function FormActivite({onClose,onSubmit,customCatActivites=[]}){
           {/* ─── SECTION TND COMPLÈTE ─── */}
           <div style={{background:"#F5F0EB",borderRadius:16,padding:"18px 16px",display:"flex",flexDirection:"column",gap:18}}>
 
-            {/* Partie 1 — Profils */}
-            <div>
-              <p style={{margin:"0 0 4px",fontSize:14,fontWeight:800,color:"#1a1a1a"}}>🧩 Profils TND adaptés</p>
-              <p style={{margin:"0 0 12px",fontSize:12,color:TM}}>Cochez les profils pour lesquels cette activité est particulièrement adaptée</p>
-              <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-                {[
-                  {k:"tsa",l:"🧩 TSA",sub:"Spectre autistique",bg:"#EEEDFE",bc:"#3C3489",col:"#3C3489"},
-                  {k:"tdah",l:"⚡ TDAH",sub:"Déficit attention",bg:"#E1F5EE",bc:"#085041",col:"#085041"},
-                  {k:"dys",l:"📖 DYS",sub:"Troubles dys",bg:"#FAEEDA",bc:"#633806",col:"#633806"},
-                  {k:"tous",l:"🌱 Tous profils",sub:"",bg:"#EAF3DE",bc:"#3B6D11",col:"#3B6D11"},
-                ].map(({k,l,sub,bg,bc,col})=>{
-                  const actif=profilsTND[k];
-                  return(
-                    <button key={k} onClick={()=>setProfilsTND(p=>({...p,[k]:!p[k]}))} style={{padding:"8px 14px",borderRadius:20,border:`2px solid ${actif?bc:"#E5E7EB"}`,background:actif?bg:WH,color:actif?col:"#9CA3AF",fontSize:12,fontWeight:actif?700:400,cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:2}}>
-                      <span>{l}</span>
-                      {sub&&<span style={{fontSize:9,opacity:0.8}}>{sub}</span>}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
             {/* Partie 2 — Niveaux sensoriels */}
             <div>
               <p style={{margin:"0 0 4px",fontSize:14,fontWeight:800,color:"#1a1a1a"}}>🎚️ Niveaux sensoriels</p>
@@ -1112,6 +1090,7 @@ function FormSortie({onClose,onSubmit,customCatSorties=[]}){
   const [accessHeuresCalmes,setAccessHeuresCalmes]=useState("");
   const [accessDistanceMarche,setAccessDistanceMarche]=useState("");
   const [accessConseil,setAccessConseil]=useState("");
+  const [demandeBoost,setDemandeBoost]=useState(false);
   const [localErrors,setLocalErrors]=useState({});
   const handlePhoto=async(e)=>{const file=e.target.files[0];if(!file)return;if(file.size>8*1024*1024){alert("Photo trop lourde (max 8MB)");return;}try{const compressed=await compresserImage(file);setPhotoPreview(compressed);}catch(err){alert("Impossible de lire cette image, réessaie avec une autre.");}};
   const validate=()=>{const e={};if(!nom.trim())e.nom="Champ obligatoire";if(!ville.trim())e.ville="Champ obligatoire";if(!dept)e.dept="Champ obligatoire";if(!typeSortieSelected)e.type="Champ obligatoire";setLocalErrors(e);return Object.keys(e).length===0;};
@@ -1123,7 +1102,7 @@ function FormSortie({onClose,onSubmit,customCatSorties=[]}){
       signaux:accessSignaux,
       details:{...Object.fromEntries(Object.keys(accessSignaux).map(k=>[k,null])),heuresCalmes:accessHeuresCalmes.trim()||undefined,distanceMarche:accessDistanceMarche.trim()||undefined,conseilCommunaute:accessConseil.trim()||undefined},
     };
-    if(onSubmit)onSubmit({nom:nom.trim(),type:typeFinal,dept,ville:ville.trim(),desc:desc.trim(),photo:photoPreview,prix:tarif.trim()||"Gratuit",horaires:horaires.trim(),tnd,...pmrValues,commentaireTND:commentaireTND.trim(),accessibilite,_type:"sortie"});
+    if(onSubmit)onSubmit({nom:nom.trim(),type:typeFinal,dept,ville:ville.trim(),desc:desc.trim(),photo:photoPreview,prix:tarif.trim()||"Gratuit",horaires:horaires.trim(),tnd,...pmrValues,commentaireTND:commentaireTND.trim(),accessibilite,_demandeBoost:demandeBoost,_type:"sortie"});
   };
   const se=(err)=>({padding:"12px 14px",borderRadius:12,border:"1px solid "+(err?"#EF4444":"rgba(108,92,231,0.15)"),fontSize:14,width:"100%",boxSizing:"border-box",background:WH,fontFamily:"inherit"});
   const Err=({k})=>localErrors[k]?<p style={{margin:"3px 0 0",fontSize:11,color:"#EF4444"}}>{localErrors[k]}</p>:null;
@@ -1252,6 +1231,20 @@ function FormSortie({onClose,onSubmit,customCatSorties=[]}){
           </div>
 
           <div style={{background:"#FFFBEB",borderRadius:12,padding:"10px 14px",border:"1px solid #FDE68A",display:"flex",gap:10,alignItems:"flex-start"}}><span style={{fontSize:16,flexShrink:0}}>👶</span><p style={{margin:0,fontSize:12,color:"#92400E",lineHeight:1.5}}>Les sorties proposees doivent etre adaptees aux enfants.</p></div>
+
+          <div onClick={()=>setDemandeBoost(v=>!v)} style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:10,background:demandeBoost?"#FFF7ED":BG,borderRadius:14,padding:"12px 14px",border:`1.5px solid ${demandeBoost?"#F59E0B":"rgba(0,0,0,0.08)"}`,cursor:"pointer"}}>
+            <div style={{display:"flex",alignItems:"center",gap:10}}>
+              <span style={{fontSize:20}}>🚀</span>
+              <div>
+                <p style={{margin:0,fontSize:13,fontWeight:700,color:demandeBoost?"#9A3412":TX}}>Booster cette annonce</p>
+                <p style={{margin:0,fontSize:11,color:TM}}>Plus de visibilité dans la bibliothèque — sur devis</p>
+              </div>
+            </div>
+            <div style={{width:40,height:22,borderRadius:20,background:demandeBoost?"#F59E0B":"#D1D5DB",position:"relative",flexShrink:0}}>
+              <div style={{position:"absolute",top:2,left:demandeBoost?20:2,width:18,height:18,borderRadius:"50%",background:"#fff",transition:"left 0.15s"}}/>
+            </div>
+          </div>
+
           <button onClick={handleSubmit} style={{padding:14,borderRadius:14,background:V,border:"none",color:WH,fontWeight:700,fontSize:15,cursor:"pointer",width:"100%"}}>Envoyer ma suggestion</button>
         </div>
       </div>
@@ -1277,6 +1270,7 @@ function FormEvenement({onClose,onSubmit,onOpenAutrePopup,typeAutre,typeEvt,setT
   const [tndPrevision,setTndPrevision]=useState("");
   const [tndZoneCalme,setTndZoneCalme]=useState(null);
   const [pmrValues,setPmrValues]=useState({});
+  const [demandeBoost,setDemandeBoost]=useState(false);
   const [localErrors,setLocalErrors]=useState({});
   const handlePhoto=async(e)=>{const file=e.target.files[0];if(!file)return;if(file.size>8*1024*1024){alert("Photo trop lourde (max 8MB)");return;}try{const compressed=await compresserImage(file);setPhotoPreview(compressed);}catch(err){alert("Impossible de lire cette image, réessaie avec une autre.");}};
   const validate=()=>{const e={};if(!nom.trim())e.nom="Champ obligatoire";if(!desc.trim())e.desc="Champ obligatoire";if(!typeEvt)e.typeEvt="Champ obligatoire";if(!ville.trim())e.ville="Champ obligatoire";if(!dept)e.dept="Champ obligatoire";if(!dateDebut)e.dateDebut="Champ obligatoire";setLocalErrors(e);return Object.keys(e).length===0;};
@@ -1286,7 +1280,7 @@ function FormEvenement({onClose,onSubmit,onOpenAutrePopup,typeAutre,typeEvt,setT
     const isGratuit=!tarif.trim()||tarif.toLowerCase().includes("gratuit");
     const categorieFinale=typeEvt==="autre"?(typeAutre||"autre"):typeEvt;
     const tnd=tndSon||tndAffluence||tndPrevision||tndZoneCalme!==null?{son:tndSon||undefined,affluence:tndAffluence||undefined,prevision:tndPrevision||undefined,zonecalme:tndZoneCalme!==null?tndZoneCalme:undefined}:undefined;
-    onSubmit({nom:nom.trim(),desc:desc.trim(),categorie:categorieFinale,ville:ville.trim()+" ("+dept+")",dept,date:dateDebut,periode:detectPeriode(dateDebut),prix:tarif.trim()||"Non renseigne",gratuit:isGratuit,communaute:true,signalements:0,age:"Tous ages",dates:datesStr,photo:photoPreview,adresse:adresse.trim(),commentaireTND:commentaireTND.trim(),tnd,...pmrValues});
+    onSubmit({nom:nom.trim(),desc:desc.trim(),categorie:categorieFinale,ville:ville.trim()+" ("+dept+")",dept,date:dateDebut,periode:detectPeriode(dateDebut),prix:tarif.trim()||"Non renseigne",gratuit:isGratuit,communaute:true,signalements:0,age:"Tous ages",dates:datesStr,photo:photoPreview,adresse:adresse.trim(),commentaireTND:commentaireTND.trim(),tnd,...pmrValues,_demandeBoost:demandeBoost});
   };
   const se=(err)=>({padding:"12px 14px",borderRadius:12,fontSize:14,width:"100%",boxSizing:"border-box",background:WH,border:"1px solid "+(err?"#EF4444":"rgba(108,92,231,0.15)")});
   const Err=({k})=>localErrors[k]?<p style={{margin:"3px 0 0",fontSize:11,color:"#EF4444"}}>{localErrors[k]}</p>:null;
@@ -1366,6 +1360,20 @@ function FormEvenement({onClose,onSubmit,onOpenAutrePopup,typeAutre,typeEvt,setT
           </div>
 
           <div style={{background:"#FFFBEB",borderRadius:12,padding:"10px 14px",border:"1px solid #FDE68A",display:"flex",gap:10,alignItems:"flex-start"}}><span style={{fontSize:16,flexShrink:0}}>👶</span><p style={{margin:0,fontSize:12,color:"#92400E",lineHeight:1.5}}>Les evenements proposes doivent etre destines aux enfants ou aux familles.</p></div>
+
+          <div onClick={()=>setDemandeBoost(v=>!v)} style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:10,background:demandeBoost?"#FFF7ED":"#F5F5F5",borderRadius:14,padding:"12px 14px",border:`1.5px solid ${demandeBoost?"#F59E0B":"rgba(0,0,0,0.08)"}`,cursor:"pointer"}}>
+            <div style={{display:"flex",alignItems:"center",gap:10}}>
+              <span style={{fontSize:20}}>🚀</span>
+              <div>
+                <p style={{margin:0,fontSize:13,fontWeight:700,color:demandeBoost?"#9A3412":"#1a1a1a"}}>Booster cette annonce</p>
+                <p style={{margin:0,fontSize:11,color:"#6B7280"}}>Plus de visibilité dans la bibliothèque — sur devis</p>
+              </div>
+            </div>
+            <div style={{width:40,height:22,borderRadius:20,background:demandeBoost?"#F59E0B":"#D1D5DB",position:"relative",flexShrink:0}}>
+              <div style={{position:"absolute",top:2,left:demandeBoost?20:2,width:18,height:18,borderRadius:"50%",background:"#fff",transition:"left 0.15s"}}/>
+            </div>
+          </div>
+
           <div style={{display:"flex",gap:10}}><button onClick={onClose} style={{flex:1,padding:14,borderRadius:28,background:WH,border:"1.5px solid #E5E7EB",color:"#374151",fontWeight:500,fontSize:14,cursor:"pointer"}}>Annuler</button><button onClick={handleSubmit} style={{flex:2,padding:14,borderRadius:28,background:V,border:"none",color:WH,fontWeight:700,fontSize:14,cursor:"pointer"}}>Envoyer</button></div>
         </div>
       </div>
@@ -1969,20 +1977,21 @@ function EvtCard({e,onClick,onReport,customCatEvenements=[]}){
   );
 }
 
-function ActiviteCard({a,onClick,onReport,isFav,onToggleFav,verrouille=false,customCatActivites=[],matchScore,onMasquer,estMasque=false}){
+function ActiviteCard({a,onClick,onReport,isFav,onToggleFav,verrouille=false,customCatActivites=[],matchScore,onMasquer,estMasque=false,estBoostee=false}){
   const tile=iconTileAct(a.categorie,customCatActivites);
   const isNew=a._createdAt&&(Date.now()-new Date(a._createdAt).getTime())<7*24*60*60*1000;
   const isCommunity=!!a._auteur||!!a.communaute;
   const matchBadge=matchScore!==undefined?getBadgeScoreMatch(matchScore):null;
   const nbPointsAnticiper=(a.pointsAnticiper||POINTS_ANTICIPER_MAP[a.nom||a.titre]||[]).length;
   return(
-    <div style={{background:WH,borderRadius:16,overflow:"hidden",border:BD,marginBottom:12,boxShadow:"0 2px 8px rgba(0,0,0,0.06)",opacity:verrouille?0.75:1}}>
+    <div style={{background:WH,borderRadius:16,overflow:"hidden",border:estBoostee?"2px solid #F59E0B":BD,marginBottom:12,boxShadow:estBoostee?"0 4px 14px rgba(245,158,11,0.2)":"0 2px 8px rgba(0,0,0,0.06)",opacity:verrouille?0.75:1}}>
       <div style={{position:"relative",height:160,background:a.photo&&!verrouille?"#000":`linear-gradient(135deg,${tile.bg},${tile.bg})`,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",overflow:"hidden"}} onClick={onClick}>
         {a.photo&&!verrouille?<img src={a.photo} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/>:<span style={{fontSize:64,filter:verrouille?"grayscale(0.5)":"none"}}>{tile.emoji}</span>}
         {verrouille&&<div style={{position:"absolute",inset:0,background:"rgba(0,0,0,0.15)",display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{fontSize:32}}>🔒</span></div>}
         <button onClick={e=>{e.stopPropagation();onToggleFav&&onToggleFav();}} style={{position:"absolute",top:10,right:10,width:32,height:32,borderRadius:"50%",background:WH,border:"none",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 2px 6px rgba(0,0,0,0.15)",cursor:"pointer",padding:0}}><span style={{fontSize:16}}>{isFav?"❤️":"🤍"}</span></button>
         {matchBadge&&<span style={{position:"absolute",top:10,right:50,background:matchBadge.bg,color:matchBadge.color,borderRadius:20,padding:"3px 10px",fontSize:11,fontWeight:700,boxShadow:"0 2px 6px rgba(0,0,0,0.1)"}}>{matchScore}%</span>}
         <div style={{position:"absolute",top:10,left:10,display:"flex",gap:6,flexWrap:"wrap"}}>
+          {estBoostee&&<span style={{background:"#F59E0B",borderRadius:20,padding:"3px 10px",fontSize:10,fontWeight:700,color:"#fff"}}>🚀 Sponsorisé</span>}
           <span style={{background:WH,borderRadius:20,padding:"3px 10px",fontSize:11,fontWeight:600,color:V}}>{verrouille?"👑 Premium":a.categorie}</span>
           {isNew&&<span style={{background:"#10B981",borderRadius:20,padding:"3px 10px",fontSize:10,fontWeight:700,color:"#fff"}}>🆕 Nouveau</span>}
           {isCommunity&&<span style={{background:"#8B5CF6",borderRadius:20,padding:"3px 10px",fontSize:10,fontWeight:700,color:"#fff"}}>👥 Communauté</span>}
@@ -2015,16 +2024,17 @@ function ActiviteCard({a,onClick,onReport,isFav,onToggleFav,verrouille=false,cus
   );
 }
 
-function SortieCard({s,onClick,onReport,isFav,onToggleFav,customCatSorties=[],onMasquer,estMasque=false}){
+function SortieCard({s,onClick,onReport,isFav,onToggleFav,customCatSorties=[],onMasquer,estMasque=false,estBoostee=false}){
   const tile=iconTileSortie(s.type,customCatSorties);
   const {tousLesAvis,chargement,noteGlobale}=useAvis("sortie",s.id);
   const isNew=s._createdAt&&(Date.now()-new Date(s._createdAt).getTime())<7*24*60*60*1000;
   return(
-    <div style={{background:WH,borderRadius:16,overflow:"hidden",border:BD,marginBottom:12,boxShadow:"0 2px 8px rgba(0,0,0,0.06)"}}>
+    <div style={{background:WH,borderRadius:16,overflow:"hidden",border:estBoostee?"2px solid #F59E0B":BD,marginBottom:12,boxShadow:estBoostee?"0 4px 14px rgba(245,158,11,0.2)":"0 2px 8px rgba(0,0,0,0.06)"}}>
       <div style={{position:"relative",height:160,background:s.photo?"#000":`linear-gradient(135deg,${tile.bg},${tile.bg})`,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",overflow:"hidden"}} onClick={onClick}>
         {s.photo?<img src={s.photo} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/>:<span style={{fontSize:64}}>{tile.emoji}</span>}
         <button onClick={e=>{e.stopPropagation();onToggleFav&&onToggleFav();}} style={{position:"absolute",top:10,right:10,width:32,height:32,borderRadius:"50%",background:WH,border:"none",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 2px 6px rgba(0,0,0,0.15)",cursor:"pointer",padding:0}}><span style={{fontSize:16}}>{isFav?"❤️":"🤍"}</span></button>
         <div style={{position:"absolute",top:10,left:10,display:"flex",gap:6}}>
+          {estBoostee&&<span style={{background:"#F59E0B",borderRadius:20,padding:"3px 10px",fontSize:10,fontWeight:700,color:"#fff"}}>🚀 Sponsorisé</span>}
           <span style={{background:s.prix==="Gratuit"?"#D1FAE5":"#FEF3C7",borderRadius:20,padding:"3px 10px",fontSize:11,fontWeight:600,color:s.prix==="Gratuit"?"#065F46":"#92400E"}}>{s.prix||"—"}</span>
           {isNew&&<span style={{background:"#10B981",borderRadius:20,padding:"3px 10px",fontSize:10,fontWeight:700,color:"#fff"}}>🆕 Nouveau</span>}
         </div>
@@ -2291,7 +2301,12 @@ function CarteInteractive({items,type,onClose,onOpenItem}){
   );
 }
 
-function PageBiblio({pendingContribs=[],setPendingContribs,adminActivites=[],adminSorties=[],adminEvenements=[],addReport,adminReports=[],deletedTitles=new Set(),isLoggedIn=true,onRequireAuth,favoris=[],setFavoris,isPremium=false,onOpenPremium,customCatActivites=[],customCatSorties=[],customCatEvenements=[],currentUser=null,enfants=[],enfantActif=null,masquees=[],toggleMasquer,estMasque}){
+function PageBiblio({pendingContribs=[],setPendingContribs,adminActivites=[],adminSorties=[],adminEvenements=[],addReport,adminReports=[],deletedTitles=new Set(),isLoggedIn=true,onRequireAuth,favoris=[],setFavoris,isPremium=false,onOpenPremium,customCatActivites=[],customCatSorties=[],customCatEvenements=[],currentUser=null,enfants=[],enfantActif=null,masquees=[],toggleMasquer,estMasque,boosts=[]}){
+  const estBoosteItem=(item,itemType)=>{
+    const key=item?.id||item?.nom||item?.titre;
+    const b=boosts.find(b=>b.itemId===key&&b.itemType===itemType);
+    return b&&new Date(b.dateExpiration)>new Date();
+  };
   const [tab,setTab]=useState("activites");
   const [globalSearch,setGlobalSearch]=useState("");
   const [detail,setDetail]=useState(null);
@@ -2337,7 +2352,15 @@ function PageBiblio({pendingContribs=[],setPendingContribs,adminActivites=[],adm
   };
 
   const showToast=(msg)=>{setToast(msg);setTimeout(()=>setToast(""),3000);};
-  const handleSubmitEvt=(data)=>{setPendingContribs(prev=>[{...data,id:Date.now(),_type:"evenement",_createdAt:new Date().toISOString(),_statut:"published",_signalements:0,_raisonSignalement:"",_auteur:currentUser?.nom||"Anonyme",_auteurEmail:currentUser?.email||"non connecté"},...prev]);setShowFormEvt(false);setTypeEvtForm("");setTypeAutreForm("");showToast("✅ Événement publié et visible dans la bibliothèque !");};
+  const handleSubmitEvt=(data)=>{
+    const newItem={...data,id:Date.now(),_type:"evenement",_createdAt:new Date().toISOString(),_statut:"published",_signalements:0,_raisonSignalement:"",_auteur:currentUser?.nom||"Anonyme",_auteurEmail:currentUser?.email||"non connecté"};
+    setPendingContribs(prev=>[newItem,...prev]);
+    if(data._demandeBoost&&ajouterDemandeDevisBoost){
+      ajouterDemandeDevisBoost({item:newItem,itemType:"evenement",nom:currentUser?.nom||"Anonyme",email:currentUser?.email||"non renseigné",message:"Demande faite à la soumission de l'événement.",date:new Date().toISOString()});
+    }
+    setShowFormEvt(false);setTypeEvtForm("");setTypeAutreForm("");
+    showToast(data._demandeBoost?"✅ Événement publié ! Votre demande de boost a été transmise à l'équipe.":"✅ Événement publié et visible dans la bibliothèque !");
+  };
   const CATEGORIES_ACT=[...CATEGORIES_ACT_ALL,...customCatActivites.map(c=>c.label)];
   const approvedActs=pendingContribs.filter(c=>c._type==="activite"&&c._statut!=="rejected");
   const adminPublished=(adminActivites||[]).filter(a=>a.statut==="published"&&!ACTIVITES.find(x=>x.id===a.id)).map(a=>{
@@ -2369,6 +2392,8 @@ function PageBiblio({pendingContribs=[],setPendingContribs,adminActivites=[],adm
   const enfantCourantBiblio=enfants.find(e=>e.id===enfantActif);
   const matchActif=isPremium&&enfantCourantBiblio&&(enfantCourantBiblio.besoinsMatching||[]).length>0;
   const actFiltered=[...actFilteredBase].sort((a,b)=>{
+    const boostDiff=(estBoosteItem(b,"activite")?1:0)-(estBoosteItem(a,"activite")?1:0);
+    if(boostDiff!==0)return boostDiff;
     if(matchActif&&sortActiv==="pertinence")return calculerScoreMatch(b,enfantCourantBiblio)-calculerScoreMatch(a,enfantCourantBiblio);
     if(sortActiv==="alpha")return(a.nom||a.titre||"").localeCompare(b.nom||b.titre||"");
     if(sortActiv==="recent")return(b._createdAt||b.date||"").localeCompare(a._createdAt||a.date||"");
@@ -2394,7 +2419,7 @@ function PageBiblio({pendingContribs=[],setPendingContribs,adminActivites=[],adm
   });
   const approvedSorts=pendingContribs.filter(c=>c._type==="sortie"&&c._statut!=="rejected");
   const masqueesSortKeys=new Set(masquees.filter(m=>m._type==="sortie").map(m=>m.id||m.nom||m.titre));
-  const sortFiltered=[...SORTIES,...adminSortiesPubliees,...approvedSorts].filter(s=>!blockedTitles.has(s.nom)).filter(s=>!masqueesSortKeys.has(s.id||s.nom||s.titre)).filter(s=>(!filterDept||s.dept===filterDept)&&(!filterType||s.type===filterType)&&(!searchQ||(s.nom||"").toLowerCase().includes(searchQ)||(s.type||"").toLowerCase().includes(searchQ)||(s.ville||"").toLowerCase().includes(searchQ))&&(filterAccess.length===0||filterAccess.every(k=>s.accessibilite?.signaux?.[k]===true)));
+  const sortFiltered=[...SORTIES,...adminSortiesPubliees,...approvedSorts].filter(s=>!blockedTitles.has(s.nom)).filter(s=>!masqueesSortKeys.has(s.id||s.nom||s.titre)).filter(s=>(!filterDept||s.dept===filterDept)&&(!filterType||s.type===filterType)&&(!searchQ||(s.nom||"").toLowerCase().includes(searchQ)||(s.type||"").toLowerCase().includes(searchQ)||(s.ville||"").toLowerCase().includes(searchQ))&&(filterAccess.length===0||filterAccess.every(k=>s.accessibilite?.signaux?.[k]===true))).sort((a,b)=>(estBoosteItem(b,"sortie")?1:0)-(estBoosteItem(a,"sortie")?1:0));
   const signaler=(id)=>setSigSort(prev=>({...prev,[id]:(prev[id]||0)+1}));
   const cardStyle={background:WH,borderRadius:14,padding:"14px 16px",border:BD,cursor:"pointer"};
   const selStyle={flex:1,padding:"8px 10px",borderRadius:10,border:BD,background:WH,fontSize:13};
@@ -2504,10 +2529,11 @@ function PageBiblio({pendingContribs=[],setPendingContribs,adminActivites=[],adm
 
             <div style={{display:"flex",alignItems:"center",gap:8,margin:"0 0 14px"}}>
               <span style={{fontSize:16}}>💡</span>
-              <div>
+              <div style={{flex:1}}>
                 <p style={{margin:0,fontSize:14,fontWeight:700,color:TX}}>Suggestions pour vous</p>
                 <p style={{margin:0,fontSize:11,color:TM}}>Des idées adaptées à vos critères</p>
               </div>
+              <button onClick={()=>{if(!isLoggedIn){onRequireAuth&&onRequireAuth();return;}setDetail({item:null,type:"form_activite"});}} style={{width:36,height:36,borderRadius:"50%",background:V,border:"none",color:"#fff",fontSize:20,fontWeight:600,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,boxShadow:"0 2px 8px rgba(108,92,231,0.3)"}} title="Proposer une activité">+</button>
             </div>
 
             {matchActif&&(
@@ -2538,7 +2564,7 @@ function PageBiblio({pendingContribs=[],setPendingContribs,adminActivites=[],adm
                 </div>
               )}
               {actFiltered.map(a=>(
-                <ActiviteCard key={a.id} a={a} onClick={()=>{if(a.premium&&!isPremium){onOpenPremium&&onOpenPremium();return;}setDetail({item:a,type:"activite"});}} onReport={addReport} isFav={isFavBiblio(a,"activite")} onToggleFav={()=>toggleFavBiblio(a,"activite")} verrouille={!!a.premium&&!isPremium} customCatActivites={customCatActivites} matchScore={matchActif?calculerScoreMatch(a,enfantCourantBiblio):undefined} onMasquer={toggleMasquer?()=>toggleMasquer(a,"activite"):undefined} estMasque={estMasque?estMasque(a,"activite"):false}/>
+                <ActiviteCard key={a.id} a={a} onClick={()=>{if(a.premium&&!isPremium){onOpenPremium&&onOpenPremium();return;}setDetail({item:a,type:"activite"});}} onReport={addReport} isFav={isFavBiblio(a,"activite")} onToggleFav={()=>toggleFavBiblio(a,"activite")} verrouille={!!a.premium&&!isPremium} customCatActivites={customCatActivites} matchScore={matchActif?calculerScoreMatch(a,enfantCourantBiblio):undefined} onMasquer={toggleMasquer?()=>toggleMasquer(a,"activite"):undefined} estMasque={estMasque?estMasque(a,"activite"):false} estBoostee={estBoosteItem(a,"activite")}/>
               ))}
             </div>
             <div style={{background:"#FFFBEB",borderRadius:12,padding:"10px 14px",marginTop:14,border:"1px solid #FDE68A",display:"flex",gap:10,alignItems:"flex-start"}}><span style={{fontSize:16,flexShrink:0}}>👶</span><p style={{margin:0,fontSize:12,color:"#92400E",lineHeight:1.5}}>Les activites proposees doivent etre destinees aux enfants.</p></div>
@@ -2582,10 +2608,11 @@ function PageBiblio({pendingContribs=[],setPendingContribs,adminActivites=[],adm
 
             <div style={{display:"flex",alignItems:"center",gap:8,margin:"0 0 14px"}}>
               <span style={{fontSize:16}}>💡</span>
-              <div>
+              <div style={{flex:1}}>
                 <p style={{margin:0,fontSize:14,fontWeight:700,color:TX}}>Suggestions pour vous</p>
                 <p style={{margin:0,fontSize:11,color:TM}}>Des idées de sorties adaptées</p>
               </div>
+              <button onClick={()=>{if(!isLoggedIn){onRequireAuth&&onRequireAuth();return;}setDetail({item:null,type:"form_sortie"});}} style={{width:36,height:36,borderRadius:"50%",background:"#27AE60",border:"none",color:"#fff",fontSize:20,fontWeight:600,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,boxShadow:"0 2px 8px rgba(39,174,96,0.3)"}} title="Proposer une sortie">+</button>
             </div>
 
             <div>
@@ -2601,7 +2628,7 @@ function PageBiblio({pendingContribs=[],setPendingContribs,adminActivites=[],adm
                 </div>
               )}
               {sortFiltered.filter(s=>(sigSort[s.id]||0)<3).map(s=>(
-                <SortieCard key={s.id} s={s} onClick={()=>setDetail({item:s,type:"sortie"})} onReport={addReport} isFav={isFavBiblio(s,"sortie")} onToggleFav={()=>toggleFavBiblio(s,"sortie")} customCatSorties={customCatSorties} onMasquer={toggleMasquer?()=>toggleMasquer(s,"sortie"):undefined} estMasque={estMasque?estMasque(s,"sortie"):false}/>
+                <SortieCard key={s.id} s={s} onClick={()=>setDetail({item:s,type:"sortie"})} onReport={addReport} isFav={isFavBiblio(s,"sortie")} onToggleFav={()=>toggleFavBiblio(s,"sortie")} customCatSorties={customCatSorties} onMasquer={toggleMasquer?()=>toggleMasquer(s,"sortie"):undefined} estMasque={estMasque?estMasque(s,"sortie"):false} estBoostee={estBoosteItem(s,"sortie")}/>
               ))}
             </div>
             <div style={{background:"#FFFBEB",borderRadius:12,padding:"10px 14px",marginTop:14,border:"1px solid #FDE68A",display:"flex",gap:10,alignItems:"flex-start"}}><span style={{fontSize:16,flexShrink:0}}>👶</span><p style={{margin:0,fontSize:12,color:"#92400E",lineHeight:1.5}}>Les sorties proposees doivent etre adaptees aux enfants.</p></div>
@@ -2623,6 +2650,14 @@ function PageBiblio({pendingContribs=[],setPendingContribs,adminActivites=[],adm
               })}
             </div>
             <FiltresEvt/>
+            <div style={{display:"flex",alignItems:"center",gap:8,margin:"0 0 14px"}}>
+              <span style={{fontSize:16}}>💡</span>
+              <div style={{flex:1}}>
+                <p style={{margin:0,fontSize:14,fontWeight:700,color:TX}}>Suggestions pour vous</p>
+                <p style={{margin:0,fontSize:11,color:TM}}>Des événements à ne pas manquer</p>
+              </div>
+              <button onClick={()=>{if(!isLoggedIn){onRequireAuth&&onRequireAuth();return;}setShowFormEvt(true);}} style={{width:36,height:36,borderRadius:"50%",background:"#F97316",border:"none",color:"#fff",fontSize:20,fontWeight:600,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,boxShadow:"0 2px 8px rgba(249,115,22,0.3)"}} title="Proposer un événement">+</button>
+            </div>
             {evtView==="calendrier"&&(
               <div>
                 {Object.keys(byDate).sort().map(date=>{
@@ -2665,7 +2700,15 @@ function PageBiblio({pendingContribs=[],setPendingContribs,adminActivites=[],adm
       {detail&&detail.type==="activite"&&<ActivityDetailPage activity={detail.item} isFavorite={isFavBiblio(detail.item,"activite")} onToggleFavorite={()=>toggleFavBiblio(detail.item,"activite")} onBack={()=>setDetail(null)} onReport={addReport} isLoggedIn={isLoggedIn} onRequireAuth={onRequireAuth} matchEnfant={matchActif?enfantCourantBiblio:null} onMasquer={toggleMasquer?()=>toggleMasquer(detail.item,"activite"):undefined} estMasque={estMasque?estMasque(detail.item,"activite"):false}/>}
       {detail&&detail.type==="sortie"&&<SortieDetailPage sortie={detail.item} isFavorite={isFavBiblio(detail.item,"sortie")} onToggleFavorite={()=>toggleFavBiblio(detail.item,"sortie")} onBack={()=>setDetail(null)} onReport={addReport} isLoggedIn={isLoggedIn} onRequireAuth={onRequireAuth} onMasquer={toggleMasquer?()=>toggleMasquer(detail.item,"sortie"):undefined} estMasque={estMasque?estMasque(detail.item,"sortie"):false}/>}
       {detail&&detail.type==="form_activite"&&<FormActivite customCatActivites={customCatActivites} onClose={()=>setDetail(null)} onSubmit={(item)=>{setPendingContribs(prev=>[{...item,id:Date.now(),_type:"activite",_createdAt:new Date().toISOString(),_statut:"published",_signalements:0,_raisonSignalement:"",_auteur:currentUser?.nom||"Anonyme",_auteurEmail:currentUser?.email||"non connecté"},...prev]);setDetail(null);showToast("✅ Activité publiée et visible dans la bibliothèque !");}}/>}
-      {detail&&detail.type==="form_sortie"&&<FormSortie customCatSorties={customCatSorties} onClose={()=>setDetail(null)} onSubmit={(item)=>{setPendingContribs(prev=>[{...item,id:Date.now(),_type:"sortie",_createdAt:new Date().toISOString(),_statut:"published",_signalements:0,_raisonSignalement:"",_auteur:currentUser?.nom||"Anonyme",_auteurEmail:currentUser?.email||"non connecté"},...prev]);setDetail(null);showToast("✅ Sortie publiée et visible dans la bibliothèque !");}}/>}
+      {detail&&detail.type==="form_sortie"&&<FormSortie customCatSorties={customCatSorties} onClose={()=>setDetail(null)} onSubmit={(item)=>{
+        const newItem={...item,id:Date.now(),_type:"sortie",_createdAt:new Date().toISOString(),_statut:"published",_signalements:0,_raisonSignalement:"",_auteur:currentUser?.nom||"Anonyme",_auteurEmail:currentUser?.email||"non connecté"};
+        setPendingContribs(prev=>[newItem,...prev]);
+        if(item._demandeBoost&&ajouterDemandeDevisBoost){
+          ajouterDemandeDevisBoost({item:newItem,itemType:"sortie",nom:currentUser?.nom||"Anonyme",email:currentUser?.email||"non renseigné",message:"Demande faite à la soumission de la sortie.",date:new Date().toISOString()});
+        }
+        setDetail(null);
+        showToast(item._demandeBoost?"✅ Sortie publiée ! Votre demande de boost a été transmise à l'équipe.":"✅ Sortie publiée et visible dans la bibliothèque !");
+      }}/>}
       {evtDetail&&<EvenementDetail evt={evtDetail} onBack={()=>setEvtDetail(null)} onReport={addReport} isFavorite={isFavBiblio(evtDetail,"evenement")} onToggleFavorite={()=>toggleFavBiblio(evtDetail,"evenement")} isLoggedIn={isLoggedIn} onRequireAuth={onRequireAuth} customCatEvenements={customCatEvenements}/>}
       {showFormEvt&&(<FormEvenement customCatEvenements={customCatEvenements} onClose={()=>{setShowFormEvt(false);setTypeEvtForm("");setTypeAutreForm("");}} onSubmit={handleSubmitEvt} onOpenAutrePopup={()=>{setTypeAutreTemp(typeAutreForm);setShowAutrePopup(true);}} typeAutre={typeAutreForm} typeEvt={typeEvtForm} setTypeEvt={setTypeEvtForm}/>)}
       {showAutrePopup&&(<div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.6)",zIndex:9999,display:"flex",alignItems:"center",justifyContent:"center",padding:"0 24px"}}><div style={{background:WH,borderRadius:20,padding:24,width:"100%",maxWidth:320,boxShadow:"0 8px 40px rgba(0,0,0,0.25)"}}><p style={{margin:"0 0 4px",fontSize:16,fontWeight:700,color:TX,textAlign:"center"}}>Autre type</p><input value={typeAutreTemp} onChange={e=>setTypeAutreTemp(e.target.value)} placeholder="Ex : Festival, Portes ouvertes..." style={{padding:"12px 14px",borderRadius:12,border:"1.5px solid "+V,fontSize:14,width:"100%",boxSizing:"border-box",fontFamily:"inherit",outline:"none",marginBottom:16}}/><div style={{display:"flex",gap:10}}><button onClick={()=>setShowAutrePopup(false)} style={{flex:1,padding:"11px 0",borderRadius:28,background:BG,border:"1px solid #E5E7EB",color:TX,fontSize:14,cursor:"pointer"}}>Annuler</button><button onClick={()=>{if(typeAutreTemp.trim()){setTypeAutreForm(typeAutreTemp.trim());setTypeEvtForm("autre");}setShowAutrePopup(false);}} style={{flex:1,padding:"11px 0",borderRadius:28,background:V,border:"none",color:WH,fontWeight:600,fontSize:14,cursor:"pointer"}}>Confirmer</button></div></div></div>)}
@@ -3094,7 +3137,7 @@ function EvtGenerateur({evt,activites,favoris,setFavoris,isPremium=false}){
       </div>
       {genListe?(
         <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:12}}>
-          <p style={{margin:"0 0 2px",fontSize:11,color:TM,textAlign:"center"}}>⭐ Passe en Premium pour une seule proposition en un clic</p>
+          <p style={{margin:"0 0 2px",fontSize:11,color:TM,textAlign:"center"}}>⭐ Passe en Premium pour des propositions triées selon le profil de ton enfant</p>
           {genListe.map((item,i)=>(
             <div key={item.id||i} style={{background:WH,borderRadius:14,padding:"12px 14px",border:"1px solid rgba(0,0,0,0.06)"}}>
               <div style={{display:"flex",gap:8,marginBottom:6,flexWrap:"wrap"}}>
@@ -3131,7 +3174,7 @@ function EvtGenerateur({evt,activites,favoris,setFavoris,isPremium=false}){
   );
 }
 
-function PageAccueil({favoris,setFavoris,setPage,customEvents=[],popupShown=new Set(),setPopupShown,ideesMomentConfig=[],isLoggedIn=true,onRequireAuth,evenementsSaisonniers=[],isPremium=false,onOpenPremium,customCatActivites=[],customCatSorties=[],customCatEvenements=[],adminActivites=[],adminSorties=[],pendingContribs=[],setPendingContribs,deletedTitles=new Set(),currentUser=null,sosModeActif=true,enfants=[],enfantActif=null,setEnfantActif,onMarquerFait,historiqueActivites=[],filtresMemoActiv={},setFiltresMemoActiv,filtresMemoSortie={},setFiltresMemoSortie,adminComms=[],masquees=[],toggleMasquer,estMasque}){
+function PageAccueil({favoris,setFavoris,setPage,customEvents=[],popupShown=new Set(),setPopupShown,ideesMomentConfig=[],isLoggedIn=true,onRequireAuth,evenementsSaisonniers=[],isPremium=false,onOpenPremium,customCatActivites=[],customCatSorties=[],customCatEvenements=[],adminActivites=[],adminSorties=[],pendingContribs=[],setPendingContribs,deletedTitles=new Set(),currentUser=null,sosModeActif=true,enfants=[],enfantActif=null,setEnfantActif,onMarquerFait,historiqueActivites=[],filtresMemoActiv={},setFiltresMemoActiv,filtresMemoSortie={},setFiltresMemoSortie,adminComms=[],masquees=[],toggleMasquer,estMasque,ajouterDemandeDevisBoost,trialEndDate=null}){
   const FAVORIS_LIMITE_GRATUIT=10;
   const [showFavorisLimitMsg,setShowFavorisLimitMsg]=useState(false);
   const [rappelAnticiper,setRappelAnticiper]=useState(null); // item activité récemment marquée "fait"
@@ -3420,6 +3463,26 @@ function PageAccueil({favoris,setFavoris,setPage,customEvents=[],popupShown=new 
             </div>
           </div>
         ))}
+
+        {/* Rappel fin d'essai gratuit dans les 3 derniers jours */}
+        {(()=>{
+          if(!trialEndDate)return null;
+          const finEssai=new Date(trialEndDate);
+          const joursRestants=Math.ceil((finEssai-new Date())/(1000*60*60*24));
+          if(joursRestants<0||joursRestants>3)return null;
+          return(
+            <div onClick={()=>onOpenPremium&&onOpenPremium()} style={{background:"linear-gradient(135deg,#F59E0B,#FBBF24)",borderRadius:14,padding:"12px 16px",marginBottom:10,display:"flex",alignItems:"center",gap:10,cursor:"pointer"}}>
+              <span style={{fontSize:20,flexShrink:0}}>⏳</span>
+              <div style={{flex:1}}>
+                <p style={{margin:"0 0 2px",fontSize:13,fontWeight:700,color:"#fff"}}>
+                  {joursRestants<=0?"Ton essai gratuit se termine aujourd'hui !":`Ton essai gratuit se termine dans ${joursRestants} jour${joursRestants>1?"s":""}`}
+                </p>
+                <p style={{margin:0,fontSize:12,color:"rgba(255,255,255,0.9)"}}>Sans action, le prélèvement de 4,99€/mois démarrera automatiquement.</p>
+              </div>
+              <span style={{fontSize:16,color:"#fff",flexShrink:0}}>→</span>
+            </div>
+          );
+        })()}
 
         {/* Rappel créer profil enfant */}
           {isLoggedIn&&enfants.length===0&&(
@@ -4819,12 +4882,12 @@ function PagePremium({onBack,onSubscribe,isLoggedIn=true,onRequireAuth,premiumTr
       gratuit:"10 favoris maximum",
     },
     {
-      emoji:"🪄",titre:"Générateur en 1 clic",desc:"Une seule proposition directe, sans liste",
-      illustration:"🪄⚡🎯",
-      valeur:"Décision immédiate",
-      detail:"Au lieu de choisir parmi 3 propositions, recevez directement LA meilleure activité adaptée à votre enfant. Le générateur tient compte du profil sensoriel, de l'historique et des préférences.",
-      exemple:"Un clic → 'Peinture aux doigts 🎨' — c'est tout, pas de choix à faire.",
-      gratuit:"3 propositions à choisir",
+      emoji:"🪄",titre:"Générateur adapté à l'enfant",desc:"3 propositions triées selon son profil",
+      illustration:"🪄🎯💜",
+      valeur:"Suggestions pertinentes",
+      detail:"Toujours 3 propositions comme en gratuit, mais triées et scorées selon le profil sensoriel et les besoins de votre enfant. Un badge de compatibilité indique en un coup d'œil les activités les mieux adaptées.",
+      exemple:"🟢 Très adapté · 🟡 Adapté · ⚪ À tester — pour chaque proposition.",
+      gratuit:"3 propositions non triées",
     },
   ];
 
@@ -4888,13 +4951,17 @@ function PagePremium({onBack,onSubscribe,isLoggedIn=true,onRequireAuth,premiumTr
     setShowPaiement(true);
   };
 
+  const [erreursPaiement,setErreursPaiement]=useState({});
   const confirmerPaiement=()=>{
     const numPropre=carteNum.replace(/\s/g,"");
-    if(!nomCarte.trim()){alert("Veuillez saisir le nom du titulaire.");return;}
-    if(!emailPaiement.trim()||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailPaiement)){alert("Adresse email invalide.");return;}
-    if(numPropre.length<16){alert("Numéro de carte invalide (16 chiffres requis).");return;}
-    if(!carteExp.match(/^\d{2}\/\d{2}$/)){ alert("Date d'expiration invalide (format MM/AA)."); return; }
-    if(!carteCvc.match(/^\d{3,4}$/)){ alert("CVC invalide (3 ou 4 chiffres)."); return; }
+    const e={};
+    if(!nomCarte.trim())e.nomCarte="Nom du titulaire requis";
+    if(!emailPaiement.trim()||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailPaiement))e.email="Adresse email invalide";
+    if(numPropre.length<16)e.numero="Numéro de carte invalide (16 chiffres requis)";
+    if(!carteExp.match(/^\d{2}\/\d{2}$/))e.expiration="Format MM/AA requis";
+    if(!carteCvc.match(/^\d{3,4}$/))e.cvc="CVC invalide";
+    setErreursPaiement(e);
+    if(Object.keys(e).length>0)return;
     setTraitement(true);
     setTimeout(()=>{
       setTraitement(false);
@@ -4949,7 +5016,7 @@ function PagePremium({onBack,onSubscribe,isLoggedIn=true,onRequireAuth,premiumTr
             <span style={{fontSize:11,fontWeight:700,color:V,textAlign:"center",width:52}}>⭐ Premium</span>
           </div>
           {[
-            ["Générateur d'activités","3 choix","1 clic"],
+            ["Générateur d'activités","3 choix","3 choix triés"],
             ["Profils enfants","2 max","6 max"],
             ["Favoris","10 max","Illimités"],
             ["Planning hebdomadaire","3 jours","7 jours"],
@@ -5030,26 +5097,34 @@ function PagePremium({onBack,onSubscribe,isLoggedIn=true,onRequireAuth,premiumTr
             {/* Champs carte */}
             <div style={{marginBottom:14}}>
               <label style={{fontSize:12,color:TM,display:"block",marginBottom:6}}>Email de confirmation *</label>
-              <input value={emailPaiement} onChange={e=>setEmailPaiement(e.target.value)} placeholder="votre@email.fr" type="email" inputMode="email" style={FS}/>
+              <input value={emailPaiement} onChange={e=>setEmailPaiement(e.target.value)} placeholder="votre@email.fr" type="email" inputMode="email" style={{...FS,border:erreursPaiement.email?"1.5px solid #EF4444":FS.border}}/>
+              {erreursPaiement.email&&<p style={{margin:"4px 0 0",fontSize:11,color:"#EF4444"}}>{erreursPaiement.email}</p>}
             </div>
             <div style={{marginBottom:14}}>
               <label style={{fontSize:12,color:TM,display:"block",marginBottom:6}}>Titulaire de la carte *</label>
-              <input value={nomCarte} onChange={e=>setNomCarte(e.target.value)} placeholder="PRÉNOM NOM" style={FS}/>
+              <input value={nomCarte} onChange={e=>setNomCarte(e.target.value)} placeholder="PRÉNOM NOM" style={{...FS,border:erreursPaiement.nomCarte?"1.5px solid #EF4444":FS.border}}/>
+              {erreursPaiement.nomCarte&&<p style={{margin:"4px 0 0",fontSize:11,color:"#EF4444"}}>{erreursPaiement.nomCarte}</p>}
             </div>
             <div style={{marginBottom:14}}>
               <label style={{fontSize:12,color:TM,display:"block",marginBottom:6}}>Numéro de carte *</label>
-              <input value={carteNum} onChange={e=>{const v=e.target.value.replace(/\D/g,"").slice(0,16);setCarteNum(v.replace(/(.{4})/g,"$1 ").trim());}} placeholder="1234 5678 9012 3456" maxLength={19} inputMode="numeric" style={FS}/>
+              <input value={carteNum} onChange={e=>{const v=e.target.value.replace(/\D/g,"").slice(0,16);setCarteNum(v.replace(/(.{4})/g,"$1 ").trim());}} placeholder="1234 5678 9012 3456" maxLength={19} inputMode="numeric" style={{...FS,border:erreursPaiement.numero?"1.5px solid #EF4444":FS.border}}/>
+              {erreursPaiement.numero&&<p style={{margin:"4px 0 0",fontSize:11,color:"#EF4444"}}>{erreursPaiement.numero}</p>}
             </div>
             <div style={{display:"flex",gap:10,marginBottom:18}}>
               <div style={{flex:1}}>
                 <label style={{fontSize:12,color:TM,display:"block",marginBottom:6}}>Expiration *</label>
-                <input value={carteExp} onChange={e=>{const v=e.target.value.replace(/\D/g,"").slice(0,4);setCarteExp(v.length>2?v.slice(0,2)+"/"+v.slice(2):v);}} placeholder="MM/AA" maxLength={5} inputMode="numeric" style={FS}/>
+                <input value={carteExp} onChange={e=>{const v=e.target.value.replace(/\D/g,"").slice(0,4);setCarteExp(v.length>2?v.slice(0,2)+"/"+v.slice(2):v);}} placeholder="MM/AA" maxLength={5} inputMode="numeric" style={{...FS,border:erreursPaiement.expiration?"1.5px solid #EF4444":FS.border}}/>
+                {erreursPaiement.expiration&&<p style={{margin:"4px 0 0",fontSize:11,color:"#EF4444"}}>{erreursPaiement.expiration}</p>}
               </div>
               <div style={{flex:1}}>
                 <label style={{fontSize:12,color:TM,display:"block",marginBottom:6}}>CVC *</label>
-                <input value={carteCvc} onChange={e=>{const v=e.target.value.replace(/\D/g,"").slice(0,4);setCarteCvc(v);}} placeholder="123" maxLength={4} inputMode="numeric" style={FS}/>
+                <input value={carteCvc} onChange={e=>{const v=e.target.value.replace(/\D/g,"").slice(0,4);setCarteCvc(v);}} placeholder="123" maxLength={4} inputMode="numeric" style={{...FS,border:erreursPaiement.cvc?"1.5px solid #EF4444":FS.border}}/>
+                {erreursPaiement.cvc&&<p style={{margin:"4px 0 0",fontSize:11,color:"#EF4444"}}>{erreursPaiement.cvc}</p>}
               </div>
             </div>
+
+            {/* Mention démo */}
+            <p style={{margin:"0 0 12px",fontSize:10,color:TM,textAlign:"center"}}>⚠️ Démo — simulation de paiement, aucune carte n'est réellement débitée.</p>
 
             {/* Rappel légal */}
             <div style={{background:"#FFF7ED",borderRadius:12,padding:"10px 14px",marginBottom:16,border:"1px solid #FDE68A"}}>
@@ -5157,7 +5232,7 @@ function PageAide({onBack,onGoConfidentialite,isPremium=false,setPremium,onOpenP
     {categorie:"🏠 General",couleur:"#EEEDFE",couleurTexte:"#3C3489",questions:[
       {id:"g1",question:"Comment fonctionne le generateur d activites ?",reponse:"Selectionne ton niveau d energie (Fatigue ou Motive) et le lieu souhaite (Interieur ou Exterieur), puis clique sur Trouve-moi une activite. L app te propose une activite adaptee parmi notre catalogue."},
       {id:"g2",question:"Comment ajouter une activite ou sortie en favori ?",reponse:"Sur la page detail d une activite ou sortie, clique sur le bouton Ajouter aux favoris. Tu retrouveras tous tes favoris dans l onglet Favoris de la barre de navigation."},
-      {id:"g3",question:"C est quoi la version Premium ?",reponse:"La version Premium debloque le planning hebdomadaire, le mode SOS, les profils enfants illimites, le carnet sensoriel, l emploi du temps en pictogrammes, les favoris illimites (contre 10 en version gratuite), et le generateur en un clic (au lieu d une liste de 3 propositions a comparer)."},
+      {id:"g3",question:"C est quoi la version Premium ?",reponse:"La version Premium debloque le planning hebdomadaire, le mode SOS, les profils enfants illimites, le carnet sensoriel, l emploi du temps en pictogrammes, les favoris illimites (contre 10 en version gratuite), et le generateur adapte a l enfant (les 3 propositions sont triees et scorees selon son profil sensoriel)."},
       {id:"g4",question:"L app fonctionne-t-elle sans connexion internet ?",reponse:"Le contenu principal est disponible hors connexion une fois charge. Cependant, certaines fonctionnalites comme les suggestions communautaires necessitent une connexion."},
     ]},
     {categorie:"✍️ Contributions",couleur:"#EAF3DE",couleurTexte:"#3B6D11",questions:[
@@ -5288,7 +5363,7 @@ function PageAide({onBack,onGoConfidentialite,isPremium=false,setPremium,onOpenP
         <div onClick={()=>setShowAnnulerModal(false)} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.5)",zIndex:600,display:"flex",alignItems:"center",justifyContent:"center",padding:"0 24px"}}>
           <div onClick={e=>e.stopPropagation()} style={{background:WH,borderRadius:20,padding:24,width:"100%",maxWidth:340,boxShadow:"0 8px 32px rgba(0,0,0,0.18)"}}>
             <p style={{margin:"0 0 8px",fontSize:16,fontWeight:800,color:TX,textAlign:"center"}}>Annuler ton abonnement ?</p>
-            <p style={{margin:"0 0 20px",fontSize:13,color:TM,textAlign:"center",lineHeight:1.5}}>Tu perdras l'accès au planning, au mode SOS, aux profils enfants illimités, au carnet sensoriel, à l'emploi du temps pictogrammes, aux favoris illimités et au générateur en 1 clic.</p>
+            <p style={{margin:"0 0 20px",fontSize:13,color:TM,textAlign:"center",lineHeight:1.5}}>Tu perdras l'accès au planning, au mode SOS, aux profils enfants illimités, au carnet sensoriel, à l'emploi du temps pictogrammes, aux favoris illimités et au générateur adapté à l'enfant.</p>
             <button onClick={confirmerAnnulation} style={{width:"100%",padding:13,borderRadius:28,background:"#DC2626",border:"none",color:WH,fontWeight:700,fontSize:14,cursor:"pointer",marginBottom:8}}>Confirmer l'annulation</button>
             <button onClick={()=>setShowAnnulerModal(false)} style={{width:"100%",padding:11,borderRadius:28,background:"none",border:"none",color:TM,fontSize:13,cursor:"pointer"}}>Garder Premium</button>
           </div>
@@ -6420,7 +6495,8 @@ function PictogrammeView({ onBack, isPremium = false, onOpenPremium, adminEvenem
   );
 }
 
-function PageProfil({setPage,enfants=[],setEnfants,enfantActif,setEnfantActif,showGestionEnfants,setShowGestionEnfants,currentUser,onLogout,onRequireAuth,isPremium=false,setPremium,evenementsSaisonniers=[],onOpenPremium,onDeleteAccount,favoris=[],adminEvenements=[],pendingContribs=[],darkMode=false,setDarkMode,historiqueActivites=[],setHistoriqueActivites}){
+function PageProfil({setPage,enfants=[],setEnfants,enfantActif,setEnfantActif,showGestionEnfants,setShowGestionEnfants,currentUser,onLogout,onRequireAuth,isPremium=false,setPremium,evenementsSaisonniers=[],onOpenPremium,onDeleteAccount,favoris=[],adminEvenements=[],pendingContribs=[],darkMode=false,setDarkMode,historiqueActivites=[],setHistoriqueActivites,estBooste,activerBoost,ajouterDemandeDevisBoost}){
+  const [boostItem,setBoostItem]=useState(null);
   const isLoggedIn=!!currentUser;
   const [subPage,setSubPage]=useState(null);
   const [profil,setProfil]=useState({nom:currentUser?.nom||"",pseudo:"",photo:null});
@@ -6586,7 +6662,7 @@ function PageProfil({setPage,enfants=[],setEnfants,enfantActif,setEnfantActif,sh
             </div>
             <div style={{background:"linear-gradient(135deg,#EDE9FF,#F5F0FF)",borderRadius:12,padding:"10px 12px",border:`1px solid ${VL}`,marginBottom:10}}>
               <p style={{margin:"0 0 4px",fontSize:12,fontWeight:700,color:V}}>⭐ Avec Premium en plus :</p>
-              <p style={{margin:0,fontSize:11,color:TM,lineHeight:1.5}}>Planning hebdomadaire · Mode SOS · Profils enfants illimités · Carnet sensoriel · Emploi du temps pictogrammes · Favoris illimités · Générateur en 1 clic</p>
+              <p style={{margin:0,fontSize:11,color:TM,lineHeight:1.5}}>Planning hebdomadaire · Mode SOS · Profils enfants illimités · Carnet sensoriel · Emploi du temps pictogrammes · Favoris illimités · Générateur adapté à l'enfant</p>
             </div>
             {(()=>{
               const evtSaisonActif=evenementsSaisonniers.find(e=>e.actif&&e.essaiActif===false);
@@ -6598,25 +6674,6 @@ function PageProfil({setPage,enfants=[],setEnfants,enfantActif,setEnfantActif,sh
               );
             })()}
             <button onClick={()=>onOpenPremium?onOpenPremium():setPremium&&setPremium(true)} style={{width:"100%",padding:12,borderRadius:14,background:V,border:"none",color:WH,fontWeight:700,fontSize:13,cursor:"pointer"}}>⭐ Voir Premium</button>
-          </div>
-        )}
-
-        {/* 🧪 Bouton Essai Démo Premium */}
-        {!isPremium&&(
-          <div style={{background:"linear-gradient(135deg,#6C5CE7,#a78bfa)",borderRadius:16,padding:"14px 16px",marginBottom:12,display:"flex",alignItems:"center",gap:12}}>
-            <span style={{fontSize:28,flexShrink:0}}>⭐</span>
-            <div style={{flex:1}}>
-              <p style={{margin:"0 0 2px",fontSize:13,fontWeight:700,color:"#fff"}}>Tester le mode Premium</p>
-              <p style={{margin:0,fontSize:11,color:"rgba(255,255,255,0.8)"}}>Accès à toutes les fonctionnalités sans compte</p>
-            </div>
-            <button onClick={()=>setPremium&&setPremium(true)} style={{background:"#fff",border:"none",borderRadius:20,padding:"8px 16px",color:"#6C5CE7",fontWeight:700,fontSize:12,cursor:"pointer",flexShrink:0}}>Essai démo</button>
-          </div>
-        )}
-        {isPremium&&(
-          <div style={{background:"#ECFDF5",borderRadius:16,padding:"12px 16px",marginBottom:12,display:"flex",alignItems:"center",gap:10,border:"1px solid #A7F3D0"}}>
-            <span style={{fontSize:20}}>✅</span>
-            <p style={{margin:0,fontSize:13,fontWeight:600,color:"#065F46",flex:1}}>Mode Premium actif</p>
-            <button onClick={()=>setPremium&&setPremium(false)} style={{background:"none",border:"1px solid #A7F3D0",borderRadius:20,padding:"6px 12px",color:"#065F46",fontSize:11,cursor:"pointer"}}>Désactiver</button>
           </div>
         )}
 
@@ -6730,7 +6787,23 @@ function PageProfil({setPage,enfants=[],setEnfants,enfantActif,setEnfantActif,sh
                   ))}
                 </div>
               )}
-              {publiees.length>0&&<p style={{margin:"0 0 6px",fontSize:12,color:"#10B981",fontWeight:600}}>✅ {publiees.length} publiée{publiees.length>1?"s":""}</p>}
+              {publiees.length>0&&(
+                <div style={{marginBottom:6}}>
+                  <p style={{margin:"0 0 8px",fontSize:12,color:"#10B981",fontWeight:600}}>✅ {publiees.length} publiée{publiees.length>1?"s":""}</p>
+                  <div style={{display:"flex",flexDirection:"column",gap:6}}>
+                    {publiees.map(c=>{
+                      const itemType=c._type||"activite";
+                      const booste=estBooste?estBooste(c,itemType):false;
+                      return(
+                        <div key={c.id} style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:8,background:booste?"#FFF7ED":BG,borderRadius:10,padding:"8px 10px",border:booste?"1px solid #F59E0B":"none"}}>
+                          <span style={{fontSize:12,color:TX,flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{booste&&"🚀 "}{c.nom||c.titre}</span>
+                          <button onClick={()=>setBoostItem({...c,_type:itemType})} style={{fontSize:11,fontWeight:700,color:booste?"#9A3412":V,background:"none",border:"none",cursor:"pointer",flexShrink:0,padding:0}}>{booste?"Boosté ✓":"🚀 Booster"}</button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
               {enAttente.length>0&&<p style={{margin:0,fontSize:12,color:TM}}>⏳ {enAttente.length} en attente de validation</p>}
             </div>
           );
@@ -6867,18 +6940,12 @@ function PageProfil({setPage,enfants=[],setEnfants,enfantActif,setEnfantActif,sh
           onRequireAuth&&<button onClick={onRequireAuth} style={{width:"100%",padding:12,borderRadius:14,background:V,border:"none",color:WH,fontWeight:700,fontSize:13,cursor:"pointer",marginBottom:12}}>🔓 Se connecter / Créer un compte</button>
         )}
 
-        {/* Boutons discrets */}
-        <div style={{display:"flex",justifyContent:"center",gap:16,marginBottom:12,flexWrap:"wrap"}}>
-          <button onClick={addContrib} style={{background:"none",border:"none",color:"#ccc",fontSize:11,cursor:"pointer",padding:"4px 10px"}}>[Test] +1 contribution</button>
-          <button onClick={()=>{if(!isLoggedIn){onRequireAuth&&onRequireAuth();return;}setPremium&&setPremium(!isPremium);}} style={{background:"none",border:"none",color:"#ccc",fontSize:11,cursor:"pointer",padding:"4px 10px"}}>[Test] Activer/Désactiver Premium</button>
-        </div>
-
         {/* Modal annulation Premium */}
         {showAnnulerModal&&(
           <div onClick={()=>setShowAnnulerModal(false)} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.5)",zIndex:600,display:"flex",alignItems:"center",justifyContent:"center",padding:"0 24px"}}>
             <div onClick={e=>e.stopPropagation()} style={{background:WH,borderRadius:20,padding:24,width:"100%",maxWidth:340,boxShadow:"0 8px 32px rgba(0,0,0,0.18)"}}>
               <p style={{margin:"0 0 8px",fontSize:16,fontWeight:800,color:TX,textAlign:"center"}}>Annuler ton abonnement ?</p>
-              <p style={{margin:"0 0 20px",fontSize:13,color:TM,textAlign:"center",lineHeight:1.5}}>Tu perdras l'accès au planning, au mode SOS, aux profils enfants illimités, au carnet sensoriel, à l'emploi du temps pictogrammes, aux favoris illimités et au générateur en 1 clic.</p>
+              <p style={{margin:"0 0 20px",fontSize:13,color:TM,textAlign:"center",lineHeight:1.5}}>Tu perdras l'accès au planning, au mode SOS, aux profils enfants illimités, au carnet sensoriel, à l'emploi du temps pictogrammes, aux favoris illimités et au générateur adapté à l'enfant.</p>
               <button onClick={confirmerAnnulationPremium} style={{width:"100%",padding:13,borderRadius:28,background:"#DC2626",border:"none",color:WH,fontWeight:700,fontSize:14,cursor:"pointer",marginBottom:8}}>Confirmer l'annulation</button>
               <button onClick={()=>setShowAnnulerModal(false)} style={{width:"100%",padding:11,borderRadius:28,background:"none",border:"none",color:TM,fontSize:13,cursor:"pointer"}}>Garder Premium</button>
             </div>
@@ -6922,6 +6989,14 @@ function PageProfil({setPage,enfants=[],setEnfants,enfantActif,setEnfantActif,sh
           </div>
         </div>
       </div>
+
+      {boostItem&&(
+        <ModalBoost
+          item={boostItem}
+          onClose={()=>setBoostItem(null)}
+          onDemandeDevis={(demande)=>{ajouterDemandeDevisBoost&&ajouterDemandeDevisBoost({...demande,itemType:boostItem._type});}}
+        />
+      )}
     </div>
   );
 }
@@ -7032,14 +7107,156 @@ const MOCK_RESSOURCES_PDF=[
   {nom:"Comprendre l'hypersensibilité sensorielle",type:"article",acces:"gratuit",prix:"",emoji:"🔊",tag:"Article",desc:"Ce que ressent un enfant hypersensible et comment l'accompagner au quotidien.",contenu:"L'hypersensibilité sensorielle touche une grande partie des enfants TSA et beaucoup d'enfants TDAH. Elle se manifeste par une réaction disproportionnée à certains stimuli : bruit, lumière, texture, odeur.\n\nCe que vit l'enfant\nUn bruit ordinaire pour vous (aspirateur, sonnerie, brouhaha) peut être vécu comme une agression physique par un enfant hypersensible. Ce n'est pas un caprice : c'est une réalité neurologique.\n\nComment repérer une surcharge sensorielle\nL'enfant se bouche les oreilles, se recroqueville, devient agité ou au contraire se fige, refuse le contact, pleure sans raison apparente identifiable pour un adulte.\n\nCe qui aide\n- Réduire les stimuli quand c'est possible (lumière tamisée, casque anti-bruit)\n- Prévenir avant un environnement bruyant ou nouveau\n- Proposer un espace de retrait disponible à tout moment\n- Ne jamais forcer le contact ou l'exposition brutale\n\nCe qu'il faut éviter\nMinimiser (\"ce n'est pas si fort\"), forcer l'enfant à \"s'habituer\", ou le gronder pour sa réaction. La régulation vient avec le temps et un environnement rassurant, pas avec la contrainte."},
 ];
 
+function ModalBoost({item,onClose,onDemandeDevis}){
+  const [mode,setMode]=useState("devis"); // devis | devis_envoye
+  const [nom,setNom]=useState("");
+  const [email,setEmail]=useState("");
+  const [message,setMessage]=useState("");
+
+  const envoyerDevis=()=>{
+    if(!nom.trim()||!email.trim())return;
+    onDemandeDevis&&onDemandeDevis({item,nom:nom.trim(),email:email.trim(),message:message.trim(),date:new Date().toISOString()});
+    setMode("devis_envoye");
+  };
+
+  return(
+    <div onClick={onClose} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.55)",zIndex:800,display:"flex",alignItems:"center",justifyContent:"center",padding:"24px 20px"}}>
+      <div onClick={e=>e.stopPropagation()} style={{background:WH,borderRadius:24,padding:24,width:"100%",maxWidth:390,maxHeight:"85vh",overflowY:"auto",boxSizing:"border-box",boxShadow:"0 12px 48px rgba(0,0,0,0.25)"}}>
+
+        {mode==="devis"&&(
+          <>
+            <div style={{textAlign:"center",marginBottom:16}}>
+              <p style={{fontSize:36,margin:"0 0 8px"}}>🚀</p>
+              <p style={{margin:"0 0 4px",fontSize:17,fontWeight:800,color:TX}}>Booster votre annonce</p>
+              <p style={{margin:0,fontSize:12,color:TM}}>"{item.nom||item.titre}"</p>
+            </div>
+            <p style={{margin:"0 0 16px",fontSize:12,color:TM,lineHeight:1.5}}>Une annonce boostée apparaît en priorité dans la bibliothèque avec un badge "Sponsorisé", pour plus de visibilité auprès des familles. Faites une demande, l'équipe vous recontactera avec une offre adaptée.</p>
+            <div style={{marginBottom:12}}>
+              <label style={{fontSize:12,color:TM,display:"block",marginBottom:5}}>Nom *</label>
+              <input value={nom} onChange={e=>setNom(e.target.value)} placeholder="Votre nom" style={{width:"100%",padding:"11px 14px",borderRadius:12,border:"1.5px solid rgba(108,92,231,0.2)",fontSize:14,boxSizing:"border-box",outline:"none"}}/>
+            </div>
+            <div style={{marginBottom:12}}>
+              <label style={{fontSize:12,color:TM,display:"block",marginBottom:5}}>Email *</label>
+              <input value={email} onChange={e=>setEmail(e.target.value)} placeholder="votre@email.fr" type="email" style={{width:"100%",padding:"11px 14px",borderRadius:12,border:"1.5px solid rgba(108,92,231,0.2)",fontSize:14,boxSizing:"border-box",outline:"none"}}/>
+            </div>
+            <div style={{marginBottom:16}}>
+              <label style={{fontSize:12,color:TM,display:"block",marginBottom:5}}>Message (optionnel)</label>
+              <textarea value={message} onChange={e=>setMessage(e.target.value)} placeholder="Précisez vos besoins, durée souhaitée..." rows={3} style={{width:"100%",padding:"11px 14px",borderRadius:12,border:"1.5px solid rgba(108,92,231,0.2)",fontSize:13,resize:"none",boxSizing:"border-box",outline:"none",fontFamily:"inherit"}}/>
+            </div>
+            <button onClick={envoyerDevis} disabled={!nom.trim()||!email.trim()} style={{width:"100%",padding:14,borderRadius:16,background:(!nom.trim()||!email.trim())?"#D1D5DB":V,border:"none",color:"#fff",fontWeight:700,fontSize:14,cursor:(!nom.trim()||!email.trim())?"default":"pointer",marginBottom:10}}>📩 Envoyer la demande</button>
+            <button onClick={onClose} style={{width:"100%",padding:10,background:"none",border:"none",color:TM,fontSize:12,cursor:"pointer"}}>Annuler</button>
+          </>
+        )}
+
+        {mode==="devis_envoye"&&(
+          <div style={{textAlign:"center",padding:"20px 0"}}>
+            <p style={{fontSize:48,margin:"0 0 10px"}}>✅</p>
+            <p style={{fontSize:16,fontWeight:800,color:TX,margin:"0 0 6px"}}>Demande envoyée !</p>
+            <p style={{fontSize:13,color:TM,margin:"0 0 20px",lineHeight:1.5}}>L'équipe vous recontactera par email pour vous proposer une offre adaptée.</p>
+            <button onClick={onClose} style={{padding:"10px 24px",borderRadius:20,background:V,border:"none",color:"#fff",fontWeight:700,fontSize:13,cursor:"pointer"}}>Fermer</button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function ModalPaiement({item,onClose,onSuccess}){
+  const [numero,setNumero]=useState("");
+  const [expiration,setExpiration]=useState("");
+  const [cvc,setCvc]=useState("");
+  const [nom,setNom]=useState("");
+  const [statut,setStatut]=useState("form"); // form | processing | success | error
+  const [erreurs,setErreurs]=useState({});
+
+  const formatNumero=(v)=>v.replace(/\D/g,"").slice(0,16).replace(/(\d{4})(?=\d)/g,"$1 ").trim();
+  const formatExpiration=(v)=>{const d=v.replace(/\D/g,"").slice(0,4);return d.length>2?d.slice(0,2)+"/"+d.slice(2):d;};
+
+  const valider=()=>{
+    const e={};
+    if(numero.replace(/\s/g,"").length<16)e.numero="Numéro de carte invalide";
+    if(!/^\d{2}\/\d{2}$/.test(expiration))e.expiration="Format MM/AA requis";
+    if(cvc.length<3)e.cvc="CVC invalide";
+    if(!nom.trim())e.nom="Nom requis";
+    setErreurs(e);
+    return Object.keys(e).length===0;
+  };
+
+  const payer=()=>{
+    if(!valider())return;
+    setStatut("processing");
+    setTimeout(()=>{
+      setStatut("success");
+      setTimeout(()=>{onSuccess();},1200);
+    },1400);
+  };
+
+  return(
+    <div onClick={statut==="form"?onClose:undefined} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.55)",zIndex:800,display:"flex",alignItems:"center",justifyContent:"center",padding:"24px 20px"}}>
+      <div onClick={e=>e.stopPropagation()} style={{background:WH,borderRadius:24,padding:24,width:"100%",maxWidth:380,boxSizing:"border-box",boxShadow:"0 12px 48px rgba(0,0,0,0.25)"}}>
+        {statut==="success"?(
+          <div style={{textAlign:"center",padding:"20px 0"}}>
+            <p style={{fontSize:48,margin:"0 0 10px"}}>✅</p>
+            <p style={{fontSize:16,fontWeight:800,color:TX,margin:"0 0 4px"}}>Paiement accepté</p>
+            <p style={{fontSize:12,color:TM,margin:0}}>Téléchargement en cours...</p>
+          </div>
+        ):statut==="processing"?(
+          <div style={{textAlign:"center",padding:"30px 0"}}>
+            <p style={{fontSize:36,margin:"0 0 10px"}}>⏳</p>
+            <p style={{fontSize:14,fontWeight:600,color:TX,margin:0}}>Traitement du paiement...</p>
+          </div>
+        ):(
+          <>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:6}}>
+              <div>
+                <p style={{margin:0,fontSize:16,fontWeight:800,color:TX}}>💳 Paiement sécurisé</p>
+                <p style={{margin:"2px 0 0",fontSize:12,color:TM}}>{item.nom}</p>
+              </div>
+              <button onClick={onClose} style={{background:BG,border:"none",borderRadius:"50%",width:30,height:30,cursor:"pointer",fontSize:13,flexShrink:0}}>✕</button>
+            </div>
+            <p style={{margin:"0 0 16px",fontSize:20,fontWeight:800,color:V}}>{item.prix}</p>
+
+            <div style={{marginBottom:12}}>
+              <label style={{fontSize:12,color:TM,display:"block",marginBottom:5}}>Numéro de carte</label>
+              <input value={numero} onChange={e=>setNumero(formatNumero(e.target.value))} placeholder="1234 5678 9012 3456" inputMode="numeric" style={{width:"100%",padding:"11px 14px",borderRadius:12,border:`1.5px solid ${erreurs.numero?"#EF4444":"rgba(108,92,231,0.2)"}`,fontSize:14,boxSizing:"border-box",outline:"none"}}/>
+              {erreurs.numero&&<p style={{margin:"3px 0 0",fontSize:11,color:"#EF4444"}}>{erreurs.numero}</p>}
+            </div>
+            <div style={{display:"flex",gap:10,marginBottom:12}}>
+              <div style={{flex:1}}>
+                <label style={{fontSize:12,color:TM,display:"block",marginBottom:5}}>Expiration</label>
+                <input value={expiration} onChange={e=>setExpiration(formatExpiration(e.target.value))} placeholder="MM/AA" inputMode="numeric" style={{width:"100%",padding:"11px 14px",borderRadius:12,border:`1.5px solid ${erreurs.expiration?"#EF4444":"rgba(108,92,231,0.2)"}`,fontSize:14,boxSizing:"border-box",outline:"none"}}/>
+                {erreurs.expiration&&<p style={{margin:"3px 0 0",fontSize:11,color:"#EF4444"}}>{erreurs.expiration}</p>}
+              </div>
+              <div style={{flex:1}}>
+                <label style={{fontSize:12,color:TM,display:"block",marginBottom:5}}>CVC</label>
+                <input value={cvc} onChange={e=>setCvc(e.target.value.replace(/\D/g,"").slice(0,4))} placeholder="123" inputMode="numeric" style={{width:"100%",padding:"11px 14px",borderRadius:12,border:`1.5px solid ${erreurs.cvc?"#EF4444":"rgba(108,92,231,0.2)"}`,fontSize:14,boxSizing:"border-box",outline:"none"}}/>
+                {erreurs.cvc&&<p style={{margin:"3px 0 0",fontSize:11,color:"#EF4444"}}>{erreurs.cvc}</p>}
+              </div>
+            </div>
+            <div style={{marginBottom:16}}>
+              <label style={{fontSize:12,color:TM,display:"block",marginBottom:5}}>Nom sur la carte</label>
+              <input value={nom} onChange={e=>setNom(e.target.value)} placeholder="Jean Dupont" style={{width:"100%",padding:"11px 14px",borderRadius:12,border:`1.5px solid ${erreurs.nom?"#EF4444":"rgba(108,92,231,0.2)"}`,fontSize:14,boxSizing:"border-box",outline:"none"}}/>
+              {erreurs.nom&&<p style={{margin:"3px 0 0",fontSize:11,color:"#EF4444"}}>{erreurs.nom}</p>}
+            </div>
+
+            <button onClick={payer} style={{width:"100%",padding:14,borderRadius:28,background:V,border:"none",color:"#fff",fontWeight:700,fontSize:14,cursor:"pointer",marginBottom:10}}>🔒 Payer {item.prix}</button>
+            <p style={{margin:0,fontSize:10,color:TM,textAlign:"center",lineHeight:1.5}}>⚠️ Démo — simulation de paiement, aucune carte n'est réellement débitée.</p>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function PageRessources({sites,contacts,pdfs,setPdfs,isPremium=false,onOpenPremium}){
   const RESSOURCES_SITES=sites&&sites.length>0?sites:MOCK_RESSOURCES_SITES;
   const RESSOURCES_CONTACTS=contacts&&contacts.length>0?contacts:MOCK_RESSOURCES_CONTACTS;
   const RESSOURCES_PDF=(pdfs&&pdfs.length>0?pdfs:MOCK_RESSOURCES_PDF).map((p,i)=>({...p,_idx:i}));
   const parsePrix=(str)=>{if(!str)return 0;const n=parseFloat(String(str).replace(",",".").replace(/[^\d.]/g,""));return isNaN(n)?0:n;};
+  const [toastMsg,setToastMsg]=useState(null);
+  const [paiementItem,setPaiementItem]=useState(null); // item en cours de paiement
   const enregistrerInteraction=(item,type)=>{
-    if(!setPdfs)return;
-    setPdfs(prev=>{
+    if(setPdfs)setPdfs(prev=>{
       const base=prev&&prev.length>0?prev:MOCK_RESSOURCES_PDF;
       return base.map((it,idx)=>{
         if(idx!==item._idx)return it;
@@ -7048,6 +7265,9 @@ function PageRessources({sites,contacts,pdfs,setPdfs,isPremium=false,onOpenPremi
         return {...it,telechargements,revenu};
       });
     });
+    const msg=type==="achat"?`🛒 Achat confirmé ! Téléchargement de "${item.nom}" en cours...`:`⬇️ Téléchargement de "${item.nom}" en cours...`;
+    setToastMsg(msg);
+    setTimeout(()=>setToastMsg(null),3500);
   };
   const [onglet,setOnglet]=useState("sites");
   const [articleOuvert,setArticleOuvert]=useState(null);
@@ -7059,7 +7279,7 @@ function PageRessources({sites,contacts,pdfs,setPdfs,isPremium=false,onOpenPremi
   const accesInfo=(p)=>{
     const acces=p.acces||(p.prix&&p.prix!=="Gratuit"?"payant":"gratuit");
     if(acces==="gratuit")return{label:"Gratuit",bg:"#ECFDF5",col:"#065F46",locked:false};
-    if(acces==="premium")return isPremium?{label:"⭐ Inclus Premium",bg:"#F5F0FF",col:"#6C5CE7",locked:false}:{label:"⭐ Premium",bg:"#F5F0FF",col:"#6C5CE7",locked:true};
+    if(acces==="premium")return isPremium?{label:"⭐ Inclus Premium",bg:"#F5F0FF",col:"#6C5CE7",locked:false}:{label:p.prix?`⭐ Premium ou ${p.prix}`:"⭐ Premium",bg:"#F5F0FF",col:"#6C5CE7",locked:true};
     return{label:p.prix||"Payant",bg:"#EFF6FF",col:"#1D4ED8",locked:false};
   };
 
@@ -7147,9 +7367,14 @@ function PageRessources({sites,contacts,pdfs,setPdfs,isPremium=false,onOpenPremi
                     <button onClick={()=>{if(acc.locked){onOpenPremium&&onOpenPremium();}else{enregistrerInteraction(p,"lecture");setArticleOuvert(p);}}} style={{width:"100%",padding:"10px 0",borderRadius:28,background:acc.locked?"#F5F0FF":V,border:"none",color:acc.locked?"#6C5CE7":"#fff",fontWeight:700,fontSize:13,cursor:"pointer"}}>
                       {acc.locked?"⭐ Débloquer avec Premium":"📖 Lire l'article"}
                     </button>
+                  ):acc.locked?(
+                    <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                      <button onClick={()=>onOpenPremium&&onOpenPremium()} style={{width:"100%",padding:"10px 0",borderRadius:28,background:"#F5F0FF",border:"none",color:"#6C5CE7",fontWeight:700,fontSize:13,cursor:"pointer"}}>⭐ Débloquer avec Premium</button>
+                      <button onClick={()=>setPaiementItem(p)} style={{width:"100%",padding:"10px 0",borderRadius:28,background:WH,border:"1.5px solid #1D4ED8",color:"#1D4ED8",fontWeight:700,fontSize:13,cursor:"pointer"}}>🛒 Acheter à l'unité {p.prix?"— "+p.prix:""}</button>
+                    </div>
                   ):(
-                    <button onClick={()=>{if(acc.locked){onOpenPremium&&onOpenPremium();}else{enregistrerInteraction(p,(p.acces||"gratuit")==="payant"?"achat":"telechargement");}}} style={{width:"100%",padding:"10px 0",borderRadius:28,background:acc.locked?"#F5F0FF":(acc.label==="Gratuit"?"#ECFDF5":V),border:"none",color:acc.locked?"#6C5CE7":(acc.label==="Gratuit"?"#065F46":"#fff"),fontWeight:700,fontSize:13,cursor:"pointer"}}>
-                      {acc.locked?"⭐ Débloquer avec Premium":acc.label==="Gratuit"?"⬇️ Télécharger gratuitement":"🛒 Acheter et télécharger"}
+                    <button onClick={()=>{if((p.acces||"gratuit")==="payant"){setPaiementItem(p);}else{enregistrerInteraction(p,"telechargement");}}} style={{width:"100%",padding:"10px 0",borderRadius:28,background:acc.label==="Gratuit"?"#ECFDF5":V,border:"none",color:acc.label==="Gratuit"?"#065F46":"#fff",fontWeight:700,fontSize:13,cursor:"pointer"}}>
+                      {acc.label==="Gratuit"?"⬇️ Télécharger gratuitement":"🛒 Acheter et télécharger"}
                     </button>
                   )}
                 </div>
@@ -7174,6 +7399,21 @@ function PageRessources({sites,contacts,pdfs,setPdfs,isPremium=false,onOpenPremi
             <p style={{fontSize:14,color:TX,lineHeight:1.8,whiteSpace:"pre-line",margin:0}}>{articleOuvert.contenu}</p>
           </div>
         </div>
+      )}
+
+      {/* Toast confirmation téléchargement/achat */}
+      {toastMsg&&(
+        <div style={{position:"fixed",bottom:90,left:"50%",transform:"translateX(-50%)",background:"#1a1a1a",color:"#fff",padding:"12px 20px",borderRadius:28,fontSize:13,fontWeight:600,boxShadow:"0 6px 24px rgba(0,0,0,0.25)",zIndex:700,maxWidth:"85%",textAlign:"center"}}>
+          {toastMsg}
+        </div>
+      )}
+
+      {/* Modal de paiement */}
+      {paiementItem&&(
+        <ModalPaiement item={paiementItem} onClose={()=>setPaiementItem(null)} onSuccess={()=>{
+          enregistrerInteraction(paiementItem,"achat");
+          setPaiementItem(null);
+        }}/>
       )}
     </div>
   );
@@ -7267,12 +7507,13 @@ const MENU = [
   {k:"abonnements",label:"Abonnements",emoji:"💳"},
   {k:"signalements",label:"Signalements",emoji:"🚩"},
   {k:"communication",label:"Communication",emoji:"📢"},
+  {k:"boost",label:"Boost annonces",emoji:"🚀"},
   {k:"admins",label:"Administrateurs",emoji:"🛡️"},
   {k:"sos",label:"Mode SOS",emoji:"🆘"},
 ];
 
 // ─── PAGES ────────────────────────────────────────────────────────────────────
-function Dashboard({sharedActivites=[],sharedSorties=[],sharedEvenements=[],pendingContribs=[],userReports=[],dashUserReports=[]}) {
+function Dashboard({sharedActivites=[],sharedSorties=[],sharedEvenements=[],pendingContribs=[],userReports=[],dashUserReports=[],demoMode=false,setDemoMode}) {
   const [liveUsers,setLiveUsers] = useState(MOCK_USERS.length);
   const [liveOnline,setLiveOnline] = useState(Math.floor(MOCK_USERS.length*0.4));
   const [pulse,setPulse] = useState(false);
@@ -7311,8 +7552,24 @@ function Dashboard({sharedActivites=[],sharedSorties=[],sharedEvenements=[],pend
   const maxH=Math.max(...history.map(h=>h.v),1);
   return (
     <div>
-      <h1 style={{fontSize:24,fontWeight:800,color:C.text,margin:"0 0 4px"}}>Dashboard</h1>
-      <p style={{fontSize:13,color:C.muted,margin:"0 0 20px"}}>Vue d'ensemble de la plateforme Parent'Hèse</p>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:20}}>
+        <div>
+          <h1 style={{fontSize:24,fontWeight:800,color:C.text,margin:"0 0 4px"}}>Dashboard</h1>
+          <p style={{fontSize:13,color:C.muted,margin:0}}>Vue d'ensemble de la plateforme Parent'Hèse</p>
+        </div>
+        {setDemoMode&&(
+          demoMode?(
+            <div style={{display:"flex",alignItems:"center",gap:10,background:"rgba(16,185,129,0.1)",border:"1px solid rgba(16,185,129,0.3)",borderRadius:12,padding:"8px 14px"}}>
+              <span style={{fontSize:12,fontWeight:600,color:C.green}}>✅ Mode démo Premium actif</span>
+              <button onClick={()=>setDemoMode(false)} style={{background:"none",border:"1px solid rgba(16,185,129,0.4)",borderRadius:20,padding:"4px 10px",color:C.green,fontSize:11,cursor:"pointer"}}>Désactiver</button>
+            </div>
+          ):(
+            <button onClick={()=>setDemoMode(true)} style={{display:"flex",alignItems:"center",gap:8,background:"rgba(108,92,231,0.1)",border:"1px solid rgba(108,92,231,0.3)",borderRadius:12,padding:"8px 14px",color:C.accent,fontWeight:600,fontSize:12,cursor:"pointer"}}>
+              🧪 Activer l'essai démo Premium (test interne)
+            </button>
+          )
+        )}
+      </div>
 
       {/* Live users card */}
       <div style={{...s.card,marginBottom:16,background:"linear-gradient(135deg,#1e1b4b,#2d1b69)",border:"1px solid rgba(124,58,237,0.3)"}}>
@@ -7840,21 +8097,6 @@ function Activites({sharedActivites,setSharedActivites,customCatActivites=[]}) {
           <div style={{borderTop:`1px solid ${C.border}`,paddingTop:16,marginBottom:14}}>
             <p style={{margin:"0 0 4px",fontSize:14,fontWeight:800,color:"#1a1a1a"}}>🧩 Compatibilité TND</p>
             <p style={{margin:"0 0 14px",fontSize:11,color:C.muted}}>Ces informations aident les familles à trouver les activités adaptées à leur enfant.</p>
-
-            {/* Profils */}
-            <p style={{margin:"0 0 8px",fontSize:12,fontWeight:700,color:C.text}}>Profils TND adaptés :</p>
-            <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:16}}>
-              {[
-                {k:"profilTous",l:"🌱 Tous profils",bg:"#EAF3DE",bc:"#3B6D11",col:"#3B6D11"},
-                {k:"profilTSA",l:"🧩 TSA",bg:"#EEEDFE",bc:"#3C3489",col:"#3C3489"},
-                {k:"profilTDAH",l:"⚡ TDAH",bg:"#E1F5EE",bc:"#085041",col:"#085041"},
-                {k:"profilDYS",l:"📖 DYS",bg:"#FAEEDA",bc:"#633806",col:"#633806"},
-              ].map(({k,l,bg,bc,col})=>(
-                <button key={k} onClick={()=>setForm(p=>({...p,[k]:!p[k]}))} style={{padding:"7px 14px",borderRadius:20,border:`2px solid ${form[k]?bc:"#E5E7EB"}`,background:form[k]?bg:WH,color:form[k]?col:"#9CA3AF",fontSize:12,fontWeight:form[k]?700:400,cursor:"pointer"}}>
-                  {form[k]?"✓ ":""}{l}
-                </button>
-              ))}
-            </div>
 
             {/* Niveaux sensoriels sliders */}
             <p style={{margin:"0 0 10px",fontSize:12,fontWeight:700,color:C.text}}>Niveaux sensoriels :</p>
@@ -10090,6 +10332,122 @@ function Categories({customCatActivites=[],setCustomCatActivites,customCatSortie
   );
 }
 
+function AdminBoost({sharedActivites=[],sharedSorties=[],devisBoostDemandes=[],setDevisBoostDemandes,boosts=[],onActiverBoost,onRetirerBoost}){
+  const [tab,setTab]=useState("devis");
+  const tousItems=[...sharedActivites.map(a=>({...a,_type:"activite"})),...sharedSorties.map(s=>({...s,_type:"sortie"}))];
+  const estBoosteAdmin=(item)=>{
+    const key=item.id||item.nom||item.titre;
+    const b=boosts.find(b=>b.itemId===key&&b.itemType===item._type);
+    return b&&new Date(b.dateExpiration)>new Date();
+  };
+  const traiterDemande=(id,statut)=>{
+    setDevisBoostDemandes&&setDevisBoostDemandes(prev=>prev.map(d=>d.id===id?{...d,statut}:d));
+  };
+  return(
+    <div>
+      <div style={{marginBottom:20}}>
+        <h1 style={{fontSize:22,fontWeight:800,color:C.text,margin:0}}>🚀 Boost annonces</h1>
+        <p style={{fontSize:13,color:C.muted,margin:"4px 0 0"}}>Gérez les demandes de devis et boostez manuellement des annonces</p>
+      </div>
+
+      <div style={{display:"flex",gap:8,marginBottom:20}}>
+        {[{k:"devis",l:`📩 Demandes de devis (${devisBoostDemandes.filter(d=>d.statut==="nouveau").length})`},{k:"manuel",l:"🚀 Booster manuellement"}].map(t=>(
+          <button key={t.k} onClick={()=>setTab(t.k)} style={{padding:"8px 16px",borderRadius:10,border:"none",background:tab===t.k?C.accent:C.card,color:tab===t.k?"#fff":C.muted,fontWeight:tab===t.k?700:400,fontSize:13,cursor:"pointer"}}>{t.l}</button>
+        ))}
+      </div>
+
+      {tab==="devis"&&(
+        <div style={{display:"flex",flexDirection:"column",gap:12}}>
+          {devisBoostDemandes.length===0&&<p style={{fontSize:13,color:C.muted}}>Aucune demande de devis pour le moment.</p>}
+          {devisBoostDemandes.map(d=>(
+            <div key={d.id} style={s.card}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:8}}>
+                <div>
+                  <p style={{margin:"0 0 2px",fontSize:14,fontWeight:700,color:C.text}}>{d.item?.nom||d.item?.titre}</p>
+                  <p style={{margin:0,fontSize:11,color:C.muted}}>{d.itemType==="sortie"?"🗺️ Sortie":"🎨 Activité"} · {new Date(d.date).toLocaleDateString("fr-FR")}</p>
+                </div>
+                <span style={{fontSize:10,fontWeight:700,padding:"3px 10px",borderRadius:20,background:d.statut==="nouveau"?"#FEF3C7":d.statut==="traite"?"#D1FAE5":"#F3F4F6",color:d.statut==="nouveau"?"#92400E":d.statut==="traite"?"#065F46":C.muted}}>
+                  {d.statut==="nouveau"?"🆕 Nouveau":d.statut==="traite"?"✓ Traité":"Fermé"}
+                </span>
+              </div>
+              <div style={{background:C.card,borderRadius:10,padding:"10px 12px",marginBottom:10}}>
+                <p style={{margin:"0 0 4px",fontSize:12,color:C.text}}>👤 {d.nom} — <a href={`mailto:${d.email}`} style={{color:C.accent}}>{d.email}</a></p>
+                {d.message&&<p style={{margin:0,fontSize:12,color:C.muted,fontStyle:"italic"}}>"{d.message}"</p>}
+              </div>
+              {d.statut==="nouveau"&&(
+                <div style={{display:"flex",gap:8}}>
+                  <button style={{...s.btnOutline(C.green),flex:1}} onClick={()=>traiterDemande(d.id,"traite")}>✓ Marquer traité</button>
+                  <button style={s.btnOutline(C.muted)} onClick={()=>traiterDemande(d.id,"ferme")}>Fermer</button>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {tab==="manuel"&&(
+        <div style={{display:"flex",flexDirection:"column",gap:8}}>
+          {tousItems.length===0&&<p style={{fontSize:13,color:C.muted}}>Aucune activité ou sortie disponible.</p>}
+          {tousItems.map((item,i)=>{
+            const key=item.id||item.nom||item.titre;
+            const boostActuel=boosts.find(b=>b.itemId===key&&b.itemType===item._type);
+            const booste=boostActuel&&new Date(boostActuel.dateExpiration)>new Date();
+            return(
+              <BoostRow key={item._type+i} item={item} booste={booste} boostActuel={boostActuel} onActiverBoost={onActiverBoost} onRetirerBoost={onRetirerBoost}/>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function BoostRow({item,booste,boostActuel,onActiverBoost,onRetirerBoost}){
+  const [jours,setJours]=useState(30);
+  const [editMode,setEditMode]=useState(false);
+  const DUREES=[7,14,30,60,90];
+
+  return(
+    <div style={s.card}>
+      <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:booste||editMode?12:0}}>
+        <span style={{fontSize:20,flexShrink:0}}>{item._type==="sortie"?"🗺️":"🎨"}</span>
+        <div style={{flex:1,minWidth:0}}>
+          <p style={{margin:"0 0 2px",fontSize:13,fontWeight:700,color:C.text,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{item.nom||item.titre}</p>
+          <p style={{margin:0,fontSize:11,color:C.muted}}>
+            {item._type==="sortie"?"Sortie":"Activité"}
+            {booste&&boostActuel&&` · 🚀 Expire le ${new Date(boostActuel.dateExpiration).toLocaleDateString("fr-FR")}`}
+          </p>
+        </div>
+        {booste?(
+          <div style={{display:"flex",gap:6,flexShrink:0}}>
+            <button style={s.btnOutline(C.accent)} onClick={()=>setEditMode(v=>!v)}>{editMode?"Fermer":"Modifier"}</button>
+            <button style={s.btnOutline(C.red)} onClick={()=>onRetirerBoost&&onRetirerBoost(item,item._type)}>Retirer</button>
+          </div>
+        ):(
+          <button style={s.btn("#F59E0B")} onClick={()=>setEditMode(v=>!v)}>{editMode?"Fermer":"🚀 Booster"}</button>
+        )}
+      </div>
+      {editMode&&(
+        <div style={{background:C.card,borderRadius:10,padding:"10px 12px"}}>
+          <p style={{margin:"0 0 8px",fontSize:11,color:C.muted}}>{booste?"Nouvelle durée (repart d'aujourd'hui) :":"Durée du boost :"}</p>
+          <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:10}}>
+            {DUREES.map(d=>(
+              <button key={d} onClick={()=>setJours(d)} style={{padding:"6px 12px",borderRadius:20,border:`1.5px solid ${jours===d?"#F59E0B":C.border}`,background:jours===d?"rgba(245,158,11,0.12)":"transparent",color:jours===d?"#F59E0B":C.muted,fontSize:12,fontWeight:jours===d?700:400,cursor:"pointer"}}>{d}j</button>
+            ))}
+            <div style={{display:"flex",alignItems:"center",gap:4}}>
+              <input type="number" min={1} value={jours} onChange={e=>setJours(Math.max(1,parseInt(e.target.value)||1))} style={{width:60,padding:"6px 8px",borderRadius:20,border:`1.5px solid ${C.border}`,background:"transparent",color:C.text,fontSize:12,textAlign:"center"}}/>
+              <span style={{fontSize:11,color:C.muted}}>jours</span>
+            </div>
+          </div>
+          <button style={{...s.btn("#F59E0B"),width:"100%"}} onClick={()=>{onActiverBoost&&onActiverBoost(item,item._type,jours);setEditMode(false);}}>
+            {booste?`Prolonger de ${jours} jours`:`Activer le boost — ${jours} jours`}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function Admins() {
   const [admins,setAdmins] = useState(MOCK_ADMINS);
   const [search,setSearch] = useState("");
@@ -10218,7 +10576,7 @@ function Contributions({items,updateContrib}){
   );
 }
 
-const PAGES_FN = {dashboard:(props)=><Dashboard {...props}/>,sos:(props)=><AdminSOS {...props}/>,activites:(props)=><Activites {...props}/>,sorties:(props)=><Sorties {...props}/>,evenements:(props)=><Evenements {...props}/>,saisonnier:(props)=><Saisonnier {...props}/>,categories:(props)=><Categories {...props}/>,ressources:(props)=><RessourcesAdmin {...props}/>,utilisateurs:()=><Utilisateurs/>,abonnements:()=><Abonnements/>,signalements:(props)=><Signalements {...props}/>,communication:(props)=><Communication key="comm" {...props}/>,admins:()=><Admins/>};
+const PAGES_FN = {dashboard:(props)=><Dashboard {...props}/>,sos:(props)=><AdminSOS {...props}/>,activites:(props)=><Activites {...props}/>,sorties:(props)=><Sorties {...props}/>,evenements:(props)=><Evenements {...props}/>,saisonnier:(props)=><Saisonnier {...props}/>,categories:(props)=><Categories {...props}/>,ressources:(props)=><RessourcesAdmin {...props}/>,boost:(props)=><AdminBoost {...props}/>,utilisateurs:()=><Utilisateurs/>,abonnements:()=><Abonnements/>,signalements:(props)=><Signalements {...props}/>,communication:(props)=><Communication key="comm" {...props}/>,admins:()=><Admins/>};
 
 function AdminSOS({sosLib=[],setSosLib,sosModeActif=true,setSosModeActif}){
   const [modal,setModal]=useState(null);
@@ -10318,37 +10676,15 @@ function AdminSOS({sosLib=[],setSosLib,sosModeActif=true,setSosModeActif}){
           </div>
           <AdminField label="Matériel (séparé par virgules)"><input style={s.input} value={form.materiel} onChange={e=>setForm({...form,materiel:e.target.value})} placeholder="feuilles, crayons, pâte à modeler"/></AdminField>
 
-          {/* ─── FILTRE 1 — PROFIL ─── */}
+          {/* ─── FILTRE — TYPE DE CRISE ─── */}
           <div style={{borderTop:`1px solid ${C.border}`,paddingTop:14,marginBottom:14}}>
-            <p style={{margin:"0 0 2px",fontSize:12,fontWeight:800,color:"#c4b5fd",textTransform:"uppercase",letterSpacing:"0.5px"}}>🧩 Filtre 1 — Profil de l'enfant</p>
-            <p style={{margin:"0 0 10px",fontSize:11,color:C.muted}}>Plusieurs profils possibles</p>
-            <div style={{display:"flex",flexWrap:"wrap",gap:7}}>
-              {[{v:"profil_ordinaire",l:"😊 Profil ordinaire",c:"#10b981"},{v:"profil_tsa",l:"🧩 TSA",c:"#a78bfa"},{v:"profil_tdah",l:"⚡ TDAH",c:"#f472b6"},{v:"profil_dys",l:"📖 DYS",c:"#67e8f9"},{v:"profil_tsa_tdah",l:"🌀 TSA + TDAH",c:"#c084fc"},{v:"profil_bas_age",l:"👶 Bas âge (- 4 ans)",c:"#fbbf24"}].map(p=>(
-                <ChipBtn key={p.v} active={!!form[p.v]} onClick={()=>tf(p.v)} color={p.c}>{p.l}</ChipBtn>
-              ))}
-            </div>
-          </div>
-
-          {/* ─── FILTRE 2 — TYPE DE CRISE ─── */}
-          <div style={{borderTop:`1px solid ${C.border}`,paddingTop:14,marginBottom:14}}>
-            <p style={{margin:"0 0 2px",fontSize:12,fontWeight:800,color:"#fca5a5",textTransform:"uppercase",letterSpacing:"0.5px"}}>😰 Filtre 2 — Type de crise</p>
+            <p style={{margin:"0 0 2px",fontSize:12,fontWeight:800,color:"#fca5a5",textTransform:"uppercase",letterSpacing:"0.5px"}}>😰 Type de crise</p>
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginTop:10}}>
               {[{v:"crise_sensorielle",l:"🌊 Surcharge sensorielle",sub:"Trop de bruit, lumière, stimulations",c:"#7c3aed"},{v:"crise_emotionnelle",l:"🌋 Crise émotionnelle",sub:"Colère, pleurs, frustration",c:"#ef4444"},{v:"crise_agitation",l:"🌪️ Agitation / hyperactivité",sub:"Impossible de rester en place",c:"#f97316"},{v:"crise_concentration",l:"🌫️ Difficulté concentration",sub:"Dispersé, n'arrive pas à se poser",c:"#6b7280"}].map(c=>(
                 <button key={c.v} onClick={()=>tf(c.v)} style={{padding:"10px 12px",borderRadius:12,border:`2px solid ${form[c.v]?c.c:"rgba(255,255,255,0.08)"}`,background:form[c.v]?c.c+"18":"rgba(255,255,255,0.02)",color:C.text,cursor:"pointer",textAlign:"left",transition:"all 0.15s"}}>
                   <p style={{margin:"0 0 2px",fontSize:12,fontWeight:form[c.v]?700:500,color:form[c.v]?c.c:C.text}}>{c.l}</p>
                   <p style={{margin:0,fontSize:10,color:C.muted}}>{c.sub}</p>
                 </button>
-              ))}
-            </div>
-          </div>
-
-          {/* ─── FILTRE 3 — LIEU ─── */}
-          <div style={{borderTop:`1px solid ${C.border}`,paddingTop:14,marginBottom:14}}>
-            <p style={{margin:"0 0 2px",fontSize:12,fontWeight:800,color:"#6ee7b7",textTransform:"uppercase",letterSpacing:"0.5px"}}>📍 Filtre 3 — Lieu</p>
-            <p style={{margin:"0 0 10px",fontSize:11,color:C.muted}}>Le lieu filtre les activités faisables</p>
-            <div style={{display:"flex",flexWrap:"wrap",gap:7}}>
-              {[{v:"lieu_maison",l:"🏠 Maison",c:"#10b981"},{v:"lieu_voiture",l:"🚗 Voiture",c:"#3b82f6"},{v:"lieu_ecole",l:"🏫 École / extérieur",c:"#f59e0b"},{v:"lieu_public",l:"🛒 Lieu public",c:"#8b5cf6"},{v:"lieu_dehors",l:"🌳 Dehors",c:"#22c55e"}].map(p=>(
-                <ChipBtn key={p.v} active={!!form[p.v]} onClick={()=>tf(p.v)} color={p.c}>{p.l}</ChipBtn>
               ))}
             </div>
           </div>
@@ -10365,7 +10701,7 @@ function AdminSOS({sosLib=[],setSosLib,sosModeActif=true,setSosModeActif}){
   );
 }
 
-function PageAdmin({onLogout,pendingContribs=[],updateContrib,adminActivites=[],setAdminActivites,adminSorties=[],setAdminSorties,adminEvenements=[],setAdminEvenements,adminReports=[],setAdminReports,addDeletedTitle,adminCustomEvents=[],setAdminCustomEvents,sosLib=[],setSosLib,sosModeActif=true,setSosModeActif,ideesMomentConfig=[],setIdeesMomentConfig,evenementsSaisonniers=[],setEvenementsSaisonniers,customCatActivites=[],setCustomCatActivites,customCatSorties=[],setCustomCatSorties,customCatEvenements=[],setCustomCatEvenements,adminComms=[],setAdminComms,ressourcesSites=[],setRessourcesSites,ressourcesContacts=[],setRessourcesContacts,ressourcesPdf=[],setRessourcesPdf}) {
+function PageAdmin({onLogout,pendingContribs=[],updateContrib,adminActivites=[],setAdminActivites,adminSorties=[],setAdminSorties,adminEvenements=[],setAdminEvenements,adminReports=[],setAdminReports,addDeletedTitle,adminCustomEvents=[],setAdminCustomEvents,sosLib=[],setSosLib,sosModeActif=true,setSosModeActif,ideesMomentConfig=[],setIdeesMomentConfig,evenementsSaisonniers=[],setEvenementsSaisonniers,customCatActivites=[],setCustomCatActivites,customCatSorties=[],setCustomCatSorties,customCatEvenements=[],setCustomCatEvenements,adminComms=[],setAdminComms,ressourcesSites=[],setRessourcesSites,ressourcesContacts=[],setRessourcesContacts,ressourcesPdf=[],setRessourcesPdf,devisBoostDemandes=[],setDevisBoostDemandes,boosts=[],setBoosts,activerBoost,demoMode=false,setDemoMode}) {
   const [page,setPage] = useState("dashboard");
   const [collapsed,setCollapsed] = useState(false);
   const pendingReports = [...adminReports,...MOCK_REPORTS].filter(r=>r.statut==="pending").length;
@@ -10384,6 +10720,7 @@ function PageAdmin({onLogout,pendingContribs=[],updateContrib,adminActivites=[],
               {!collapsed&&<span style={{fontSize:13,fontWeight:page===item.k?600:400,whiteSpace:"nowrap"}}>{item.label}</span>}
               {item.k==="signalements"&&pendingReports>0&&<span style={{marginLeft:"auto",background:C.red,color:"#fff",borderRadius:"50%",width:18,height:18,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:700,flexShrink:0}}>{pendingReports}</span>}
               {item.k==="contributions"&&pendingContribs.filter(c=>c._statut==="pending").length>0&&<span style={{marginLeft:"auto",background:C.accent,color:"#fff",borderRadius:"50%",width:18,height:18,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:700,flexShrink:0}}>{pendingContribs.filter(c=>c._statut==="pending").length}</span>}
+              {item.k==="boost"&&devisBoostDemandes.filter(d=>d.statut==="nouveau").length>0&&<span style={{marginLeft:"auto",background:"#F59E0B",color:"#fff",borderRadius:"50%",width:18,height:18,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:700,flexShrink:0}}>{devisBoostDemandes.filter(d=>d.statut==="nouveau").length}</span>}
             </button>
           ))}
         </nav>
@@ -10409,7 +10746,7 @@ function PageAdmin({onLogout,pendingContribs=[],updateContrib,adminActivites=[],
           </div>
         </header>
         <main style={{flex:1,overflowY:"auto",padding:24}}>
-          {page==="contributions"?<Contributions items={pendingContribs} updateContrib={updateContrib}/>:PAGES_FN[page]?PAGES_FN[page]({sharedActivites:adminActivites,setSharedActivites:setAdminActivites,sharedSorties:adminSorties,setSharedSorties:setAdminSorties,sharedEvenements:adminEvenements,setSharedEvenements:setAdminEvenements,userReports:adminReports,setUserReports:setAdminReports,onDeleteTitle:addDeletedTitle,sharedCustomEvents:adminCustomEvents,setSharedCustomEvents:setAdminCustomEvents,pendingContribs,dashUserReports:adminReports,sosLib,setSosLib,sosModeActif,setSosModeActif,ideesMomentConfig,setIdeesMomentConfig,evenementsSaisonniers,setEvenementsSaisonniers,customCatActivites,setCustomCatActivites,customCatSorties,setCustomCatSorties,customCatEvenements,setCustomCatEvenements,adminComms,setAdminComms,ressourcesSites,setRessourcesSites,ressourcesContacts,setRessourcesContacts,ressourcesPdf,setRessourcesPdf}):null}
+          {page==="contributions"?<Contributions items={pendingContribs} updateContrib={updateContrib}/>:PAGES_FN[page]?PAGES_FN[page]({sharedActivites:adminActivites,setSharedActivites:setAdminActivites,sharedSorties:adminSorties,setSharedSorties:setAdminSorties,sharedEvenements:adminEvenements,setSharedEvenements:setAdminEvenements,userReports:adminReports,setUserReports:setAdminReports,onDeleteTitle:addDeletedTitle,sharedCustomEvents:adminCustomEvents,setSharedCustomEvents:setAdminCustomEvents,pendingContribs,dashUserReports:adminReports,sosLib,setSosLib,sosModeActif,setSosModeActif,ideesMomentConfig,setIdeesMomentConfig,evenementsSaisonniers,setEvenementsSaisonniers,customCatActivites,setCustomCatActivites,customCatSorties,setCustomCatSorties,customCatEvenements,setCustomCatEvenements,adminComms,setAdminComms,ressourcesSites,setRessourcesSites,ressourcesContacts,setRessourcesContacts,ressourcesPdf,setRessourcesPdf,devisBoostDemandes,setDevisBoostDemandes,boosts,onActiverBoost:activerBoost,onRetirerBoost:(item,itemType)=>{const key=item.id||item.nom||item.titre;setBoosts&&setBoosts(prev=>prev.filter(b=>!(b.itemId===key&&b.itemType===itemType)));},demoMode,setDemoMode}):null}
         </main>
       </div>
     </div>
@@ -10482,7 +10819,7 @@ function PageAuth({ onAuthSuccess, onCancel, onAdminSuccess }) {
     if(lockedUntil&&Date.now()<lockedUntil){setError(`Trop de tentatives. Réessayez dans ${lockCountdown}s.`);return;}
     if (!email.trim() || !password.trim()) { setError('Merci de remplir tous les champs.'); return; }
     // Vérification admin
-    const ADMIN_PW_H="d43d9b50d43d9b50d43d9b50d43d9b50d43d9b50d43d9b50d43d9b50d43d9b50";
+    const ADMIN_PW_H="a7576524a7576524a7576524a7576524a7576524a7576524a7576524a7576524";
     if (simpleHash(email.trim().toLowerCase())===simpleHash(ADMIN_EMAIL) && simpleHash(password)===ADMIN_PW_H) {
       setAdminStep(true); setAdminCode2(""); return;
     }
@@ -10510,7 +10847,7 @@ function PageAuth({ onAuthSuccess, onCancel, onAdminSuccess }) {
 
   // Validation du 2ème facteur admin
   const handleAdminCode2 = () => {
-    const SECRET_2FA="ADMIN2024"; // Peut être changé indépendamment du mot de passe
+    const SECRET_2FA="875010"; // Peut être changé indépendamment du mot de passe
     if(adminCode2.trim()===SECRET_2FA){
       setAdminStep(false);
       setAdminCode2("");
@@ -10628,17 +10965,6 @@ function PageAuth({ onAuthSuccess, onCancel, onAdminSuccess }) {
             {mode === 'signup' ? "Déjà un compte ? Se connecter" : "Pas encore de compte ? Créer un compte"}
           </button>
         )}
-
-        {/* Bouton démo */}
-        {onCancel&&(
-          <div style={{marginTop:20,borderTop:"1px solid rgba(108,92,231,0.1)",paddingTop:16,textAlign:"center"}}>
-            <p style={{margin:"0 0 10px",fontSize:11,color:TM}}>Vous voulez juste explorer l'app ?</p>
-            <button onClick={onCancel} style={{width:"100%",padding:12,borderRadius:28,background:"linear-gradient(135deg,#F59E0B,#F97316)",border:"none",color:"#fff",fontWeight:700,fontSize:14,cursor:"pointer"}}>
-              🚀 Accéder à la démo gratuite
-            </button>
-            <p style={{margin:"8px 0 0",fontSize:10,color:TM}}>Toutes les fonctionnalités · Sans compte · Sans engagement</p>
-          </div>
-        )}
       </div>
 
       <p style={{ textAlign: "center", fontSize: 11, color: TM, marginTop: 16, lineHeight: 1.5 }}>🔒 Tes informations restent privées : elles sont stockées uniquement sur cet appareil, sans serveur externe.</p>
@@ -10745,6 +11071,21 @@ export default function App(){
   const [page,setPage]=useState("accueil");
   const [favoris,setFavoris]=useState([]);
   const [masquees,setMasquees]=useState([]); // items "ne plus proposer" {id, nom, _type}
+  const [boosts,setBoosts]=useState([]); // {itemId, itemType, jours, dateExpiration}
+  const [devisBoostDemandes,setDevisBoostDemandes]=useState([]); // demandes de devis pour booster
+  const activerBoost=(item,itemType,jours)=>{
+    const key=item.id||item.nom||item.titre;
+    const dateExpiration=new Date(Date.now()+jours*24*60*60*1000).toISOString();
+    setBoosts(prev=>[...prev.filter(b=>!(b.itemId===key&&b.itemType===itemType)),{itemId:key,itemType,jours,dateExpiration}]);
+  };
+  const estBooste=(item,itemType)=>{
+    const key=item?.id||item?.nom||item?.titre;
+    const b=boosts.find(b=>b.itemId===key&&b.itemType===itemType);
+    return b&&new Date(b.dateExpiration)>new Date();
+  };
+  const ajouterDemandeDevisBoost=(demande)=>{
+    setDevisBoostDemandes(prev=>[{...demande,id:Date.now(),statut:"nouveau"},...prev]);
+  };
   const toggleMasquer=(item,itemType)=>{
     const key=item.id||item.nom||item.titre;
     setMasquees(prev=>{
@@ -10829,6 +11170,7 @@ export default function App(){
   const [dataLoaded,setDataLoaded]=useState(false);
   const [onboardingDone,setOnboardingDone]=useState(false);
   const [premiumTrialUsed,setPremiumTrialUsed]=useState(false);
+  const [trialEndDate,setTrialEndDate]=useState(null); // date ISO de fin d'essai gratuit
   const [historiqueActivites,setHistoriqueActivites]=useState([]); // [{id,nom,date,type}]
   const [darkMode,setDarkMode]=useState(false);
   const [showConfetti,setShowConfetti]=useState(false);
@@ -10865,6 +11207,7 @@ export default function App(){
           if(d.dark_mode!==undefined)setDarkMode(d.dark_mode);
           if(d.historique_activites)setHistoriqueActivites(d.historique_activites);
           if(d.premium_trial_used)setPremiumTrialUsed(d.premium_trial_used);
+          if(d.trial_end_date)setTrialEndDate(d.trial_end_date);
           if(d.filtres_memo_activ)setFiltresMemoActiv(d.filtres_memo_activ);
           if(d.filtres_memo_sortie)setFiltresMemoSortie(d.filtres_memo_sortie);
         }
@@ -10887,6 +11230,12 @@ export default function App(){
           if(d.adminSorties)setAdminSorties(d.adminSorties);
           if(d.adminEvenements)setAdminEvenements(d.adminEvenements);
           if(d.sosLib)setSosLib(d.sosLib);
+          if(d.devisBoostDemandes)setDevisBoostDemandes(d.devisBoostDemandes);
+          if(d.boosts)setBoosts(d.boosts);
+          if(d.ressourcesSites)setRessourcesSites(d.ressourcesSites);
+          if(d.ressourcesContacts)setRessourcesContacts(d.ressourcesContacts);
+          if(d.ressourcesPdf)setRessourcesPdf(d.ressourcesPdf);
+          if(d.adminComms)setAdminComms(d.adminComms);
         }
       }catch(e){}
       // Auth session séparée
@@ -10901,18 +11250,18 @@ export default function App(){
   useEffect(()=>{
     if(!dataLoaded)return;
     const timer=setTimeout(()=>{
-      sauvegarderPrivé({favoris,enfants,onboarding_done:onboardingDone,popup_shown:[...popupShown],dark_mode:darkMode,historique_activites:historiqueActivites,premium_trial_used:premiumTrialUsed,filtres_memo_activ:filtresMemoActiv,filtres_memo_sortie:filtresMemoSortie,masquees});
+      sauvegarderPrivé({favoris,enfants,onboarding_done:onboardingDone,popup_shown:[...popupShown],dark_mode:darkMode,historique_activites:historiqueActivites,premium_trial_used:premiumTrialUsed,trial_end_date:trialEndDate,filtres_memo_activ:filtresMemoActiv,filtres_memo_sortie:filtresMemoSortie,masquees});
     },1500);
     return()=>clearTimeout(timer);
-  },[favoris,enfants,popupShown,onboardingDone,premiumTrialUsed,historiqueActivites,darkMode,filtresMemoActiv,filtresMemoSortie,masquees,dataLoaded]);
+  },[favoris,enfants,popupShown,onboardingDone,premiumTrialUsed,trialEndDate,historiqueActivites,darkMode,filtresMemoActiv,filtresMemoSortie,masquees,dataLoaded]);
 
   useEffect(()=>{
     if(!dataLoaded)return;
     const timer=setTimeout(()=>{
-      sauvegarderPartagé({customEvents,ideesMomentConfig,evenementsSaisonniers,sosModeActif,pendingContribs,deletedTitles:[...deletedTitles],adminReports,customCatActivites,customCatSorties,customCatEvenements,adminActivites,adminSorties,adminEvenements,sosLib});
+      sauvegarderPartagé({customEvents,ideesMomentConfig,evenementsSaisonniers,sosModeActif,pendingContribs,deletedTitles:[...deletedTitles],adminReports,customCatActivites,customCatSorties,customCatEvenements,adminActivites,adminSorties,adminEvenements,sosLib,devisBoostDemandes,boosts,ressourcesSites,ressourcesContacts,ressourcesPdf,adminComms});
     },2000);
     return()=>clearTimeout(timer);
-  },[customEvents,ideesMomentConfig,evenementsSaisonniers,sosModeActif,pendingContribs,deletedTitles,adminReports,customCatActivites,customCatSorties,customCatEvenements,adminActivites,adminSorties,adminEvenements,sosLib,dataLoaded]);
+  },[customEvents,ideesMomentConfig,evenementsSaisonniers,sosModeActif,pendingContribs,deletedTitles,adminReports,customCatActivites,customCatSorties,customCatEvenements,adminActivites,adminSorties,adminEvenements,sosLib,devisBoostDemandes,boosts,ressourcesSites,ressourcesContacts,ressourcesPdf,adminComms,dataLoaded]);
 
   const leftTabs=[{k:"biblio",icon:"📖",label:"Biblio"},{k:"ressources",icon:"🧠",label:"Ressources"}];
   const rightTabs=[{k:"planning",icon:"📅",label:"Planning"},{k:"profil",icon:"👤",label:"Profil"}];
@@ -10929,7 +11278,7 @@ export default function App(){
     setTimeout(()=>setGlobalToast(null),3000);
     setTimeout(()=>setShowConfetti(false),4500);
   };
-  if(isAdmin) return <PageAdmin onLogout={()=>{ setIsAdmin(false); setPage("profil"); }} pendingContribs={pendingContribs} updateContrib={updateContrib} adminActivites={adminActivites} setAdminActivites={setAdminActivites} adminSorties={adminSorties} setAdminSorties={setAdminSorties} adminEvenements={adminEvenements} setAdminEvenements={setAdminEvenements} adminReports={adminReports} setAdminReports={setAdminReports} addDeletedTitle={addDeletedTitle} adminCustomEvents={customEvents} setAdminCustomEvents={setCustomEvents} sosLib={sosLib} setSosLib={setSosLib} sosModeActif={sosModeActif} setSosModeActif={setSosModeActif} ideesMomentConfig={ideesMomentConfig} setIdeesMomentConfig={setIdeesMomentConfig} evenementsSaisonniers={evenementsSaisonniers} setEvenementsSaisonniers={setEvenementsSaisonniers} customCatActivites={customCatActivites} setCustomCatActivites={setCustomCatActivites} customCatSorties={customCatSorties} setCustomCatSorties={setCustomCatSorties} customCatEvenements={customCatEvenements} setCustomCatEvenements={setCustomCatEvenements} adminComms={adminComms} setAdminComms={setAdminComms} ressourcesSites={ressourcesSites} setRessourcesSites={setRessourcesSites} ressourcesContacts={ressourcesContacts} setRessourcesContacts={setRessourcesContacts} ressourcesPdf={ressourcesPdf} setRessourcesPdf={setRessourcesPdf}/>;
+  if(isAdmin) return <PageAdmin onLogout={()=>{ setIsAdmin(false); setPage("profil"); }} pendingContribs={pendingContribs} updateContrib={updateContrib} adminActivites={adminActivites} setAdminActivites={setAdminActivites} adminSorties={adminSorties} setAdminSorties={setAdminSorties} adminEvenements={adminEvenements} setAdminEvenements={setAdminEvenements} adminReports={adminReports} setAdminReports={setAdminReports} addDeletedTitle={addDeletedTitle} adminCustomEvents={customEvents} setAdminCustomEvents={setCustomEvents} sosLib={sosLib} setSosLib={setSosLib} sosModeActif={sosModeActif} setSosModeActif={setSosModeActif} ideesMomentConfig={ideesMomentConfig} setIdeesMomentConfig={setIdeesMomentConfig} evenementsSaisonniers={evenementsSaisonniers} setEvenementsSaisonniers={setEvenementsSaisonniers} customCatActivites={customCatActivites} setCustomCatActivites={setCustomCatActivites} customCatSorties={customCatSorties} setCustomCatSorties={setCustomCatSorties} customCatEvenements={customCatEvenements} setCustomCatEvenements={setCustomCatEvenements} adminComms={adminComms} setAdminComms={setAdminComms} ressourcesSites={ressourcesSites} setRessourcesSites={setRessourcesSites} ressourcesContacts={ressourcesContacts} setRessourcesContacts={setRessourcesContacts} ressourcesPdf={ressourcesPdf} setRessourcesPdf={setRessourcesPdf} devisBoostDemandes={devisBoostDemandes} setDevisBoostDemandes={setDevisBoostDemandes} boosts={boosts} setBoosts={setBoosts} activerBoost={activerBoost} demoMode={demoMode} setDemoMode={setDemoMode}/>;
   return(
     <div style={{maxWidth:390,margin:"0 auto",background:BG,minHeight:"100vh",position:"relative",fontFamily:"system-ui,-apple-system,sans-serif",color:TX,transition:"background 0.3s,color 0.3s"}} className={darkMode?"dm":""}>
       <style>{`
@@ -10970,29 +11319,22 @@ export default function App(){
       )}
       {showPremiumPage&&(
         <div style={{position:"fixed",inset:0,background:BG,zIndex:910,overflowY:"auto"}}>
-          <PagePremium onBack={()=>setShowPremiumPage(false)} onSubscribe={handleSubscribe} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} premiumTrialUsed={premiumTrialUsed} onStartTrial={()=>{setPremiumTrialUsed(true);setPremiumDemo(true);setShowPremiumPage(false);setShowConfetti(true);setGlobalToast("🎁 7 jours Premium activés ! Profitez-en !");setTimeout(()=>setGlobalToast(null),3000);setTimeout(()=>setShowConfetti(false),4500);}}/>
+          <PagePremium onBack={()=>setShowPremiumPage(false)} onSubscribe={handleSubscribe} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} premiumTrialUsed={premiumTrialUsed} onStartTrial={()=>{setPremiumTrialUsed(true);setTrialEndDate(new Date(Date.now()+7*24*60*60*1000).toISOString());setPremiumDemo(true);setShowPremiumPage(false);setShowConfetti(true);setGlobalToast("🎁 7 jours Premium activés ! Profitez-en !");setTimeout(()=>setGlobalToast(null),3000);setTimeout(()=>setShowConfetti(false),4500);}}/>
         </div>
       )}
       {globalToast&&<Toast msg={globalToast}/>}
       {!isOnline&&<div style={{position:"fixed",top:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:390,background:"#1F2937",color:"#fff",padding:"10px 16px",fontSize:13,fontWeight:600,textAlign:"center",zIndex:1000,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
         <span>📵</span> Pas de connexion — certaines fonctions peuvent être limitées
       </div>}
-      {/* Bannière démo pour non-connectés */}
-      {!currentUser&&!demoMode&&!showAuthGate&&!showPremiumPage&&(
-        <div style={{position:"fixed",bottom:72,left:"50%",transform:"translateX(-50%)",zIndex:500,display:"flex",alignItems:"center",gap:8,background:"linear-gradient(135deg,#F59E0B,#F97316)",borderRadius:28,padding:"10px 20px",boxShadow:"0 4px 20px rgba(249,115,22,0.4)",cursor:"pointer",whiteSpace:"nowrap"}} onClick={activerDemo}>
-          <span style={{fontSize:18}}>🚀</span>
-          <span style={{color:"#fff",fontWeight:700,fontSize:13}}>Accéder à la démo gratuite</span>
-        </div>
-      )}
       <Confetti active={showConfetti}/>
       <div style={{paddingBottom:72}}>
-        {page==="accueil"&&<PageAccueil favoris={favoris} setFavoris={setFavoris} setPage={setPage} customEvents={customEvents} popupShown={popupShown} setPopupShown={setPopupShown} ideesMomentConfig={ideesMomentConfig} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} evenementsSaisonniers={evenementsSaisonniers} isPremium={isPremiumUser} onOpenPremium={openPremium} customCatActivites={customCatActivites} customCatSorties={customCatSorties} customCatEvenements={customCatEvenements} adminActivites={adminActivites} adminSorties={adminSorties} pendingContribs={pendingContribs} setPendingContribs={setPendingContribs} deletedTitles={deletedTitles} currentUser={currentUser} sosModeActif={sosModeActif} enfants={enfants} enfantActif={enfantActif} setEnfantActif={setEnfantActif} onMarquerFait={(item)=>setHistoriqueActivites(prev=>[{id:item.id||Date.now(),nom:item.nom||item.titre||"",categorie:item.categorie||"",date:item._date||new Date().toISOString(),type:"activite",note:item._note||""},...prev.slice(0,99)])} historiqueActivites={historiqueActivites} filtresMemoActiv={filtresMemoActiv} setFiltresMemoActiv={setFiltresMemoActiv} filtresMemoSortie={filtresMemoSortie} setFiltresMemoSortie={setFiltresMemoSortie} adminComms={adminComms} masquees={masquees} toggleMasquer={toggleMasquer} estMasque={estMasque}/>}
-        {page==="biblio"&&<PageBiblio pendingContribs={pendingContribs} setPendingContribs={setPendingContribs} adminActivites={adminActivites} adminSorties={adminSorties} adminEvenements={adminEvenements} addReport={addReport} adminReports={adminReports} deletedTitles={deletedTitles} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} favoris={favoris} setFavoris={setFavoris} isPremium={isPremiumUser} onOpenPremium={openPremium} customCatActivites={customCatActivites} customCatSorties={customCatSorties} customCatEvenements={customCatEvenements} currentUser={currentUser} enfants={enfants} enfantActif={enfantActif} masquees={masquees} toggleMasquer={toggleMasquer} estMasque={estMasque}/>}
-        {page==="generer"&&<PageAccueil favoris={favoris} setFavoris={setFavoris} setPage={setPage} customEvents={customEvents} popupShown={popupShown} setPopupShown={setPopupShown} ideesMomentConfig={ideesMomentConfig} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} evenementsSaisonniers={evenementsSaisonniers} isPremium={isPremiumUser} onOpenPremium={openPremium} customCatActivites={customCatActivites} customCatSorties={customCatSorties} customCatEvenements={customCatEvenements} adminActivites={adminActivites} adminSorties={adminSorties} pendingContribs={pendingContribs} setPendingContribs={setPendingContribs} deletedTitles={deletedTitles} currentUser={currentUser} sosModeActif={sosModeActif} enfants={enfants} enfantActif={enfantActif} setEnfantActif={setEnfantActif} onMarquerFait={(item)=>setHistoriqueActivites(prev=>[{id:item.id||Date.now(),nom:item.nom||item.titre||"",categorie:item.categorie||"",date:item._date||new Date().toISOString(),type:"activite",note:item._note||""},...prev.slice(0,99)])} historiqueActivites={historiqueActivites} filtresMemoActiv={filtresMemoActiv} setFiltresMemoActiv={setFiltresMemoActiv} filtresMemoSortie={filtresMemoSortie} setFiltresMemoSortie={setFiltresMemoSortie} adminComms={adminComms} masquees={masquees} toggleMasquer={toggleMasquer} estMasque={estMasque}/>}
+        {page==="accueil"&&<PageAccueil favoris={favoris} setFavoris={setFavoris} setPage={setPage} customEvents={customEvents} popupShown={popupShown} setPopupShown={setPopupShown} ideesMomentConfig={ideesMomentConfig} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} evenementsSaisonniers={evenementsSaisonniers} isPremium={isPremiumUser} onOpenPremium={openPremium} customCatActivites={customCatActivites} customCatSorties={customCatSorties} customCatEvenements={customCatEvenements} adminActivites={adminActivites} adminSorties={adminSorties} pendingContribs={pendingContribs} setPendingContribs={setPendingContribs} deletedTitles={deletedTitles} currentUser={currentUser} sosModeActif={sosModeActif} enfants={enfants} enfantActif={enfantActif} setEnfantActif={setEnfantActif} onMarquerFait={(item)=>setHistoriqueActivites(prev=>[{id:item.id||Date.now(),nom:item.nom||item.titre||"",categorie:item.categorie||"",date:item._date||new Date().toISOString(),type:"activite",note:item._note||""},...prev.slice(0,99)])} historiqueActivites={historiqueActivites} filtresMemoActiv={filtresMemoActiv} setFiltresMemoActiv={setFiltresMemoActiv} filtresMemoSortie={filtresMemoSortie} setFiltresMemoSortie={setFiltresMemoSortie} adminComms={adminComms} masquees={masquees} toggleMasquer={toggleMasquer} estMasque={estMasque} ajouterDemandeDevisBoost={ajouterDemandeDevisBoost} trialEndDate={trialEndDate}/>}
+        {page==="biblio"&&<PageBiblio pendingContribs={pendingContribs} setPendingContribs={setPendingContribs} adminActivites={adminActivites} adminSorties={adminSorties} adminEvenements={adminEvenements} addReport={addReport} adminReports={adminReports} deletedTitles={deletedTitles} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} favoris={favoris} setFavoris={setFavoris} isPremium={isPremiumUser} onOpenPremium={openPremium} customCatActivites={customCatActivites} customCatSorties={customCatSorties} customCatEvenements={customCatEvenements} currentUser={currentUser} enfants={enfants} enfantActif={enfantActif} masquees={masquees} toggleMasquer={toggleMasquer} estMasque={estMasque} boosts={boosts}/>}
+        {page==="generer"&&<PageAccueil favoris={favoris} setFavoris={setFavoris} setPage={setPage} customEvents={customEvents} popupShown={popupShown} setPopupShown={setPopupShown} ideesMomentConfig={ideesMomentConfig} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} evenementsSaisonniers={evenementsSaisonniers} isPremium={isPremiumUser} onOpenPremium={openPremium} customCatActivites={customCatActivites} customCatSorties={customCatSorties} customCatEvenements={customCatEvenements} adminActivites={adminActivites} adminSorties={adminSorties} pendingContribs={pendingContribs} setPendingContribs={setPendingContribs} deletedTitles={deletedTitles} currentUser={currentUser} sosModeActif={sosModeActif} enfants={enfants} enfantActif={enfantActif} setEnfantActif={setEnfantActif} onMarquerFait={(item)=>setHistoriqueActivites(prev=>[{id:item.id||Date.now(),nom:item.nom||item.titre||"",categorie:item.categorie||"",date:item._date||new Date().toISOString(),type:"activite",note:item._note||""},...prev.slice(0,99)])} historiqueActivites={historiqueActivites} filtresMemoActiv={filtresMemoActiv} setFiltresMemoActiv={setFiltresMemoActiv} filtresMemoSortie={filtresMemoSortie} setFiltresMemoSortie={setFiltresMemoSortie} adminComms={adminComms} masquees={masquees} toggleMasquer={toggleMasquer} estMasque={estMasque} ajouterDemandeDevisBoost={ajouterDemandeDevisBoost} trialEndDate={trialEndDate}/>}
         {page==="planning"&&<PagePlanning sosLib={sosLib} enfants={enfants} enfantActif={enfantActif} setEnfantActif={setEnfantActif} isPremium={isPremiumUser} onOpenPremium={openPremium} sosModeActif={sosModeActif} adminActivites={adminActivites} pendingContribs={pendingContribs} deletedTitles={deletedTitles}/>}
         {page==="sos"&&<PageSOS sosLib={sosLib} isPremium={isPremiumUser} onOpenPremium={openPremium} onBack={()=>setPage("accueil")}/>}
         {page==="ressources"&&<PageRessources sites={ressourcesSites} contacts={ressourcesContacts} pdfs={ressourcesPdf} setPdfs={setRessourcesPdf} isPremium={isPremiumUser} onOpenPremium={openPremium}/>}
-        {page==="profil"&&<PageProfil setPage={setPage} enfants={enfants} setEnfants={setEnfants} enfantActif={enfantActif} setEnfantActif={setEnfantActif} showGestionEnfants={showGestionEnfants} setShowGestionEnfants={setShowGestionEnfants} currentUser={currentUser} onLogout={handleLogout} onRequireAuth={requireAuth} isPremium={isPremiumUser} setPremium={setPremiumDemo} evenementsSaisonniers={evenementsSaisonniers} onOpenPremium={openPremium} onDeleteAccount={handleDeleteAccount} favoris={favoris} adminEvenements={adminEvenements} pendingContribs={pendingContribs} darkMode={darkMode} setDarkMode={setDarkMode} historiqueActivites={historiqueActivites} setHistoriqueActivites={setHistoriqueActivites}/>}
+        {page==="profil"&&<PageProfil setPage={setPage} enfants={enfants} setEnfants={setEnfants} enfantActif={enfantActif} setEnfantActif={setEnfantActif} showGestionEnfants={showGestionEnfants} setShowGestionEnfants={setShowGestionEnfants} currentUser={currentUser} onLogout={handleLogout} onRequireAuth={requireAuth} isPremium={isPremiumUser} setPremium={setPremiumDemo} evenementsSaisonniers={evenementsSaisonniers} onOpenPremium={openPremium} onDeleteAccount={handleDeleteAccount} favoris={favoris} adminEvenements={adminEvenements} pendingContribs={pendingContribs} darkMode={darkMode} setDarkMode={setDarkMode} historiqueActivites={historiqueActivites} setHistoriqueActivites={setHistoriqueActivites} estBooste={estBooste} activerBoost={activerBoost} ajouterDemandeDevisBoost={ajouterDemandeDevisBoost}/>}
         {page==="favoris"&&<PageFavoris favoris={favoris} setFavoris={setFavoris} isPremium={isPremiumUser} onBack={()=>setPage("profil")}/>}
       </div>
       <div style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:390,background:WH,borderTop:BD,display:"flex",alignItems:"flex-end",zIndex:200,paddingBottom:4}}>

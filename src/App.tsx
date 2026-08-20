@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { supabase } from "./supabaseClient";
 
 const V="#6C5CE7",VL="#EDE9FF";
 // Couleurs "thémables" via CSS custom properties → dark mode sans toucher les composants
@@ -10759,7 +10760,6 @@ function PageAdmin({onLogout,pendingContribs=[],updateContrib,adminActivites=[],
 // (pas de serveur : les identifiants restent stockés sur cet appareil)
 // ============================================================
 function PageAuth({ onAuthSuccess, onCancel, onAdminSuccess }) {
-  const [hasAccount, setHasAccount] = useState(null); // null = chargement
   const [mode, setMode] = useState('signup'); // 'signup' | 'login'
   const [failedAttempts,setFailedAttempts]=useState(0);
   const [lockedUntil,setLockedUntil]=useState(null); // timestamp
@@ -10775,19 +10775,6 @@ function PageAuth({ onAuthSuccess, onCancel, onAdminSuccess }) {
   const [showResetSent, setShowResetSent] = useState(false);
   const [showResetCompte, setShowResetCompte] = useState(false);
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const res = await window.storage.get('auth_account');
-        if (res && res.value) { setHasAccount(true); setMode('login'); }
-        else { setHasAccount(false); setMode('signup'); }
-      } catch (e) {
-        setHasAccount(false);
-        setMode('signup');
-      }
-    })();
-  }, []);
-
   // Compte à rebours du verrou
   useEffect(()=>{
     if(!lockedUntil)return;
@@ -10801,17 +10788,25 @@ function PageAuth({ onAuthSuccess, onCancel, onAdminSuccess }) {
 
   const handleSignup = async () => {
     setError('');
-    if (hasAccount) { setError('Un compte existe déjà. Connecte-toi plutôt.'); return; }
     if (!nom.trim() || !email.trim() || !password.trim()) { setError('Merci de remplir tous les champs.'); return; }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) { setError("L'adresse email n'est pas valide."); return; }
     if (password.length < 6) { setError('Le mot de passe doit faire au moins 6 caractères.'); return; }
     setLoading(true);
-    const account = { nom: nom.trim(), email: email.trim().toLowerCase(), password, premium: false };
-    // Essaie de sauvegarder — si le storage est indisponible, on continue quand même en mémoire
-    try { await window.storage.set('auth_account', JSON.stringify(account)); } catch(e) {}
-    try { await window.storage.set('auth_session', JSON.stringify({ nom: account.nom, email: account.email, premium: false })); } catch(e) {}
+    const { data, error: signUpError } = await supabase.auth.signUp({
+      email: email.trim().toLowerCase(),
+      password,
+    });
+    if (signUpError) {
+      setError(signUpError.message.includes("already registered") ? "Un compte existe déjà avec cet email. Connecte-toi plutôt." : "Erreur lors de la création du compte : " + signUpError.message);
+      setLoading(false);
+      return;
+    }
+    if (data.user) {
+      // Crée la ligne de profil correspondante
+      await supabase.from("profiles").insert({ id: data.user.id, nom: nom.trim(), email: email.trim().toLowerCase(), premium: false });
+    }
     setLoading(false);
-    onAuthSuccess({ nom: account.nom, email: account.email, premium: false });
+    onAuthSuccess({ id: data.user?.id, nom: nom.trim(), email: email.trim().toLowerCase(), premium: false });
   };
 
   const handleLogin = async () => {
@@ -10824,25 +10819,22 @@ function PageAuth({ onAuthSuccess, onCancel, onAdminSuccess }) {
       setAdminStep(true); setAdminCode2(""); return;
     }
     setLoading(true);
-    try {
-      const res = await window.storage.get('auth_account',false);
-      const account = res && res.value ? JSON.parse(res.value) : null;
-      if (!account || account.email !== email.trim().toLowerCase() || account.password !== password) {
-        const newAttempts=failedAttempts+1;
-        setFailedAttempts(newAttempts);
-        if(newAttempts>=3){const d=newAttempts>=5?120:30;setLockedUntil(Date.now()+d*1000);setError(`Identifiants incorrects. Compte verrouillé ${d}s.`);}
-        else setError(`Identifiants incorrects. ${3-newAttempts} tentative${3-newAttempts>1?"s":""} restante${3-newAttempts>1?"s":""}.`);
-        setLoading(false); return;
-      }
-      setFailedAttempts(0);
-      try{ await window.storage.set('auth_session', JSON.stringify({ nom: account.nom, email: account.email, premium: !!account.premium })); }catch(e){}
+    const { data, error: loginError } = await supabase.auth.signInWithPassword({
+      email: email.trim().toLowerCase(),
+      password,
+    });
+    if (loginError) {
+      const newAttempts=failedAttempts+1;
+      setFailedAttempts(newAttempts);
+      if(newAttempts>=3){const d=newAttempts>=5?120:30;setLockedUntil(Date.now()+d*1000);setError(`Identifiants incorrects. Compte verrouillé ${d}s.`);}
+      else setError(`Identifiants incorrects. ${3-newAttempts} tentative${3-newAttempts>1?"s":""} restante${3-newAttempts>1?"s":""}.`);
       setLoading(false);
-      onAuthSuccess({ nom: account.nom, email: account.email, premium: !!account.premium });
-    } catch (e) {
-      // Storage indisponible — propose la connexion en mode mémoire
-      setError("Le stockage est temporairement indisponible. Recharge la page (F5) et réessaie dans quelques secondes.");
-      setLoading(false);
+      return;
     }
+    setFailedAttempts(0);
+    const { data: profil } = await supabase.from("profiles").select("*").eq("id", data.user.id).single();
+    setLoading(false);
+    onAuthSuccess({ id: data.user.id, nom: profil?.nom || "", email: data.user.email, premium: !!profil?.premium });
   };
 
   // Validation du 2ème facteur admin
@@ -10885,14 +10877,6 @@ function PageAuth({ onAuthSuccess, onCancel, onAdminSuccess }) {
       setLoading(false);
     }
   };
-
-  if (hasAccount === null) {
-    return (
-      <div style={{ maxWidth: 390, margin: "0 auto", minHeight: "100vh", background: BG, display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <p style={{ fontSize: 13, color: TM }}>Chargement...</p>
-      </div>
-    );
-  }
 
   // Écran de 2ème facteur admin
   if(adminStep) return(
@@ -10960,7 +10944,7 @@ function PageAuth({ onAuthSuccess, onCancel, onAdminSuccess }) {
           </>
         )}
 
-        {(mode === 'signup' || !hasAccount) && (
+        {(mode === 'signup' || mode === 'login') && (
           <button onClick={() => { setMode(mode === 'signup' ? 'login' : 'signup'); setError(''); }} style={{ width: "100%", marginTop: mode === 'login' ? 4 : 10, background: "none", border: "none", color: V, fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
             {mode === 'signup' ? "Déjà un compte ? Se connecter" : "Pas encore de compte ? Créer un compte"}
           </button>
@@ -11011,19 +10995,31 @@ export default function App(){
   const [showPremiumPage,setShowPremiumPage]=useState(false);
   const [globalToast,setGlobalToast]=useState(null);
   useEffect(()=>{
+    let actif=true;
     (async()=>{
       try{
-        const res=await window.storage.get("auth_session",false);
-        if(res&&res.value)setCurrentUser(JSON.parse(res.value));
+        const {data:{session}}=await supabase.auth.getSession();
+        if(session?.user&&actif){
+          const {data:profil}=await supabase.from("profiles").select("*").eq("id",session.user.id).single();
+          setCurrentUser({id:session.user.id,nom:profil?.nom||"",email:session.user.email,premium:!!profil?.premium});
+        }
       }catch(e){
         // Pas de session active
       }finally{
-        setAuthChecking(false);
+        if(actif)setAuthChecking(false);
       }
     })();
+    const {data:listener}=supabase.auth.onAuthStateChange(async(event,session)=>{
+      if(event==="SIGNED_OUT"){setCurrentUser(null);return;}
+      if(session?.user){
+        const {data:profil}=await supabase.from("profiles").select("*").eq("id",session.user.id).single();
+        setCurrentUser({id:session.user.id,nom:profil?.nom||"",email:session.user.email,premium:!!profil?.premium});
+      }
+    });
+    return()=>{actif=false;listener?.subscription?.unsubscribe();};
   },[]);
   const handleLogout=async()=>{
-    try{ await window.storage.delete("auth_session"); }catch(e){ /* rien à supprimer */ }
+    try{ await supabase.auth.signOut(); }catch(e){ /* déjà déconnecté */ }
     setCurrentUser(null);
     setPage("accueil");
   };

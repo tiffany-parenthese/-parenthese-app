@@ -9450,7 +9450,11 @@ function Utilisateurs() {
               </div>
               <div onClick={e=>e.stopPropagation()} style={{display:"flex",alignItems:"center",gap:6,flexShrink:0}}>
                 <span style={{fontSize:11,fontWeight:600,color:u.premium?"#f59e0b":C.muted}}>{u.premium?"👑 Premium":"Gratuit"}</span>
-                <Tog on={!!u.premium} onChange={()=>setUsers(users.map(x=>x.id===u.id?{...x,premium:!x.premium}:x))}/>
+                <Tog on={!!u.premium} onChange={async()=>{
+                  const nouveauStatut=!u.premium;
+                  const {error}=await supabase.from("profiles").update({premium:nouveauStatut}).eq("id",u.id);
+                  if(!error)setUsers(users.map(x=>x.id===u.id?{...x,premium:nouveauStatut}:x));
+                }}/>
               </div>
               <div style={{textAlign:"right",flexShrink:0}}>
                 <p style={{margin:"0 0 2px",fontSize:12,color:C.muted}}>👶 {(u.enfants||[]).length} enfant{(u.enfants||[]).length>1?"s":""}</p>
@@ -9485,7 +9489,11 @@ function Utilisateurs() {
                   </button>
                   <div style={{display:"flex",alignItems:"center",gap:8,padding:"8px 14px",borderRadius:10,background:"rgba(255,255,255,0.04)",border:`1px solid ${C.border}`}}>
                     <span style={{fontSize:13,color:C.text,fontWeight:600}}>👑 Premium</span>
-                    <Tog on={!!u.premium} onChange={()=>setUsers(users.map(x=>x.id===u.id?{...x,premium:!x.premium}:x))}/>
+                    <Tog on={!!u.premium} onChange={async()=>{
+                      const nouveauStatut=!u.premium;
+                      const {error}=await supabase.from("profiles").update({premium:nouveauStatut}).eq("id",u.id);
+                      if(!error)setUsers(users.map(x=>x.id===u.id?{...x,premium:nouveauStatut}:x));
+                    }}/>
                   </div>
                   <button style={{...s.btnOutline(C.red),marginLeft:"auto"}} onClick={()=>{setUsers(users.filter(x=>x.id!==u.id));setModal(null);}}>
                     🗑️ Supprimer

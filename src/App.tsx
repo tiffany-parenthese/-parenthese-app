@@ -11002,6 +11002,8 @@ export default function App(){
         if(session?.user&&actif){
           const {data:profil}=await supabase.from("profiles").select("*").eq("id",session.user.id).single();
           setCurrentUser({id:session.user.id,nom:profil?.nom||"",email:session.user.email,premium:!!profil?.premium});
+          setPremiumTrialUsed(!!profil?.premium_trial_used);
+          if(profil?.trial_end_date)setTrialEndDate(profil.trial_end_date);
         }
       }catch(e){
         // Pas de session active
@@ -11010,10 +11012,12 @@ export default function App(){
       }
     })();
     const {data:listener}=supabase.auth.onAuthStateChange(async(event,session)=>{
-      if(event==="SIGNED_OUT"){setCurrentUser(null);return;}
+      if(event==="SIGNED_OUT"){setCurrentUser(null);setPremiumTrialUsed(false);setTrialEndDate(null);return;}
       if(session?.user){
         const {data:profil}=await supabase.from("profiles").select("*").eq("id",session.user.id).single();
         setCurrentUser({id:session.user.id,nom:profil?.nom||"",email:session.user.email,premium:!!profil?.premium});
+        setPremiumTrialUsed(!!profil?.premium_trial_used);
+        if(profil?.trial_end_date)setTrialEndDate(profil.trial_end_date);
       }
     });
     return()=>{actif=false;listener?.subscription?.unsubscribe();};
@@ -11246,10 +11250,10 @@ export default function App(){
   useEffect(()=>{
     if(!dataLoaded)return;
     const timer=setTimeout(()=>{
-      sauvegarderPrivé({favoris,enfants,onboarding_done:onboardingDone,popup_shown:[...popupShown],dark_mode:darkMode,historique_activites:historiqueActivites,premium_trial_used:premiumTrialUsed,trial_end_date:trialEndDate,filtres_memo_activ:filtresMemoActiv,filtres_memo_sortie:filtresMemoSortie,masquees});
+      sauvegarderPrivé({favoris,enfants,onboarding_done:onboardingDone,popup_shown:[...popupShown],dark_mode:darkMode,historique_activites:historiqueActivites,filtres_memo_activ:filtresMemoActiv,filtres_memo_sortie:filtresMemoSortie,masquees});
     },1500);
     return()=>clearTimeout(timer);
-  },[favoris,enfants,popupShown,onboardingDone,premiumTrialUsed,trialEndDate,historiqueActivites,darkMode,filtresMemoActiv,filtresMemoSortie,masquees,dataLoaded]);
+  },[favoris,enfants,popupShown,onboardingDone,historiqueActivites,darkMode,filtresMemoActiv,filtresMemoSortie,masquees,dataLoaded]);
 
   useEffect(()=>{
     if(!dataLoaded)return;
@@ -11315,7 +11319,25 @@ export default function App(){
       )}
       {showPremiumPage&&(
         <div style={{position:"fixed",inset:0,background:BG,zIndex:910,overflowY:"auto"}}>
-          <PagePremium onBack={()=>setShowPremiumPage(false)} onSubscribe={handleSubscribe} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} premiumTrialUsed={premiumTrialUsed} onStartTrial={()=>{setPremiumTrialUsed(true);setTrialEndDate(new Date(Date.now()+7*24*60*60*1000).toISOString());setPremiumDemo(true);setShowPremiumPage(false);setShowConfetti(true);setGlobalToast("🎁 7 jours Premium activés ! Profitez-en !");setTimeout(()=>setGlobalToast(null),3000);setTimeout(()=>setShowConfetti(false),4500);}}/>
+          <PagePremium onBack={()=>setShowPremiumPage(false)} onSubscribe={handleSubscribe} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} premiumTrialUsed={premiumTrialUsed} onStartTrial={async()=>{
+            if(!currentUser?.id){requireAuth&&requireAuth();return;}
+            // Vérification serveur — empêche le contournement (localStorage effacé, autre appareil, etc.)
+            const {data:profilActuel}=await supabase.from("profiles").select("premium_trial_used").eq("id",currentUser.id).single();
+            if(profilActuel?.premium_trial_used){
+              setPremiumTrialUsed(true);
+              setGlobalToast("⚠️ Tu as déjà utilisé ton essai gratuit sur ce compte.");
+              setTimeout(()=>setGlobalToast(null),3000);
+              return;
+            }
+            const finEssai=new Date(Date.now()+7*24*60*60*1000).toISOString();
+            const {error}=await supabase.from("profiles").update({premium_trial_used:true,trial_end_date:finEssai,premium:true}).eq("id",currentUser.id);
+            if(error){
+              setGlobalToast("Erreur lors de l'activation, réessaie.");
+              setTimeout(()=>setGlobalToast(null),3000);
+              return;
+            }
+            setPremiumTrialUsed(true);setTrialEndDate(finEssai);setPremiumDemo(true);setShowPremiumPage(false);setShowConfetti(true);setGlobalToast("🎁 7 jours Premium activés ! Profitez-en !");setTimeout(()=>setGlobalToast(null),3000);setTimeout(()=>setShowConfetti(false),4500);
+          }}/>
         </div>
       )}
       {globalToast&&<Toast msg={globalToast}/>}

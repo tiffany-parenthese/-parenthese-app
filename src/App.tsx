@@ -11060,6 +11060,17 @@ export default function App(){
       }
     }catch(e){ /* Pas d'enfants ou erreur réseau — reste vide */ }
   };
+  const favorisChargesDepuisServeur=useRef(false);
+  const chargerFavorisSupabase=async(userId)=>{
+    try{
+      const {data,error}=await supabase.from("favoris").select("*").eq("user_id",userId);
+      if(!error&&data){
+        favorisChargesDepuisServeur.current=false; // évite que le prochain effet de sync écrase ce qu'on vient de charger
+        setFavoris(data.map(f=>({...(f.item_data||{}),id:f.item_id,_type:f.item_type})));
+        setTimeout(()=>{favorisChargesDepuisServeur.current=true;},0);
+      }
+    }catch(e){ /* Pas de favoris ou erreur réseau — reste vide */ }
+  };
   useEffect(()=>{
     let actif=true;
     (async()=>{
@@ -11071,6 +11082,7 @@ export default function App(){
           setPremiumTrialUsed(!!profil?.premium_trial_used);
           if(profil?.trial_end_date)setTrialEndDate(profil.trial_end_date);
           chargerEnfantsSupabase(session.user.id);
+          chargerFavorisSupabase(session.user.id);
         }
       }catch(e){
         // Pas de session active
@@ -11079,13 +11091,14 @@ export default function App(){
       }
     })();
     const {data:listener}=supabase.auth.onAuthStateChange(async(event,session)=>{
-      if(event==="SIGNED_OUT"){setCurrentUser(null);setPremiumTrialUsed(false);setTrialEndDate(null);setEnfants([]);setEnfantActif("");return;}
+      if(event==="SIGNED_OUT"){setCurrentUser(null);setPremiumTrialUsed(false);setTrialEndDate(null);setEnfants([]);setEnfantActif("");setFavoris([]);favorisChargesDepuisServeur.current=false;return;}
       if(session?.user){
         const profil=await chargerOuReparerProfil(session.user);
         setCurrentUser({id:session.user.id,nom:profil?.nom||"",email:session.user.email,premium:!!profil?.premium});
         setPremiumTrialUsed(!!profil?.premium_trial_used);
         if(profil?.trial_end_date)setTrialEndDate(profil.trial_end_date);
         chargerEnfantsSupabase(session.user.id);
+        chargerFavorisSupabase(session.user.id);
       }
     });
     return()=>{actif=false;listener?.subscription?.unsubscribe();};
@@ -11264,7 +11277,7 @@ export default function App(){
         const prv=await window.storage.get("app_v1_private",false);
         if(prv&&prv.value){
           const d=JSON.parse(prv.value);
-          if(d.favoris)setFavoris(d.favoris);
+          // favoris chargés depuis Supabase, plus depuis le stockage local
           if(d.masquees)setMasquees(d.masquees);
           // enfants chargés depuis Supabase, plus depuis le stockage local
           if(d.onboarding_done)setOnboardingDone(d.onboarding_done);
@@ -11311,14 +11324,29 @@ export default function App(){
       setDataLoaded(true);
     })();
   },[]);
+  // ── Synchronisation des favoris vers Supabase (remplacement complet à chaque changement) ──
+  useEffect(()=>{
+    if(!dataLoaded||!currentUser?.id||!favorisChargesDepuisServeur.current)return;
+    const timer=setTimeout(async()=>{
+      try{
+        await supabase.from("favoris").delete().eq("user_id",currentUser.id);
+        if(favoris.length>0){
+          const lignes=favoris.map(f=>({user_id:currentUser.id,item_type:f._type,item_id:String(f.id),item_data:f}));
+          await supabase.from("favoris").insert(lignes);
+        }
+      }catch(e){ /* échec réseau — les favoris restent corrects localement, seront resynchronisés au prochain changement */ }
+    },1500);
+    return()=>clearTimeout(timer);
+  },[favoris,currentUser?.id,dataLoaded]);
   // ── 2 sauvegardes groupées (1 privée + 1 partagée) pour éviter le rate limit ──
   useEffect(()=>{
     if(!dataLoaded)return;
     const timer=setTimeout(()=>{
-      sauvegarderPrivé({favoris,onboarding_done:onboardingDone,popup_shown:[...popupShown],dark_mode:darkMode,historique_activites:historiqueActivites,filtres_memo_activ:filtresMemoActiv,filtres_memo_sortie:filtresMemoSortie,masquees});
+      sauvegarderPrivé({onboarding_done:onboardingDone,popup_shown:[...popupShown],dark_mode:darkMode,historique_activites:historiqueActivites,filtres_memo_activ:filtresMemoActiv,filtres_memo_sortie:filtresMemoSortie,masquees});
     },1500);
     return()=>clearTimeout(timer);
-  },[favoris,popupShown,onboardingDone,historiqueActivites,darkMode,filtresMemoActiv,filtresMemoSortie,masquees,dataLoaded]);
+  },[popupShown,onboardingDone,historiqueActivites,darkMode,filtresMemoActiv,filtresMemoSortie,masquees,dataLoaded]);
+
 
   useEffect(()=>{
     if(!dataLoaded)return;

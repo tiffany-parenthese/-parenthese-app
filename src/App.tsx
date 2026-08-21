@@ -5766,7 +5766,7 @@ function FormulaireEnfant({enfant,onSave,onCancel,isPremium=false,onOpenPremium}
   );
 }
 
-function GestionEnfants({enfants,setEnfants,enfantActif,setEnfantActif,onBack,isPremium=false,onOpenPremium}){
+function GestionEnfants({enfants,setEnfants,enfantActif,setEnfantActif,onBack,isPremium=false,onOpenPremium,userId}){
   const [formMode,setFormMode]=useState(null); // null | 'add' | enfant object
   const [confirmDel,setConfirmDel]=useState(null);
   if(!isPremium){
@@ -5780,9 +5780,21 @@ function GestionEnfants({enfants,setEnfants,enfantActif,setEnfantActif,onBack,is
       </div>
     );
   }
-  const save=(data)=>{
-    if(formMode==="add") setEnfants(prev=>[...prev,{...data,id:Date.now().toString()}]);
-    else setEnfants(prev=>prev.map(e=>e.id===formMode.id?{...e,...data}:e));
+  const save=async(data)=>{
+    const payload={
+      user_id:userId,prenom:data.prenom,age:data.age,emoji:data.emoji,couleur:data.couleur,
+      profils:data.profils||[],besoins:data.besoins||[],besoins_matching:data.besoinsMatching||[],
+      niveaux_sensoriels:data.niveauxSensoriels||{bruit:50,lumiere:50,foule:50,imprevu:50},
+    };
+    if(formMode==="add"){
+      const {data:inserted,error}=await supabase.from("enfants").insert(payload).select().single();
+      if(!error&&inserted){
+        setEnfants(prev=>[...prev,{...data,id:inserted.id}]);
+      }
+    }else{
+      const {error}=await supabase.from("enfants").update(payload).eq("id",formMode.id);
+      if(!error)setEnfants(prev=>prev.map(e=>e.id===formMode.id?{...e,...data}:e));
+    }
     setFormMode(null);
   };
   if(formMode) return <FormulaireEnfant enfant={formMode==="add"?null:formMode} onSave={save} onCancel={()=>setFormMode(null)} isPremium={isPremium} onOpenPremium={onOpenPremium}/>;
@@ -5860,7 +5872,7 @@ function GestionEnfants({enfants,setEnfants,enfantActif,setEnfantActif,onBack,is
             <p style={{margin:"0 0 20px",fontSize:13,color:TM,textAlign:"center"}}>Cette action est irréversible.</p>
             <div style={{display:"flex",gap:10}}>
               <button onClick={()=>setConfirmDel(null)} style={{flex:1,padding:12,borderRadius:28,background:BG,border:BD,color:TM,fontWeight:600,cursor:"pointer"}}>Annuler</button>
-              <button onClick={()=>{setEnfants(prev=>prev.filter(e=>e.id!==confirmDel));if(enfantActif===confirmDel)setEnfantActif(enfants.find(e=>e.id!==confirmDel)?.id||"");setConfirmDel(null);}} style={{flex:1,padding:12,borderRadius:28,background:"#EF4444",border:"none",color:WH,fontWeight:700,cursor:"pointer"}}>Supprimer</button>
+              <button onClick={async()=>{await supabase.from("enfants").delete().eq("id",confirmDel);setEnfants(prev=>prev.filter(e=>e.id!==confirmDel));if(enfantActif===confirmDel)setEnfantActif(enfants.find(e=>e.id!==confirmDel)?.id||"");setConfirmDel(null);}} style={{flex:1,padding:12,borderRadius:28,background:"#EF4444",border:"none",color:WH,fontWeight:700,cursor:"pointer"}}>Supprimer</button>
             </div>
           </div>
         </div>
@@ -6563,7 +6575,7 @@ function PageProfil({setPage,enfants=[],setEnfants,enfantActif,setEnfantActif,sh
     };
     return <PageBadges stats={badgeStats} onBack={()=>setSubPage(null)}/>;
   }
-  if(showGestionEnfants) return <GestionEnfants enfants={enfants} setEnfants={setEnfants} enfantActif={enfantActif} setEnfantActif={setEnfantActif} onBack={()=>setShowGestionEnfants(false)} isPremium={isPremium} onOpenPremium={onOpenPremium}/>;
+  if(showGestionEnfants) return <GestionEnfants enfants={enfants} setEnfants={setEnfants} enfantActif={enfantActif} setEnfantActif={setEnfantActif} onBack={()=>setShowGestionEnfants(false)} isPremium={isPremium} onOpenPremium={onOpenPremium} userId={currentUser?.id}/>;
 
   const menuItems=[
     {icon:"🔔",bg:"#EDE9FF",color:"#6C5CE7",label:"Notifications",sub:"Gerer vos notifications",page:"notifications"},
@@ -10993,6 +11005,19 @@ export default function App(){
   const [showAuthGate,setShowAuthGate]=useState(false);
   const [showPremiumPage,setShowPremiumPage]=useState(false);
   const [globalToast,setGlobalToast]=useState(null);
+  const chargerEnfantsSupabase=async(userId)=>{
+    try{
+      const {data,error}=await supabase.from("enfants").select("*").eq("user_id",userId).order("created_at",{ascending:true});
+      if(!error&&data){
+        setEnfants(data.map(e=>({
+          id:e.id,prenom:e.prenom,age:e.age,emoji:e.emoji,couleur:e.couleur,
+          profils:e.profils||[],besoins:e.besoins||[],besoinsMatching:e.besoins_matching||[],
+          niveauxSensoriels:e.niveaux_sensoriels||{bruit:50,lumiere:50,foule:50,imprevu:50},
+        })));
+        if(data.length>0)setEnfantActif(prev=>prev||data[0].id);
+      }
+    }catch(e){ /* Pas d'enfants ou erreur réseau — reste vide */ }
+  };
   useEffect(()=>{
     let actif=true;
     (async()=>{
@@ -11003,6 +11028,7 @@ export default function App(){
           setCurrentUser({id:session.user.id,nom:profil?.nom||"",email:session.user.email,premium:!!profil?.premium});
           setPremiumTrialUsed(!!profil?.premium_trial_used);
           if(profil?.trial_end_date)setTrialEndDate(profil.trial_end_date);
+          chargerEnfantsSupabase(session.user.id);
         }
       }catch(e){
         // Pas de session active
@@ -11011,12 +11037,13 @@ export default function App(){
       }
     })();
     const {data:listener}=supabase.auth.onAuthStateChange(async(event,session)=>{
-      if(event==="SIGNED_OUT"){setCurrentUser(null);setPremiumTrialUsed(false);setTrialEndDate(null);return;}
+      if(event==="SIGNED_OUT"){setCurrentUser(null);setPremiumTrialUsed(false);setTrialEndDate(null);setEnfants([]);setEnfantActif("");return;}
       if(session?.user){
         const {data:profil}=await supabase.from("profiles").select("*").eq("id",session.user.id).single();
         setCurrentUser({id:session.user.id,nom:profil?.nom||"",email:session.user.email,premium:!!profil?.premium});
         setPremiumTrialUsed(!!profil?.premium_trial_used);
         if(profil?.trial_end_date)setTrialEndDate(profil.trial_end_date);
+        chargerEnfantsSupabase(session.user.id);
       }
     });
     return()=>{actif=false;listener?.subscription?.unsubscribe();};
@@ -11097,10 +11124,7 @@ export default function App(){
     const key=item?.id||item?.nom||item?.titre;
     return masquees.some(m=>(m.id||m.nom||m.titre)===key&&m._type===itemType);
   };
-  const [enfants,setEnfants]=useState([
-    {id:"1",prenom:"Lucas",age:7,emoji:"👦",profils:["TSA"],couleur:"#6C5CE7",niveauxSensoriels:{bruit:30,lumiere:60,foule:80,imprevu:20}},
-    {id:"2",prenom:"Emma",age:5,emoji:"👧",profils:["TDAH"],couleur:"#10B981",niveauxSensoriels:{bruit:70,lumiere:40,foule:50,imprevu:60}},
-  ]);
+  const [enfants,setEnfants]=useState([]);
   const [enfantActif,setEnfantActif]=useState("1");
   const [showGestionEnfants,setShowGestionEnfants]=useState(false);
   const [isAdmin,setIsAdmin]=useState(false);
@@ -11200,7 +11224,7 @@ export default function App(){
           const d=JSON.parse(prv.value);
           if(d.favoris)setFavoris(d.favoris);
           if(d.masquees)setMasquees(d.masquees);
-          if(d.enfants)setEnfants(d.enfants);
+          // enfants chargés depuis Supabase, plus depuis le stockage local
           if(d.onboarding_done)setOnboardingDone(d.onboarding_done);
           if(d.popup_shown)setPopupShown(new Set(Array.isArray(d.popup_shown)?d.popup_shown:[]));
           if(d.dark_mode!==undefined)setDarkMode(d.dark_mode);
@@ -11249,10 +11273,10 @@ export default function App(){
   useEffect(()=>{
     if(!dataLoaded)return;
     const timer=setTimeout(()=>{
-      sauvegarderPrivé({favoris,enfants,onboarding_done:onboardingDone,popup_shown:[...popupShown],dark_mode:darkMode,historique_activites:historiqueActivites,filtres_memo_activ:filtresMemoActiv,filtres_memo_sortie:filtresMemoSortie,masquees});
+      sauvegarderPrivé({favoris,onboarding_done:onboardingDone,popup_shown:[...popupShown],dark_mode:darkMode,historique_activites:historiqueActivites,filtres_memo_activ:filtresMemoActiv,filtres_memo_sortie:filtresMemoSortie,masquees});
     },1500);
     return()=>clearTimeout(timer);
-  },[favoris,enfants,popupShown,onboardingDone,historiqueActivites,darkMode,filtresMemoActiv,filtresMemoSortie,masquees,dataLoaded]);
+  },[favoris,popupShown,onboardingDone,historiqueActivites,darkMode,filtresMemoActiv,filtresMemoSortie,masquees,dataLoaded]);
 
   useEffect(()=>{
     if(!dataLoaded)return;

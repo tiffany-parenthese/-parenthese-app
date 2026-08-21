@@ -2842,7 +2842,6 @@ function Onboarding({onDone,onDemo}){
         ):(
           <div style={{display:"flex",flexDirection:"column",gap:10}}>
             <button onClick={onDone} style={{width:"100%",padding:"15px 0",borderRadius:28,background:"#fff",border:"none",color:"#333",fontWeight:800,fontSize:15,cursor:"pointer"}}>Créer un compte 🚀</button>
-            {onDemo&&<button onClick={onDemo} style={{width:"100%",padding:"13px 0",borderRadius:28,background:"rgba(255,255,255,0.2)",border:"2px solid rgba(255,255,255,0.5)",color:"#fff",fontWeight:600,fontSize:14,cursor:"pointer"}}>👀 Voir la démo (sans compte)</button>}
           </div>
         )}
       </div>
@@ -11266,7 +11265,7 @@ export default function App(){
   const leftTabs=[{k:"biblio",icon:"📖",label:"Biblio"},{k:"ressources",icon:"🧠",label:"Ressources"}];
   const rightTabs=[{k:"planning",icon:"📅",label:"Planning"},{k:"profil",icon:"👤",label:"Profil"}];
   if(authChecking||!dataLoaded) return <div style={{maxWidth:390,margin:"0 auto",minHeight:"100vh",background:BG,display:"flex",alignItems:"center",justifyContent:"center"}}><p style={{fontSize:13,color:TM}}>Chargement...</p></div>;
-  if(!onboardingDone) return <Onboarding onDone={()=>setOnboardingDone(true)} onDemo={()=>{setOnboardingDone(true);activerDemo();}}/>;
+  if(!onboardingDone) return <Onboarding onDone={()=>setOnboardingDone(true)}/>;
   const isLoggedIn=!!currentUser;
   const requireAuth=()=>setShowAuthGate(true);
   const openPremium=()=>setShowPremiumPage(true);
@@ -11314,7 +11313,7 @@ export default function App(){
 
       {showAuthGate&&(
         <div style={{position:"fixed",inset:0,background:BG,zIndex:920,overflowY:"auto"}}>
-          <PageAuth onCancel={()=>{setShowAuthGate(false);activerDemo();}} onAuthSuccess={(u)=>{setCurrentUser(u);setShowAuthGate(false);}} onAdminSuccess={()=>{setIsAdmin(true);setShowAuthGate(false);}}/>
+          <PageAuth onCancel={()=>{setShowAuthGate(false);}} onAuthSuccess={(u)=>{setCurrentUser(u);setShowAuthGate(false);}} onAdminSuccess={()=>{setIsAdmin(true);setShowAuthGate(false);}}/>
         </div>
       )}
       {showPremiumPage&&(

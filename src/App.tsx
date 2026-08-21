@@ -4,12 +4,12 @@ import { supabase } from "./supabaseClient";
 // Récupère le profil Supabase d'un utilisateur, et le recrée automatiquement s'il manque
 // (cas des comptes créés avant une correction, ou dont l'email n'était pas encore confirmé à l'inscription)
 async function chargerOuReparerProfil(user){
-  let { data: profil } = await supabase.from("profiles").select("*").eq("id", user.id).single();
-  if (!profil) {
-    const { data: reparé } = await supabase.from("profiles").insert({ id: user.id, nom: user.email.split("@")[0], email: user.email, premium: false }).select().single();
-    profil = reparé;
-  }
-  return profil;
+  const { data: profilExistant, error: erreurSelect } = await supabase.from("profiles").select("*").eq("id", user.id).single();
+  if (erreurSelect) console.warn("[Parent'Hèse] Lecture profil :", erreurSelect.message, erreurSelect.code);
+  if (profilExistant) return profilExistant;
+  const { data: reparé, error: erreurInsert } = await supabase.from("profiles").insert({ id: user.id, nom: user.email.split("@")[0], email: user.email, premium: false }).select().single();
+  if (erreurInsert) console.error("[Parent'Hèse] ÉCHEC réparation profil :", erreurInsert.message, erreurInsert.code, erreurInsert.details);
+  return reparé;
 }
 
 const V="#6C5CE7",VL="#EDE9FF";
@@ -10843,20 +10843,12 @@ function PageAuth({ onAuthSuccess, onCancel, onAdminSuccess }) {
     const { data, error: signUpError } = await supabase.auth.signUp({
       email: email.trim().toLowerCase(),
       password,
+      options: { data: { nom: nom.trim() } }, // le profil est créé automatiquement côté serveur (trigger) avec ce nom
     });
     if (signUpError) {
       setError(signUpError.message.includes("already registered") ? "Un compte existe déjà avec cet email. Connecte-toi plutôt." : "Erreur lors de la création du compte : " + signUpError.message);
       setLoading(false);
       return;
-    }
-    if (data.user) {
-      // Crée la ligne de profil correspondante
-      const { error: profilError } = await supabase.from("profiles").insert({ id: data.user.id, nom: nom.trim(), email: email.trim().toLowerCase(), premium: false });
-      if (profilError) {
-        // La création du compte a réussi mais pas le profil — l'utilisateur pourra quand même se connecter,
-        // le profil sera automatiquement recréé à la prochaine connexion.
-        console.error("Erreur création profil :", profilError.message);
-      }
     }
     setLoading(false);
     onAuthSuccess({ id: data.user?.id, nom: nom.trim(), email: email.trim().toLowerCase(), premium: false });

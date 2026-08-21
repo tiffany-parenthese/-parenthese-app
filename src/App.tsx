@@ -1,6 +1,17 @@
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "./supabaseClient";
 
+// Récupère le profil Supabase d'un utilisateur, et le recrée automatiquement s'il manque
+// (cas des comptes créés avant une correction, ou dont l'email n'était pas encore confirmé à l'inscription)
+async function chargerOuReparerProfil(user){
+  let { data: profil } = await supabase.from("profiles").select("*").eq("id", user.id).single();
+  if (!profil) {
+    const { data: reparé } = await supabase.from("profiles").insert({ id: user.id, nom: user.email.split("@")[0], email: user.email, premium: false }).select().single();
+    profil = reparé;
+  }
+  return profil;
+}
+
 const V="#6C5CE7",VL="#EDE9FF";
 // Couleurs "thémables" via CSS custom properties → dark mode sans toucher les composants
 const BG="var(--c-bg,#F8FAFC)";
@@ -10874,12 +10885,7 @@ function PageAuth({ onAuthSuccess, onCancel, onAdminSuccess }) {
       return;
     }
     setFailedAttempts(0);
-    let { data: profil } = await supabase.from("profiles").select("*").eq("id", data.user.id).single();
-    if (!profil) {
-      // Profil manquant (ancien compte créé avant correction) — on le recrée maintenant
-      const { data: reparé } = await supabase.from("profiles").insert({ id: data.user.id, nom: data.user.email.split("@")[0], email: data.user.email, premium: false }).select().single();
-      profil = reparé;
-    }
+    const profil = await chargerOuReparerProfil(data.user);
     setLoading(false);
     onAuthSuccess({ id: data.user.id, nom: profil?.nom || "", email: data.user.email, premium: !!profil?.premium });
   };
@@ -11060,7 +11066,7 @@ export default function App(){
       try{
         const {data:{session}}=await supabase.auth.getSession();
         if(session?.user&&actif){
-          const {data:profil}=await supabase.from("profiles").select("*").eq("id",session.user.id).single();
+          const profil=await chargerOuReparerProfil(session.user);
           setCurrentUser({id:session.user.id,nom:profil?.nom||"",email:session.user.email,premium:!!profil?.premium});
           setPremiumTrialUsed(!!profil?.premium_trial_used);
           if(profil?.trial_end_date)setTrialEndDate(profil.trial_end_date);
@@ -11075,7 +11081,7 @@ export default function App(){
     const {data:listener}=supabase.auth.onAuthStateChange(async(event,session)=>{
       if(event==="SIGNED_OUT"){setCurrentUser(null);setPremiumTrialUsed(false);setTrialEndDate(null);setEnfants([]);setEnfantActif("");return;}
       if(session?.user){
-        const {data:profil}=await supabase.from("profiles").select("*").eq("id",session.user.id).single();
+        const profil=await chargerOuReparerProfil(session.user);
         setCurrentUser({id:session.user.id,nom:profil?.nom||"",email:session.user.email,premium:!!profil?.premium});
         setPremiumTrialUsed(!!profil?.premium_trial_used);
         if(profil?.trial_end_date)setTrialEndDate(profil.trial_end_date);

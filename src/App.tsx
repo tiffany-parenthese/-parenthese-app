@@ -9345,10 +9345,35 @@ function Saisonnier({sharedCustomEvents=[],setSharedCustomEvents,evenementsSaiso
 }
 
 function Utilisateurs() {
-  const [users,setUsers] = useState(MOCK_USERS);
+  const [users,setUsers] = useState([]);
+  const [chargement,setChargement] = useState(true);
   const [search,setSearch] = useState("");
   const [filter,setFilter] = useState("");
   const [modal,setModal] = useState(null);
+
+  useEffect(()=>{
+    (async()=>{
+      try{
+        const {data:profils,error}=await supabase.from("profiles").select("*").order("created_at",{ascending:false});
+        if(error||!profils){setChargement(false);return;}
+        // Récupère le nombre d'enfants par utilisateur en une seule requête
+        const {data:tousEnfants}=await supabase.from("enfants").select("id,user_id");
+        const users_formates=profils.map(p=>({
+          id:p.id,
+          nom:p.nom||"(sans nom)",
+          email:p.email||"",
+          enfants:(tousEnfants||[]).filter(e=>e.user_id===p.id).map(e=>e.id),
+          premium:!!p.premium,
+          statut:"active", // pas encore de gestion de suspension côté Supabase
+          inscription:p.created_at?new Date(p.created_at).toLocaleDateString("fr-FR"):"—",
+          contributions:0, // à connecter plus tard aux tables activites/sorties/evenements
+        }));
+        setUsers(users_formates);
+      }catch(e){ /* erreur réseau — liste reste vide */ }
+      finally{ setChargement(false); }
+    })();
+  },[]);
+
   const filtered = users.filter(u=>(filter===""||filter==="premium"?true:u.statut===filter)&&(filter!=="premium"||u.premium)&&(!search||(u.nom||"").toLowerCase().includes(search.toLowerCase())||(u.email||"").toLowerCase().includes(search.toLowerCase())));
   const {slice:filteredPageU,Pagination:PagUsers,reset:resetPagU}=usePagination(filtered,10);
   useEffect(()=>resetPagU(),[search,filter]);
@@ -9356,6 +9381,7 @@ function Utilisateurs() {
     <div>
       <h1 style={{fontSize:22,fontWeight:800,color:C.text,margin:"0 0 4px"}}>Utilisateurs</h1>
       <p style={{fontSize:13,color:C.muted,margin:"0 0 16px"}}>Gérez les comptes utilisateurs</p>
+      {chargement&&<p style={{fontSize:13,color:C.muted,marginBottom:16}}>Chargement des utilisateurs...</p>}
 
       {/* Récapitulatif */}
       <div style={{...s.card,marginBottom:20,padding:0,overflow:"hidden"}}>
@@ -10814,7 +10840,12 @@ function PageAuth({ onAuthSuccess, onCancel, onAdminSuccess }) {
     }
     if (data.user) {
       // Crée la ligne de profil correspondante
-      await supabase.from("profiles").insert({ id: data.user.id, nom: nom.trim(), email: email.trim().toLowerCase(), premium: false });
+      const { error: profilError } = await supabase.from("profiles").insert({ id: data.user.id, nom: nom.trim(), email: email.trim().toLowerCase(), premium: false });
+      if (profilError) {
+        // La création du compte a réussi mais pas le profil — l'utilisateur pourra quand même se connecter,
+        // le profil sera automatiquement recréé à la prochaine connexion.
+        console.error("Erreur création profil :", profilError.message);
+      }
     }
     setLoading(false);
     onAuthSuccess({ id: data.user?.id, nom: nom.trim(), email: email.trim().toLowerCase(), premium: false });
@@ -10843,7 +10874,12 @@ function PageAuth({ onAuthSuccess, onCancel, onAdminSuccess }) {
       return;
     }
     setFailedAttempts(0);
-    const { data: profil } = await supabase.from("profiles").select("*").eq("id", data.user.id).single();
+    let { data: profil } = await supabase.from("profiles").select("*").eq("id", data.user.id).single();
+    if (!profil) {
+      // Profil manquant (ancien compte créé avant correction) — on le recrée maintenant
+      const { data: reparé } = await supabase.from("profiles").insert({ id: data.user.id, nom: data.user.email.split("@")[0], email: data.user.email, premium: false }).select().single();
+      profil = reparé;
+    }
     setLoading(false);
     onAuthSuccess({ id: data.user.id, nom: profil?.nom || "", email: data.user.email, premium: !!profil?.premium });
   };

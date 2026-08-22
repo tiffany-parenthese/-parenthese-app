@@ -11170,6 +11170,17 @@ export default function App(){
       }
     }catch(e){ /* Pas de favoris ou erreur réseau — reste vide */ }
   };
+  const masqueesChargeesDepuisServeur=useRef(false);
+  const chargerMasqueesSupabase=async(userId)=>{
+    try{
+      const {data,error}=await supabase.from("masquees").select("*").eq("user_id",userId);
+      if(!error&&data){
+        masqueesChargeesDepuisServeur.current=false;
+        setMasquees(data.map(m=>({...(m.item_data||{}),id:m.item_id,_type:m.item_type})));
+        setTimeout(()=>{masqueesChargeesDepuisServeur.current=true;},0);
+      }
+    }catch(e){ /* Pas de masquages ou erreur réseau — reste vide */ }
+  };
   useEffect(()=>{
     let actif=true;
     (async()=>{
@@ -11182,6 +11193,7 @@ export default function App(){
           if(profil?.trial_end_date)setTrialEndDate(profil.trial_end_date);
           chargerEnfantsSupabase(session.user.id);
           chargerFavorisSupabase(session.user.id);
+          chargerMasqueesSupabase(session.user.id);
         }
       }catch(e){
         // Pas de session active
@@ -11190,7 +11202,7 @@ export default function App(){
       }
     })();
     const {data:listener}=supabase.auth.onAuthStateChange(async(event,session)=>{
-      if(event==="SIGNED_OUT"){setCurrentUser(null);setPremiumTrialUsed(false);setTrialEndDate(null);setEnfants([]);setEnfantActif("");setFavoris([]);favorisChargesDepuisServeur.current=false;return;}
+      if(event==="SIGNED_OUT"){setCurrentUser(null);setPremiumTrialUsed(false);setTrialEndDate(null);setEnfants([]);setEnfantActif("");setFavoris([]);favorisChargesDepuisServeur.current=false;setMasquees([]);masqueesChargeesDepuisServeur.current=false;return;}
       if(session?.user){
         const profil=await chargerOuReparerProfil(session.user);
         setCurrentUser({id:session.user.id,nom:profil?.nom||"",email:session.user.email,premium:!!profil?.premium});
@@ -11198,12 +11210,14 @@ export default function App(){
         if(profil?.trial_end_date)setTrialEndDate(profil.trial_end_date);
         chargerEnfantsSupabase(session.user.id);
         chargerFavorisSupabase(session.user.id);
+        chargerMasqueesSupabase(session.user.id);
       }
     });
     return()=>{actif=false;listener?.subscription?.unsubscribe();};
   },[]);
   const handleLogout=async()=>{
     await synchroniserFavorisMaintenant(); // s'assure que le dernier favori ajouté n'est pas perdu
+    await synchroniserMasqueesMaintenant(); // idem pour les masquages
     try{ await supabase.auth.signOut(); }catch(e){ /* déjà déconnecté */ }
     setCurrentUser(null);
     setPage("accueil");
@@ -11378,7 +11392,7 @@ export default function App(){
         if(prv&&prv.value){
           const d=JSON.parse(prv.value);
           // favoris chargés depuis Supabase, plus depuis le stockage local
-          if(d.masquees)setMasquees(d.masquees);
+          // masquees chargés depuis Supabase, plus depuis le stockage local
           // enfants chargés depuis Supabase, plus depuis le stockage local
           if(d.onboarding_done)setOnboardingDone(d.onboarding_done);
           if(d.popup_shown)setPopupShown(new Set(Array.isArray(d.popup_shown)?d.popup_shown:[]));
@@ -11436,14 +11450,30 @@ export default function App(){
     const timer=setTimeout(synchroniserFavorisMaintenant,300);
     return()=>clearTimeout(timer);
   },[favoris,currentUser?.id,dataLoaded]);
+  // ── Synchronisation des masquages ("ne plus proposer") vers Supabase ──
+  const synchroniserMasqueesMaintenant=async()=>{
+    if(!currentUser?.id)return;
+    try{
+      await supabase.from("masquees").delete().eq("user_id",currentUser.id);
+      if(masquees.length>0){
+        const lignes=masquees.map(m=>({user_id:currentUser.id,item_type:m._type,item_id:String(m.id||m.nom||m.titre),item_data:m}));
+        await supabase.from("masquees").insert(lignes);
+      }
+    }catch(e){ /* échec réseau — les masquages restent corrects localement, seront resynchronisés au prochain changement */ }
+  };
+  useEffect(()=>{
+    if(!dataLoaded||!currentUser?.id||!masqueesChargeesDepuisServeur.current)return;
+    const timer=setTimeout(synchroniserMasqueesMaintenant,300);
+    return()=>clearTimeout(timer);
+  },[masquees,currentUser?.id,dataLoaded]);
   // ── 2 sauvegardes groupées (1 privée + 1 partagée) pour éviter le rate limit ──
   useEffect(()=>{
     if(!dataLoaded)return;
     const timer=setTimeout(()=>{
-      sauvegarderPrivé({onboarding_done:onboardingDone,popup_shown:[...popupShown],dark_mode:darkMode,historique_activites:historiqueActivites,filtres_memo_activ:filtresMemoActiv,filtres_memo_sortie:filtresMemoSortie,masquees});
+      sauvegarderPrivé({onboarding_done:onboardingDone,popup_shown:[...popupShown],dark_mode:darkMode,historique_activites:historiqueActivites,filtres_memo_activ:filtresMemoActiv,filtres_memo_sortie:filtresMemoSortie});
     },1500);
     return()=>clearTimeout(timer);
-  },[popupShown,onboardingDone,historiqueActivites,darkMode,filtresMemoActiv,filtresMemoSortie,masquees,dataLoaded]);
+  },[popupShown,onboardingDone,historiqueActivites,darkMode,filtresMemoActiv,filtresMemoSortie,dataLoaded]);
 
 
   useEffect(()=>{

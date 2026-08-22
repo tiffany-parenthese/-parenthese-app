@@ -504,9 +504,7 @@ function useAvis(itemType,itemId){
     let actif=true;
     (async()=>{
       try{
-        console.log("[DEBUG avis] Recherche avis pour :",itemType,String(itemId));
         const {data,error}=await supabase.from("avis").select("*").eq("item_type",itemType).eq("item_id",String(itemId)).order("created_at",{ascending:false});
-        console.log("[DEBUG avis] Résultat :",data,"Erreur :",error);
         if(actif&&!error&&data){
           setAvisAjoutes(data.map(a=>({
             stars:a.stars,pseudo:a.pseudo||"Anonyme",
@@ -516,7 +514,6 @@ function useAvis(itemType,itemId){
           })));
         }
       }catch(e){
-        console.log("[DEBUG avis] Exception :",e);
         // Pas encore d'avis pour cet element, ou erreur réseau
       }finally{
         if(actif)setChargement(false);
@@ -566,7 +563,7 @@ function AvisForm({isLoggedIn=true,onRequireAuth,tousLesAvis=[],chargement=false
   return(
     <div style={{background:WH,borderRadius:16,padding:16,marginBottom:12}}>
       {(() => {
-        const avisAffiches=tousLesAvis.filter(a=>!a.pointsOnly);
+        const avisAffiches=tousLesAvis.filter(a=>!a.pointsOnly||(a.texte&&a.texte.trim())||(a.pointsAnticiper&&a.pointsAnticiper.length>0)||(a.accessibiliteSignalee&&a.accessibiliteSignalee.length>0));
         return(
         <>
       <p style={{margin:"0 0 14px",fontSize:15,fontWeight:600,color:TX}}>💬 Avis ({chargement?"...":avisAffiches.length})</p>
@@ -576,9 +573,11 @@ function AvisForm({isLoggedIn=true,onRequireAuth,tousLesAvis=[],chargement=false
             <div key={i} style={{borderBottom:i<avisAffiches.length-1?"0.5px solid #F3F4F6":"none",paddingBottom:i<avisAffiches.length-1?12:0}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:4}}>
                 <span style={{fontSize:13,fontWeight:600,color:TX}}>{a.pseudo}</span>
-                <div style={{textAlign:"right",flexShrink:0}}><Stars count={a.stars} size={12}/><div style={{fontSize:11,color:"#9CA3AF"}}>{a.temps}</div></div>
+                <div style={{textAlign:"right",flexShrink:0}}>{a.stars>0?<Stars count={a.stars} size={12}/>:<span style={{fontSize:11,color:"#9CA3AF",fontStyle:"italic"}}>Sans note</span>}<div style={{fontSize:11,color:"#9CA3AF"}}>{a.temps}</div></div>
               </div>
-              {a.texte&&<p style={{fontSize:13,color:"#374151",lineHeight:1.5,margin:0}}>{a.texte}</p>}
+              {a.texte&&<p style={{fontSize:13,color:"#374151",lineHeight:1.5,margin:"0 0 6px"}}>{a.texte}</p>}
+              {a.pointsAnticiper?.length>0&&<div style={{display:"flex",flexWrap:"wrap",gap:4,marginBottom:4}}>{a.pointsAnticiper.map((p,pi)=><span key={pi} style={{fontSize:10,background:"#FFF7ED",color:"#9A3412",padding:"2px 8px",borderRadius:8,fontWeight:600}}>⚠️ {p}</span>)}</div>}
+              {a.accessibiliteSignalee?.length>0&&<div style={{display:"flex",flexWrap:"wrap",gap:4}}>{a.accessibiliteSignalee.map((p,pi)=><span key={pi} style={{fontSize:10,background:"#EEF2FF",color:"#3730A3",padding:"2px 8px",borderRadius:8,fontWeight:600}}>♿ {p}</span>)}</div>}
             </div>
           ))}
         </div>

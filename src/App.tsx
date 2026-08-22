@@ -1956,7 +1956,7 @@ function EvenementDetail({evt,onBack,onReport,isFavorite,onToggleFavorite,isLogg
   );
 }
 
-function EvtCard({e,onClick,onReport,customCatEvenements=[]}){
+function EvtCard({e,onClick,onReport,customCatEvenements=[],isFav,onToggleFav}){
   const cat=EVT_CATEGORIES.find(c=>c.k===e.categorie)||customCatEvenements.find(c=>c.k===e.categorie);
   const catEmoji=cat?cat.emoji:"🎉";
   const tooMany=(e.signalements||0)>=3;
@@ -1973,7 +1973,7 @@ function EvtCard({e,onClick,onReport,customCatEvenements=[]}){
     <div style={{background:WH,borderRadius:16,overflow:"hidden",border:BD,marginBottom:12,boxShadow:"0 2px 8px rgba(0,0,0,0.06)"}}>
       <div style={{position:"relative",height:160,background:e.photo?"#000":"linear-gradient(135deg,#EDE9FF,#C4B5FD)",display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",overflow:"hidden"}} onClick={onClick}>
         {e.photo?<img src={e.photo} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/>:<span style={{fontSize:64}}>{catEmoji}</span>}
-        <div style={{position:"absolute",top:10,right:10,width:32,height:32,borderRadius:"50%",background:WH,display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 2px 6px rgba(0,0,0,0.15)"}}><span style={{fontSize:16}}>🤍</span></div>
+        <button onClick={e2=>{e2.stopPropagation();onToggleFav&&onToggleFav();}} style={{position:"absolute",top:10,right:10,width:32,height:32,borderRadius:"50%",background:WH,border:"none",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 2px 6px rgba(0,0,0,0.15)",cursor:"pointer",padding:0}}><span style={{fontSize:16}}>{isFav?"❤️":"🤍"}</span></button>
         <div style={{position:"absolute",top:10,left:10,background:e.gratuit?"#D1FAE5":"#FEF3C7",borderRadius:20,padding:"3px 10px"}}><span style={{fontSize:11,fontWeight:600,color:e.gratuit?"#065F46":"#92400E"}}>{e.prix}</span></div>
       </div>
       <div style={{padding:"12px 14px"}} onClick={onClick}>
@@ -2162,7 +2162,7 @@ function CalendrierMensuel({evtFiltered=[],setEvtDetail,addReport,customCatEvene
       ):(
         <div style={{display:"flex",flexDirection:"column",gap:8}}>
           <p style={{margin:"0 0 6px",fontSize:12,fontWeight:700,color:TM}}>{evtsDuMois.length} événement{evtsDuMois.length>1?"s":""} ce mois</p>
-          {evtsDuMois.map(e=><EvtCard key={e.id||e.nom} e={e} onClick={()=>setEvtDetail(e)} onReport={addReport} customCatEvenements={customCatEvenements}/>)}
+          {evtsDuMois.map(e=><EvtCard key={e.id||e.nom} e={e} onClick={()=>setEvtDetail(e)} onReport={addReport} customCatEvenements={customCatEvenements} isFav={isFavBiblio(e,"evenement")} onToggleFav={()=>toggleFavBiblio(e,"evenement")}/>)}
         </div>
       )}
     </div>
@@ -2682,7 +2682,7 @@ function PageBiblio({pendingContribs=[],setPendingContribs,adminActivites=[],adm
                     return true;
                   });
                   if(evtsDate.length===0)return null;
-                  return(<div key={date} style={{marginBottom:12}}><div style={{background:V,borderRadius:10,padding:"6px 14px",marginBottom:10,display:"inline-flex"}}><span style={{fontSize:12,fontWeight:700,color:WH}}>{jourLabel(date)} {formatDate(date)}</span></div>{evtsDate.map(e=><EvtCard key={e.id} e={e} onClick={()=>setEvtDetail(e)} onReport={addReport} customCatEvenements={customCatEvenements}/>)}</div>);
+                  return(<div key={date} style={{marginBottom:12}}><div style={{background:V,borderRadius:10,padding:"6px 14px",marginBottom:10,display:"inline-flex"}}><span style={{fontSize:12,fontWeight:700,color:WH}}>{jourLabel(date)} {formatDate(date)}</span></div>{evtsDate.map(e=><EvtCard key={e.id} e={e} onClick={()=>setEvtDetail(e)} onReport={addReport} customCatEvenements={customCatEvenements} isFav={isFavBiblio(e,"evenement")} onToggleFav={()=>toggleFavBiblio(e,"evenement")}/>)}</div>);
                 })}
                 {Object.keys(byDate).length===0&&<div style={{textAlign:"center",padding:"40px 0",color:TM}}><p style={{fontSize:32}}>📭</p><p style={{fontSize:14}}>Aucun evenement trouve.</p></div>}
                 <PropBtn/>
@@ -2697,8 +2697,8 @@ function PageBiblio({pendingContribs=[],setPendingContribs,adminActivites=[],adm
                   <button onClick={genEvt} style={{width:"100%",padding:13,borderRadius:12,background:V,border:"none",color:WH,fontWeight:600,fontSize:14,cursor:"pointer"}}>Generer des evenements</button>
                 </div>
                 {evtResult&&(<>
-                  {evtResult.free.length>0&&(<div style={{marginBottom:12}}><p style={{fontSize:12,fontWeight:600,color:GR,margin:"0 0 8px"}}>Gratuit ({evtResult.free.length})</p>{evtResult.free.map(e=><EvtCard key={e.id} e={e} onClick={()=>setEvtDetail(e)} onReport={addReport} customCatEvenements={customCatEvenements}/>)}</div>)}
-                  {evtResult.premium.length>0&&(<div><p style={{fontSize:12,fontWeight:600,color:OR,margin:"0 0 8px"}}>Premium</p>{evtResult.premium.map(e=>isPremium?(<EvtCard key={e.id} e={e} onClick={()=>setEvtDetail(e)} onReport={addReport} customCatEvenements={customCatEvenements}/>):(<div key={e.id} style={{opacity:0.6,pointerEvents:"none"}}><EvtCard e={e} onClick={()=>{}} customCatEvenements={customCatEvenements}/></div>))}{!isPremium&&<button onClick={()=>onOpenPremium&&onOpenPremium()} style={{width:"100%",padding:11,borderRadius:12,background:V,border:"none",color:WH,fontWeight:600,fontSize:13,cursor:"pointer",marginTop:4}}>Passer Premium</button>}</div>)}
+                  {evtResult.free.length>0&&(<div style={{marginBottom:12}}><p style={{fontSize:12,fontWeight:600,color:GR,margin:"0 0 8px"}}>Gratuit ({evtResult.free.length})</p>{evtResult.free.map(e=><EvtCard key={e.id} e={e} onClick={()=>setEvtDetail(e)} onReport={addReport} customCatEvenements={customCatEvenements} isFav={isFavBiblio(e,"evenement")} onToggleFav={()=>toggleFavBiblio(e,"evenement")}/>)}</div>)}
+                  {evtResult.premium.length>0&&(<div><p style={{fontSize:12,fontWeight:600,color:OR,margin:"0 0 8px"}}>Premium</p>{evtResult.premium.map(e=>isPremium?(<EvtCard key={e.id} e={e} onClick={()=>setEvtDetail(e)} onReport={addReport} customCatEvenements={customCatEvenements} isFav={isFavBiblio(e,"evenement")} onToggleFav={()=>toggleFavBiblio(e,"evenement")}/>):(<div key={e.id} style={{opacity:0.6,pointerEvents:"none"}}><EvtCard e={e} onClick={()=>{}} customCatEvenements={customCatEvenements}/></div>))}{!isPremium&&<button onClick={()=>onOpenPremium&&onOpenPremium()} style={{width:"100%",padding:11,borderRadius:12,background:V,border:"none",color:WH,fontWeight:600,fontSize:13,cursor:"pointer",marginTop:4}}>Passer Premium</button>}</div>)}
                   {evtResult.free.length===0&&evtResult.premium.length===0&&<div style={{textAlign:"center",padding:"30px 0",color:TM}}><p style={{fontSize:32}}>📭</p><p>Aucun evenement.</p></div>}
                 </>)}
                 <PropBtn/>

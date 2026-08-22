@@ -504,7 +504,9 @@ function useAvis(itemType,itemId){
     let actif=true;
     (async()=>{
       try{
+        console.log("[DEBUG avis] Recherche avis pour :",itemType,String(itemId));
         const {data,error}=await supabase.from("avis").select("*").eq("item_type",itemType).eq("item_id",String(itemId)).order("created_at",{ascending:false});
+        console.log("[DEBUG avis] Résultat :",data,"Erreur :",error);
         if(actif&&!error&&data){
           setAvisAjoutes(data.map(a=>({
             stars:a.stars,pseudo:a.pseudo||"Anonyme",
@@ -514,6 +516,7 @@ function useAvis(itemType,itemId){
           })));
         }
       }catch(e){
+        console.log("[DEBUG avis] Exception :",e);
         // Pas encore d'avis pour cet element, ou erreur réseau
       }finally{
         if(actif)setChargement(false);

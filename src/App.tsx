@@ -2367,6 +2367,14 @@ function PageBiblio({pendingContribs=[],setPendingContribs,adminActivites=[],adm
   const handleSubmitEvt=(data)=>{
     const newItem={...data,id:Date.now(),_type:"evenement",_createdAt:new Date().toISOString(),_statut:"published",_signalements:0,_raisonSignalement:"",_auteur:currentUser?.nom||"Anonyme",_auteurEmail:currentUser?.email||"non connecté"};
     setPendingContribs(prev=>[newItem,...prev]);
+    if(currentUser?.id){
+      supabase.from("evenements").insert({
+        nom:data.nom,categorie:data.categorie,ville:data.ville,dept:data.dept,date:data.date,date_fin:data.dateFin,
+        prix:data.prix,gratuit:data.gratuit,adresse:data.adresse,photo:data.photo,description:data.desc,
+        tnd:data.tnd,accessibilite:data.accessibilite,commentaire_tnd:data.commentaireTND,
+        statut:"published",communaute:true,auteur_id:currentUser.id,auteur_nom:currentUser.nom,
+      }).then(({error})=>{if(error)console.error("Erreur sauvegarde événement Supabase:",error.message);});
+    }
     if(data._demandeBoost&&ajouterDemandeDevisBoost){
       ajouterDemandeDevisBoost({item:newItem,itemType:"evenement",nom:currentUser?.nom||"Anonyme",email:currentUser?.email||"non renseigné",message:"Demande faite à la soumission de l'événement.",date:new Date().toISOString()});
     }
@@ -2711,10 +2719,30 @@ function PageBiblio({pendingContribs=[],setPendingContribs,adminActivites=[],adm
       {showCarte==="evenement"&&<CarteInteractive items={evtFiltered} type="evenement" onClose={()=>setShowCarte(null)} onOpenItem={(item)=>{setShowCarte(null);setEvtDetail(item);}}/>}
       {detail&&detail.type==="activite"&&<ActivityDetailPage activity={detail.item} isFavorite={isFavBiblio(detail.item,"activite")} onToggleFavorite={()=>toggleFavBiblio(detail.item,"activite")} onBack={()=>setDetail(null)} onReport={addReport} isLoggedIn={isLoggedIn} onRequireAuth={onRequireAuth} matchEnfant={matchActif?enfantCourantBiblio:null} onMasquer={toggleMasquer?()=>toggleMasquer(detail.item,"activite"):undefined} estMasque={estMasque?estMasque(detail.item,"activite"):false}/>}
       {detail&&detail.type==="sortie"&&<SortieDetailPage sortie={detail.item} isFavorite={isFavBiblio(detail.item,"sortie")} onToggleFavorite={()=>toggleFavBiblio(detail.item,"sortie")} onBack={()=>setDetail(null)} onReport={addReport} isLoggedIn={isLoggedIn} onRequireAuth={onRequireAuth} onMasquer={toggleMasquer?()=>toggleMasquer(detail.item,"sortie"):undefined} estMasque={estMasque?estMasque(detail.item,"sortie"):false}/>}
-      {detail&&detail.type==="form_activite"&&<FormActivite customCatActivites={customCatActivites} onClose={()=>setDetail(null)} onSubmit={(item)=>{setPendingContribs(prev=>[{...item,id:Date.now(),_type:"activite",_createdAt:new Date().toISOString(),_statut:"published",_signalements:0,_raisonSignalement:"",_auteur:currentUser?.nom||"Anonyme",_auteurEmail:currentUser?.email||"non connecté"},...prev]);setDetail(null);showToast("✅ Activité publiée et visible dans la bibliothèque !");}}/>}
+      {detail&&detail.type==="form_activite"&&<FormActivite customCatActivites={customCatActivites} onClose={()=>setDetail(null)} onSubmit={(item)=>{
+        const newItem={...item,id:Date.now(),_type:"activite",_createdAt:new Date().toISOString(),_statut:"published",_signalements:0,_raisonSignalement:"",_auteur:currentUser?.nom||"Anonyme",_auteurEmail:currentUser?.email||"non connecté"};
+        setPendingContribs(prev=>[newItem,...prev]);
+        if(currentUser?.id){
+          supabase.from("activites").insert({
+            nom:item.nom,categorie:item.categorie,lieu:item.lieu,energie:item.energie,age:item.age,duree:item.duree,
+            difficulte:item.difficulte,materiel:item.materiel,etapes:item.etapes,description:item.desc,photo:item.photo,
+            niveaux_sensoriels:item.niveauxSensoriels,profils_tnd:item.profilsTND,adaptations:item.adaptations,
+            caracteristiques:item.caracteristiques,commentaire_tnd:item.commentaireTND,points_anticiper:item.pointsAnticiper,
+            statut:"published",communaute:true,auteur_id:currentUser.id,auteur_nom:currentUser.nom,
+          }).then(({error})=>{if(error)console.error("Erreur sauvegarde activité Supabase:",error.message);});
+        }
+        setDetail(null);showToast("✅ Activité publiée et visible dans la bibliothèque !");
+      }}/>}
       {detail&&detail.type==="form_sortie"&&<FormSortie customCatSorties={customCatSorties} onClose={()=>setDetail(null)} onSubmit={(item)=>{
         const newItem={...item,id:Date.now(),_type:"sortie",_createdAt:new Date().toISOString(),_statut:"published",_signalements:0,_raisonSignalement:"",_auteur:currentUser?.nom||"Anonyme",_auteurEmail:currentUser?.email||"non connecté"};
         setPendingContribs(prev=>[newItem,...prev]);
+        if(currentUser?.id){
+          supabase.from("sorties").insert({
+            nom:item.nom,type:item.type,dept:item.dept,ville:item.ville,prix:item.prix,horaires:item.horaires,
+            description:item.desc,photo:item.photo,tnd:item.tnd,accessibilite:item.accessibilite,commentaire_tnd:item.commentaireTND,
+            statut:"published",communaute:true,auteur_id:currentUser.id,auteur_nom:currentUser.nom,
+          }).then(({error})=>{if(error)console.error("Erreur sauvegarde sortie Supabase:",error.message);});
+        }
         if(item._demandeBoost&&ajouterDemandeDevisBoost){
           ajouterDemandeDevisBoost({item:newItem,itemType:"sortie",nom:currentUser?.nom||"Anonyme",email:currentUser?.email||"non renseigné",message:"Demande faite à la soumission de la sortie.",date:new Date().toISOString()});
         }

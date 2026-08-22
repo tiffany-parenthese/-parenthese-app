@@ -498,27 +498,40 @@ function SignalementButton({type,onSignaler}){
 }
 
 function useAvis(itemType,itemId){
-  const storageKey=`avis_${itemType}_${itemId}`;
   const [avisAjoutes,setAvisAjoutes]=useState([]);
   const [chargement,setChargement]=useState(true);
   useEffect(()=>{
     let actif=true;
     (async()=>{
       try{
-        const res=await window.storage.get(storageKey,true);
-        if(actif&&res&&res.value)setAvisAjoutes(JSON.parse(res.value));
+        const {data,error}=await supabase.from("avis").select("*").eq("item_type",itemType).eq("item_id",String(itemId)).order("created_at",{ascending:false});
+        if(actif&&!error&&data){
+          setAvisAjoutes(data.map(a=>({
+            stars:a.stars,pseudo:a.pseudo||"Anonyme",
+            temps:a.created_at?new Date(a.created_at).toLocaleDateString("fr-FR"):"",
+            texte:a.texte||"",pointsAnticiper:a.points_anticiper||undefined,
+            accessibiliteSignalee:a.accessibilite_signalee||undefined,pointsOnly:!!a.points_only,
+          })));
+        }
       }catch(e){
-        // Pas encore d'avis pour cet element
+        // Pas encore d'avis pour cet element, ou erreur réseau
       }finally{
         if(actif)setChargement(false);
       }
     })();
     return()=>{actif=false;};
-  },[storageKey]);
+  },[itemType,itemId]);
   const ajouterAvis=async(nouvelAvis)=>{
-    const maj=[nouvelAvis,...avisAjoutes];
-    setAvisAjoutes(maj);
-    try{ await window.storage.set(storageKey,JSON.stringify(maj),true); }catch(e){ /* l'avis reste visible localement meme si la sauvegarde echoue */ }
+    setAvisAjoutes(prev=>[nouvelAvis,...prev]); // affichage immédiat, avant confirmation serveur
+    try{
+      const {data:{user}}=await supabase.auth.getUser();
+      await supabase.from("avis").insert({
+        item_type:itemType,item_id:String(itemId),user_id:user?.id||null,
+        pseudo:nouvelAvis.pseudo||"Anonyme",stars:nouvelAvis.stars||0,texte:nouvelAvis.texte||"",
+        points_anticiper:nouvelAvis.pointsAnticiper||null,accessibilite_signalee:nouvelAvis.accessibiliteSignalee||null,
+        points_only:!!nouvelAvis.pointsOnly,
+      });
+    }catch(e){ /* l'avis reste visible localement meme si la sauvegarde echoue */ }
   };
   const tousLesAvis=[...avisAjoutes,...AVIS_DEMO];
   const avisNotes=tousLesAvis.filter(a=>!a.pointsOnly);

@@ -500,14 +500,17 @@ function SignalementButton({type,onSignaler}){
 function useAvis(itemType,itemId){
   const [avisAjoutes,setAvisAjoutes]=useState([]);
   const [chargement,setChargement]=useState(true);
+  const [currentUserId,setCurrentUserId]=useState(null);
   useEffect(()=>{
     let actif=true;
     (async()=>{
       try{
+        const {data:{user}}=await supabase.auth.getUser();
+        if(actif)setCurrentUserId(user?.id||null);
         const {data,error}=await supabase.from("avis").select("*").eq("item_type",itemType).eq("item_id",String(itemId)).order("created_at",{ascending:false});
         if(actif&&!error&&data){
           setAvisAjoutes(data.map(a=>({
-            stars:a.stars,pseudo:a.pseudo||"Anonyme",
+            id:a.id,userId:a.user_id,stars:a.stars,pseudo:a.pseudo||"Anonyme",
             temps:a.created_at?new Date(a.created_at).toLocaleDateString("fr-FR"):"",
             texte:a.texte||"",pointsAnticiper:a.points_anticiper||undefined,
             accessibiliteSignalee:a.accessibilite_signalee||undefined,pointsOnly:!!a.points_only,
@@ -525,13 +528,19 @@ function useAvis(itemType,itemId){
     setAvisAjoutes(prev=>[nouvelAvis,...prev]); // affichage immédiat, avant confirmation serveur
     try{
       const {data:{user}}=await supabase.auth.getUser();
-      await supabase.from("avis").insert({
+      const {data:inserted}=await supabase.from("avis").insert({
         item_type:itemType,item_id:String(itemId),user_id:user?.id||null,
         pseudo:nouvelAvis.pseudo||"Anonyme",stars:nouvelAvis.stars||0,texte:nouvelAvis.texte||"",
         points_anticiper:nouvelAvis.pointsAnticiper||null,accessibilite_signalee:nouvelAvis.accessibiliteSignalee||null,
         points_only:!!nouvelAvis.pointsOnly,
-      });
+      }).select().single();
+      if(inserted)setAvisAjoutes(prev=>prev.map(a=>a===nouvelAvis?{...a,id:inserted.id,userId:inserted.user_id}:a));
     }catch(e){ /* l'avis reste visible localement meme si la sauvegarde echoue */ }
+  };
+  const supprimerAvis=async(avisId)=>{
+    setAvisAjoutes(prev=>prev.filter(a=>a.id!==avisId)); // retrait immédiat
+    try{ await supabase.from("avis").delete().eq("id",avisId); }
+    catch(e){ /* échec réseau — l'avis reviendra au prochain chargement si la suppression a échoué */ }
   };
   const tousLesAvis=[...avisAjoutes,...AVIS_DEMO];
   const avisNotes=tousLesAvis.filter(a=>!a.pointsOnly);
@@ -540,10 +549,10 @@ function useAvis(itemType,itemId){
     const subset=avisNotes.filter(a=>(a.profils||[]).includes(profil));
     return subset.length?{moyenne:subset.reduce((s,a)=>s+(Number(a.stars)||0),0)/subset.length,nb:subset.length}:null;
   };
-  return{tousLesAvis,chargement,ajouterAvis,noteGlobale,noteParProfil};
+  return{tousLesAvis,chargement,ajouterAvis,supprimerAvis,currentUserId,noteGlobale,noteParProfil};
 }
 
-function AvisForm({isLoggedIn=true,onRequireAuth,tousLesAvis=[],chargement=false,onAjouterAvis,showPointsAnticiper=false,showAccessibilite=false}){
+function AvisForm({isLoggedIn=true,onRequireAuth,tousLesAvis=[],chargement=false,onAjouterAvis,onSupprimerAvis,currentUserId=null,showPointsAnticiper=false,showAccessibilite=false}){
   const [stars,setStars]=useState(0);
   const [hover,setHover]=useState(0);
   const [text,setText]=useState("");
@@ -573,7 +582,12 @@ function AvisForm({isLoggedIn=true,onRequireAuth,tousLesAvis=[],chargement=false
             <div key={i} style={{borderBottom:i<avisAffiches.length-1?"0.5px solid #F3F4F6":"none",paddingBottom:i<avisAffiches.length-1?12:0}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:4}}>
                 <span style={{fontSize:13,fontWeight:600,color:TX}}>{a.pseudo}</span>
-                <div style={{textAlign:"right",flexShrink:0}}>{a.stars>0?<Stars count={a.stars} size={12}/>:<span style={{fontSize:11,color:"#9CA3AF",fontStyle:"italic"}}>Sans note</span>}<div style={{fontSize:11,color:"#9CA3AF"}}>{a.temps}</div></div>
+                <div style={{display:"flex",alignItems:"center",gap:8,flexShrink:0}}>
+                  <div style={{textAlign:"right"}}>{a.stars>0?<Stars count={a.stars} size={12}/>:<span style={{fontSize:11,color:"#9CA3AF",fontStyle:"italic"}}>Sans note</span>}<div style={{fontSize:11,color:"#9CA3AF"}}>{a.temps}</div></div>
+                  {a.userId&&currentUserId&&a.userId===currentUserId&&(
+                    <button onClick={()=>{if(window.confirm("Supprimer cet avis ?"))onSupprimerAvis&&onSupprimerAvis(a.id);}} style={{background:"none",border:"none",cursor:"pointer",padding:2,fontSize:13,color:"#D1D5DB"}} title="Supprimer mon avis">🗑️</button>
+                  )}
+                </div>
               </div>
               {a.texte&&<p style={{fontSize:13,color:"#374151",lineHeight:1.5,margin:"0 0 6px"}}>{a.texte}</p>}
               {a.pointsAnticiper?.length>0&&<div style={{display:"flex",flexWrap:"wrap",gap:4,marginBottom:4}}>{a.pointsAnticiper.map((p,pi)=><span key={pi} style={{fontSize:10,background:"#FFF7ED",color:"#9A3412",padding:"2px 8px",borderRadius:8,fontWeight:600}}>⚠️ {p}</span>)}</div>}
@@ -1674,7 +1688,7 @@ function SortieDetailPage({sortie,isFavorite,onToggleFavorite,onBack,onReport,is
   const card={background:WH,borderRadius:16,padding:14,marginBottom:12,boxShadow:"0 1px 3px rgba(0,0,0,0.06)"};
   const sec=(t)=>(<div style={{fontSize:12,fontWeight:600,color:V,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:10}}>{t}</div>);
   const emo=sortie.type==="Zoo"?"🦁":sortie.type==="Musee"?"🏛️":sortie.type==="Parc d attraction"?"🎢":sortie.type==="Plage"?"🏖️":sortie.type==="Bowling"?"🎳":sortie.type==="Escape game"?"🔐":sortie.type==="Ferme pedagogique"?"🐄":sortie.type==="Piscine"?"🏊":"🗺️";
-  const {tousLesAvis,chargement,ajouterAvis,noteGlobale,noteParProfil}=useAvis("sortie",sortie.id);
+  const {tousLesAvis,chargement,ajouterAvis,supprimerAvis,currentUserId,noteGlobale,noteParProfil}=useAvis("sortie",sortie.id);
   const [showPartageMenu,setShowPartageMenu]=useState(false);
   const partageTexte=`${sortie.nom||sortie.titre||""} - ${sortie.ville||""} | Decouvert sur Parent'Hèse`;
   const tndRows=[{label:"TSA",bg:"#EEEDFE",col:"#3C3489"},{label:"TDAH",bg:"#E1F5EE",col:"#085041"},{label:"DYS",bg:"#FAEEDA",col:"#633806"}].map(({label,bg,col})=>{
@@ -1700,7 +1714,7 @@ function SortieDetailPage({sortie,isFavorite,onToggleFavorite,onBack,onReport,is
           )}
         </div>
         <div style={card}>{sec("Notes")}<div style={{display:"flex",alignItems:"center",gap:12,marginBottom:8}}><span style={{fontSize:36,fontWeight:700,color:"#1a1a1a"}}>{chargement?"...":noteGlobale.toFixed(1)}</span><div><Stars count={Math.round(noteGlobale)} size={18}/><div style={{fontSize:11,color:"#9CA3AF",marginTop:2}}>Sur {tousLesAvis.length} avis</div></div></div>{[5,4,3,2,1].map(n=>{const cnt=tousLesAvis.filter(a=>Number(a.stars)===n).length;const pct=tousLesAvis.length?Math.round((cnt/tousLesAvis.length)*100):0;return(<div key={n} style={{display:"flex",alignItems:"center",gap:8,marginBottom:4}}><span style={{fontSize:11,color:"#9CA3AF",width:8}}>{n}</span><span style={{color:"#F5A623",fontSize:11}}>★</span><div style={{flex:1,height:6,background:BG2,borderRadius:10,overflow:"hidden"}}><div style={{width:pct+"%",height:"100%",background:"#F5A623",borderRadius:10}}/></div><span style={{fontSize:11,color:"#9CA3AF",width:16}}>{cnt}</span></div>);})}</div>
-        <AvisForm isLoggedIn={isLoggedIn} onRequireAuth={onRequireAuth} tousLesAvis={tousLesAvis} chargement={chargement} onAjouterAvis={ajouterAvis} showAccessibilite={true}/>
+        <AvisForm isLoggedIn={isLoggedIn} onRequireAuth={onRequireAuth} tousLesAvis={tousLesAvis} chargement={chargement} onAjouterAvis={ajouterAvis} onSupprimerAvis={supprimerAvis} currentUserId={currentUserId} showAccessibilite={true}/>
         <button onClick={onToggleFavorite} style={{width:"100%",background:isFavorite?"#FCEBEB":V,color:isFavorite?"#A32D2D":WH,border:"none",borderRadius:28,padding:14,fontSize:14,fontWeight:600,cursor:"pointer",marginBottom:8}}>{isFavorite?"Retirer des favoris":"Ajouter aux favoris"}</button>
         {onMasquer&&<button onClick={onMasquer} style={{width:"100%",background:estMasque?VL:WH,color:estMasque?V:TM,border:BD,borderRadius:28,padding:12,fontSize:13,fontWeight:600,cursor:"pointer",marginBottom:8}}>{estMasque?"↩️ Reproposer cette sortie":"🚫 Ne plus proposer cette sortie"}</button>}
         <button onClick={()=>setShowPartageMenu(true)} style={{width:"100%",background:WH,color:V,border:"1.5px solid "+V,borderRadius:28,padding:12,fontSize:14,cursor:"pointer"}}>Partager</button>
@@ -1775,7 +1789,7 @@ function ActivityDetailPage({activity,isFavorite,onToggleFavorite,onBack,onRepor
   const lieuLabel=lieu==="interieur"?"Interieur":lieu==="exterieur"?"Exterieur":lieu||"-";
   const card={background:WH,borderRadius:16,padding:14,marginBottom:12,boxShadow:"0 1px 3px rgba(0,0,0,0.06)"};
   const sec=(t)=>(<div style={{fontSize:12,fontWeight:600,color:V,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:10}}>{t}</div>);
-  const {tousLesAvis,chargement,ajouterAvis,noteGlobale,noteParProfil}=useAvis("activite",activity.id);
+  const {tousLesAvis,chargement,ajouterAvis,supprimerAvis,currentUserId,noteGlobale,noteParProfil}=useAvis("activite",activity.id);
   const [showPartageMenu,setShowPartageMenu]=useState(false);
   const partageTexte=`${activity.nom||activity.titre||""} | Decouvert sur Parent'Hèse`;
   const tndRows=[{label:"TSA",bg:"#EEEDFE",col:"#3C3489"},{label:"TDAH",bg:"#E1F5EE",col:"#085041"},{label:"DYS",bg:"#FAEEDA",col:"#633806"}].map(({label,bg,col})=>{
@@ -1935,7 +1949,7 @@ function ActivityDetailPage({activity,isFavorite,onToggleFavorite,onBack,onRepor
           );
         })()}
         <div style={card}>{sec("Notes")}<div style={{display:"flex",alignItems:"center",gap:10}}><span style={{fontSize:28,fontWeight:700,color:"#1a1a1a"}}>{chargement?"...":noteGlobale.toFixed(1)}</span><div><Stars count={Math.round(noteGlobale)} size={14}/><div style={{fontSize:11,color:"#9CA3AF"}}>{tousLesAvis.length} avis</div></div></div></div>
-        <AvisForm isLoggedIn={isLoggedIn} onRequireAuth={onRequireAuth} tousLesAvis={tousLesAvis} chargement={chargement} onAjouterAvis={ajouterAvis} showPointsAnticiper={true}/>
+        <AvisForm isLoggedIn={isLoggedIn} onRequireAuth={onRequireAuth} tousLesAvis={tousLesAvis} chargement={chargement} onAjouterAvis={ajouterAvis} onSupprimerAvis={supprimerAvis} currentUserId={currentUserId} showPointsAnticiper={true}/>
         <button onClick={onToggleFavorite} style={{width:"100%",background:isFavorite?"#FCEBEB":V,color:isFavorite?"#A32D2D":WH,border:"none",borderRadius:28,padding:14,fontSize:14,fontWeight:600,cursor:"pointer",marginBottom:8}}>{isFavorite?"Retirer des favoris":"Ajouter aux favoris"}</button>
         {onMasquer&&<button onClick={onMasquer} style={{width:"100%",background:estMasque?VL:WH,color:estMasque?V:TM,border:BD,borderRadius:28,padding:12,fontSize:13,fontWeight:600,cursor:"pointer",marginBottom:8}}>{estMasque?"↩️ Reproposer cette activité":"🚫 Ne plus proposer cette activité"}</button>}
         <button onClick={()=>setShowPartageMenu(true)} style={{width:"100%",background:WH,color:V,border:"1.5px solid "+V,borderRadius:28,padding:12,fontSize:14,cursor:"pointer"}}>Partager</button>
@@ -1950,7 +1964,7 @@ function EvenementDetail({evt,onBack,onReport,isFavorite,onToggleFavorite,isLogg
   const cat=EVT_CATEGORIES.find(c=>c.k===evt.categorie)||customCatEvenements.find(c=>c.k===evt.categorie)||{emoji:"🎉",label:""};
   const card={background:WH,borderRadius:16,padding:14,marginBottom:12,boxShadow:"0 1px 3px rgba(0,0,0,0.06)"};
   const sec=(t)=>(<div style={{fontSize:12,fontWeight:600,color:V,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:10}}>{t}</div>);
-  const {tousLesAvis,chargement,ajouterAvis,noteGlobale,noteParProfil}=useAvis("evenement",evt.id);
+  const {tousLesAvis,chargement,ajouterAvis,supprimerAvis,currentUserId,noteGlobale,noteParProfil}=useAvis("evenement",evt.id);
   const [showPartageMenu,setShowPartageMenu]=useState(false);
   const partageTexte=`${evt.nom||evt.titre||""} - ${evt.ville||""} | Decouvert sur Parent'Hèse`;
   const tndRows=[{label:"TSA",bg:"#EEEDFE",col:"#3C3489"},{label:"TDAH",bg:"#E1F5EE",col:"#085041"},{label:"DYS",bg:"#FAEEDA",col:"#633806"}].map(({label,bg,col})=>{
@@ -1975,7 +1989,7 @@ function EvenementDetail({evt,onBack,onReport,isFavorite,onToggleFavorite,isLogg
           )}
         </div>
         <div style={card}>{sec("Notes")}<div style={{display:"flex",alignItems:"center",gap:12,marginBottom:8}}><span style={{fontSize:36,fontWeight:700,color:"#1a1a1a"}}>{chargement?"...":noteGlobale.toFixed(1)}</span><div><Stars count={Math.round(noteGlobale)} size={18}/><div style={{fontSize:11,color:"#9CA3AF",marginTop:2}}>Sur {tousLesAvis.length} avis</div></div></div>{[5,4,3,2,1].map(n=>{const cnt=tousLesAvis.filter(a=>Number(a.stars)===n).length;const pct=tousLesAvis.length?Math.round((cnt/tousLesAvis.length)*100):0;return(<div key={n} style={{display:"flex",alignItems:"center",gap:8,marginBottom:4}}><span style={{fontSize:11,color:"#9CA3AF",width:8}}>{n}</span><span style={{color:"#F5A623",fontSize:11}}>★</span><div style={{flex:1,height:6,background:BG2,borderRadius:10,overflow:"hidden"}}><div style={{width:pct+"%",height:"100%",background:"#F5A623",borderRadius:10}}/></div><span style={{fontSize:11,color:"#9CA3AF",width:16}}>{cnt}</span></div>);})}</div>
-        <AvisForm isLoggedIn={isLoggedIn} onRequireAuth={onRequireAuth} tousLesAvis={tousLesAvis} chargement={chargement} onAjouterAvis={ajouterAvis}/>
+        <AvisForm isLoggedIn={isLoggedIn} onRequireAuth={onRequireAuth} tousLesAvis={tousLesAvis} chargement={chargement} onAjouterAvis={ajouterAvis} onSupprimerAvis={supprimerAvis} currentUserId={currentUserId}/>
         <button onClick={onToggleFavorite} style={{width:"100%",background:isFavorite?"#FCEBEB":V,color:isFavorite?"#A32D2D":WH,border:"none",borderRadius:28,padding:14,fontSize:14,fontWeight:600,cursor:"pointer",marginBottom:8}}>{isFavorite?"Retirer des favoris":"Ajouter aux favoris"}</button>
         <button onClick={()=>setShowPartageMenu(true)} style={{width:"100%",background:WH,color:V,border:"1.5px solid "+V,borderRadius:28,padding:12,fontSize:14,cursor:"pointer",marginBottom:8}}>Partager</button>
         <SignalCardBtn id={"evtdetail_"+(evt.id||evt.nom)} titre={evt.titre||evt.nom} type="evenement" onReport={onReport}/>

@@ -8027,9 +8027,11 @@ function useScheduler(setItems,syncFn){
   },[]);
 }
 
-function Activites({sharedActivites,setSharedActivites,customCatActivites=[]}) {
+function Activites({sharedActivites,setSharedActivites,customCatActivites=[],pendingContribs=[]}) {
   const MOCK_IDS=new Set(MOCK_ACTIVITES.map(a=>a.id));
   const [items,setItems] = useState(()=>[...MOCK_ACTIVITES,...(sharedActivites||[]).filter(a=>!MOCK_IDS.has(a.id)&&a._source!=="noel")]);
+  const contribsCommunaute=pendingContribs.filter(c=>c._type==="activite").map(c=>({...c,titre:c.titre||c.nom,_communaute:true}));
+  const itemsAffiches=[...contribsCommunaute,...items];
   const syncItems=(newItems)=>{
     setItems(newItems);
     if(setSharedActivites){
@@ -8044,7 +8046,7 @@ function Activites({sharedActivites,setSharedActivites,customCatActivites=[]}) {
   const emptyForm = {titre:"",desc:"",duree:"",difficulte:"",lieu:"",energie:"",categorie:"",ageMin:"",ageMax:"",materielStr:"",etapes:"",premium:false,statut:"published",programmation:{date:"",heure:""},etiquettes:[],acc_poussette:false,acc_bebe:false,acc_allaitement:false,acc_langer:false,acc_aire03:false,acc_peubruyant:false,pmr_fauteuil:false,pmr_escaliers:false,pmr_parking:false,pmr_toilettes:false,pmr_personnel:false,pmr_chemin:false,tsa_foule:false,tsa_calme:false,tsa_lumiere:false,tsa_retrait:false,tsa_bruit:false,tsa_personnel:false,tdah_espace:false,tdah_physique:false,tdah_attente:false,tdah_stimulation:false,dys_visuels:false,dys_nonecrite:false,dys_rythme:false,dys_personnel:false};
   const [form,setForm] = useState(emptyForm);
   const tf = (key) => setForm(prev=>({...prev,[key]:!prev[key]}));
-  const filtered = items.filter(a=>(filterStatut===""||a.statut===filterStatut)&&(!search||((a.titre||a.nom||"").toLowerCase()).includes(search.toLowerCase())));
+  const filtered = itemsAffiches.filter(a=>(filterStatut===""||a.statut===filterStatut)&&(!search||((a.titre||a.nom||"").toLowerCase()).includes(search.toLowerCase())));
   const {slice:filteredPage,Pagination:PagActiv,reset:resetPagActiv}=usePagination(filtered,8);
   useEffect(()=>resetPagActiv(),[search,filterStatut]);
   const save = () => {
@@ -8076,22 +8078,27 @@ function Activites({sharedActivites,setSharedActivites,customCatActivites=[]}) {
       </div>
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))",gap:14}}>
         {filteredPage.map(a=>(
-          <div key={a.id} style={{...s.card}}>
+          <div key={a.id} style={{...s.card,border:a._communaute?"1px solid rgba(139,92,246,0.4)":s.card.border}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:10}}>
               <span style={s.badge("rgba(124,58,237,0.15)","#a78bfa")}>{a.categorie}</span>
-              {statutBadge(a.statut)}
+              {a._communaute?<span style={{fontSize:10,fontWeight:700,padding:"2px 8px",borderRadius:8,background:"rgba(139,92,246,0.15)",color:"#a78bfa"}}>👥 Communauté</span>:statutBadge(a.statut)}
             </div>
             <p style={{fontSize:15,fontWeight:700,color:C.text,margin:"0 0 4px"}}>{a.titre}</p>
+            {a._communaute&&<p style={{fontSize:11,color:C.muted,margin:"0 0 6px"}}>✍️ {a._auteur||"Anonyme"}</p>}
             {a.etiquettes?.length>0&&<div style={{display:"flex",gap:4,flexWrap:"wrap",marginBottom:6}}>{a.etiquettes.map((e,i)=><span key={i} style={{fontSize:9,background:e.bg||"#f3f4f6",color:e.color||"#6b7280",padding:"1px 6px",borderRadius:8,fontWeight:600}}>{e.label}</span>)}</div>}
             <p style={{fontSize:12,color:C.muted,margin:"0 0 10px"}}>{a.lieu==="interieur"?"🏠 Intérieur":"🌳 Extérieur"} · {a.ageMin}-{a.ageMax} ans</p>
             <div style={{fontSize:12,color:C.muted,marginBottom:12}}>
               {a.duree&&<div>⏱ {a.duree}</div>}
               <div>{a.premium?"👑 Premium":"🆓 Gratuit"}</div>
             </div>
-            <div style={{display:"flex",gap:6}}>
-              <button style={{...s.btnOutline(C.accent),flex:1}} onClick={()=>{setForm({...emptyForm,...a});setModal({mode:"edit",item:a});}}>✏️ Modifier</button>
-              <button style={s.btnOutline(C.red)} onClick={()=>syncItems(items.filter(x=>x.id!==a.id))}>🗑️</button>
-            </div>
+            {a._communaute?(
+              <p style={{fontSize:11,color:C.muted,margin:0,fontStyle:"italic"}}>Gérer via l'onglet "📥 Contributions"</p>
+            ):(
+              <div style={{display:"flex",gap:6}}>
+                <button style={{...s.btnOutline(C.accent),flex:1}} onClick={()=>{setForm({...emptyForm,...a});setModal({mode:"edit",item:a});}}>✏️ Modifier</button>
+                <button style={s.btnOutline(C.red)} onClick={()=>syncItems(items.filter(x=>x.id!==a.id))}>🗑️</button>
+              </div>
+            )}
           </div>
         ))}
         <PagActiv/>
@@ -8268,7 +8275,7 @@ function Activites({sharedActivites,setSharedActivites,customCatActivites=[]}) {
   );
 }
 
-function Sorties({sharedSorties=[],setSharedSorties,customCatSorties=[],setCustomCatSorties}) {
+function Sorties({sharedSorties=[],setSharedSorties,customCatSorties=[],setCustomCatSorties,pendingContribs=[]}) {
   const DEPTS_ALL=[["01","Ain"],["02","Aisne"],["03","Allier"],["04","Alpes-de-Haute-Provence"],["05","Hautes-Alpes"],["06","Alpes-Maritimes"],["07","Ardeche"],["08","Ardennes"],["09","Ariege"],["10","Aube"],["11","Aude"],["12","Aveyron"],["13","Bouches-du-Rhone"],["14","Calvados"],["15","Cantal"],["16","Charente"],["17","Charente-Maritime"],["18","Cher"],["19","Correze"],["20","Corse"],["21","Cote-d-Or"],["22","Cotes-d-Armor"],["23","Creuse"],["24","Dordogne"],["25","Doubs"],["26","Drome"],["27","Eure"],["28","Eure-et-Loir"],["29","Finistere"],["30","Gard"],["31","Haute-Garonne"],["32","Gers"],["33","Gironde"],["34","Herault"],["35","Ille-et-Vilaine"],["36","Indre"],["37","Indre-et-Loire"],["38","Isere"],["39","Jura"],["40","Landes"],["41","Loir-et-Cher"],["42","Loire"],["43","Haute-Loire"],["44","Loire-Atlantique"],["45","Loiret"],["46","Lot"],["47","Lot-et-Garonne"],["48","Lozere"],["49","Maine-et-Loire"],["50","Manche"],["51","Marne"],["52","Haute-Marne"],["53","Mayenne"],["54","Meurthe-et-Moselle"],["55","Meuse"],["56","Morbihan"],["57","Moselle"],["58","Nievre"],["59","Nord"],["60","Oise"],["61","Orne"],["62","Pas-de-Calais"],["63","Puy-de-Dome"],["64","Pyrenees-Atlantiques"],["65","Hautes-Pyrenees"],["66","Pyrenees-Orientales"],["67","Bas-Rhin"],["68","Haut-Rhin"],["69","Rhone"],["70","Haute-Saone"],["71","Saone-et-Loire"],["72","Sarthe"],["73","Savoie"],["74","Haute-Savoie"],["75","Paris"],["76","Seine-Maritime"],["77","Seine-et-Marne"],["78","Yvelines"],["79","Deux-Sevres"],["80","Somme"],["81","Tarn"],["82","Tarn-et-Garonne"],["83","Var"],["84","Vaucluse"],["85","Vendee"],["86","Vienne"],["87","Haute-Vienne"],["88","Vosges"],["89","Yonne"],["90","Territoire de Belfort"],["91","Essonne"],["92","Hauts-de-Seine"],["93","Seine-Saint-Denis"],["94","Val-de-Marne"],["95","Val-d-Oise"],["971","Guadeloupe"],["972","Martinique"],["973","Guyane"],["974","La Reunion"]];
   const emptyForm={titre:"",dept:"",adresse:"",horaires:"",prix:"",categorie:"",statut:"published",programmation:{date:"",heure:""},etiquettes:[],acc_poussette:false,acc_bebe:false,acc_allaitement:false,acc_langer:false,acc_aire03:false,acc_peubruyant:false,pmr_fauteuil:false,pmr_escaliers:false,pmr_parking:false,pmr_toilettes:false,pmr_personnel:false,pmr_chemin:false,tsa_foule:false,tsa_calme:false,tsa_lumiere:false,tsa_retrait:false,tsa_bruit:false,tsa_personnel:false,tdah_espace:false,tdah_physique:false,tdah_attente:false,tdah_stimulation:false,dys_visuels:false,dys_nonecrite:false,dys_rythme:false,dys_personnel:false};
   const MOCK_IDS=new Set(MOCK_SORTIES.map(o=>o.id));
@@ -8278,7 +8285,9 @@ function Sorties({sharedSorties=[],setSharedSorties,customCatSorties=[],setCusto
   const [search,setSearch] = useState("");
   const [modal,setModal] = useState(null);
   const [form,setForm] = useState(emptyForm);
-  const filtered = items.filter(a=>!search||((a.titre||a.nom||"").toLowerCase()).includes(search.toLowerCase()));
+  const contribsCommunauteS=pendingContribs.filter(c=>c._type==="sortie").map(c=>({...c,titre:c.titre||c.nom,_communaute:true}));
+  const itemsAffichesS=[...contribsCommunauteS,...items];
+  const filtered = itemsAffichesS.filter(a=>!search||((a.titre||a.nom||"").toLowerCase()).includes(search.toLowerCase()));
   const {slice:filteredPageS,Pagination:PagSort,reset:resetPagSort}=usePagination(filtered,8);
   useEffect(()=>resetPagSort(),[search]);
   const save = () => {
@@ -8302,18 +8311,23 @@ function Sorties({sharedSorties=[],setSharedSorties,customCatSorties=[],setCusto
       <SearchBar value={search} onChange={setSearch} placeholder="Rechercher une sortie..."/>
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))",gap:14}}>
         {filteredPageS.map(o=>(
-          <div key={o.id} style={{...s.card}}>
+          <div key={o.id} style={{...s.card,border:o._communaute?"1px solid rgba(139,92,246,0.4)":s.card.border}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:10}}>
               <span style={s.badge("rgba(236,72,153,0.15)","#f472b6")}>{o.categorie}</span>
-              {statutBadge(o.statut)}
+              {o._communaute?<span style={{fontSize:10,fontWeight:700,padding:"2px 8px",borderRadius:8,background:"rgba(139,92,246,0.15)",color:"#a78bfa"}}>👥 Communauté</span>:statutBadge(o.statut)}
             </div>
             <p style={{fontSize:15,fontWeight:700,color:C.text,margin:"0 0 4px"}}>{o.titre}</p>
+            {o._communaute&&<p style={{fontSize:11,color:C.muted,margin:"0 0 6px"}}>✍️ {o._auteur||"Anonyme"}</p>}
             <p style={{fontSize:12,color:C.muted,margin:"0 0 10px"}}>📍 {o.dept}</p>
             <div style={{fontSize:12,color:C.muted,marginBottom:12}}><div>🕐 {o.horaires}</div><div>💶 {o.prix}</div></div>
-            <div style={{display:"flex",gap:6}}>
-              <button style={{...s.btnOutline(C.accent),flex:1}} onClick={()=>{setForm({...emptyForm,...o});setModal({mode:"edit",item:o});}}>✏️ Modifier</button>
-              <button style={s.btnOutline(C.red)} onClick={()=>syncItems(items.filter(x=>x.id!==o.id))}>🗑️</button>
-            </div>
+            {o._communaute?(
+              <p style={{fontSize:11,color:C.muted,margin:0,fontStyle:"italic"}}>Gérer via l'onglet "📥 Contributions"</p>
+            ):(
+              <div style={{display:"flex",gap:6}}>
+                <button style={{...s.btnOutline(C.accent),flex:1}} onClick={()=>{setForm({...emptyForm,...o});setModal({mode:"edit",item:o});}}>✏️ Modifier</button>
+                <button style={s.btnOutline(C.red)} onClick={()=>syncItems(items.filter(x=>x.id!==o.id))}>🗑️</button>
+              </div>
+            )}
           </div>
         ))}
         <PagSort/>
@@ -8387,7 +8401,7 @@ function Sorties({sharedSorties=[],setSharedSorties,customCatSorties=[],setCusto
   );
 }
 
-function Evenements({sharedEvenements=[],setSharedEvenements,customCatEvenements=[],setCustomCatEvenements}) {
+function Evenements({sharedEvenements=[],setSharedEvenements,customCatEvenements=[],setCustomCatEvenements,pendingContribs=[]}) {
   const MOCK_IDS=new Set(MOCK_EVENTS.map(o=>o.id));
   const [items,setItems] = useState(()=>[...MOCK_EVENTS,...(sharedEvenements||[]).filter(o=>!MOCK_IDS.has(o.id))]);
   const syncItems=(newItems)=>{setItems(newItems);if(setSharedEvenements)setSharedEvenements(newItems.filter(o=>!MOCK_IDS.has(o.id)));};
@@ -8416,25 +8430,34 @@ function Evenements({sharedEvenements=[],setSharedEvenements,customCatEvenements
       </div>
       <SearchBar value={search} onChange={setSearch} placeholder="Rechercher un événement..."/>
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))",gap:14}}>
-        {items.filter(a=>!search||((a.titre||a.nom||"").toLowerCase()).includes(search.toLowerCase())).map(a=>(
-          <div key={a.id} style={{...s.card}}>
+        {(()=>{
+          const contribsCommunauteE=pendingContribs.filter(c=>c._type==="evenement").map(c=>({...c,titre:c.titre||c.nom,_communaute:true}));
+          const itemsAffichesE=[...contribsCommunauteE,...items];
+          return itemsAffichesE.filter(a=>!search||((a.titre||a.nom||"").toLowerCase()).includes(search.toLowerCase())).map(a=>(
+          <div key={a.id} style={{...s.card,border:a._communaute?"1px solid rgba(139,92,246,0.4)":s.card.border}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:10}}>
               <span style={s.badge("rgba(249,115,22,0.15)","#fb923c")}>{a.type}</span>
-              {statutBadge(a.statut)}
+              {a._communaute?<span style={{fontSize:10,fontWeight:700,padding:"2px 8px",borderRadius:8,background:"rgba(139,92,246,0.15)",color:"#a78bfa"}}>👥 Communauté</span>:statutBadge(a.statut)}
             </div>
             <p style={{fontSize:15,fontWeight:700,color:C.text,margin:"0 0 4px"}}>{a.titre}</p>
+            {a._communaute&&<p style={{fontSize:11,color:C.muted,margin:"0 0 6px"}}>✍️ {a._auteur||"Anonyme"}</p>}
             {a.etiquettes?.length>0&&<div style={{display:"flex",gap:4,flexWrap:"wrap",marginBottom:6}}>{a.etiquettes.map((e,i)=><span key={i} style={{fontSize:9,background:e.bg||"#f3f4f6",color:e.color||"#6b7280",padding:"1px 6px",borderRadius:8,fontWeight:600}}>{e.label}</span>)}</div>}
             <p style={{fontSize:12,color:C.muted,margin:"0 0 10px"}}>📍 {a.ville}</p>
             <div style={{fontSize:12,color:C.muted,marginBottom:12}}>
               <div>📅 {a.date}</div>
               {a.prix&&<div>💶 {a.prix}</div>}
             </div>
-            <div style={{display:"flex",gap:6}}>
-              <button style={{...s.btnOutline(C.accent),flex:1}} onClick={()=>{setForm({...a});setModal({mode:"edit",item:a});}}>✏️ Modifier</button>
-              <button style={s.btnOutline(C.red)} onClick={()=>syncItems(items.filter(x=>x.id!==a.id))}>🗑️</button>
-            </div>
+            {a._communaute?(
+              <p style={{fontSize:11,color:C.muted,margin:0,fontStyle:"italic"}}>Gérer via l'onglet "📥 Contributions"</p>
+            ):(
+              <div style={{display:"flex",gap:6}}>
+                <button style={{...s.btnOutline(C.accent),flex:1}} onClick={()=>{setForm({...a});setModal({mode:"edit",item:a});}}>✏️ Modifier</button>
+                <button style={s.btnOutline(C.red)} onClick={()=>syncItems(items.filter(x=>x.id!==a.id))}>🗑️</button>
+              </div>
+            )}
           </div>
-        ))}
+          ));
+        })()}
       </div>
       {modal&&(()=>{
         const DEPTS_EVT=[["01","Ain"],["02","Aisne"],["03","Allier"],["04","Alpes-de-Haute-Provence"],["05","Hautes-Alpes"],["06","Alpes-Maritimes"],["07","Ardeche"],["08","Ardennes"],["09","Ariege"],["10","Aube"],["11","Aude"],["12","Aveyron"],["13","Bouches-du-Rhone"],["14","Calvados"],["15","Cantal"],["16","Charente"],["17","Charente-Maritime"],["18","Cher"],["19","Correze"],["20","Corse"],["21","Cote-d-Or"],["22","Cotes-d-Armor"],["23","Creuse"],["24","Dordogne"],["25","Doubs"],["26","Drome"],["27","Eure"],["28","Eure-et-Loir"],["29","Finistere"],["30","Gard"],["31","Haute-Garonne"],["32","Gers"],["33","Gironde"],["34","Herault"],["35","Ille-et-Vilaine"],["36","Indre"],["37","Indre-et-Loire"],["38","Isere"],["39","Jura"],["40","Landes"],["41","Loir-et-Cher"],["42","Loire"],["43","Haute-Loire"],["44","Loire-Atlantique"],["45","Loiret"],["46","Lot"],["47","Lot-et-Garonne"],["48","Lozere"],["49","Maine-et-Loire"],["50","Manche"],["51","Marne"],["52","Haute-Marne"],["53","Mayenne"],["54","Meurthe-et-Moselle"],["55","Meuse"],["56","Morbihan"],["57","Moselle"],["58","Nievre"],["59","Nord"],["60","Oise"],["61","Orne"],["62","Pas-de-Calais"],["63","Puy-de-Dome"],["64","Pyrenees-Atlantiques"],["65","Hautes-Pyrenees"],["66","Pyrenees-Orientales"],["67","Bas-Rhin"],["68","Haut-Rhin"],["69","Rhone"],["70","Haute-Saone"],["71","Saone-et-Loire"],["72","Sarthe"],["73","Savoie"],["74","Haute-Savoie"],["75","Paris"],["76","Seine-Maritime"],["77","Seine-et-Marne"],["78","Yvelines"],["79","Deux-Sevres"],["80","Somme"],["81","Tarn"],["82","Tarn-et-Garonne"],["83","Var"],["84","Vaucluse"],["85","Vendee"],["86","Vienne"],["87","Haute-Vienne"],["88","Vosges"],["89","Yonne"],["90","Territoire de Belfort"],["91","Essonne"],["92","Hauts-de-Seine"],["93","Seine-Saint-Denis"],["94","Val-de-Marne"],["95","Val-d-Oise"],["971","Guadeloupe"],["972","Martinique"],["973","Guyane"],["974","La Reunion"]];
@@ -10598,7 +10621,12 @@ function Admins() {
 }
 
 // ─── APP ─────────────────────────────────────────────────────────────────────
-function Contributions({items,updateContrib}){
+function Contributions({items,updateContrib,setPendingContribs}){
+  useEffect(()=>{
+    if(setPendingContribs&&items.some(c=>!c._vu)){
+      setPendingContribs(prev=>prev.map(c=>c._vu?c:{...c,_vu:true}));
+    }
+  },[]);
   const pending=items.filter(c=>c._statut==="pending").sort((a,b)=>new Date(b._createdAt)-new Date(a._createdAt));
   const signales=items.filter(c=>c._signalements>0&&c._statut!=="rejected").sort((a,b)=>b._signalements-a._signalements);
   const approved=items.filter(c=>c._statut==="published");
@@ -10804,7 +10832,7 @@ function PageAdmin({onLogout,pendingContribs=[],updateContrib,adminActivites=[],
               <span style={{fontSize:17,flexShrink:0}}>{item.emoji}</span>
               {!collapsed&&<span style={{fontSize:13,fontWeight:page===item.k?600:400,whiteSpace:"nowrap"}}>{item.label}</span>}
               {item.k==="signalements"&&pendingReports>0&&<span style={{marginLeft:"auto",background:C.red,color:"#fff",borderRadius:"50%",width:18,height:18,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:700,flexShrink:0}}>{pendingReports}</span>}
-              {item.k==="contributions"&&pendingContribs.filter(c=>c._statut==="pending").length>0&&<span style={{marginLeft:"auto",background:C.accent,color:"#fff",borderRadius:"50%",width:18,height:18,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:700,flexShrink:0}}>{pendingContribs.filter(c=>c._statut==="pending").length}</span>}
+              {item.k==="contributions"&&pendingContribs.filter(c=>!c._vu).length>0&&<span style={{marginLeft:"auto",background:C.accent,color:"#fff",borderRadius:"50%",width:18,height:18,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:700,flexShrink:0}}>{pendingContribs.filter(c=>!c._vu).length}</span>}
               {item.k==="boost"&&devisBoostDemandes.filter(d=>d.statut==="nouveau").length>0&&<span style={{marginLeft:"auto",background:"#F59E0B",color:"#fff",borderRadius:"50%",width:18,height:18,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:700,flexShrink:0}}>{devisBoostDemandes.filter(d=>d.statut==="nouveau").length}</span>}
             </button>
           ))}
@@ -10831,7 +10859,7 @@ function PageAdmin({onLogout,pendingContribs=[],updateContrib,adminActivites=[],
           </div>
         </header>
         <main style={{flex:1,overflowY:"auto",padding:24}}>
-          {page==="contributions"?<Contributions items={pendingContribs} updateContrib={updateContrib}/>:PAGES_FN[page]?PAGES_FN[page]({sharedActivites:adminActivites,setSharedActivites:setAdminActivites,sharedSorties:adminSorties,setSharedSorties:setAdminSorties,sharedEvenements:adminEvenements,setSharedEvenements:setAdminEvenements,userReports:adminReports,setUserReports:setAdminReports,onDeleteTitle:addDeletedTitle,sharedCustomEvents:adminCustomEvents,setSharedCustomEvents:setAdminCustomEvents,pendingContribs,dashUserReports:adminReports,sosLib,setSosLib,sosModeActif,setSosModeActif,ideesMomentConfig,setIdeesMomentConfig,evenementsSaisonniers,setEvenementsSaisonniers,customCatActivites,setCustomCatActivites,customCatSorties,setCustomCatSorties,customCatEvenements,setCustomCatEvenements,adminComms,setAdminComms,ressourcesSites,setRessourcesSites,ressourcesContacts,setRessourcesContacts,ressourcesPdf,setRessourcesPdf,devisBoostDemandes,setDevisBoostDemandes,boosts,onActiverBoost:activerBoost,onRetirerBoost:(item,itemType)=>{const key=item.id||item.nom||item.titre;setBoosts&&setBoosts(prev=>prev.filter(b=>!(b.itemId===key&&b.itemType===itemType)));},demoMode,setDemoMode}):null}
+          {page==="contributions"?<Contributions items={pendingContribs} updateContrib={updateContrib} setPendingContribs={setPendingContribs}/>:PAGES_FN[page]?PAGES_FN[page]({sharedActivites:adminActivites,setSharedActivites:setAdminActivites,sharedSorties:adminSorties,setSharedSorties:setAdminSorties,sharedEvenements:adminEvenements,setSharedEvenements:setAdminEvenements,userReports:adminReports,setUserReports:setAdminReports,onDeleteTitle:addDeletedTitle,sharedCustomEvents:adminCustomEvents,setSharedCustomEvents:setAdminCustomEvents,pendingContribs,dashUserReports:adminReports,sosLib,setSosLib,sosModeActif,setSosModeActif,ideesMomentConfig,setIdeesMomentConfig,evenementsSaisonniers,setEvenementsSaisonniers,customCatActivites,setCustomCatActivites,customCatSorties,setCustomCatSorties,customCatEvenements,setCustomCatEvenements,adminComms,setAdminComms,ressourcesSites,setRessourcesSites,ressourcesContacts,setRessourcesContacts,ressourcesPdf,setRessourcesPdf,devisBoostDemandes,setDevisBoostDemandes,boosts,onActiverBoost:activerBoost,onRetirerBoost:(item,itemType)=>{const key=item.id||item.nom||item.titre;setBoosts&&setBoosts(prev=>prev.filter(b=>!(b.itemId===key&&b.itemType===itemType)));},demoMode,setDemoMode}):null}
         </main>
       </div>
     </div>

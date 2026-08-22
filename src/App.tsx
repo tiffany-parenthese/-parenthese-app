@@ -909,10 +909,13 @@ function FormActivite({onClose,onSubmit,customCatActivites=[]}){
   const [niveauxSensoriels,setNiveauxSensoriels]=useState({bruit:0,visuel:0,physique:0,attention:0});
   const [adaptations,setAdaptations]=useState([]);
   const [pointsAnticiperSel,setPointsAnticiperSel]=useState([]);
+  const [envoiEnCours,setEnvoiEnCours]=useState(false);
   const handlePhoto=async(e)=>{const file=e.target.files[0];if(!file)return;if(file.size>8*1024*1024){alert("Photo trop lourde (max 8MB)");return;}try{const compressed=await compresserImage(file);setPhotoPreview(compressed);}catch(err){alert("Impossible de lire cette image, réessaie avec une autre.");}};
   const validate=()=>{const e={};if(!titre.trim())e.titre="Champ obligatoire";if(!desc.trim())e.desc="Champ obligatoire";if(!duree)e.duree="Champ obligatoire";if(!difficulte)e.difficulte="Champ obligatoire";if(!lieu)e.lieu="Champ obligatoire";if(!motivation)e.motivation="Champ obligatoire";if(!categorie)e.categorie="Champ obligatoire";setLocalErrors(e);return Object.keys(e).length===0;};
   const handleSubmit=()=>{
+    if(envoiEnCours)return; // empêche les doubles soumissions par clics multiples
     if(!validate())return;
+    setEnvoiEnCours(true);
     const categorieFinale=categorie==="Autre"?(autreCategorie.trim()||"Autre"):categorie;
     const age=(ageMin&&ageMax)?`${ageMin.replace(" an","").replace(" ans","")} - ${ageMax}`:(ageMin||ageMax||"Tous ages");
     const tndData={tsa:profilsTND.tsa||profilsTND.tous?5:0,tdah:profilsTND.tdah||profilsTND.tous?5:0,dys:profilsTND.dys||profilsTND.tous?5:0};
@@ -1078,7 +1081,7 @@ function FormActivite({onClose,onSubmit,customCatActivites=[]}){
             ))}
           </div>
 
-          <button onClick={handleSubmit} style={{padding:14,borderRadius:14,background:V,border:"none",color:WH,fontWeight:700,fontSize:15,cursor:"pointer",width:"100%"}}>Envoyer ma suggestion</button>
+          <button onClick={handleSubmit} disabled={envoiEnCours} style={{padding:14,borderRadius:14,background:envoiEnCours?"#C4B8F8":V,border:"none",color:WH,fontWeight:700,fontSize:15,cursor:envoiEnCours?"default":"pointer",width:"100%"}}>{envoiEnCours?"Envoi en cours...":"Envoyer ma suggestion"}</button>
         </div>
       </div>
     </div>
@@ -1109,10 +1112,13 @@ function FormSortie({onClose,onSubmit,customCatSorties=[]}){
   const [accessConseil,setAccessConseil]=useState("");
   const [demandeBoost,setDemandeBoost]=useState(false);
   const [localErrors,setLocalErrors]=useState({});
+  const [envoiEnCours,setEnvoiEnCours]=useState(false);
   const handlePhoto=async(e)=>{const file=e.target.files[0];if(!file)return;if(file.size>8*1024*1024){alert("Photo trop lourde (max 8MB)");return;}try{const compressed=await compresserImage(file);setPhotoPreview(compressed);}catch(err){alert("Impossible de lire cette image, réessaie avec une autre.");}};
   const validate=()=>{const e={};if(!nom.trim())e.nom="Champ obligatoire";if(!ville.trim())e.ville="Champ obligatoire";if(!dept)e.dept="Champ obligatoire";if(!typeSortieSelected)e.type="Champ obligatoire";setLocalErrors(e);return Object.keys(e).length===0;};
   const handleSubmit=()=>{
+    if(envoiEnCours)return; // empêche les doubles soumissions par clics multiples
     if(!validate())return;
+    setEnvoiEnCours(true);
     const typeFinal=typeSortieSelected==="autre"?(typeAutreSortie.trim()||"Autre"):typeSortieSelected;
     const tnd=tndSon||tndAffluence||tndPrevision||tndZoneCalme!==null?{son:tndSon||undefined,affluence:tndAffluence||undefined,prevision:tndPrevision||undefined,zonecalme:tndZoneCalme!==null?tndZoneCalme:undefined}:undefined;
     const accessibilite={
@@ -1262,7 +1268,7 @@ function FormSortie({onClose,onSubmit,customCatSorties=[]}){
             </div>
           </div>
 
-          <button onClick={handleSubmit} style={{padding:14,borderRadius:14,background:V,border:"none",color:WH,fontWeight:700,fontSize:15,cursor:"pointer",width:"100%"}}>Envoyer ma suggestion</button>
+          <button onClick={handleSubmit} disabled={envoiEnCours} style={{padding:14,borderRadius:14,background:envoiEnCours?"#C4B8F8":V,border:"none",color:WH,fontWeight:700,fontSize:15,cursor:envoiEnCours?"default":"pointer",width:"100%"}}>{envoiEnCours?"Envoi en cours...":"Envoyer ma suggestion"}</button>
         </div>
       </div>
       {showAutreSortiePopup&&(<div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.6)",zIndex:9999,display:"flex",alignItems:"center",justifyContent:"center",padding:"0 24px"}} onClick={()=>setShowAutreSortiePopup(false)}><div onClick={e=>e.stopPropagation()} style={{background:WH,borderRadius:20,padding:24,width:"100%",maxWidth:320,boxShadow:"0 8px 40px rgba(0,0,0,0.25)"}}><p style={{margin:"0 0 4px",fontSize:16,fontWeight:700,color:TX,textAlign:"center"}}>Autre type de sortie</p><input value={typeAutreSortieTemp} onChange={e=>setTypeAutreSortieTemp(e.target.value)} placeholder="Ex : Randonnee, Aquaparc..." style={{padding:"12px 14px",borderRadius:12,border:"1.5px solid "+V,fontSize:14,width:"100%",boxSizing:"border-box",fontFamily:"inherit",outline:"none",marginBottom:16}}/><div style={{display:"flex",gap:10}}><button onClick={()=>setShowAutreSortiePopup(false)} style={{flex:1,padding:"11px 0",borderRadius:28,background:BG,border:"1px solid #E5E7EB",color:TX,fontSize:14,cursor:"pointer"}}>Annuler</button><button onClick={()=>{if(typeAutreSortieTemp.trim()){setTypeAutreSortie(typeAutreSortieTemp.trim());setTypeSortieSelected("autre");}setShowAutreSortiePopup(false);}} style={{flex:1,padding:"11px 0",borderRadius:28,background:V,border:"none",color:WH,fontWeight:600,fontSize:14,cursor:"pointer"}}>Confirmer</button></div></div></div>)}
@@ -1289,10 +1295,13 @@ function FormEvenement({onClose,onSubmit,onOpenAutrePopup,typeAutre,typeEvt,setT
   const [pmrValues,setPmrValues]=useState({});
   const [demandeBoost,setDemandeBoost]=useState(false);
   const [localErrors,setLocalErrors]=useState({});
+  const [envoiEnCours,setEnvoiEnCours]=useState(false);
   const handlePhoto=async(e)=>{const file=e.target.files[0];if(!file)return;if(file.size>8*1024*1024){alert("Photo trop lourde (max 8MB)");return;}try{const compressed=await compresserImage(file);setPhotoPreview(compressed);}catch(err){alert("Impossible de lire cette image, réessaie avec une autre.");}};
   const validate=()=>{const e={};if(!nom.trim())e.nom="Champ obligatoire";if(!desc.trim())e.desc="Champ obligatoire";if(!typeEvt)e.typeEvt="Champ obligatoire";if(!ville.trim())e.ville="Champ obligatoire";if(!dept)e.dept="Champ obligatoire";if(!dateDebut)e.dateDebut="Champ obligatoire";setLocalErrors(e);return Object.keys(e).length===0;};
   const handleSubmit=()=>{
+    if(envoiEnCours)return; // empêche les doubles soumissions par clics multiples
     if(!validate())return;
+    setEnvoiEnCours(true);
     const datesStr=dateFin?formatDateFR(dateDebut)+" - "+formatDateFR(dateFin):formatDateFR(dateDebut);
     const isGratuit=!tarif.trim()||tarif.toLowerCase().includes("gratuit");
     const categorieFinale=typeEvt==="autre"?(typeAutre||"autre"):typeEvt;
@@ -1391,7 +1400,7 @@ function FormEvenement({onClose,onSubmit,onOpenAutrePopup,typeAutre,typeEvt,setT
             </div>
           </div>
 
-          <div style={{display:"flex",gap:10}}><button onClick={onClose} style={{flex:1,padding:14,borderRadius:28,background:WH,border:"1.5px solid #E5E7EB",color:"#374151",fontWeight:500,fontSize:14,cursor:"pointer"}}>Annuler</button><button onClick={handleSubmit} style={{flex:2,padding:14,borderRadius:28,background:V,border:"none",color:WH,fontWeight:700,fontSize:14,cursor:"pointer"}}>Envoyer</button></div>
+          <div style={{display:"flex",gap:10}}><button onClick={onClose} style={{flex:1,padding:14,borderRadius:28,background:WH,border:"1.5px solid #E5E7EB",color:"#374151",fontWeight:500,fontSize:14,cursor:"pointer"}}>Annuler</button><button onClick={handleSubmit} disabled={envoiEnCours} style={{flex:2,padding:14,borderRadius:28,background:envoiEnCours?"#C4B8F8":V,border:"none",color:WH,fontWeight:700,fontSize:14,cursor:envoiEnCours?"default":"pointer"}}>{envoiEnCours?"Envoi en cours...":"Envoyer"}</button></div>
         </div>
       </div>
     </div>

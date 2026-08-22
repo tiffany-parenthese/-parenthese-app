@@ -1,12 +1,17 @@
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "./supabaseClient";
 
-// Récupère le profil Supabase d'un utilisateur, et le recrée automatiquement s'il manque
-// (cas des comptes créés avant une correction, ou dont l'email n'était pas encore confirmé à l'inscription)
+// Récupère le profil Supabase d'un utilisateur, et le recrée automatiquement s'il manque vraiment
+// (cas des comptes créés avant une correction, ou dont l'email n'était pas encore confirmé à l'inscription).
+// Ne tente PAS de réparer en cas de simple souci de session/réseau (évite les erreurs "clé déjà existante").
 async function chargerOuReparerProfil(user){
   const { data: profilExistant, error: erreurSelect } = await supabase.from("profiles").select("*").eq("id", user.id).single();
-  if (erreurSelect) console.warn("[Parent'Hèse] Lecture profil :", erreurSelect.message, erreurSelect.code);
   if (profilExistant) return profilExistant;
+  // PGRST116 = "aucune ligne trouvée" (le vrai cas où le profil manque). Toute autre erreur = problème de session/réseau, ne pas insérer.
+  if (erreurSelect && erreurSelect.code !== "PGRST116") {
+    console.warn("[Parent'Hèse] Lecture profil impossible (session probablement expirée) :", erreurSelect.message);
+    return null;
+  }
   const { data: reparé, error: erreurInsert } = await supabase.from("profiles").insert({ id: user.id, nom: user.email.split("@")[0], email: user.email, premium: false }).select().single();
   if (erreurInsert) console.error("[Parent'Hèse] ÉCHEC réparation profil :", erreurInsert.message, erreurInsert.code, erreurInsert.details);
   return reparé;

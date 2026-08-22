@@ -11104,6 +11104,7 @@ export default function App(){
     return()=>{actif=false;listener?.subscription?.unsubscribe();};
   },[]);
   const handleLogout=async()=>{
+    await synchroniserFavorisMaintenant(); // s'assure que le dernier favori ajouté n'est pas perdu
     try{ await supabase.auth.signOut(); }catch(e){ /* déjà déconnecté */ }
     setCurrentUser(null);
     setPage("accueil");
@@ -11316,26 +11317,24 @@ export default function App(){
           if(d.adminComms)setAdminComms(d.adminComms);
         }
       }catch(e){}
-      // Auth session séparée
-      try{
-        const ses=await window.storage.get("auth_session",false);
-        if(ses&&ses.value)setCurrentUser(JSON.parse(ses.value));
-      }catch(e){}
+      // Note : la session utilisateur est désormais entièrement gérée par Supabase Auth (voir plus bas)
       setDataLoaded(true);
     })();
   },[]);
   // ── Synchronisation des favoris vers Supabase (remplacement complet à chaque changement) ──
+  const synchroniserFavorisMaintenant=async()=>{
+    if(!currentUser?.id)return;
+    try{
+      await supabase.from("favoris").delete().eq("user_id",currentUser.id);
+      if(favoris.length>0){
+        const lignes=favoris.map(f=>({user_id:currentUser.id,item_type:f._type,item_id:String(f.id),item_data:f}));
+        await supabase.from("favoris").insert(lignes);
+      }
+    }catch(e){ /* échec réseau — les favoris restent corrects localement, seront resynchronisés au prochain changement */ }
+  };
   useEffect(()=>{
     if(!dataLoaded||!currentUser?.id||!favorisChargesDepuisServeur.current)return;
-    const timer=setTimeout(async()=>{
-      try{
-        await supabase.from("favoris").delete().eq("user_id",currentUser.id);
-        if(favoris.length>0){
-          const lignes=favoris.map(f=>({user_id:currentUser.id,item_type:f._type,item_id:String(f.id),item_data:f}));
-          await supabase.from("favoris").insert(lignes);
-        }
-      }catch(e){ /* échec réseau — les favoris restent corrects localement, seront resynchronisés au prochain changement */ }
-    },1500);
+    const timer=setTimeout(synchroniserFavorisMaintenant,300);
     return()=>clearTimeout(timer);
   },[favoris,currentUser?.id,dataLoaded]);
   // ── 2 sauvegardes groupées (1 privée + 1 partagée) pour éviter le rate limit ──

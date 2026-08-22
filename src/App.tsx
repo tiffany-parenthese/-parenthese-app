@@ -1960,7 +1960,7 @@ function ActivityDetailPage({activity,isFavorite,onToggleFavorite,onBack,onRepor
   );
 }
 
-function EvenementDetail({evt,onBack,onReport,isFavorite,onToggleFavorite,isLoggedIn=true,onRequireAuth,customCatEvenements=[]}){
+function EvenementDetail({evt,onBack,onReport,isFavorite,onToggleFavorite,isLoggedIn=true,onRequireAuth,customCatEvenements=[],onMasquer,estMasque=false}){
   const cat=EVT_CATEGORIES.find(c=>c.k===evt.categorie)||customCatEvenements.find(c=>c.k===evt.categorie)||{emoji:"🎉",label:""};
   const card={background:WH,borderRadius:16,padding:14,marginBottom:12,boxShadow:"0 1px 3px rgba(0,0,0,0.06)"};
   const sec=(t)=>(<div style={{fontSize:12,fontWeight:600,color:V,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:10}}>{t}</div>);
@@ -1991,6 +1991,7 @@ function EvenementDetail({evt,onBack,onReport,isFavorite,onToggleFavorite,isLogg
         <div style={card}>{sec("Notes")}<div style={{display:"flex",alignItems:"center",gap:12,marginBottom:8}}><span style={{fontSize:36,fontWeight:700,color:"#1a1a1a"}}>{chargement?"...":noteGlobale.toFixed(1)}</span><div><Stars count={Math.round(noteGlobale)} size={18}/><div style={{fontSize:11,color:"#9CA3AF",marginTop:2}}>Sur {tousLesAvis.length} avis</div></div></div>{[5,4,3,2,1].map(n=>{const cnt=tousLesAvis.filter(a=>Number(a.stars)===n).length;const pct=tousLesAvis.length?Math.round((cnt/tousLesAvis.length)*100):0;return(<div key={n} style={{display:"flex",alignItems:"center",gap:8,marginBottom:4}}><span style={{fontSize:11,color:"#9CA3AF",width:8}}>{n}</span><span style={{color:"#F5A623",fontSize:11}}>★</span><div style={{flex:1,height:6,background:BG2,borderRadius:10,overflow:"hidden"}}><div style={{width:pct+"%",height:"100%",background:"#F5A623",borderRadius:10}}/></div><span style={{fontSize:11,color:"#9CA3AF",width:16}}>{cnt}</span></div>);})}</div>
         <AvisForm isLoggedIn={isLoggedIn} onRequireAuth={onRequireAuth} tousLesAvis={tousLesAvis} chargement={chargement} onAjouterAvis={ajouterAvis} onSupprimerAvis={supprimerAvis} currentUserId={currentUserId}/>
         <button onClick={onToggleFavorite} style={{width:"100%",background:isFavorite?"#FCEBEB":V,color:isFavorite?"#A32D2D":WH,border:"none",borderRadius:28,padding:14,fontSize:14,fontWeight:600,cursor:"pointer",marginBottom:8}}>{isFavorite?"Retirer des favoris":"Ajouter aux favoris"}</button>
+        {onMasquer&&<button onClick={onMasquer} style={{width:"100%",background:estMasque?VL:WH,color:estMasque?V:TM,border:BD,borderRadius:28,padding:12,fontSize:13,fontWeight:600,cursor:"pointer",marginBottom:8}}>{estMasque?"↩️ Reproposer cet événement":"🚫 Ne plus proposer cet événement"}</button>}
         <button onClick={()=>setShowPartageMenu(true)} style={{width:"100%",background:WH,color:V,border:"1.5px solid "+V,borderRadius:28,padding:12,fontSize:14,cursor:"pointer",marginBottom:8}}>Partager</button>
         <SignalCardBtn id={"evtdetail_"+(evt.id||evt.nom)} titre={evt.titre||evt.nom} type="evenement" onReport={onReport}/>
       </div>
@@ -1999,7 +2000,7 @@ function EvenementDetail({evt,onBack,onReport,isFavorite,onToggleFavorite,isLogg
   );
 }
 
-function EvtCard({e,onClick,onReport,customCatEvenements=[],isFav,onToggleFav}){
+function EvtCard({e,onClick,onReport,customCatEvenements=[],isFav,onToggleFav,onMasquer,estMasque=false}){
   const cat=EVT_CATEGORIES.find(c=>c.k===e.categorie)||customCatEvenements.find(c=>c.k===e.categorie);
   const catEmoji=cat?cat.emoji:"🎉";
   const tooMany=(e.signalements||0)>=3;
@@ -2025,7 +2026,8 @@ function EvtCard({e,onClick,onReport,customCatEvenements=[],isFav,onToggleFav}){
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6,marginBottom:10}}>{tndItems.map(({l,v,c,bg,icon})=>(<div key={l} style={{background:bg,borderRadius:10,padding:"6px 10px",display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:14}}>{icon}</span><div><div style={{fontSize:10,color:TM}}>{l}</div><div style={{fontSize:12,fontWeight:600,color:c}}>{v}</div></div></div>))}</div>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}><span style={{fontSize:12,color:TM}}>👥 {e.age}</span><div style={{display:"flex",alignItems:"center",gap:4}}><span style={{color:"#F5A623",fontSize:13}}>★</span><span style={{fontSize:12,fontWeight:600,color:TX}}>{chargement?"...":noteGlobale.toFixed(1)}</span><span style={{fontSize:11,color:TM}}>({tousLesAvis.length} avis)</span></div></div>
       </div>
-      <div style={{borderTop:"1px solid #F3F4F6",padding:"8px 14px",display:"flex",justifyContent:"flex-end"}}>
+      <div style={{borderTop:"1px solid #F3F4F6",padding:"8px 14px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+        {onMasquer?<button onClick={()=>onMasquer()} style={{background:"none",border:"none",color:estMasque?V:TM,fontSize:11,cursor:"pointer",display:"flex",alignItems:"center",gap:4,padding:0}}>{estMasque?"↩️ Reproposer":"🚫 Ne plus proposer"}</button>:<span/>}
         <SignalCardBtn id={"evt_"+e.id} titre={e.nom||e.titre} type="evenement" onReport={onReport}/>
       </div>
     </div>
@@ -2205,7 +2207,7 @@ function CalendrierMensuel({evtFiltered=[],setEvtDetail,addReport,customCatEvene
       ):(
         <div style={{display:"flex",flexDirection:"column",gap:8}}>
           <p style={{margin:"0 0 6px",fontSize:12,fontWeight:700,color:TM}}>{evtsDuMois.length} événement{evtsDuMois.length>1?"s":""} ce mois</p>
-          {evtsDuMois.map(e=><EvtCard key={e.id||e.nom} e={e} onClick={()=>setEvtDetail(e)} onReport={addReport} customCatEvenements={customCatEvenements} isFav={isFavBiblio(e,"evenement")} onToggleFav={()=>toggleFavBiblio(e,"evenement")}/>)}
+          {evtsDuMois.map(e=><EvtCard key={e.id||e.nom} e={e} onClick={()=>setEvtDetail(e)} onReport={addReport} customCatEvenements={customCatEvenements} isFav={isFavBiblio(e,"evenement")} onToggleFav={()=>toggleFavBiblio(e,"evenement")} onMasquer={toggleMasquer?()=>toggleMasquer(e,"evenement"):undefined} estMasque={estMasque?estMasque(e,"evenement"):false}/>)}
         </div>
       )}
     </div>
@@ -2445,8 +2447,7 @@ function PageBiblio({pendingContribs=[],setPendingContribs,adminActivites=[],adm
   // Items avec signalement pending -> masqués jusqu'à résolution
   const blockedTitles=new Set([...adminReports.filter(r=>r.statut==="pending").map(r=>r.titre),...deletedTitles]);
   const searchQ=globalSearch.toLowerCase();
-  const masqueesActKeys=new Set(masquees.filter(m=>m._type==="activite").map(m=>m.id||m.nom||m.titre));
-  const actFilteredBase=[...ACTIVITES,...adminPublished,...approvedActs].filter(a=>!blockedTitles.has(a.nom)&&!blockedTitles.has(a.titre)).filter(a=>!masqueesActKeys.has(a.id||a.nom||a.titre)).filter(a=>
+  const actFilteredBase=[...ACTIVITES,...adminPublished,...approvedActs].filter(a=>!blockedTitles.has(a.nom)&&!blockedTitles.has(a.titre)).filter(a=>
     (!filterLieu||a.lieu===filterLieu)&&
     (!filterMotiv||a.energie===filterMotiv)&&
     (!filterCategorie||a.categorie===filterCategorie)&&
@@ -2481,8 +2482,7 @@ function PageBiblio({pendingContribs=[],setPendingContribs,adminActivites=[],adm
     return{id:e.id,nom:e.titre,titre:e.titre,categorie:e.type,ville:e.ville,dept:e.dept,date:e.date,prix:prixStr,gratuit:isGratuit,age:"Tous ages",desc:e.desc,tnd:{tsa:3,tdah:3,dys:3},etiquettes:e.etiquettes||[]};
   });
   const approvedSorts=pendingContribs.filter(c=>c._type==="sortie"&&c._statut!=="rejected");
-  const masqueesSortKeys=new Set(masquees.filter(m=>m._type==="sortie").map(m=>m.id||m.nom||m.titre));
-  const sortFiltered=[...SORTIES,...adminSortiesPubliees,...approvedSorts].filter(s=>!blockedTitles.has(s.nom)).filter(s=>!masqueesSortKeys.has(s.id||s.nom||s.titre)).filter(s=>(!filterDept||s.dept===filterDept)&&(!filterType||s.type===filterType)&&(!searchQ||(s.nom||"").toLowerCase().includes(searchQ)||(s.type||"").toLowerCase().includes(searchQ)||(s.ville||"").toLowerCase().includes(searchQ))&&(filterAccess.length===0||filterAccess.every(k=>s.accessibilite?.signaux?.[k]===true))).sort((a,b)=>(estBoosteItem(b,"sortie")?1:0)-(estBoosteItem(a,"sortie")?1:0));
+  const sortFiltered=[...SORTIES,...adminSortiesPubliees,...approvedSorts].filter(s=>!blockedTitles.has(s.nom)).filter(s=>(!filterDept||s.dept===filterDept)&&(!filterType||s.type===filterType)&&(!searchQ||(s.nom||"").toLowerCase().includes(searchQ)||(s.type||"").toLowerCase().includes(searchQ)||(s.ville||"").toLowerCase().includes(searchQ))&&(filterAccess.length===0||filterAccess.every(k=>s.accessibilite?.signaux?.[k]===true))).sort((a,b)=>(estBoosteItem(b,"sortie")?1:0)-(estBoosteItem(a,"sortie")?1:0));
   const signaler=(id)=>setSigSort(prev=>({...prev,[id]:(prev[id]||0)+1}));
   const cardStyle={background:WH,borderRadius:14,padding:"14px 16px",border:BD,cursor:"pointer"};
   const selStyle={flex:1,padding:"8px 10px",borderRadius:10,border:BD,background:WH,fontSize:13};
@@ -2733,7 +2733,7 @@ function PageBiblio({pendingContribs=[],setPendingContribs,adminActivites=[],adm
                     return true;
                   });
                   if(evtsDate.length===0)return null;
-                  return(<div key={date} style={{marginBottom:12}}><div style={{background:V,borderRadius:10,padding:"6px 14px",marginBottom:10,display:"inline-flex"}}><span style={{fontSize:12,fontWeight:700,color:WH}}>{jourLabel(date)} {formatDate(date)}</span></div>{evtsDate.map(e=><EvtCard key={e.id} e={e} onClick={()=>setEvtDetail(e)} onReport={addReport} customCatEvenements={customCatEvenements} isFav={isFavBiblio(e,"evenement")} onToggleFav={()=>toggleFavBiblio(e,"evenement")}/>)}</div>);
+                  return(<div key={date} style={{marginBottom:12}}><div style={{background:V,borderRadius:10,padding:"6px 14px",marginBottom:10,display:"inline-flex"}}><span style={{fontSize:12,fontWeight:700,color:WH}}>{jourLabel(date)} {formatDate(date)}</span></div>{evtsDate.map(e=><EvtCard key={e.id} e={e} onClick={()=>setEvtDetail(e)} onReport={addReport} customCatEvenements={customCatEvenements} isFav={isFavBiblio(e,"evenement")} onToggleFav={()=>toggleFavBiblio(e,"evenement")} onMasquer={toggleMasquer?()=>toggleMasquer(e,"evenement"):undefined} estMasque={estMasque?estMasque(e,"evenement"):false}/>)}</div>);
                 })}
                 {Object.keys(byDate).length===0&&<div style={{textAlign:"center",padding:"40px 0",color:TM}}><p style={{fontSize:32}}>📭</p><p style={{fontSize:14}}>Aucun evenement trouve.</p></div>}
                 <PropBtn/>
@@ -2748,8 +2748,8 @@ function PageBiblio({pendingContribs=[],setPendingContribs,adminActivites=[],adm
                   <button onClick={genEvt} style={{width:"100%",padding:13,borderRadius:12,background:V,border:"none",color:WH,fontWeight:600,fontSize:14,cursor:"pointer"}}>Generer des evenements</button>
                 </div>
                 {evtResult&&(<>
-                  {evtResult.free.length>0&&(<div style={{marginBottom:12}}><p style={{fontSize:12,fontWeight:600,color:GR,margin:"0 0 8px"}}>Gratuit ({evtResult.free.length})</p>{evtResult.free.map(e=><EvtCard key={e.id} e={e} onClick={()=>setEvtDetail(e)} onReport={addReport} customCatEvenements={customCatEvenements} isFav={isFavBiblio(e,"evenement")} onToggleFav={()=>toggleFavBiblio(e,"evenement")}/>)}</div>)}
-                  {evtResult.premium.length>0&&(<div><p style={{fontSize:12,fontWeight:600,color:OR,margin:"0 0 8px"}}>Premium</p>{evtResult.premium.map(e=>isPremium?(<EvtCard key={e.id} e={e} onClick={()=>setEvtDetail(e)} onReport={addReport} customCatEvenements={customCatEvenements} isFav={isFavBiblio(e,"evenement")} onToggleFav={()=>toggleFavBiblio(e,"evenement")}/>):(<div key={e.id} style={{opacity:0.6,pointerEvents:"none"}}><EvtCard e={e} onClick={()=>{}} customCatEvenements={customCatEvenements}/></div>))}{!isPremium&&<button onClick={()=>onOpenPremium&&onOpenPremium()} style={{width:"100%",padding:11,borderRadius:12,background:V,border:"none",color:WH,fontWeight:600,fontSize:13,cursor:"pointer",marginTop:4}}>Passer Premium</button>}</div>)}
+                  {evtResult.free.length>0&&(<div style={{marginBottom:12}}><p style={{fontSize:12,fontWeight:600,color:GR,margin:"0 0 8px"}}>Gratuit ({evtResult.free.length})</p>{evtResult.free.map(e=><EvtCard key={e.id} e={e} onClick={()=>setEvtDetail(e)} onReport={addReport} customCatEvenements={customCatEvenements} isFav={isFavBiblio(e,"evenement")} onToggleFav={()=>toggleFavBiblio(e,"evenement")} onMasquer={toggleMasquer?()=>toggleMasquer(e,"evenement"):undefined} estMasque={estMasque?estMasque(e,"evenement"):false}/>)}</div>)}
+                  {evtResult.premium.length>0&&(<div><p style={{fontSize:12,fontWeight:600,color:OR,margin:"0 0 8px"}}>Premium</p>{evtResult.premium.map(e=>isPremium?(<EvtCard key={e.id} e={e} onClick={()=>setEvtDetail(e)} onReport={addReport} customCatEvenements={customCatEvenements} isFav={isFavBiblio(e,"evenement")} onToggleFav={()=>toggleFavBiblio(e,"evenement")} onMasquer={toggleMasquer?()=>toggleMasquer(e,"evenement"):undefined} estMasque={estMasque?estMasque(e,"evenement"):false}/>):(<div key={e.id} style={{opacity:0.6,pointerEvents:"none"}}><EvtCard e={e} onClick={()=>{}} customCatEvenements={customCatEvenements}/></div>))}{!isPremium&&<button onClick={()=>onOpenPremium&&onOpenPremium()} style={{width:"100%",padding:11,borderRadius:12,background:V,border:"none",color:WH,fontWeight:600,fontSize:13,cursor:"pointer",marginTop:4}}>Passer Premium</button>}</div>)}
                   {evtResult.free.length===0&&evtResult.premium.length===0&&<div style={{textAlign:"center",padding:"30px 0",color:TM}}><p style={{fontSize:32}}>📭</p><p>Aucun evenement.</p></div>}
                 </>)}
                 <PropBtn/>
@@ -2792,7 +2792,7 @@ function PageBiblio({pendingContribs=[],setPendingContribs,adminActivites=[],adm
         setDetail(null);
         showToast(item._demandeBoost?"✅ Sortie publiée ! Votre demande de boost a été transmise à l'équipe.":"✅ Sortie publiée et visible dans la bibliothèque !");
       }}/>}
-      {evtDetail&&<EvenementDetail evt={evtDetail} onBack={()=>setEvtDetail(null)} onReport={addReport} isFavorite={isFavBiblio(evtDetail,"evenement")} onToggleFavorite={()=>toggleFavBiblio(evtDetail,"evenement")} isLoggedIn={isLoggedIn} onRequireAuth={onRequireAuth} customCatEvenements={customCatEvenements}/>}
+      {evtDetail&&<EvenementDetail evt={evtDetail} onBack={()=>setEvtDetail(null)} onReport={addReport} isFavorite={isFavBiblio(evtDetail,"evenement")} onToggleFavorite={()=>toggleFavBiblio(evtDetail,"evenement")} isLoggedIn={isLoggedIn} onRequireAuth={onRequireAuth} customCatEvenements={customCatEvenements} onMasquer={toggleMasquer?()=>toggleMasquer(evtDetail,"evenement"):undefined} estMasque={estMasque?estMasque(evtDetail,"evenement"):false}/>}
       {showFormEvt&&(<FormEvenement customCatEvenements={customCatEvenements} onClose={()=>{setShowFormEvt(false);setTypeEvtForm("");setTypeAutreForm("");}} onSubmit={handleSubmitEvt} onOpenAutrePopup={()=>{setTypeAutreTemp(typeAutreForm);setShowAutrePopup(true);}} typeAutre={typeAutreForm} typeEvt={typeEvtForm} setTypeEvt={setTypeEvtForm}/>)}
       {showAutrePopup&&(<div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.6)",zIndex:9999,display:"flex",alignItems:"center",justifyContent:"center",padding:"0 24px"}}><div style={{background:WH,borderRadius:20,padding:24,width:"100%",maxWidth:320,boxShadow:"0 8px 40px rgba(0,0,0,0.25)"}}><p style={{margin:"0 0 4px",fontSize:16,fontWeight:700,color:TX,textAlign:"center"}}>Autre type</p><input value={typeAutreTemp} onChange={e=>setTypeAutreTemp(e.target.value)} placeholder="Ex : Festival, Portes ouvertes..." style={{padding:"12px 14px",borderRadius:12,border:"1.5px solid "+V,fontSize:14,width:"100%",boxSizing:"border-box",fontFamily:"inherit",outline:"none",marginBottom:16}}/><div style={{display:"flex",gap:10}}><button onClick={()=>setShowAutrePopup(false)} style={{flex:1,padding:"11px 0",borderRadius:28,background:BG,border:"1px solid #E5E7EB",color:TX,fontSize:14,cursor:"pointer"}}>Annuler</button><button onClick={()=>{if(typeAutreTemp.trim()){setTypeAutreForm(typeAutreTemp.trim());setTypeEvtForm("autre");}setShowAutrePopup(false);}} style={{flex:1,padding:"11px 0",borderRadius:28,background:V,border:"none",color:WH,fontWeight:600,fontSize:14,cursor:"pointer"}}>Confirmer</button></div></div></div>)}
       {showFavorisLimitMsg&&(

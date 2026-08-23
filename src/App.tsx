@@ -4210,6 +4210,7 @@ function PageAccueil({favoris,setFavoris,setPage,customEvents=[],popupShown=new 
 function PageSOS({sosLib=[],isPremium=false,onOpenPremium,onBack}){
   const [sosCrise,setSosCrise]=useState(null);
   const [sosResults,setSosResults]=useState(null);
+  const [sosDetailActive,setSosDetailActive]=useState(null); // activité en cours de réalisation
   const sosPublished=sosLib.filter(a=>a.statut==="published");
   const FALLBACK_ACTIVITIES=[
     {titre:"Respiration des bulles",desc:"Souffler lentement dans un tube imaginaire pour faire de grosses bulles. Focalise l'attention et régule la respiration.",duree:"1 min",tags:["Silencieux","Partout"],emoji:"🫧"},
@@ -4240,6 +4241,40 @@ function PageSOS({sosLib=[],isPremium=false,onOpenPremium,onBack}){
     <p style={{margin:"0 0 8px",fontSize:12,color:"rgba(255,255,255,0.65)",lineHeight:1.5}}>{act.desc}</p>
     {Array.isArray(act.materiel)&&act.materiel.length>0&&<p style={{margin:0,fontSize:11,color:"rgba(255,255,255,0.35)"}}>Matériel : {act.materiel.join(", ")}</p>}
   </div>);
+
+  if(sosDetailActive){
+    const act=sosDetailActive;
+    return(
+      <div style={{background:"#0f0505",minHeight:"100vh",display:"flex",flexDirection:"column",fontFamily:"system-ui,-apple-system,sans-serif"}}>
+        <div style={{background:"linear-gradient(135deg,#7f1d1d,#dc2626)",padding:"16px 16px 20px",position:"relative"}}>
+          <button onClick={()=>setSosDetailActive(null)} style={{position:"absolute",top:14,left:14,width:34,height:34,borderRadius:"50%",background:"rgba(255,255,255,0.15)",border:"none",color:"#fff",fontSize:18,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>←</button>
+          <div style={{textAlign:"center"}}>
+            <p style={{margin:0,fontSize:13,color:"rgba(255,255,255,0.85)",fontWeight:600}}>C'est parti !</p>
+          </div>
+        </div>
+        <div style={{flex:1,padding:"28px 20px",display:"flex",flexDirection:"column",alignItems:"center",textAlign:"center"}}>
+          {act.emoji&&<p style={{margin:"0 0 8px",fontSize:56}}>{act.emoji}</p>}
+          <p style={{margin:"0 0 14px",fontSize:22,fontWeight:800,color:"#fff"}}>{act.titre}</p>
+          <div style={{display:"flex",gap:6,marginBottom:18,flexWrap:"wrap",justifyContent:"center"}}>
+            {act.duree&&<span style={{fontSize:11,background:"rgba(239,68,68,0.15)",color:"#fca5a5",padding:"4px 10px",borderRadius:10,fontWeight:600}}>⏱ {act.duree}</span>}
+            {act.age&&<span style={{fontSize:11,background:"rgba(255,255,255,0.07)",color:"rgba(255,255,255,0.5)",padding:"4px 10px",borderRadius:10}}>👶 {act.age}</span>}
+            {act.tags&&act.tags.map((t,i)=><span key={i} style={{fontSize:11,background:"rgba(255,255,255,0.05)",color:"rgba(255,255,255,0.4)",padding:"4px 10px",borderRadius:10}}>{t}</span>)}
+          </div>
+          <p style={{margin:"0 0 20px",fontSize:15,color:"rgba(255,255,255,0.8)",lineHeight:1.7,maxWidth:340}}>{act.desc}</p>
+          {Array.isArray(act.materiel)&&act.materiel.length>0&&(
+            <div style={{background:"rgba(255,255,255,0.06)",borderRadius:14,padding:"12px 16px",marginBottom:8,width:"100%",maxWidth:340,boxSizing:"border-box"}}>
+              <p style={{margin:"0 0 4px",fontSize:11,color:"rgba(255,255,255,0.4)",fontWeight:700,textTransform:"uppercase",letterSpacing:"0.5px"}}>Matériel nécessaire</p>
+              <p style={{margin:0,fontSize:13,color:"rgba(255,255,255,0.75)"}}>{act.materiel.join(", ")}</p>
+            </div>
+          )}
+        </div>
+        <div style={{padding:"16px 20px 24px",display:"flex",flexDirection:"column",gap:10}}>
+          <button onClick={()=>{setSosDetailActive(null);reset();onBack&&onBack();}} style={{width:"100%",padding:"15px 0",borderRadius:28,background:"linear-gradient(135deg,#16a34a,#22c55e)",border:"none",color:"#fff",fontWeight:700,fontSize:15,cursor:"pointer"}}>😌 C'est fini, merci !</button>
+          <button onClick={()=>setSosDetailActive(null)} style={{width:"100%",padding:"13px 0",borderRadius:28,background:"rgba(255,255,255,0.07)",border:"1px solid rgba(255,255,255,0.15)",color:"#fff",fontWeight:600,fontSize:13,cursor:"pointer"}}>← Retour aux suggestions</button>
+        </div>
+      </div>
+    );
+  }
 
   if(!isPremium){
     return(
@@ -4298,7 +4333,7 @@ function PageSOS({sosLib=[],isPremium=false,onOpenPremium,onBack}){
             )}
             <div style={{display:"flex",gap:10,marginTop:4}}>
               <button onClick={genSOS} style={{flex:1,padding:"13px 0",borderRadius:28,background:"rgba(255,255,255,0.07)",border:"1px solid rgba(255,255,255,0.15)",color:"#fff",fontWeight:600,fontSize:13,cursor:"pointer"}}>🔄 Autre suggestion</button>
-              <button onClick={()=>{reset();onBack&&onBack();}} style={{flex:1,padding:"13px 0",borderRadius:28,background:"linear-gradient(135deg,#dc2626,#ef4444)",border:"none",color:"#fff",fontWeight:700,fontSize:13,cursor:"pointer"}}>✅ C'est parti !</button>
+              <button onClick={()=>setSosDetailActive(sosResults.main||(sosResults.fallback&&sosResults.fallback[0]))} style={{flex:1,padding:"13px 0",borderRadius:28,background:"linear-gradient(135deg,#dc2626,#ef4444)",border:"none",color:"#fff",fontWeight:700,fontSize:13,cursor:"pointer"}}>✅ C'est parti !</button>
             </div>
           </div>
         )}

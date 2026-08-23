@@ -11332,12 +11332,16 @@ export default function App(){
     setDevisBoostDemandes(prev=>[nouvelle,...prev]);
     try{
       const key=demande.item?.id||demande.item?.nom||demande.item?.titre;
-      const {data:inserted}=await supabase.from("devis_boost").insert({
+      const {data:inserted,error}=await supabase.from("devis_boost").insert({
         item_type:demande.itemType,item_id:String(key),item_nom:demande.item?.nom||demande.item?.titre,
         nom:demande.nom,email:demande.email,message:demande.message,statut:"nouveau",
       }).select().single();
+      console.log("[DEBUG devis_boost] Résultat insertion :",inserted,"Erreur :",error);
       if(inserted)setDevisBoostDemandes(prev=>prev.map(d=>d===nouvelle?{...d,id:inserted.id}:d));
-    }catch(e){ /* la demande reste visible localement même si la sauvegarde échoue */ }
+    }catch(e){
+      console.log("[DEBUG devis_boost] Exception :",e);
+      // la demande reste visible localement même si la sauvegarde échoue
+    }
   };
   const toggleMasquer=(item,itemType)=>{
     const key=item.id||item.nom||item.titre;

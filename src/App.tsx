@@ -10269,16 +10269,33 @@ function RessourcesAdmin({ressourcesSites=[],setRessourcesSites,ressourcesContac
   };
   const cfg=configs[tab];
 
+  const TABLES={sites:"ressources_sites",contacts:"ressources_contacts",pdf:"ressources_docs"};
   const openAdd=()=>{setForm(tab==="pdf"?{type:"pdf",acces:"gratuit"}:{});setModal({mode:"add"});};
   const openEdit=(item,i)=>{setForm({...item,_i:i});setModal({mode:"edit"});};
-  const save=()=>{
+  const save=async()=>{
     if(!form.nom)return;
-    const {_i,...clean}=form;
-    if(modal.mode==="edit")cfg.setData&&cfg.setData(cfg.data.map((it,i)=>i===_i?clean:it));
-    else cfg.setData&&cfg.setData([...cfg.data,clean]);
+    const {_i,id,...clean}=form;
+    const table=TABLES[tab];
+    const payload=tab==="pdf"
+      ?{nom:clean.nom,type:clean.type,acces:clean.acces,prix:clean.prix,tag:clean.tag,emoji:clean.emoji,description:clean.desc,contenu:clean.contenu}
+      :{nom:clean.nom,url:clean.url,tel:clean.tel,emoji:clean.emoji,description:clean.desc};
+    if(modal.mode==="edit"){
+      cfg.setData&&cfg.setData(cfg.data.map((it,i)=>i===_i?{...clean,id}:it));
+      if(id){try{await supabase.from(table).update(payload).eq("id",id);}catch(e){/* échec réseau — reste correct localement */}}
+    }else{
+      cfg.setData&&cfg.setData([...cfg.data,clean]);
+      try{
+        const {data:inserted}=await supabase.from(table).insert(payload).select().single();
+        if(inserted)cfg.setData&&cfg.setData(prev=>prev.map(it=>it===clean?{...it,id:inserted.id}:it));
+      }catch(e){ /* la ressource reste visible localement même si la sauvegarde échoue */ }
+    }
     setModal(null);
   };
-  const remove=(i)=>{if(cfg.setData)cfg.setData(cfg.data.filter((_,j)=>j!==i));};
+  const remove=async(i)=>{
+    const item=cfg.data[i];
+    if(cfg.setData)cfg.setData(cfg.data.filter((_,j)=>j!==i));
+    if(item?.id){try{await supabase.from(TABLES[tab]).delete().eq("id",item.id);}catch(e){/* échec réseau — sera resynchronisé au prochain chargement */}}
+  };
 
   const accesLabel={gratuit:"🟢 Gratuit",payant:"🔵 Payant",premium:"⭐ Premium"};
   const typeLabel={pdf:"📄 PDF",affiche:"🖼️ Affiche",article:"📝 Article"};
@@ -11500,6 +11517,19 @@ export default function App(){
         const {data:devisData}=await supabase.from("devis_boost").select("*").order("created_at",{ascending:false});
         if(devisData)setDevisBoostDemandes(devisData.map(d=>({id:d.id,item:{id:d.item_id,nom:d.item_nom,titre:d.item_nom},itemType:d.item_type,nom:d.nom,email:d.email,message:d.message,statut:d.statut,date:d.created_at})));
       }catch(e){ /* erreur réseau — reste vide, on utilisera la sauvegarde partagée en secours */ }
+    })();
+  },[]);
+  // ── Chargement des ressources depuis Supabase (données globales) ──
+  useEffect(()=>{
+    (async()=>{
+      try{
+        const {data:sitesData}=await supabase.from("ressources_sites").select("*").order("created_at",{ascending:true});
+        if(sitesData&&sitesData.length>0)setRessourcesSites(sitesData.map(s=>({id:s.id,nom:s.nom,url:s.url,emoji:s.emoji,desc:s.description})));
+        const {data:contactsData}=await supabase.from("ressources_contacts").select("*").order("created_at",{ascending:true});
+        if(contactsData&&contactsData.length>0)setRessourcesContacts(contactsData.map(c=>({id:c.id,nom:c.nom,tel:c.tel,emoji:c.emoji,desc:c.description})));
+        const {data:docsData}=await supabase.from("ressources_docs").select("*").order("created_at",{ascending:true});
+        if(docsData&&docsData.length>0)setRessourcesPdf(docsData.map(d=>({id:d.id,nom:d.nom,type:d.type,acces:d.acces,prix:d.prix,tag:d.tag,emoji:d.emoji,desc:d.description,contenu:d.contenu,telechargements:d.telechargements,revenu:d.revenu})));
+      }catch(e){ /* erreur réseau — reste sur les ressources par défaut */ }
     })();
   },[]);
   // ── Sauvegarde globale — toutes les données privées en 1 clé ─────────────

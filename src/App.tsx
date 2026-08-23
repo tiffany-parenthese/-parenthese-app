@@ -2365,7 +2365,8 @@ function PageBiblio({pendingContribs=[],setPendingContribs,adminActivites=[],adm
   const estBoosteItem=(item,itemType)=>{
     const key=String(item?.id||item?.nom||item?.titre);
     const b=boosts.find(b=>b.itemId===key&&b.itemType===itemType);
-    return b&&new Date(b.dateExpiration)>new Date();
+    const maintenant=new Date();
+    return b&&new Date(b.dateExpiration)>maintenant&&(!b.dateDebut||new Date(b.dateDebut)<=maintenant);
   };
   const [tab,setTab]=useState("activites");
   const [popupBoostEmail,setPopupBoostEmail]=useState(null); // {item,itemType,message}
@@ -10564,11 +10565,14 @@ function AdminBoost({sharedActivites=[],sharedSorties=[],devisBoostDemandes=[],s
 
 function DevisRow({d,boosts,onActiverBoost,onRetirerBoost,traiterDemande,onSupprimer}){
   const [jours,setJours]=useState(30);
+  const [dateDebut,setDateDebut]=useState("");
   const [showDurees,setShowDurees]=useState(false);
   const DUREES=[7,14,30,60,90];
   const key=d.item?.id||d.item?.nom||d.item?.titre;
   const boostActuel=boosts.find(b=>b.itemId===String(key)&&b.itemType===d.itemType);
-  const booste=boostActuel&&new Date(boostActuel.dateExpiration)>new Date();
+  const maintenant=new Date();
+  const estProgramme=boostActuel&&boostActuel.dateDebut&&new Date(boostActuel.dateDebut)>maintenant;
+  const booste=boostActuel&&new Date(boostActuel.dateExpiration)>maintenant&&!estProgramme;
   return(
     <div style={s.card}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:8}}>
@@ -10590,6 +10594,11 @@ function DevisRow({d,boosts,onActiverBoost,onRetirerBoost,traiterDemande,onSuppr
           <span style={{fontSize:12,color:C.green,fontWeight:600}}>🚀 Actif — expire le {new Date(boostActuel.dateExpiration).toLocaleDateString("fr-FR")}</span>
           <button style={s.btnOutline(C.red)} onClick={()=>onRetirerBoost&&onRetirerBoost(d.item,d.itemType)}>Retirer</button>
         </div>
+      ):estProgramme?(
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",background:"rgba(139,92,246,0.08)",border:"1px solid rgba(139,92,246,0.3)",borderRadius:10,padding:"8px 12px"}}>
+          <span style={{fontSize:12,color:"#7C3AED",fontWeight:600}}>📅 Programmé — du {new Date(boostActuel.dateDebut).toLocaleDateString("fr-FR")} au {new Date(boostActuel.dateExpiration).toLocaleDateString("fr-FR")}</span>
+          <button style={s.btnOutline(C.red)} onClick={()=>onRetirerBoost&&onRetirerBoost(d.item,d.itemType)}>Annuler</button>
+        </div>
       ):(
         <>
           {!showDurees?(
@@ -10601,9 +10610,15 @@ function DevisRow({d,boosts,onActiverBoost,onRetirerBoost,traiterDemande,onSuppr
                 {DUREES.map(j=>(
                   <button key={j} onClick={()=>setJours(j)} style={{padding:"6px 12px",borderRadius:20,border:`1.5px solid ${jours===j?"#F59E0B":C.border}`,background:jours===j?"rgba(245,158,11,0.12)":"transparent",color:jours===j?"#F59E0B":C.muted,fontSize:12,fontWeight:jours===j?700:400,cursor:"pointer"}}>{j}j</button>
                 ))}
+                <div style={{display:"flex",alignItems:"center",gap:4}}>
+                  <input type="number" min={1} value={jours} onChange={e=>setJours(Math.max(1,parseInt(e.target.value)||1))} style={{width:56,padding:"6px 8px",borderRadius:20,border:`1.5px solid ${C.border}`,background:"transparent",color:C.text,fontSize:12,textAlign:"center"}}/>
+                  <span style={{fontSize:11,color:C.muted}}>jours</span>
+                </div>
               </div>
+              <p style={{margin:"0 0 6px",fontSize:11,color:C.muted}}>Date de début (laisser vide pour démarrer maintenant) :</p>
+              <input type="date" value={dateDebut} onChange={e=>setDateDebut(e.target.value)} min={new Date().toISOString().slice(0,10)} style={{padding:"8px 10px",borderRadius:10,border:`1.5px solid ${C.border}`,background:"transparent",color:C.text,fontSize:13,marginBottom:10,width:"100%",boxSizing:"border-box"}}/>
               <div style={{display:"flex",gap:8}}>
-                <button style={{...s.btn("#F59E0B"),flex:1}} onClick={()=>{onActiverBoost&&onActiverBoost(d.item,d.itemType,jours);if(d.statut==="nouveau")traiterDemande&&traiterDemande(d.id,"traite");setShowDurees(false);}}>Activer — {jours} jours</button>
+                <button style={{...s.btn("#F59E0B"),flex:1}} onClick={()=>{onActiverBoost&&onActiverBoost(d.item,d.itemType,jours,dateDebut||undefined);if(d.statut==="nouveau")traiterDemande&&traiterDemande(d.id,"traite");setShowDurees(false);}}>{dateDebut?`Programmer — ${jours}j`:`Activer — ${jours}j`}</button>
                 <button style={s.btnOutline(C.muted)} onClick={()=>setShowDurees(false)}>Annuler</button>
               </div>
             </div>
@@ -10625,6 +10640,7 @@ function DevisRow({d,boosts,onActiverBoost,onRetirerBoost,traiterDemande,onSuppr
 function BoostRow({item,booste,boostActuel,onActiverBoost,onRetirerBoost}){
   const [jours,setJours]=useState(30);
   const [editMode,setEditMode]=useState(false);
+  const [dateDebut,setDateDebut]=useState("");
   const DUREES=[7,14,30,60,90];
 
   return(
@@ -10659,8 +10675,14 @@ function BoostRow({item,booste,boostActuel,onActiverBoost,onRetirerBoost}){
               <span style={{fontSize:11,color:C.muted}}>jours</span>
             </div>
           </div>
-          <button style={{...s.btn("#F59E0B"),width:"100%"}} onClick={()=>{onActiverBoost&&onActiverBoost(item,item._type,jours);setEditMode(false);}}>
-            {booste?`Prolonger de ${jours} jours`:`Activer le boost — ${jours} jours`}
+          {!booste&&(
+            <>
+              <p style={{margin:"0 0 6px",fontSize:11,color:C.muted}}>Date de début (laisser vide pour démarrer maintenant) :</p>
+              <input type="date" value={dateDebut} onChange={e=>setDateDebut(e.target.value)} min={new Date().toISOString().slice(0,10)} style={{padding:"8px 10px",borderRadius:10,border:`1.5px solid ${C.border}`,background:"transparent",color:C.text,fontSize:13,marginBottom:10,width:"100%",boxSizing:"border-box"}}/>
+            </>
+          )}
+          <button style={{...s.btn("#F59E0B"),width:"100%"}} onClick={()=>{onActiverBoost&&onActiverBoost(item,item._type,jours,dateDebut||undefined);setEditMode(false);}}>
+            {booste?`Prolonger de ${jours} jours`:dateDebut?`Programmer — ${jours}j à partir du ${new Date(dateDebut).toLocaleDateString("fr-FR")}`:`Activer le boost — ${jours} jours`}
           </button>
         </div>
       )}
@@ -11337,13 +11359,15 @@ export default function App(){
   const [masquees,setMasquees]=useState([]); // items "ne plus proposer" {id, nom, _type}
   const [boosts,setBoosts]=useState([]); // {itemId, itemType, jours, dateExpiration}
   const [devisBoostDemandes,setDevisBoostDemandes]=useState([]); // demandes de devis pour booster
-  const activerBoost=async(item,itemType,jours)=>{
+  const activerBoost=async(item,itemType,jours,dateDebut)=>{
     const key=item.id||item.nom||item.titre;
-    const dateExpiration=new Date(Date.now()+jours*24*60*60*1000).toISOString();
-    setBoosts(prev=>[...prev.filter(b=>!(b.itemId===key&&b.itemType===itemType)),{itemId:key,itemType,jours,dateExpiration}]);
+    const debut=dateDebut?new Date(dateDebut):new Date();
+    const dateExpiration=new Date(debut.getTime()+jours*24*60*60*1000).toISOString();
+    const dateDebutISO=debut.toISOString();
+    setBoosts(prev=>[...prev.filter(b=>!(b.itemId===key&&b.itemType===itemType)),{itemId:key,itemType,jours,dateExpiration,dateDebut:dateDebutISO}]);
     try{
       await supabase.from("boosts").delete().eq("item_id",String(key)).eq("item_type",itemType);
-      await supabase.from("boosts").insert({item_id:String(key),item_type:itemType,jours,date_expiration:dateExpiration});
+      await supabase.from("boosts").insert({item_id:String(key),item_type:itemType,jours,date_expiration:dateExpiration,date_debut:dateDebutISO});
     }catch(e){ /* le boost reste actif localement même si la sauvegarde échoue */ }
   };
   const retirerBoostSupabase=async(item,itemType)=>{
@@ -11355,7 +11379,8 @@ export default function App(){
   const estBooste=(item,itemType)=>{
     const key=String(item?.id||item?.nom||item?.titre);
     const b=boosts.find(b=>b.itemId===key&&b.itemType===itemType);
-    return b&&new Date(b.dateExpiration)>new Date();
+    const maintenant=new Date();
+    return b&&new Date(b.dateExpiration)>maintenant&&(!b.dateDebut||new Date(b.dateDebut)<=maintenant);
   };
   const ajouterDemandeDevisBoost=async(demande)=>{
     const nouvelle={...demande,id:Date.now(),statut:"nouveau"};
@@ -11471,7 +11496,7 @@ export default function App(){
     (async()=>{
       try{
         const {data:boostsData}=await supabase.from("boosts").select("*");
-        if(boostsData)setBoosts(boostsData.map(b=>({itemId:b.item_id,itemType:b.item_type,jours:b.jours,dateExpiration:b.date_expiration})));
+        if(boostsData)setBoosts(boostsData.map(b=>({itemId:b.item_id,itemType:b.item_type,jours:b.jours,dateExpiration:b.date_expiration,dateDebut:b.date_debut})));
         const {data:devisData}=await supabase.from("devis_boost").select("*").order("created_at",{ascending:false});
         if(devisData)setDevisBoostDemandes(devisData.map(d=>({id:d.id,item:{id:d.item_id,nom:d.item_nom,titre:d.item_nom},itemType:d.item_type,nom:d.nom,email:d.email,message:d.message,statut:d.statut,date:d.created_at})));
       }catch(e){ /* erreur réseau — reste vide, on utilisera la sauvegarde partagée en secours */ }

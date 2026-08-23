@@ -1144,7 +1144,7 @@ function FormSortie({onClose,onSubmit,customCatSorties=[]}){
   const [localErrors,setLocalErrors]=useState({});
   const [envoiEnCours,setEnvoiEnCours]=useState(false);
   const handlePhoto=async(e)=>{const file=e.target.files[0];if(!file)return;if(file.size>8*1024*1024){alert("Photo trop lourde (max 8MB)");return;}try{const compressed=await compresserImage(file);setPhotoPreview(compressed);}catch(err){alert("Impossible de lire cette image, réessaie avec une autre.");}};
-  const validate=()=>{const e={};if(!nom.trim())e.nom="Champ obligatoire";if(!ville.trim())e.ville="Champ obligatoire";if(!dept)e.dept="Champ obligatoire";if(!typeSortieSelected)e.type="Champ obligatoire";if(demandeBoost&&!boostEmail.trim())e.boostEmail="Email requis pour la demande de boost";setLocalErrors(e);return Object.keys(e).length===0;};
+  const validate=()=>{const e={};if(!nom.trim())e.nom="Champ obligatoire";if(!ville.trim())e.ville="Champ obligatoire";if(!dept)e.dept="Champ obligatoire";if(!typeSortieSelected)e.type="Champ obligatoire";setLocalErrors(e);return Object.keys(e).length===0;};
   const handleSubmit=()=>{
     if(envoiEnCours)return; // empêche les doubles soumissions par clics multiples
     if(!validate())return;
@@ -1155,7 +1155,7 @@ function FormSortie({onClose,onSubmit,customCatSorties=[]}){
       signaux:accessSignaux,
       details:{...Object.fromEntries(Object.keys(accessSignaux).map(k=>[k,null])),heuresCalmes:accessHeuresCalmes.trim()||undefined,distanceMarche:accessDistanceMarche.trim()||undefined,conseilCommunaute:accessConseil.trim()||undefined},
     };
-    if(onSubmit)onSubmit({nom:nom.trim(),type:typeFinal,dept,ville:ville.trim(),desc:desc.trim(),photo:photoPreview,prix:tarif.trim()||"Gratuit",horaires:horaires.trim(),tnd,...pmrValues,commentaireTND:commentaireTND.trim(),accessibilite,_demandeBoost:demandeBoost,_boostEmail:boostEmail.trim(),_type:"sortie"});
+    if(onSubmit)onSubmit({nom:nom.trim(),type:typeFinal,dept,ville:ville.trim(),desc:desc.trim(),photo:photoPreview,prix:tarif.trim()||"Gratuit",horaires:horaires.trim(),tnd,...pmrValues,commentaireTND:commentaireTND.trim(),accessibilite,_demandeBoost:demandeBoost,_type:"sortie"});
   };
   const se=(err)=>({padding:"12px 14px",borderRadius:12,border:"1px solid "+(err?"#EF4444":"rgba(108,92,231,0.15)"),fontSize:14,width:"100%",boxSizing:"border-box",background:WH,fontFamily:"inherit"});
   const Err=({k})=>localErrors[k]?<p style={{margin:"3px 0 0",fontSize:11,color:"#EF4444"}}>{localErrors[k]}</p>:null;
@@ -1297,13 +1297,6 @@ function FormSortie({onClose,onSubmit,customCatSorties=[]}){
               <div style={{position:"absolute",top:2,left:demandeBoost?20:2,width:18,height:18,borderRadius:"50%",background:"#fff",transition:"left 0.15s"}}/>
             </div>
           </div>
-          {demandeBoost&&(
-            <div onClick={e=>e.stopPropagation()}>
-              <label style={{fontSize:12,color:TM,display:"block",marginBottom:5}}>Ton email (pour te recontacter) *</label>
-              <input value={boostEmail} onChange={e=>setBoostEmail(e.target.value)} placeholder="ton@email.fr" type="email" style={se(localErrors.boostEmail)}/>
-              <Err k="boostEmail"/>
-            </div>
-          )}
 
           <button onClick={handleSubmit} disabled={envoiEnCours} style={{padding:14,borderRadius:14,background:envoiEnCours?"#C4B8F8":V,border:"none",color:WH,fontWeight:700,fontSize:15,cursor:envoiEnCours?"default":"pointer",width:"100%"}}>{envoiEnCours?"Envoi en cours...":"Envoyer ma suggestion"}</button>
         </div>
@@ -1335,7 +1328,7 @@ function FormEvenement({onClose,onSubmit,onOpenAutrePopup,typeAutre,typeEvt,setT
   const [localErrors,setLocalErrors]=useState({});
   const [envoiEnCours,setEnvoiEnCours]=useState(false);
   const handlePhoto=async(e)=>{const file=e.target.files[0];if(!file)return;if(file.size>8*1024*1024){alert("Photo trop lourde (max 8MB)");return;}try{const compressed=await compresserImage(file);setPhotoPreview(compressed);}catch(err){alert("Impossible de lire cette image, réessaie avec une autre.");}};
-  const validate=()=>{const e={};if(!nom.trim())e.nom="Champ obligatoire";if(!desc.trim())e.desc="Champ obligatoire";if(!typeEvt)e.typeEvt="Champ obligatoire";if(!ville.trim())e.ville="Champ obligatoire";if(!dept)e.dept="Champ obligatoire";if(!dateDebut)e.dateDebut="Champ obligatoire";if(demandeBoost&&!boostEmail.trim())e.boostEmail="Email requis pour la demande de boost";setLocalErrors(e);return Object.keys(e).length===0;};
+  const validate=()=>{const e={};if(!nom.trim())e.nom="Champ obligatoire";if(!desc.trim())e.desc="Champ obligatoire";if(!typeEvt)e.typeEvt="Champ obligatoire";if(!ville.trim())e.ville="Champ obligatoire";if(!dept)e.dept="Champ obligatoire";if(!dateDebut)e.dateDebut="Champ obligatoire";setLocalErrors(e);return Object.keys(e).length===0;};
   const handleSubmit=()=>{
     if(envoiEnCours)return; // empêche les doubles soumissions par clics multiples
     if(!validate())return;
@@ -1344,7 +1337,7 @@ function FormEvenement({onClose,onSubmit,onOpenAutrePopup,typeAutre,typeEvt,setT
     const isGratuit=!tarif.trim()||tarif.toLowerCase().includes("gratuit");
     const categorieFinale=typeEvt==="autre"?(typeAutre||"autre"):typeEvt;
     const tnd=tndSon||tndAffluence||tndPrevision||tndZoneCalme!==null?{son:tndSon||undefined,affluence:tndAffluence||undefined,prevision:tndPrevision||undefined,zonecalme:tndZoneCalme!==null?tndZoneCalme:undefined}:undefined;
-    onSubmit({nom:nom.trim(),desc:desc.trim(),categorie:categorieFinale,ville:ville.trim()+" ("+dept+")",dept,date:dateDebut,periode:detectPeriode(dateDebut),prix:tarif.trim()||"Non renseigne",gratuit:isGratuit,communaute:true,signalements:0,age:"Tous ages",dates:datesStr,photo:photoPreview,adresse:adresse.trim(),commentaireTND:commentaireTND.trim(),tnd,...pmrValues,_demandeBoost:demandeBoost,_boostEmail:boostEmail.trim()});
+    onSubmit({nom:nom.trim(),desc:desc.trim(),categorie:categorieFinale,ville:ville.trim()+" ("+dept+")",dept,date:dateDebut,periode:detectPeriode(dateDebut),prix:tarif.trim()||"Non renseigne",gratuit:isGratuit,communaute:true,signalements:0,age:"Tous ages",dates:datesStr,photo:photoPreview,adresse:adresse.trim(),commentaireTND:commentaireTND.trim(),tnd,...pmrValues,_demandeBoost:demandeBoost});
   };
   const se=(err)=>({padding:"12px 14px",borderRadius:12,fontSize:14,width:"100%",boxSizing:"border-box",background:WH,border:"1px solid "+(err?"#EF4444":"rgba(108,92,231,0.15)")});
   const Err=({k})=>localErrors[k]?<p style={{margin:"3px 0 0",fontSize:11,color:"#EF4444"}}>{localErrors[k]}</p>:null;
@@ -1437,13 +1430,6 @@ function FormEvenement({onClose,onSubmit,onOpenAutrePopup,typeAutre,typeEvt,setT
               <div style={{position:"absolute",top:2,left:demandeBoost?20:2,width:18,height:18,borderRadius:"50%",background:"#fff",transition:"left 0.15s"}}/>
             </div>
           </div>
-          {demandeBoost&&(
-            <div onClick={e=>e.stopPropagation()}>
-              <label style={{fontSize:12,color:"#6B7280",display:"block",marginBottom:5}}>Ton email (pour te recontacter) *</label>
-              <input value={boostEmail} onChange={e=>setBoostEmail(e.target.value)} placeholder="ton@email.fr" type="email" style={se(localErrors.boostEmail)}/>
-              <Err k="boostEmail"/>
-            </div>
-          )}
 
           <div style={{display:"flex",gap:10}}><button onClick={onClose} style={{flex:1,padding:14,borderRadius:28,background:WH,border:"1.5px solid #E5E7EB",color:"#374151",fontWeight:500,fontSize:14,cursor:"pointer"}}>Annuler</button><button onClick={handleSubmit} disabled={envoiEnCours} style={{flex:2,padding:14,borderRadius:28,background:envoiEnCours?"#C4B8F8":V,border:"none",color:WH,fontWeight:700,fontSize:14,cursor:envoiEnCours?"default":"pointer"}}>{envoiEnCours?"Envoi en cours...":"Envoyer"}</button></div>
         </div>
@@ -2016,7 +2002,7 @@ function EvenementDetail({evt,onBack,onReport,isFavorite,onToggleFavorite,isLogg
   );
 }
 
-function EvtCard({e,onClick,onReport,customCatEvenements=[],isFav,onToggleFav,onMasquer,estMasque=false}){
+function EvtCard({e,onClick,onReport,customCatEvenements=[],isFav,onToggleFav,onMasquer,estMasque=false,estBoostee=false}){
   const cat=EVT_CATEGORIES.find(c=>c.k===e.categorie)||customCatEvenements.find(c=>c.k===e.categorie);
   const catEmoji=cat?cat.emoji:"🎉";
   const tooMany=(e.signalements||0)>=3;
@@ -2030,9 +2016,10 @@ function EvtCard({e,onClick,onReport,customCatEvenements=[],isFav,onToggleFav,on
   ];
   if(tooMany)return(<div style={{background:"#FFF3E0",borderRadius:16,padding:16,border:"1px solid #FDE68A",display:"flex",alignItems:"center",gap:10,marginBottom:12}}><span style={{fontSize:20}}>⚠️</span><p style={{margin:0,fontSize:13,color:"#92400E"}}>Cet evenement est en cours de verification par l equipe.</p></div>);
   return(
-    <div style={{background:WH,borderRadius:16,overflow:"hidden",border:BD,marginBottom:12,boxShadow:"0 2px 8px rgba(0,0,0,0.06)"}}>
+    <div style={{background:WH,borderRadius:16,overflow:"hidden",border:estBoostee?"2px solid #F59E0B":BD,marginBottom:12,boxShadow:estBoostee?"0 4px 14px rgba(245,158,11,0.2)":"0 2px 8px rgba(0,0,0,0.06)"}}>
       <div style={{position:"relative",height:160,background:e.photo?"#000":"linear-gradient(135deg,#EDE9FF,#C4B5FD)",display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",overflow:"hidden"}} onClick={onClick}>
         {e.photo?<img src={e.photo} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/>:<span style={{fontSize:64}}>{catEmoji}</span>}
+        {estBoostee&&<span style={{position:"absolute",top:10,left:10,background:"#F59E0B",borderRadius:20,padding:"3px 10px",fontSize:10,fontWeight:700,color:"#fff"}}>🚀 Sponsorisé</span>}
         <button onClick={e2=>{e2.stopPropagation();onToggleFav&&onToggleFav();}} style={{position:"absolute",top:10,right:10,width:32,height:32,borderRadius:"50%",background:WH,border:"none",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 2px 6px rgba(0,0,0,0.15)",cursor:"pointer",padding:0}}><span style={{fontSize:16}}>{isFav?"❤️":"🤍"}</span></button>
         <div style={{position:"absolute",top:10,left:10,background:e.gratuit?"#D1FAE5":"#FEF3C7",borderRadius:20,padding:"3px 10px"}}><span style={{fontSize:11,fontWeight:600,color:e.gratuit?"#065F46":"#92400E"}}>{e.prix}</span></div>
       </div>
@@ -2223,7 +2210,7 @@ function CalendrierMensuel({evtFiltered=[],setEvtDetail,addReport,customCatEvene
       ):(
         <div style={{display:"flex",flexDirection:"column",gap:8}}>
           <p style={{margin:"0 0 6px",fontSize:12,fontWeight:700,color:TM}}>{evtsDuMois.length} événement{evtsDuMois.length>1?"s":""} ce mois</p>
-          {evtsDuMois.map(e=><EvtCard key={e.id||e.nom} e={e} onClick={()=>setEvtDetail(e)} onReport={addReport} customCatEvenements={customCatEvenements} isFav={isFavBiblio(e,"evenement")} onToggleFav={()=>toggleFavBiblio(e,"evenement")} onMasquer={toggleMasquer?()=>toggleMasquer(e,"evenement"):undefined} estMasque={estMasque?estMasque(e,"evenement"):false}/>)}
+          {evtsDuMois.map(e=><EvtCard key={e.id||e.nom} e={e} onClick={()=>setEvtDetail(e)} onReport={addReport} customCatEvenements={customCatEvenements} isFav={isFavBiblio(e,"evenement")} onToggleFav={()=>toggleFavBiblio(e,"evenement")} onMasquer={toggleMasquer?()=>toggleMasquer(e,"evenement"):undefined} estMasque={estMasque?estMasque(e,"evenement"):false} estBoostee={estBoosteItem(e,"evenement")}/>)}
         </div>
       )}
     </div>
@@ -2381,6 +2368,8 @@ function PageBiblio({pendingContribs=[],setPendingContribs,adminActivites=[],adm
     return b&&new Date(b.dateExpiration)>new Date();
   };
   const [tab,setTab]=useState("activites");
+  const [popupBoostEmail,setPopupBoostEmail]=useState(null); // {item,itemType,message}
+  const [popupBoostEmailValue,setPopupBoostEmailValue]=useState("");
   const [globalSearch,setGlobalSearch]=useState("");
   const [detail,setDetail]=useState(null);
   const [showCarte,setShowCarte]=useState(null); // "sortie" | "evenement" | null
@@ -2436,11 +2425,11 @@ function PageBiblio({pendingContribs=[],setPendingContribs,adminActivites=[],adm
         statut:"published",communaute:true,auteur_id:currentUser.id,auteur_nom:currentUser.nom,
       }).then(({error})=>{if(error)console.error("Erreur sauvegarde événement Supabase:",error.message);});
     }
-    if(data._demandeBoost&&ajouterDemandeDevisBoost){
-      ajouterDemandeDevisBoost({item:newItem,itemType:"evenement",nom:currentUser?.nom||"Anonyme",email:data._boostEmail||currentUser?.email||"non renseigné",message:"Demande faite à la soumission de l'événement.",date:new Date().toISOString()});
+    if(data._demandeBoost){
+      setPopupBoostEmail({item:newItem,itemType:"evenement",message:"Demande faite à la soumission de l'événement."});
     }
     setShowFormEvt(false);setTypeEvtForm("");setTypeAutreForm("");
-    showToast(data._demandeBoost?"✅ Événement publié ! Votre demande de boost a été transmise à l'équipe.":"✅ Événement publié et visible dans la bibliothèque !");
+    showToast(data._demandeBoost?"✅ Événement publié !":"✅ Événement publié et visible dans la bibliothèque !");
   };
   const CATEGORIES_ACT=[...CATEGORIES_ACT_ALL,...customCatActivites.map(c=>c.label)];
   const approvedActs=pendingContribs.filter(c=>c._type==="activite"&&c._statut!=="rejected");
@@ -2749,7 +2738,7 @@ function PageBiblio({pendingContribs=[],setPendingContribs,adminActivites=[],adm
                     return true;
                   });
                   if(evtsDate.length===0)return null;
-                  return(<div key={date} style={{marginBottom:12}}><div style={{background:V,borderRadius:10,padding:"6px 14px",marginBottom:10,display:"inline-flex"}}><span style={{fontSize:12,fontWeight:700,color:WH}}>{jourLabel(date)} {formatDate(date)}</span></div>{evtsDate.map(e=><EvtCard key={e.id} e={e} onClick={()=>setEvtDetail(e)} onReport={addReport} customCatEvenements={customCatEvenements} isFav={isFavBiblio(e,"evenement")} onToggleFav={()=>toggleFavBiblio(e,"evenement")} onMasquer={toggleMasquer?()=>toggleMasquer(e,"evenement"):undefined} estMasque={estMasque?estMasque(e,"evenement"):false}/>)}</div>);
+                  return(<div key={date} style={{marginBottom:12}}><div style={{background:V,borderRadius:10,padding:"6px 14px",marginBottom:10,display:"inline-flex"}}><span style={{fontSize:12,fontWeight:700,color:WH}}>{jourLabel(date)} {formatDate(date)}</span></div>{evtsDate.map(e=><EvtCard key={e.id} e={e} onClick={()=>setEvtDetail(e)} onReport={addReport} customCatEvenements={customCatEvenements} isFav={isFavBiblio(e,"evenement")} onToggleFav={()=>toggleFavBiblio(e,"evenement")} onMasquer={toggleMasquer?()=>toggleMasquer(e,"evenement"):undefined} estMasque={estMasque?estMasque(e,"evenement"):false} estBoostee={estBoosteItem(e,"evenement")}/>)}</div>);
                 })}
                 {Object.keys(byDate).length===0&&<div style={{textAlign:"center",padding:"40px 0",color:TM}}><p style={{fontSize:32}}>📭</p><p style={{fontSize:14}}>Aucun evenement trouve.</p></div>}
                 <PropBtn/>
@@ -2764,8 +2753,8 @@ function PageBiblio({pendingContribs=[],setPendingContribs,adminActivites=[],adm
                   <button onClick={genEvt} style={{width:"100%",padding:13,borderRadius:12,background:V,border:"none",color:WH,fontWeight:600,fontSize:14,cursor:"pointer"}}>Generer des evenements</button>
                 </div>
                 {evtResult&&(<>
-                  {evtResult.free.length>0&&(<div style={{marginBottom:12}}><p style={{fontSize:12,fontWeight:600,color:GR,margin:"0 0 8px"}}>Gratuit ({evtResult.free.length})</p>{evtResult.free.map(e=><EvtCard key={e.id} e={e} onClick={()=>setEvtDetail(e)} onReport={addReport} customCatEvenements={customCatEvenements} isFav={isFavBiblio(e,"evenement")} onToggleFav={()=>toggleFavBiblio(e,"evenement")} onMasquer={toggleMasquer?()=>toggleMasquer(e,"evenement"):undefined} estMasque={estMasque?estMasque(e,"evenement"):false}/>)}</div>)}
-                  {evtResult.premium.length>0&&(<div><p style={{fontSize:12,fontWeight:600,color:OR,margin:"0 0 8px"}}>Premium</p>{evtResult.premium.map(e=>isPremium?(<EvtCard key={e.id} e={e} onClick={()=>setEvtDetail(e)} onReport={addReport} customCatEvenements={customCatEvenements} isFav={isFavBiblio(e,"evenement")} onToggleFav={()=>toggleFavBiblio(e,"evenement")} onMasquer={toggleMasquer?()=>toggleMasquer(e,"evenement"):undefined} estMasque={estMasque?estMasque(e,"evenement"):false}/>):(<div key={e.id} style={{opacity:0.6,pointerEvents:"none"}}><EvtCard e={e} onClick={()=>{}} customCatEvenements={customCatEvenements}/></div>))}{!isPremium&&<button onClick={()=>onOpenPremium&&onOpenPremium()} style={{width:"100%",padding:11,borderRadius:12,background:V,border:"none",color:WH,fontWeight:600,fontSize:13,cursor:"pointer",marginTop:4}}>Passer Premium</button>}</div>)}
+                  {evtResult.free.length>0&&(<div style={{marginBottom:12}}><p style={{fontSize:12,fontWeight:600,color:GR,margin:"0 0 8px"}}>Gratuit ({evtResult.free.length})</p>{evtResult.free.map(e=><EvtCard key={e.id} e={e} onClick={()=>setEvtDetail(e)} onReport={addReport} customCatEvenements={customCatEvenements} isFav={isFavBiblio(e,"evenement")} onToggleFav={()=>toggleFavBiblio(e,"evenement")} onMasquer={toggleMasquer?()=>toggleMasquer(e,"evenement"):undefined} estMasque={estMasque?estMasque(e,"evenement"):false} estBoostee={estBoosteItem(e,"evenement")}/>)}</div>)}
+                  {evtResult.premium.length>0&&(<div><p style={{fontSize:12,fontWeight:600,color:OR,margin:"0 0 8px"}}>Premium</p>{evtResult.premium.map(e=>isPremium?(<EvtCard key={e.id} e={e} onClick={()=>setEvtDetail(e)} onReport={addReport} customCatEvenements={customCatEvenements} isFav={isFavBiblio(e,"evenement")} onToggleFav={()=>toggleFavBiblio(e,"evenement")} onMasquer={toggleMasquer?()=>toggleMasquer(e,"evenement"):undefined} estMasque={estMasque?estMasque(e,"evenement"):false} estBoostee={estBoosteItem(e,"evenement")}/>):(<div key={e.id} style={{opacity:0.6,pointerEvents:"none"}}><EvtCard e={e} onClick={()=>{}} customCatEvenements={customCatEvenements}/></div>))}{!isPremium&&<button onClick={()=>onOpenPremium&&onOpenPremium()} style={{width:"100%",padding:11,borderRadius:12,background:V,border:"none",color:WH,fontWeight:600,fontSize:13,cursor:"pointer",marginTop:4}}>Passer Premium</button>}</div>)}
                   {evtResult.free.length===0&&evtResult.premium.length===0&&<div style={{textAlign:"center",padding:"30px 0",color:TM}}><p style={{fontSize:32}}>📭</p><p>Aucun evenement.</p></div>}
                 </>)}
                 <PropBtn/>
@@ -2802,12 +2791,29 @@ function PageBiblio({pendingContribs=[],setPendingContribs,adminActivites=[],adm
             statut:"published",communaute:true,auteur_id:currentUser.id,auteur_nom:currentUser.nom,
           }).then(({error})=>{if(error)console.error("Erreur sauvegarde sortie Supabase:",error.message);});
         }
-        if(item._demandeBoost&&ajouterDemandeDevisBoost){
-          ajouterDemandeDevisBoost({item:newItem,itemType:"sortie",nom:currentUser?.nom||"Anonyme",email:item._boostEmail||currentUser?.email||"non renseigné",message:"Demande faite à la soumission de la sortie.",date:new Date().toISOString()});
+        if(item._demandeBoost){
+          setPopupBoostEmail({item:newItem,itemType:"sortie",message:"Demande faite à la soumission de la sortie."});
         }
         setDetail(null);
-        showToast(item._demandeBoost?"✅ Sortie publiée ! Votre demande de boost a été transmise à l'équipe.":"✅ Sortie publiée et visible dans la bibliothèque !");
+        showToast(item._demandeBoost?"✅ Sortie publiée !":"✅ Sortie publiée et visible dans la bibliothèque !");
       }}/>}
+      {popupBoostEmail&&(
+        <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.6)",zIndex:9999,display:"flex",alignItems:"center",justifyContent:"center",padding:"0 24px"}}>
+          <div style={{background:WH,borderRadius:20,padding:24,width:"100%",maxWidth:340,boxSizing:"border-box"}}>
+            <p style={{margin:"0 0 4px",fontSize:36,textAlign:"center"}}>🚀</p>
+            <p style={{margin:"0 0 4px",fontSize:16,fontWeight:700,color:TX,textAlign:"center"}}>Merci pour ta demande de boost !</p>
+            <p style={{margin:"0 0 16px",fontSize:13,color:TM,textAlign:"center"}}>Indique ton email pour qu'on puisse te recontacter avec une offre adaptée.</p>
+            <input value={popupBoostEmailValue} onChange={e=>setPopupBoostEmailValue(e.target.value)} placeholder="ton@email.fr" type="email" autoFocus style={{padding:"12px 14px",borderRadius:12,border:"1.5px solid "+V,fontSize:14,width:"100%",boxSizing:"border-box",fontFamily:"inherit",outline:"none",marginBottom:12}}/>
+            <button onClick={()=>{
+              if(!popupBoostEmailValue.trim())return;
+              ajouterDemandeDevisBoost&&ajouterDemandeDevisBoost({item:popupBoostEmail.item,itemType:popupBoostEmail.itemType,nom:currentUser?.nom||"Anonyme",email:popupBoostEmailValue.trim(),message:popupBoostEmail.message,date:new Date().toISOString()});
+              setPopupBoostEmail(null);setPopupBoostEmailValue("");
+              showToast("✅ Ta demande de boost a été transmise à l'équipe !");
+            }} disabled={!popupBoostEmailValue.trim()} style={{width:"100%",padding:14,borderRadius:28,background:popupBoostEmailValue.trim()?V:"#D1D5DB",border:"none",color:WH,fontWeight:700,fontSize:14,cursor:popupBoostEmailValue.trim()?"pointer":"default",marginBottom:8}}>Envoyer ma demande</button>
+            <button onClick={()=>{setPopupBoostEmail(null);setPopupBoostEmailValue("");}} style={{width:"100%",padding:10,background:"none",border:"none",color:TM,fontSize:12,cursor:"pointer"}}>Annuler</button>
+          </div>
+        </div>
+      )}
       {evtDetail&&<EvenementDetail evt={evtDetail} onBack={()=>setEvtDetail(null)} onReport={addReport} isFavorite={isFavBiblio(evtDetail,"evenement")} onToggleFavorite={()=>toggleFavBiblio(evtDetail,"evenement")} isLoggedIn={isLoggedIn} onRequireAuth={onRequireAuth} customCatEvenements={customCatEvenements} onMasquer={toggleMasquer?()=>toggleMasquer(evtDetail,"evenement"):undefined} estMasque={estMasque?estMasque(evtDetail,"evenement"):false}/>}
       {showFormEvt&&(<FormEvenement customCatEvenements={customCatEvenements} onClose={()=>{setShowFormEvt(false);setTypeEvtForm("");setTypeAutreForm("");}} onSubmit={handleSubmitEvt} onOpenAutrePopup={()=>{setTypeAutreTemp(typeAutreForm);setShowAutrePopup(true);}} typeAutre={typeAutreForm} typeEvt={typeEvtForm} setTypeEvt={setTypeEvtForm}/>)}
       {showAutrePopup&&(<div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.6)",zIndex:9999,display:"flex",alignItems:"center",justifyContent:"center",padding:"0 24px"}}><div style={{background:WH,borderRadius:20,padding:24,width:"100%",maxWidth:320,boxShadow:"0 8px 40px rgba(0,0,0,0.25)"}}><p style={{margin:"0 0 4px",fontSize:16,fontWeight:700,color:TX,textAlign:"center"}}>Autre type</p><input value={typeAutreTemp} onChange={e=>setTypeAutreTemp(e.target.value)} placeholder="Ex : Festival, Portes ouvertes..." style={{padding:"12px 14px",borderRadius:12,border:"1.5px solid "+V,fontSize:14,width:"100%",boxSizing:"border-box",fontFamily:"inherit",outline:"none",marginBottom:16}}/><div style={{display:"flex",gap:10}}><button onClick={()=>setShowAutrePopup(false)} style={{flex:1,padding:"11px 0",borderRadius:28,background:BG,border:"1px solid #E5E7EB",color:TX,fontSize:14,cursor:"pointer"}}>Annuler</button><button onClick={()=>{if(typeAutreTemp.trim()){setTypeAutreForm(typeAutreTemp.trim());setTypeEvtForm("autre");}setShowAutrePopup(false);}} style={{flex:1,padding:"11px 0",borderRadius:28,background:V,border:"none",color:WH,fontWeight:600,fontSize:14,cursor:"pointer"}}>Confirmer</button></div></div></div>)}
@@ -10507,8 +10513,15 @@ function AdminBoost({sharedActivites=[],sharedSorties=[],devisBoostDemandes=[],s
     const b=boosts.find(b=>b.itemId===key&&b.itemType===item._type);
     return b&&new Date(b.dateExpiration)>new Date();
   };
-  const traiterDemande=(id,statut)=>{
+  const traiterDemande=async(id,statut)=>{
     setDevisBoostDemandes&&setDevisBoostDemandes(prev=>prev.map(d=>d.id===id?{...d,statut}:d));
+    try{ await supabase.from("devis_boost").update({statut}).eq("id",id); }
+    catch(e){ /* échec réseau — le statut reste correct localement */ }
+  };
+  const supprimerDemande=async(id)=>{
+    setDevisBoostDemandes&&setDevisBoostDemandes(prev=>prev.filter(d=>d.id!==id));
+    try{ await supabase.from("devis_boost").delete().eq("id",id); }
+    catch(e){ /* échec réseau — sera resynchronisé au prochain chargement */ }
   };
   return(
     <div>
@@ -10527,7 +10540,7 @@ function AdminBoost({sharedActivites=[],sharedSorties=[],devisBoostDemandes=[],s
         <div style={{display:"flex",flexDirection:"column",gap:12}}>
           {devisBoostDemandes.length===0&&<p style={{fontSize:13,color:C.muted}}>Aucune demande de devis pour le moment.</p>}
           {devisBoostDemandes.map(d=>(
-            <DevisRow key={d.id} d={d} boosts={boosts} onActiverBoost={onActiverBoost} onRetirerBoost={onRetirerBoost} traiterDemande={traiterDemande}/>
+            <DevisRow key={d.id} d={d} boosts={boosts} onActiverBoost={onActiverBoost} onRetirerBoost={onRetirerBoost} traiterDemande={traiterDemande} onSupprimer={supprimerDemande}/>
           ))}
         </div>
       )}
@@ -10549,7 +10562,7 @@ function AdminBoost({sharedActivites=[],sharedSorties=[],devisBoostDemandes=[],s
   );
 }
 
-function DevisRow({d,boosts,onActiverBoost,onRetirerBoost,traiterDemande}){
+function DevisRow({d,boosts,onActiverBoost,onRetirerBoost,traiterDemande,onSupprimer}){
   const [jours,setJours]=useState(30);
   const [showDurees,setShowDurees]=useState(false);
   const DUREES=[7,14,30,60,90];
@@ -10604,6 +10617,7 @@ function DevisRow({d,boosts,onActiverBoost,onRetirerBoost,traiterDemande}){
           <button style={s.btnOutline(C.muted)} onClick={()=>traiterDemande(d.id,"ferme")}>Fermer</button>
         </div>
       )}
+      <button onClick={()=>{if(window.confirm("Supprimer définitivement cette demande de la liste ?"))onSupprimer&&onSupprimer(d.id);}} style={{background:"none",border:"none",color:C.red,fontSize:11,cursor:"pointer",padding:0,marginTop:10}}>🗑️ Retirer de la liste</button>
     </div>
   );
 }

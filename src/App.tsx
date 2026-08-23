@@ -10902,7 +10902,7 @@ function PageAdmin({onLogout,pendingContribs=[],setPendingContribs,updateContrib
           </div>
         </header>
         <main style={{flex:1,overflowY:"auto",padding:24}}>
-          {page==="contributions"?<Contributions items={pendingContribs} updateContrib={updateContrib} setPendingContribs={setPendingContribs}/>:PAGES_FN[page]?PAGES_FN[page]({sharedActivites:adminActivites,setSharedActivites:setAdminActivites,sharedSorties:adminSorties,setSharedSorties:setAdminSorties,sharedEvenements:adminEvenements,setSharedEvenements:setAdminEvenements,userReports:adminReports,setUserReports:setAdminReports,onDeleteTitle:addDeletedTitle,sharedCustomEvents:adminCustomEvents,setSharedCustomEvents:setAdminCustomEvents,pendingContribs,dashUserReports:adminReports,sosLib,setSosLib,sosModeActif,setSosModeActif,ideesMomentConfig,setIdeesMomentConfig,evenementsSaisonniers,setEvenementsSaisonniers,customCatActivites,setCustomCatActivites,customCatSorties,setCustomCatSorties,customCatEvenements,setCustomCatEvenements,adminComms,setAdminComms,ressourcesSites,setRessourcesSites,ressourcesContacts,setRessourcesContacts,ressourcesPdf,setRessourcesPdf,devisBoostDemandes,setDevisBoostDemandes,boosts,onActiverBoost:activerBoost,onRetirerBoost:(item,itemType)=>{const key=item.id||item.nom||item.titre;setBoosts&&setBoosts(prev=>prev.filter(b=>!(b.itemId===key&&b.itemType===itemType)));},demoMode,setDemoMode}):null}
+          {page==="contributions"?<Contributions items={pendingContribs} updateContrib={updateContrib} setPendingContribs={setPendingContribs}/>:PAGES_FN[page]?PAGES_FN[page]({sharedActivites:adminActivites,setSharedActivites:setAdminActivites,sharedSorties:adminSorties,setSharedSorties:setAdminSorties,sharedEvenements:adminEvenements,setSharedEvenements:setAdminEvenements,userReports:adminReports,setUserReports:setAdminReports,onDeleteTitle:addDeletedTitle,sharedCustomEvents:adminCustomEvents,setSharedCustomEvents:setAdminCustomEvents,pendingContribs,dashUserReports:adminReports,sosLib,setSosLib,sosModeActif,setSosModeActif,ideesMomentConfig,setIdeesMomentConfig,evenementsSaisonniers,setEvenementsSaisonniers,customCatActivites,setCustomCatActivites,customCatSorties,setCustomCatSorties,customCatEvenements,setCustomCatEvenements,adminComms,setAdminComms,ressourcesSites,setRessourcesSites,ressourcesContacts,setRessourcesContacts,ressourcesPdf,setRessourcesPdf,devisBoostDemandes,setDevisBoostDemandes,boosts,onActiverBoost:activerBoost,onRetirerBoost:retirerBoostSupabase,demoMode,setDemoMode}):null}
         </main>
       </div>
     </div>
@@ -11268,18 +11268,37 @@ export default function App(){
   const [masquees,setMasquees]=useState([]); // items "ne plus proposer" {id, nom, _type}
   const [boosts,setBoosts]=useState([]); // {itemId, itemType, jours, dateExpiration}
   const [devisBoostDemandes,setDevisBoostDemandes]=useState([]); // demandes de devis pour booster
-  const activerBoost=(item,itemType,jours)=>{
+  const activerBoost=async(item,itemType,jours)=>{
     const key=item.id||item.nom||item.titre;
     const dateExpiration=new Date(Date.now()+jours*24*60*60*1000).toISOString();
     setBoosts(prev=>[...prev.filter(b=>!(b.itemId===key&&b.itemType===itemType)),{itemId:key,itemType,jours,dateExpiration}]);
+    try{
+      await supabase.from("boosts").delete().eq("item_id",String(key)).eq("item_type",itemType);
+      await supabase.from("boosts").insert({item_id:String(key),item_type:itemType,jours,date_expiration:dateExpiration});
+    }catch(e){ /* le boost reste actif localement même si la sauvegarde échoue */ }
+  };
+  const retirerBoostSupabase=async(item,itemType)=>{
+    const key=item.id||item.nom||item.titre;
+    setBoosts(prev=>prev.filter(b=>!(b.itemId===key&&b.itemType===itemType)));
+    try{ await supabase.from("boosts").delete().eq("item_id",String(key)).eq("item_type",itemType); }
+    catch(e){ /* échec réseau — sera resynchronisé au prochain chargement */ }
   };
   const estBooste=(item,itemType)=>{
     const key=item?.id||item?.nom||item?.titre;
     const b=boosts.find(b=>b.itemId===key&&b.itemType===itemType);
     return b&&new Date(b.dateExpiration)>new Date();
   };
-  const ajouterDemandeDevisBoost=(demande)=>{
-    setDevisBoostDemandes(prev=>[{...demande,id:Date.now(),statut:"nouveau"},...prev]);
+  const ajouterDemandeDevisBoost=async(demande)=>{
+    const nouvelle={...demande,id:Date.now(),statut:"nouveau"};
+    setDevisBoostDemandes(prev=>[nouvelle,...prev]);
+    try{
+      const key=demande.item?.id||demande.item?.nom||demande.item?.titre;
+      const {data:inserted}=await supabase.from("devis_boost").insert({
+        item_type:demande.itemType,item_id:String(key),item_nom:demande.item?.nom||demande.item?.titre,
+        nom:demande.nom,email:demande.email,message:demande.message,statut:"nouveau",
+      }).select().single();
+      if(inserted)setDevisBoostDemandes(prev=>prev.map(d=>d===nouvelle?{...d,id:inserted.id}:d));
+    }catch(e){ /* la demande reste visible localement même si la sauvegarde échoue */ }
   };
   const toggleMasquer=(item,itemType)=>{
     const key=item.id||item.nom||item.titre;
@@ -11376,6 +11395,17 @@ export default function App(){
   },[]);
   const [filtresMemoActiv,setFiltresMemoActiv]=useState({}); // {lieu, energie, ageEnfant}
   const [filtresMemoSortie,setFiltresMemoSortie]=useState({}); // {deptS, typeS, prixS}
+  // ── Chargement des boosts et demandes de devis depuis Supabase (données globales) ──
+  useEffect(()=>{
+    (async()=>{
+      try{
+        const {data:boostsData}=await supabase.from("boosts").select("*");
+        if(boostsData)setBoosts(boostsData.map(b=>({itemId:b.item_id,itemType:b.item_type,jours:b.jours,dateExpiration:b.date_expiration})));
+        const {data:devisData}=await supabase.from("devis_boost").select("*").order("created_at",{ascending:false});
+        if(devisData)setDevisBoostDemandes(devisData.map(d=>({id:d.id,item:{id:d.item_id,nom:d.item_nom,titre:d.item_nom},itemType:d.item_type,nom:d.nom,email:d.email,message:d.message,statut:d.statut,date:d.created_at})));
+      }catch(e){ /* erreur réseau — reste vide, on utilisera la sauvegarde partagée en secours */ }
+    })();
+  },[]);
   // ── Sauvegarde globale — toutes les données privées en 1 clé ─────────────
   const sauvegarderPrivé=async(données)=>{
     try{ await window.storage.set("app_v1_private",JSON.stringify(données),false); }catch(e){}

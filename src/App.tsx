@@ -10274,7 +10274,7 @@ function RessourcesAdmin({ressourcesSites=[],setRessourcesSites,ressourcesContac
   const openAdd=()=>{setForm(tab==="pdf"?{type:"pdf",acces:"gratuit"}:{});setModal({mode:"add"});};
   const openEdit=(item,i)=>{setForm({...item,_i:i});setModal({mode:"edit"});};
   const save=async()=>{
-    if(!form.nom)return;
+    if(!form.nom){alert("Le champ \"Nom\" est obligatoire.");return;}
     const {_i,id,...clean}=form;
     const table=TABLES[tab];
     const payload=tab==="pdf"

@@ -10874,12 +10874,38 @@ const PAGES_FN = {dashboard:(props)=><Dashboard {...props}/>,sos:(props)=><Admin
 function AdminSOS({sosLib=[],setSosLib,sosModeActif=true,setSosModeActif}){
   const [modal,setModal]=useState(null);
   const [form,setForm]=useState({titre:"",desc:"",duree:"",age:"",materiel:"",statut:"published"});
-  const save=()=>{
+  const save=async()=>{
     if(!form.titre)return;
-    const item={...form,id:"sos"+Date.now(),materiel:form.materiel?form.materiel.split(",").map(m=>m.trim()):[]};
-    if(modal?.mode==="edit") setSosLib(prev=>prev.map(a=>a.id===modal.item.id?{...a,...item}:a));
-    else setSosLib(prev=>[...prev,item]);
+    const {materiel,id,...rest}=form;
+    const clean={...rest,materiel:materiel?String(materiel).split(",").map(m=>m.trim()):[]};
+    const payload={titre:clean.titre,description:clean.desc,duree:clean.duree,age:clean.age,materiel:clean.materiel,statut:clean.statut,
+      crise_sensorielle:!!clean.crise_sensorielle,crise_emotionnelle:!!clean.crise_emotionnelle,crise_agitation:!!clean.crise_agitation,crise_concentration:!!clean.crise_concentration,
+      profil_ordinaire:!!clean.profil_ordinaire,profil_tsa:!!clean.profil_tsa,profil_tdah:!!clean.profil_tdah,profil_dys:!!clean.profil_dys,profil_bas_age:!!clean.profil_bas_age,
+      lieu_maison:!!clean.lieu_maison,lieu_ecole:!!clean.lieu_ecole,lieu_public:!!clean.lieu_public,lieu_voiture:!!clean.lieu_voiture,lieu_dehors:!!clean.lieu_dehors,
+    };
+    if(modal?.mode==="edit"){
+      setSosLib(prev=>prev.map(a=>a.id===modal.item.id?{...a,...clean,id}:a));
+      if(id){try{await supabase.from("sos_lib").update(payload).eq("id",id);}catch(e){/* échec réseau — reste correct localement */}}
+    }else{
+      const tempId="sos"+Date.now();
+      setSosLib(prev=>[...prev,{...clean,id:tempId}]);
+      try{
+        const {data:inserted}=await supabase.from("sos_lib").insert(payload).select().single();
+        if(inserted)setSosLib(prev=>prev.map(a=>a.id===tempId?{...a,id:inserted.id}:a));
+      }catch(e){ /* la technique reste visible localement même si la sauvegarde échoue */ }
+    }
     setModal(null);
+  };
+  const toggleStatut=async(item)=>{
+    const nouveauStatut=item.statut==="published"?"draft":"published";
+    setSosLib(prev=>prev.map(x=>x.id===item.id?{...x,statut:nouveauStatut}:x));
+    try{ await supabase.from("sos_lib").update({statut:nouveauStatut}).eq("id",item.id); }
+    catch(e){ /* échec réseau — reste correct localement */ }
+  };
+  const supprimer=async(item)=>{
+    setSosLib(prev=>prev.filter(x=>x.id!==item.id));
+    try{ await supabase.from("sos_lib").delete().eq("id",item.id); }
+    catch(e){ /* échec réseau — sera resynchronisé au prochain chargement */ }
   };
   return(
     <div>
@@ -10939,10 +10965,10 @@ function AdminSOS({sosLib=[],setSosLib,sosModeActif=true,setSosModeActif}){
               <td style={{padding:"12px 16px"}}>
                 <div style={{display:"flex",gap:6}}>
                   <button style={s.btnOutline("#ef4444")} onClick={()=>{setForm({...a,materiel:Array.isArray(a.materiel)?a.materiel.join(", "):a.materiel||""});setModal({mode:"edit",item:a});}}>✏️</button>
-                  <button style={s.btnOutline(a.statut==="published"?C.yellow:C.green)} onClick={()=>setSosLib(prev=>prev.map(x=>x.id===a.id?{...x,statut:x.statut==="published"?"draft":"published"}:x))}>
+                  <button style={s.btnOutline(a.statut==="published"?C.yellow:C.green)} onClick={()=>toggleStatut(a)}>
                     {a.statut==="published"?"📝":"✅"}
                   </button>
-                  <button style={s.btnOutline(C.red)} onClick={()=>setSosLib(prev=>prev.filter(x=>x.id!==a.id))}>🗑️</button>
+                  <button style={s.btnOutline(C.red)} onClick={()=>supprimer(a)}>🗑️</button>
                 </div>
               </td>
             </tr>
@@ -11561,6 +11587,20 @@ export default function App(){
       }catch(e){ /* erreur réseau — reste sur les ressources par défaut */ }
     })();
   },[]);
+  // ── Chargement de la bibliothèque SOS depuis Supabase (données globales) ──
+  useEffect(()=>{
+    (async()=>{
+      try{
+        const {data}=await supabase.from("sos_lib").select("*").order("created_at",{ascending:true});
+        if(data&&data.length>0)setSosLib(data.map(s=>({
+          id:s.id,titre:s.titre,desc:s.description,duree:s.duree,age:s.age,materiel:s.materiel||[],statut:s.statut,
+          crise_sensorielle:s.crise_sensorielle,crise_emotionnelle:s.crise_emotionnelle,crise_agitation:s.crise_agitation,crise_concentration:s.crise_concentration,
+          profil_ordinaire:s.profil_ordinaire,profil_tsa:s.profil_tsa,profil_tdah:s.profil_tdah,profil_dys:s.profil_dys,profil_bas_age:s.profil_bas_age,
+          lieu_maison:s.lieu_maison,lieu_ecole:s.lieu_ecole,lieu_public:s.lieu_public,lieu_voiture:s.lieu_voiture,lieu_dehors:s.lieu_dehors,
+        })));
+      }catch(e){ /* erreur réseau — reste sur les techniques par défaut */ }
+    })();
+  },[]);
   // ── Sauvegarde globale — toutes les données privées en 1 clé ─────────────
   const sauvegarderPrivé=async(données)=>{
     try{ await window.storage.set("app_v1_private",JSON.stringify(données),false); }catch(e){}
@@ -11606,7 +11646,7 @@ export default function App(){
           if(d.adminActivites)setAdminActivites(d.adminActivites);
           if(d.adminSorties)setAdminSorties(d.adminSorties);
           if(d.adminEvenements)setAdminEvenements(d.adminEvenements);
-          if(d.sosLib)setSosLib(d.sosLib);
+          // sosLib chargé depuis Supabase, plus depuis le stockage local
           if(d.devisBoostDemandes)setDevisBoostDemandes(d.devisBoostDemandes);
           if(d.boosts)setBoosts(d.boosts);
           if(d.ressourcesSites)setRessourcesSites(d.ressourcesSites);

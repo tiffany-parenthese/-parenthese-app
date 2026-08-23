@@ -10261,6 +10261,7 @@ function RessourcesAdmin({ressourcesSites=[],setRessourcesSites,ressourcesContac
   const [tab,setTab]=useState("sites");
   const [modal,setModal]=useState(null);
   const [form,setForm]=useState({});
+  const [uploadEnCours,setUploadEnCours]=useState(false);
 
   const configs={
     sites:{data:sites,setData:setRessourcesSites,fields:[{k:"nom",l:"Nom",ph:"Ex : Autisme France"},{k:"url",l:"URL",ph:"https://..."},{k:"emoji",l:"Emoji",ph:"🔵"},{k:"desc",l:"Description",ph:"Description courte du site...",area:true}]},
@@ -10277,7 +10278,7 @@ function RessourcesAdmin({ressourcesSites=[],setRessourcesSites,ressourcesContac
     const {_i,id,...clean}=form;
     const table=TABLES[tab];
     const payload=tab==="pdf"
-      ?{nom:clean.nom,type:clean.type,acces:clean.acces,prix:clean.prix,tag:clean.tag,emoji:clean.emoji,description:clean.desc,contenu:clean.contenu}
+      ?{nom:clean.nom,type:clean.type,acces:clean.acces,prix:clean.prix,tag:clean.tag,emoji:clean.emoji,description:clean.desc,contenu:clean.contenu,fichier_url:clean.fichierUrl||null}
       :{nom:clean.nom,url:clean.url,tel:clean.tel,emoji:clean.emoji,description:clean.desc};
     if(modal.mode==="edit"){
       cfg.setData&&cfg.setData(cfg.data.map((it,i)=>i===_i?{...clean,id}:it));
@@ -10412,6 +10413,34 @@ function RessourcesAdmin({ressourcesSites=[],setRessourcesSites,ressourcesContac
               </div>
             </AdminField>
             <AdminField label="Nom *"><input style={s.input} value={form.nom||""} onChange={e=>setForm({...form,nom:e.target.value})} placeholder="Ex : Affiche — La roue des émotions"/></AdminField>
+            <AdminField label={form.type==="affiche"?"Image de l'affiche":form.type==="article"?"Image d'illustration (optionnel)":"Fichier PDF"}>
+              {form.fichierUrl?(
+                <div style={{display:"flex",alignItems:"center",gap:8,padding:"8px 12px",background:C.card,borderRadius:10}}>
+                  <span style={{fontSize:12,color:C.green,flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>✓ {form.fichierNom||"Fichier ajouté"}</span>
+                  <button onClick={()=>setForm({...form,fichierUrl:"",fichierNom:""})} style={{background:"none",border:"none",color:C.red,fontSize:11,cursor:"pointer"}}>Retirer</button>
+                </div>
+              ):(
+                <div>
+                  <input type="file" accept={form.type==="pdf"?"application/pdf":"image/*"} disabled={uploadEnCours} onChange={async e=>{
+                    const file=e.target.files[0];
+                    if(!file)return;
+                    setUploadEnCours(true);
+                    try{
+                      const ext=file.name.split(".").pop();
+                      const path=`${Date.now()}_${Math.random().toString(36).slice(2,8)}.${ext}`;
+                      const {error:upErr}=await supabase.storage.from("ressources-fichiers").upload(path,file);
+                      if(upErr){alert("Erreur lors de l'envoi du fichier : "+upErr.message);}
+                      else{
+                        const {data:pub}=supabase.storage.from("ressources-fichiers").getPublicUrl(path);
+                        setForm(f=>({...f,fichierUrl:pub.publicUrl,fichierNom:file.name}));
+                      }
+                    }catch(err){alert("Erreur lors de l'envoi du fichier.");}
+                    setUploadEnCours(false);
+                  }} style={{fontSize:12}}/>
+                  {uploadEnCours&&<p style={{margin:"6px 0 0",fontSize:11,color:C.muted}}>Envoi en cours...</p>}
+                </div>
+              )}
+            </AdminField>
             <AdminField label="Emoji"><input style={s.input} value={form.emoji||""} onChange={e=>setForm({...form,emoji:e.target.value})} placeholder="🎨"/></AdminField>
             <AdminField label="Tag (optionnel)"><input style={s.input} value={form.tag||""} onChange={e=>setForm({...form,tag:e.target.value})} placeholder="Ex : Affiche A3, À imprimer, Article..."/></AdminField>
             <AdminField label="Description"><textarea style={{...s.input,minHeight:60,resize:"vertical"}} value={form.desc||""} onChange={e=>setForm({...form,desc:e.target.value})} placeholder="Description courte visible dans la liste..."/></AdminField>
@@ -11528,7 +11557,7 @@ export default function App(){
         const {data:contactsData}=await supabase.from("ressources_contacts").select("*").order("created_at",{ascending:true});
         if(contactsData&&contactsData.length>0)setRessourcesContacts(contactsData.map(c=>({id:c.id,nom:c.nom,tel:c.tel,emoji:c.emoji,desc:c.description})));
         const {data:docsData}=await supabase.from("ressources_docs").select("*").order("created_at",{ascending:true});
-        if(docsData&&docsData.length>0)setRessourcesPdf(docsData.map(d=>({id:d.id,nom:d.nom,type:d.type,acces:d.acces,prix:d.prix,tag:d.tag,emoji:d.emoji,desc:d.description,contenu:d.contenu,telechargements:d.telechargements,revenu:d.revenu})));
+        if(docsData&&docsData.length>0)setRessourcesPdf(docsData.map(d=>({id:d.id,nom:d.nom,type:d.type,acces:d.acces,prix:d.prix,tag:d.tag,emoji:d.emoji,desc:d.description,contenu:d.contenu,telechargements:d.telechargements,revenu:d.revenu,fichierUrl:d.fichier_url})));
       }catch(e){ /* erreur réseau — reste sur les ressources par défaut */ }
     })();
   },[]);

@@ -10511,27 +10511,7 @@ function AdminBoost({sharedActivites=[],sharedSorties=[],devisBoostDemandes=[],s
         <div style={{display:"flex",flexDirection:"column",gap:12}}>
           {devisBoostDemandes.length===0&&<p style={{fontSize:13,color:C.muted}}>Aucune demande de devis pour le moment.</p>}
           {devisBoostDemandes.map(d=>(
-            <div key={d.id} style={s.card}>
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:8}}>
-                <div>
-                  <p style={{margin:"0 0 2px",fontSize:14,fontWeight:700,color:C.text}}>{d.item?.nom||d.item?.titre}</p>
-                  <p style={{margin:0,fontSize:11,color:C.muted}}>{d.itemType==="sortie"?"🗺️ Sortie":"🎨 Activité"} · {new Date(d.date).toLocaleDateString("fr-FR")}</p>
-                </div>
-                <span style={{fontSize:10,fontWeight:700,padding:"3px 10px",borderRadius:20,background:d.statut==="nouveau"?"#FEF3C7":d.statut==="traite"?"#D1FAE5":"#F3F4F6",color:d.statut==="nouveau"?"#92400E":d.statut==="traite"?"#065F46":C.muted}}>
-                  {d.statut==="nouveau"?"🆕 Nouveau":d.statut==="traite"?"✓ Traité":"Fermé"}
-                </span>
-              </div>
-              <div style={{background:C.card,borderRadius:10,padding:"10px 12px",marginBottom:10}}>
-                <p style={{margin:"0 0 4px",fontSize:12,color:C.text}}>👤 {d.nom} — <a href={`mailto:${d.email}`} style={{color:C.accent}}>{d.email}</a></p>
-                {d.message&&<p style={{margin:0,fontSize:12,color:C.muted,fontStyle:"italic"}}>"{d.message}"</p>}
-              </div>
-              {d.statut==="nouveau"&&(
-                <div style={{display:"flex",gap:8}}>
-                  <button style={{...s.btnOutline(C.green),flex:1}} onClick={()=>traiterDemande(d.id,"traite")}>✓ Marquer traité</button>
-                  <button style={s.btnOutline(C.muted)} onClick={()=>traiterDemande(d.id,"ferme")}>Fermer</button>
-                </div>
-              )}
-            </div>
+            <DevisRow key={d.id} d={d} boosts={boosts} onActiverBoost={onActiverBoost} onRetirerBoost={onRetirerBoost} traiterDemande={traiterDemande}/>
           ))}
         </div>
       )}
@@ -10547,6 +10527,65 @@ function AdminBoost({sharedActivites=[],sharedSorties=[],devisBoostDemandes=[],s
               <BoostRow key={item._type+i} item={item} booste={booste} boostActuel={boostActuel} onActiverBoost={onActiverBoost} onRetirerBoost={onRetirerBoost}/>
             );
           })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function DevisRow({d,boosts,onActiverBoost,onRetirerBoost,traiterDemande}){
+  const [jours,setJours]=useState(30);
+  const [showDurees,setShowDurees]=useState(false);
+  const DUREES=[7,14,30,60,90];
+  const key=d.item?.id||d.item?.nom||d.item?.titre;
+  const boostActuel=boosts.find(b=>b.itemId===String(key)&&b.itemType===d.itemType);
+  const booste=boostActuel&&new Date(boostActuel.dateExpiration)>new Date();
+  return(
+    <div style={s.card}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:8}}>
+        <div>
+          <p style={{margin:"0 0 2px",fontSize:14,fontWeight:700,color:C.text}}>{d.item?.nom||d.item?.titre}</p>
+          <p style={{margin:0,fontSize:11,color:C.muted}}>{d.itemType==="sortie"?"🗺️ Sortie":d.itemType==="evenement"?"📅 Événement":"🎨 Activité"} · {new Date(d.date).toLocaleDateString("fr-FR")}</p>
+        </div>
+        <span style={{fontSize:10,fontWeight:700,padding:"3px 10px",borderRadius:20,background:d.statut==="nouveau"?"#FEF3C7":d.statut==="traite"?"#D1FAE5":"#F3F4F6",color:d.statut==="nouveau"?"#92400E":d.statut==="traite"?"#065F46":C.muted}}>
+          {d.statut==="nouveau"?"🆕 Nouveau":d.statut==="traite"?"✓ Traité":"Fermé"}
+        </span>
+      </div>
+      <div style={{background:C.card,borderRadius:10,padding:"10px 12px",marginBottom:10}}>
+        <p style={{margin:"0 0 4px",fontSize:12,color:C.text}}>👤 {d.nom} — <a href={`mailto:${d.email}`} style={{color:C.accent}}>{d.email}</a></p>
+        {d.message&&<p style={{margin:0,fontSize:12,color:C.muted,fontStyle:"italic"}}>"{d.message}"</p>}
+      </div>
+
+      {booste?(
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",background:"rgba(16,185,129,0.08)",border:"1px solid rgba(16,185,129,0.3)",borderRadius:10,padding:"8px 12px"}}>
+          <span style={{fontSize:12,color:C.green,fontWeight:600}}>🚀 Actif — expire le {new Date(boostActuel.dateExpiration).toLocaleDateString("fr-FR")}</span>
+          <button style={s.btnOutline(C.red)} onClick={()=>onRetirerBoost&&onRetirerBoost(d.item,d.itemType)}>Retirer</button>
+        </div>
+      ):(
+        <>
+          {!showDurees?(
+            <button style={{...s.btn("#F59E0B"),width:"100%"}} onClick={()=>setShowDurees(true)}>🚀 Activer le boost pour cette annonce</button>
+          ):(
+            <div style={{background:C.card,borderRadius:10,padding:"10px 12px"}}>
+              <p style={{margin:"0 0 8px",fontSize:11,color:C.muted}}>Durée du boost :</p>
+              <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:10}}>
+                {DUREES.map(j=>(
+                  <button key={j} onClick={()=>setJours(j)} style={{padding:"6px 12px",borderRadius:20,border:`1.5px solid ${jours===j?"#F59E0B":C.border}`,background:jours===j?"rgba(245,158,11,0.12)":"transparent",color:jours===j?"#F59E0B":C.muted,fontSize:12,fontWeight:jours===j?700:400,cursor:"pointer"}}>{j}j</button>
+                ))}
+              </div>
+              <div style={{display:"flex",gap:8}}>
+                <button style={{...s.btn("#F59E0B"),flex:1}} onClick={()=>{onActiverBoost&&onActiverBoost(d.item,d.itemType,jours);if(d.statut==="nouveau")traiterDemande&&traiterDemande(d.id,"traite");setShowDurees(false);}}>Activer — {jours} jours</button>
+                <button style={s.btnOutline(C.muted)} onClick={()=>setShowDurees(false)}>Annuler</button>
+              </div>
+            </div>
+          )}
+        </>
+      )}
+
+      {d.statut==="nouveau"&&(
+        <div style={{display:"flex",gap:8,marginTop:8}}>
+          <button style={{...s.btnOutline(C.green),flex:1}} onClick={()=>traiterDemande(d.id,"traite")}>✓ Marquer traité</button>
+          <button style={s.btnOutline(C.muted)} onClick={()=>traiterDemande(d.id,"ferme")}>Fermer</button>
         </div>
       )}
     </div>

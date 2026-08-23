@@ -1140,10 +1140,11 @@ function FormSortie({onClose,onSubmit,customCatSorties=[]}){
   const [accessDistanceMarche,setAccessDistanceMarche]=useState("");
   const [accessConseil,setAccessConseil]=useState("");
   const [demandeBoost,setDemandeBoost]=useState(false);
+  const [boostEmail,setBoostEmail]=useState("");
   const [localErrors,setLocalErrors]=useState({});
   const [envoiEnCours,setEnvoiEnCours]=useState(false);
   const handlePhoto=async(e)=>{const file=e.target.files[0];if(!file)return;if(file.size>8*1024*1024){alert("Photo trop lourde (max 8MB)");return;}try{const compressed=await compresserImage(file);setPhotoPreview(compressed);}catch(err){alert("Impossible de lire cette image, réessaie avec une autre.");}};
-  const validate=()=>{const e={};if(!nom.trim())e.nom="Champ obligatoire";if(!ville.trim())e.ville="Champ obligatoire";if(!dept)e.dept="Champ obligatoire";if(!typeSortieSelected)e.type="Champ obligatoire";setLocalErrors(e);return Object.keys(e).length===0;};
+  const validate=()=>{const e={};if(!nom.trim())e.nom="Champ obligatoire";if(!ville.trim())e.ville="Champ obligatoire";if(!dept)e.dept="Champ obligatoire";if(!typeSortieSelected)e.type="Champ obligatoire";if(demandeBoost&&!boostEmail.trim())e.boostEmail="Email requis pour la demande de boost";setLocalErrors(e);return Object.keys(e).length===0;};
   const handleSubmit=()=>{
     if(envoiEnCours)return; // empêche les doubles soumissions par clics multiples
     if(!validate())return;
@@ -1154,7 +1155,7 @@ function FormSortie({onClose,onSubmit,customCatSorties=[]}){
       signaux:accessSignaux,
       details:{...Object.fromEntries(Object.keys(accessSignaux).map(k=>[k,null])),heuresCalmes:accessHeuresCalmes.trim()||undefined,distanceMarche:accessDistanceMarche.trim()||undefined,conseilCommunaute:accessConseil.trim()||undefined},
     };
-    if(onSubmit)onSubmit({nom:nom.trim(),type:typeFinal,dept,ville:ville.trim(),desc:desc.trim(),photo:photoPreview,prix:tarif.trim()||"Gratuit",horaires:horaires.trim(),tnd,...pmrValues,commentaireTND:commentaireTND.trim(),accessibilite,_demandeBoost:demandeBoost,_type:"sortie"});
+    if(onSubmit)onSubmit({nom:nom.trim(),type:typeFinal,dept,ville:ville.trim(),desc:desc.trim(),photo:photoPreview,prix:tarif.trim()||"Gratuit",horaires:horaires.trim(),tnd,...pmrValues,commentaireTND:commentaireTND.trim(),accessibilite,_demandeBoost:demandeBoost,_boostEmail:boostEmail.trim(),_type:"sortie"});
   };
   const se=(err)=>({padding:"12px 14px",borderRadius:12,border:"1px solid "+(err?"#EF4444":"rgba(108,92,231,0.15)"),fontSize:14,width:"100%",boxSizing:"border-box",background:WH,fontFamily:"inherit"});
   const Err=({k})=>localErrors[k]?<p style={{margin:"3px 0 0",fontSize:11,color:"#EF4444"}}>{localErrors[k]}</p>:null;
@@ -1296,6 +1297,13 @@ function FormSortie({onClose,onSubmit,customCatSorties=[]}){
               <div style={{position:"absolute",top:2,left:demandeBoost?20:2,width:18,height:18,borderRadius:"50%",background:"#fff",transition:"left 0.15s"}}/>
             </div>
           </div>
+          {demandeBoost&&(
+            <div onClick={e=>e.stopPropagation()}>
+              <label style={{fontSize:12,color:TM,display:"block",marginBottom:5}}>Ton email (pour te recontacter) *</label>
+              <input value={boostEmail} onChange={e=>setBoostEmail(e.target.value)} placeholder="ton@email.fr" type="email" style={se(localErrors.boostEmail)}/>
+              <Err k="boostEmail"/>
+            </div>
+          )}
 
           <button onClick={handleSubmit} disabled={envoiEnCours} style={{padding:14,borderRadius:14,background:envoiEnCours?"#C4B8F8":V,border:"none",color:WH,fontWeight:700,fontSize:15,cursor:envoiEnCours?"default":"pointer",width:"100%"}}>{envoiEnCours?"Envoi en cours...":"Envoyer ma suggestion"}</button>
         </div>
@@ -1323,10 +1331,11 @@ function FormEvenement({onClose,onSubmit,onOpenAutrePopup,typeAutre,typeEvt,setT
   const [tndZoneCalme,setTndZoneCalme]=useState(null);
   const [pmrValues,setPmrValues]=useState({});
   const [demandeBoost,setDemandeBoost]=useState(false);
+  const [boostEmail,setBoostEmail]=useState("");
   const [localErrors,setLocalErrors]=useState({});
   const [envoiEnCours,setEnvoiEnCours]=useState(false);
   const handlePhoto=async(e)=>{const file=e.target.files[0];if(!file)return;if(file.size>8*1024*1024){alert("Photo trop lourde (max 8MB)");return;}try{const compressed=await compresserImage(file);setPhotoPreview(compressed);}catch(err){alert("Impossible de lire cette image, réessaie avec une autre.");}};
-  const validate=()=>{const e={};if(!nom.trim())e.nom="Champ obligatoire";if(!desc.trim())e.desc="Champ obligatoire";if(!typeEvt)e.typeEvt="Champ obligatoire";if(!ville.trim())e.ville="Champ obligatoire";if(!dept)e.dept="Champ obligatoire";if(!dateDebut)e.dateDebut="Champ obligatoire";setLocalErrors(e);return Object.keys(e).length===0;};
+  const validate=()=>{const e={};if(!nom.trim())e.nom="Champ obligatoire";if(!desc.trim())e.desc="Champ obligatoire";if(!typeEvt)e.typeEvt="Champ obligatoire";if(!ville.trim())e.ville="Champ obligatoire";if(!dept)e.dept="Champ obligatoire";if(!dateDebut)e.dateDebut="Champ obligatoire";if(demandeBoost&&!boostEmail.trim())e.boostEmail="Email requis pour la demande de boost";setLocalErrors(e);return Object.keys(e).length===0;};
   const handleSubmit=()=>{
     if(envoiEnCours)return; // empêche les doubles soumissions par clics multiples
     if(!validate())return;
@@ -1335,7 +1344,7 @@ function FormEvenement({onClose,onSubmit,onOpenAutrePopup,typeAutre,typeEvt,setT
     const isGratuit=!tarif.trim()||tarif.toLowerCase().includes("gratuit");
     const categorieFinale=typeEvt==="autre"?(typeAutre||"autre"):typeEvt;
     const tnd=tndSon||tndAffluence||tndPrevision||tndZoneCalme!==null?{son:tndSon||undefined,affluence:tndAffluence||undefined,prevision:tndPrevision||undefined,zonecalme:tndZoneCalme!==null?tndZoneCalme:undefined}:undefined;
-    onSubmit({nom:nom.trim(),desc:desc.trim(),categorie:categorieFinale,ville:ville.trim()+" ("+dept+")",dept,date:dateDebut,periode:detectPeriode(dateDebut),prix:tarif.trim()||"Non renseigne",gratuit:isGratuit,communaute:true,signalements:0,age:"Tous ages",dates:datesStr,photo:photoPreview,adresse:adresse.trim(),commentaireTND:commentaireTND.trim(),tnd,...pmrValues,_demandeBoost:demandeBoost});
+    onSubmit({nom:nom.trim(),desc:desc.trim(),categorie:categorieFinale,ville:ville.trim()+" ("+dept+")",dept,date:dateDebut,periode:detectPeriode(dateDebut),prix:tarif.trim()||"Non renseigne",gratuit:isGratuit,communaute:true,signalements:0,age:"Tous ages",dates:datesStr,photo:photoPreview,adresse:adresse.trim(),commentaireTND:commentaireTND.trim(),tnd,...pmrValues,_demandeBoost:demandeBoost,_boostEmail:boostEmail.trim()});
   };
   const se=(err)=>({padding:"12px 14px",borderRadius:12,fontSize:14,width:"100%",boxSizing:"border-box",background:WH,border:"1px solid "+(err?"#EF4444":"rgba(108,92,231,0.15)")});
   const Err=({k})=>localErrors[k]?<p style={{margin:"3px 0 0",fontSize:11,color:"#EF4444"}}>{localErrors[k]}</p>:null;
@@ -1428,6 +1437,13 @@ function FormEvenement({onClose,onSubmit,onOpenAutrePopup,typeAutre,typeEvt,setT
               <div style={{position:"absolute",top:2,left:demandeBoost?20:2,width:18,height:18,borderRadius:"50%",background:"#fff",transition:"left 0.15s"}}/>
             </div>
           </div>
+          {demandeBoost&&(
+            <div onClick={e=>e.stopPropagation()}>
+              <label style={{fontSize:12,color:"#6B7280",display:"block",marginBottom:5}}>Ton email (pour te recontacter) *</label>
+              <input value={boostEmail} onChange={e=>setBoostEmail(e.target.value)} placeholder="ton@email.fr" type="email" style={se(localErrors.boostEmail)}/>
+              <Err k="boostEmail"/>
+            </div>
+          )}
 
           <div style={{display:"flex",gap:10}}><button onClick={onClose} style={{flex:1,padding:14,borderRadius:28,background:WH,border:"1.5px solid #E5E7EB",color:"#374151",fontWeight:500,fontSize:14,cursor:"pointer"}}>Annuler</button><button onClick={handleSubmit} disabled={envoiEnCours} style={{flex:2,padding:14,borderRadius:28,background:envoiEnCours?"#C4B8F8":V,border:"none",color:WH,fontWeight:700,fontSize:14,cursor:envoiEnCours?"default":"pointer"}}>{envoiEnCours?"Envoi en cours...":"Envoyer"}</button></div>
         </div>
@@ -2360,7 +2376,7 @@ function CarteInteractive({items,type,onClose,onOpenItem}){
 
 function PageBiblio({pendingContribs=[],setPendingContribs,adminActivites=[],adminSorties=[],adminEvenements=[],addReport,adminReports=[],deletedTitles=new Set(),isLoggedIn=true,onRequireAuth,favoris=[],setFavoris,isPremium=false,onOpenPremium,customCatActivites=[],customCatSorties=[],customCatEvenements=[],currentUser=null,enfants=[],enfantActif=null,masquees=[],toggleMasquer,estMasque,boosts=[],ajouterDemandeDevisBoost}){
   const estBoosteItem=(item,itemType)=>{
-    const key=item?.id||item?.nom||item?.titre;
+    const key=String(item?.id||item?.nom||item?.titre);
     const b=boosts.find(b=>b.itemId===key&&b.itemType===itemType);
     return b&&new Date(b.dateExpiration)>new Date();
   };
@@ -2421,7 +2437,7 @@ function PageBiblio({pendingContribs=[],setPendingContribs,adminActivites=[],adm
       }).then(({error})=>{if(error)console.error("Erreur sauvegarde événement Supabase:",error.message);});
     }
     if(data._demandeBoost&&ajouterDemandeDevisBoost){
-      ajouterDemandeDevisBoost({item:newItem,itemType:"evenement",nom:currentUser?.nom||"Anonyme",email:currentUser?.email||"non renseigné",message:"Demande faite à la soumission de l'événement.",date:new Date().toISOString()});
+      ajouterDemandeDevisBoost({item:newItem,itemType:"evenement",nom:currentUser?.nom||"Anonyme",email:data._boostEmail||currentUser?.email||"non renseigné",message:"Demande faite à la soumission de l'événement.",date:new Date().toISOString()});
     }
     setShowFormEvt(false);setTypeEvtForm("");setTypeAutreForm("");
     showToast(data._demandeBoost?"✅ Événement publié ! Votre demande de boost a été transmise à l'équipe.":"✅ Événement publié et visible dans la bibliothèque !");
@@ -2488,7 +2504,7 @@ function PageBiblio({pendingContribs=[],setPendingContribs,adminActivites=[],adm
   const selStyle={flex:1,padding:"8px 10px",borderRadius:10,border:BD,background:WH,fontSize:13};
 
   const approvedEvts=pendingContribs.filter(c=>c._type==="evenement"&&c._statut!=="rejected");
-  const allEvts=[...evenements,...adminEvenementsPublies,...approvedEvts].filter(e=>!blockedTitles.has(e.titre)&&!blockedTitles.has(e.nom));
+  const allEvts=[...evenements,...adminEvenementsPublies,...approvedEvts].filter(e=>!blockedTitles.has(e.titre)&&!blockedTitles.has(e.nom)).sort((a,b)=>(estBoosteItem(b,"evenement")?1:0)-(estBoosteItem(a,"evenement")?1:0));
   const evtFiltered=allEvts.filter(e=>{
     if(evtCat&&e.categorie!==evtCat&&e.type!==evtCat)return false;
     if(evtDept&&e.dept!==evtDept)return false;
@@ -2787,7 +2803,7 @@ function PageBiblio({pendingContribs=[],setPendingContribs,adminActivites=[],adm
           }).then(({error})=>{if(error)console.error("Erreur sauvegarde sortie Supabase:",error.message);});
         }
         if(item._demandeBoost&&ajouterDemandeDevisBoost){
-          ajouterDemandeDevisBoost({item:newItem,itemType:"sortie",nom:currentUser?.nom||"Anonyme",email:currentUser?.email||"non renseigné",message:"Demande faite à la soumission de la sortie.",date:new Date().toISOString()});
+          ajouterDemandeDevisBoost({item:newItem,itemType:"sortie",nom:currentUser?.nom||"Anonyme",email:item._boostEmail||currentUser?.email||"non renseigné",message:"Demande faite à la soumission de la sortie.",date:new Date().toISOString()});
         }
         setDetail(null);
         showToast(item._demandeBoost?"✅ Sortie publiée ! Votre demande de boost a été transmise à l'équipe.":"✅ Sortie publiée et visible dans la bibliothèque !");
@@ -11323,7 +11339,7 @@ export default function App(){
     catch(e){ /* échec réseau — sera resynchronisé au prochain chargement */ }
   };
   const estBooste=(item,itemType)=>{
-    const key=item?.id||item?.nom||item?.titre;
+    const key=String(item?.id||item?.nom||item?.titre);
     const b=boosts.find(b=>b.itemId===key&&b.itemType===itemType);
     return b&&new Date(b.dateExpiration)>new Date();
   };
@@ -11332,14 +11348,12 @@ export default function App(){
     setDevisBoostDemandes(prev=>[nouvelle,...prev]);
     try{
       const key=demande.item?.id||demande.item?.nom||demande.item?.titre;
-      const {data:inserted,error}=await supabase.from("devis_boost").insert({
+      const {data:inserted}=await supabase.from("devis_boost").insert({
         item_type:demande.itemType,item_id:String(key),item_nom:demande.item?.nom||demande.item?.titre,
         nom:demande.nom,email:demande.email,message:demande.message,statut:"nouveau",
       }).select().single();
-      console.log("[DEBUG devis_boost] Résultat insertion :",inserted,"Erreur :",error);
       if(inserted)setDevisBoostDemandes(prev=>prev.map(d=>d===nouvelle?{...d,id:inserted.id}:d));
     }catch(e){
-      console.log("[DEBUG devis_boost] Exception :",e);
       // la demande reste visible localement même si la sauvegarde échoue
     }
   };

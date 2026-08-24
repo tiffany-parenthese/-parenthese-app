@@ -11587,12 +11587,15 @@ export default function App(){
     const nouveau={...report,id:Date.now(),date:new Date().toLocaleDateString("fr-FR"),statut:"pending",signalePar:currentUser?.email||report.signalePar||"anonyme"};
     setAdminReports(prev=>[nouveau,...prev]);
     try{
-      const {data:inserted}=await supabase.from("signalements").insert({
+      const {data:inserted,error}=await supabase.from("signalements").insert({
         item_type:report.type,titre:report.titre,raison:report.raison,detail:report.detail||"",
         signale_par:nouveau.signalePar,statut:"pending",
       }).select().single();
+      console.log("[DEBUG signalements] Résultat insertion :",inserted,"Erreur :",error);
       if(inserted)setAdminReports(prev=>prev.map(r=>r===nouveau?{...r,id:inserted.id}:r));
-    }catch(e){ /* le signalement reste visible localement même si la sauvegarde échoue */ }
+    }catch(e){
+      console.log("[DEBUG signalements] Exception :",e);
+    }
   };
   const addDeletedTitle=(titre)=>setDeletedTitles(prev=>new Set([...prev,titre]));
   const addPendingContrib=(item)=>setPendingContribs(prev=>[{...item,id:Date.now(),_createdAt:new Date().toISOString(),_statut:"published",_signalements:0,_raisonSignalement:"",_auteur:currentUser?.nom||"Anonyme",_auteurEmail:currentUser?.email||"non connecté"},...prev]);

@@ -10484,17 +10484,22 @@ function Categories({customCatActivites=[],setCustomCatActivites,customCatSortie
   const [label,setLabel]=useState("");
   const [emoji,setEmoji]=useState("");
   const reset=()=>{setLabel("");setEmoji("");};
-  const ajouterSimple=(liste,setListe,defaults)=>{
+  const ajouterSimple=async(liste,setListe,defaults,type)=>{
     const lab=label.trim();
     if(!lab)return;
     const emo=emoji.trim()||"🏷️";
     const dejaDefaut=defaults.some(d=>d.toLowerCase()===lab.toLowerCase());
     const dejaCustom=liste.some(c=>c.label.toLowerCase()===lab.toLowerCase());
     if(dejaDefaut||dejaCustom){ alert("Cette catégorie existe déjà."); return; }
-    setListe([...liste,{label:lab,emoji:emo}]);
+    const nouvelle={label:lab,emoji:emo};
+    setListe([...liste,nouvelle]);
     reset();
+    try{
+      const {data:inserted}=await supabase.from("categories_custom").insert({type,label:lab,emoji:emo}).select().single();
+      if(inserted)setListe(prev=>prev.map(c=>c===nouvelle?{...c,id:inserted.id}:c));
+    }catch(e){ /* la catégorie reste visible localement même si la sauvegarde échoue */ }
   };
-  const ajouterEvenement=()=>{
+  const ajouterEvenement=async()=>{
     const lab=label.trim();
     if(!lab)return;
     const emo=emoji.trim()||"🎉";
@@ -10502,10 +10507,19 @@ function Categories({customCatActivites=[],setCustomCatActivites,customCatSortie
     const dejaDefaut=EVT_CATEGORIES.some(c=>c.k===k||c.label.toLowerCase()===lab.toLowerCase());
     const dejaCustom=customCatEvenements.some(c=>c.k===k||c.label.toLowerCase()===lab.toLowerCase());
     if(dejaDefaut||dejaCustom){ alert("Cette catégorie existe déjà."); return; }
-    setCustomCatEvenements([...customCatEvenements,{k,label:lab,emoji:emo}]);
+    const nouvelle={k,label:lab,emoji:emo};
+    setCustomCatEvenements([...customCatEvenements,nouvelle]);
     reset();
+    try{
+      const {data:inserted}=await supabase.from("categories_custom").insert({type:"evenement",cle:k,label:lab,emoji:emo}).select().single();
+      if(inserted)setCustomCatEvenements(prev=>prev.map(c=>c===nouvelle?{...c,id:inserted.id}:c));
+    }catch(e){ /* la catégorie reste visible localement même si la sauvegarde échoue */ }
   };
-  const supprimer=(liste,setListe,index)=>setListe(liste.filter((_,i)=>i!==index));
+  const supprimer=(liste,setListe,index)=>{
+    const item=liste[index];
+    setListe(liste.filter((_,i)=>i!==index));
+    if(item?.id){supabase.from("categories_custom").delete().eq("id",item.id).then(()=>{},()=>{});}
+  };
   const tabs=[{k:"activites",label:"Activités",defaults:CATEGORIES_ACT_ALL,custom:customCatActivites},{k:"sorties",label:"Sorties",defaults:TYPES_SORTIE,custom:customCatSorties},{k:"evenements",label:"Événements",defaults:EVT_CATEGORIES.map(c=>c.label),custom:customCatEvenements}];
   const current=tabs.find(t=>t.k===tab);
   return(
@@ -10522,13 +10536,13 @@ function Categories({customCatActivites=[],setCustomCatActivites,customCatSortie
         <div style={{display:"flex",gap:10,alignItems:"flex-end",flexWrap:"wrap"}}>
           <div style={{flex:1,minWidth:160}}>
             <label style={{fontSize:11,color:C.muted,display:"block",marginBottom:6}}>Nom</label>
-            <input style={s.input} value={label} onChange={e=>setLabel(e.target.value)} placeholder="Ex : Theatre" onKeyDown={e=>e.key==="Enter"&&(tab==="evenements"?ajouterEvenement():ajouterSimple(current.custom,tab==="activites"?setCustomCatActivites:setCustomCatSorties,current.defaults))}/>
+            <input style={s.input} value={label} onChange={e=>setLabel(e.target.value)} placeholder="Ex : Theatre" onKeyDown={e=>e.key==="Enter"&&(tab==="evenements"?ajouterEvenement():ajouterSimple(current.custom,tab==="activites"?setCustomCatActivites:setCustomCatSorties,current.defaults,tab==="activites"?"activite":"sortie"))}/>
           </div>
           <div style={{width:90}}>
             <label style={{fontSize:11,color:C.muted,display:"block",marginBottom:6}}>Emoji</label>
             <input style={{...s.input,textAlign:"center",fontSize:18}} value={emoji} onChange={e=>setEmoji(e.target.value)} placeholder="🎭" maxLength={4}/>
           </div>
-          <button style={s.btn(C.accent)} onClick={()=>tab==="evenements"?ajouterEvenement():ajouterSimple(current.custom,tab==="activites"?setCustomCatActivites:setCustomCatSorties,current.defaults)}>+ Ajouter</button>
+          <button style={s.btn(C.accent)} onClick={()=>tab==="evenements"?ajouterEvenement():ajouterSimple(current.custom,tab==="activites"?setCustomCatActivites:setCustomCatSorties,current.defaults,tab==="activites"?"activite":"sortie")}>+ Ajouter</button>
         </div>
       </div>
       <p style={{fontSize:12,fontWeight:700,color:C.muted,margin:"0 0 10px",textTransform:"uppercase",letterSpacing:"0.5px"}}>Catégories par défaut</p>
@@ -11622,6 +11636,19 @@ export default function App(){
         const {data}=await supabase.from("signalements").select("*").order("created_at",{ascending:false});
         if(data)setAdminReports(data.map(r=>({id:r.id,type:r.item_type,titre:r.titre,raison:r.raison,detail:r.detail,signalePar:r.signale_par,statut:r.statut,date:r.created_at?new Date(r.created_at).toLocaleDateString("fr-FR"):""})));
       }catch(e){ /* erreur réseau — reste vide */ }
+    })();
+  },[]);
+  // ── Chargement des catégories personnalisées depuis Supabase (données globales) ──
+  useEffect(()=>{
+    (async()=>{
+      try{
+        const {data}=await supabase.from("categories_custom").select("*").order("created_at",{ascending:true});
+        if(data&&data.length>0){
+          setCustomCatActivites(data.filter(c=>c.type==="activite").map(c=>({id:c.id,label:c.label,emoji:c.emoji})));
+          setCustomCatSorties(data.filter(c=>c.type==="sortie").map(c=>({id:c.id,label:c.label,emoji:c.emoji})));
+          setCustomCatEvenements(data.filter(c=>c.type==="evenement").map(c=>({id:c.id,k:c.cle,label:c.label,emoji:c.emoji})));
+        }
+      }catch(e){ /* erreur réseau — reste sur les catégories par défaut */ }
     })();
   },[]);
   // ── Sauvegarde globale — toutes les données privées en 1 clé ─────────────

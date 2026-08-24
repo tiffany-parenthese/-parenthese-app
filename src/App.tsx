@@ -9817,10 +9817,15 @@ function Signalements({userReports=[],setUserReports,sharedActivites=[],setShare
     setEditModal({report:r,mode:"edit"});
   };
   const openDelete=(r)=>setEditModal({report:r,mode:"delete"});
+  const resolveAllForTitre=(titre)=>{
+    const idsAResoudre=[...userReports,...reports].filter(r=>r.titre===titre&&r.statut==="pending").map(r=>r.id);
+    setUserReports(prev=>prev.map(x=>idsAResoudre.includes(x.id)?{...x,statut:"resolved"}:x));
+    setReports(prev=>prev.map(x=>idsAResoudre.includes(x.id)?{...x,statut:"resolved"}:x));
+    idsAResoudre.forEach(id=>{supabase.from("signalements").update({statut:"resolved"}).eq("id",id).then(()=>{},()=>{});});
+  };
   const saveEdit=()=>{
     const r=editModal.report;
-    setUserReports(prev=>prev.map(x=>x.id===r.id?{...x,...editForm}:x));
-    setReports(prev=>prev.map(x=>x.id===r.id?{...x,...editForm}:x));
+    resolveAllForTitre(r.titre);
     const titre=r.titre;
     const garde=(val,fallback)=>(val!==undefined&&val!==null&&val!==""?val:fallback);
     if(r.type==="sortie"&&setSharedSorties){
@@ -9867,7 +9872,6 @@ function Signalements({userReports=[],setUserReports,sharedActivites=[],setShare
         ...accUpdates,
       }:a));
     }
-    updateAll(r.id,"resolved");
     setEditModal(null);
   };
   const deleteItem=()=>{

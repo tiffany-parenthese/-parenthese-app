@@ -1789,8 +1789,8 @@ function ActivityDetailPage({activity,isFavorite,onToggleFavorite,onBack,onRepor
   const difficulte=activity.difficulte||activity.difficulty||"";
   const lieu=activity.lieu||activity.location||"";
   const motivation=activity.motivation||activity.energie||"";
-  const materiel=MATERIEL_MAP[titre]||null;
-  const etapes=ETAPES_MAP[titre]||null;
+  const materiel=(Array.isArray(activity.materiel)&&activity.materiel.length>0)?activity.materiel:(MATERIEL_MAP[titre]||null);
+  const etapes=(Array.isArray(activity.etapes)&&activity.etapes.length>0)?activity.etapes:(ETAPES_MAP[titre]||null);
   const motLabel=motivation==="fatigue"?"Fatigue":motivation==="motiv"?"Motiv":motivation||"-";
   const lieuLabel=lieu==="interieur"?"Interieur":lieu==="exterieur"?"Exterieur":lieu||"-";
   const card={background:WH,borderRadius:16,padding:14,marginBottom:12,boxShadow:"0 1px 3px rgba(0,0,0,0.06)"};

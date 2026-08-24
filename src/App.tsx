@@ -9794,7 +9794,7 @@ function Abonnements() {
   );
 }
 
-function Signalements({userReports=[],setUserReports,sharedActivites=[],setSharedActivites,sharedSorties=[],setSharedSorties,sharedEvenements=[],setSharedEvenements,onDeleteTitle,customCatActivites=[],customCatSorties=[],customCatEvenements=[]}) {
+function Signalements({userReports=[],setUserReports,sharedActivites=[],setSharedActivites,sharedSorties=[],setSharedSorties,sharedEvenements=[],setSharedEvenements,onDeleteTitle,customCatActivites=[],customCatSorties=[],customCatEvenements=[],pendingContribs=[],setPendingContribs}) {
   const [reports,setReports] = useState(MOCK_REPORTS);
   const [editModal,setEditModal] = useState(null); // {report, mode:'edit'|'delete'}
   const [editForm,setEditForm] = useState({});
@@ -9802,6 +9802,7 @@ function Signalements({userReports=[],setUserReports,sharedActivites=[],setShare
   const updateAll=(id,st)=>{
     setUserReports(prev=>prev.map(r=>r.id===id?{...r,statut:st}:r));
     setReports(prev=>prev.map(r=>r.id===id?{...r,statut:st}:r));
+    supabase.from("signalements").update({statut:st}).eq("id",id).then(()=>{},()=>{}); // échec réseau — reste correct localement
   };
   const pendingAll = allReports.filter(r=>r.statut==="pending").length;
   const update = (id,st) => updateAll(id,st);
@@ -9872,11 +9873,18 @@ function Signalements({userReports=[],setUserReports,sharedActivites=[],setShare
   const deleteItem=()=>{
     const titre=editModal.report.titre;
     const type=editModal.report.type;
-    setUserReports(prev=>prev.filter(r=>r.id!==editModal.report.id));
-    setReports(prev=>prev.filter(r=>r.id!==editModal.report.id));
+    const reportId=editModal.report.id;
+    setUserReports(prev=>prev.filter(r=>r.id!==reportId));
+    setReports(prev=>prev.filter(r=>r.id!==reportId));
+    supabase.from("signalements").delete().eq("id",reportId).then(()=>{},()=>{}); // échec réseau — sera resynchronisé au prochain chargement
     if(type==="sortie"&&setSharedSorties) setSharedSorties(prev=>prev.filter(s=>s.nom!==titre&&s.titre!==titre));
     else if(type==="evenement"&&setSharedEvenements) setSharedEvenements(prev=>prev.filter(e=>e.nom!==titre&&e.titre!==titre));
     else if(setSharedActivites) setSharedActivites(prev=>prev.filter(a=>a.nom!==titre&&a.titre!==titre));
+    // retire aussi les contributions communautaires correspondantes (souvent la source réelle de l'élément signalé)
+    if(setPendingContribs)setPendingContribs(prev=>prev.filter(c=>c.nom!==titre&&c.titre!==titre));
+    // supprime réellement la ligne côté Supabase pour que l'élément ne réapparaisse pas au rechargement
+    const table=type==="sortie"?"sorties":type==="evenement"?"evenements":"activites";
+    supabase.from(table).delete().or(`nom.eq.${titre},titre.eq.${titre}`).then(()=>{},()=>{});
     if(onDeleteTitle)onDeleteTitle(titre);
     setEditModal(null);
   };
@@ -11100,7 +11108,7 @@ function PageAdmin({onLogout,pendingContribs=[],setPendingContribs,updateContrib
           </div>
         </header>
         <main style={{flex:1,overflowY:"auto",padding:24}}>
-          {page==="contributions"?<Contributions items={pendingContribs} updateContrib={updateContrib} setPendingContribs={setPendingContribs}/>:PAGES_FN[page]?PAGES_FN[page]({sharedActivites:adminActivites,setSharedActivites:setAdminActivites,sharedSorties:adminSorties,setSharedSorties:setAdminSorties,sharedEvenements:adminEvenements,setSharedEvenements:setAdminEvenements,userReports:adminReports,setUserReports:setAdminReports,onDeleteTitle:addDeletedTitle,sharedCustomEvents:adminCustomEvents,setSharedCustomEvents:setAdminCustomEvents,pendingContribs,dashUserReports:adminReports,sosLib,setSosLib,sosModeActif,setSosModeActif,ideesMomentConfig,setIdeesMomentConfig,evenementsSaisonniers,setEvenementsSaisonniers,customCatActivites,setCustomCatActivites,customCatSorties,setCustomCatSorties,customCatEvenements,setCustomCatEvenements,adminComms,setAdminComms,ressourcesSites,setRessourcesSites,ressourcesContacts,setRessourcesContacts,ressourcesPdf,setRessourcesPdf,devisBoostDemandes,setDevisBoostDemandes,boosts,onActiverBoost:activerBoost,onRetirerBoost:retirerBoostSupabase,demoMode,setDemoMode}):null}
+          {page==="contributions"?<Contributions items={pendingContribs} updateContrib={updateContrib} setPendingContribs={setPendingContribs}/>:PAGES_FN[page]?PAGES_FN[page]({sharedActivites:adminActivites,setSharedActivites:setAdminActivites,sharedSorties:adminSorties,setSharedSorties:setAdminSorties,sharedEvenements:adminEvenements,setSharedEvenements:setAdminEvenements,userReports:adminReports,setUserReports:setAdminReports,onDeleteTitle:addDeletedTitle,sharedCustomEvents:adminCustomEvents,setSharedCustomEvents:setAdminCustomEvents,pendingContribs,setPendingContribs,dashUserReports:adminReports,sosLib,setSosLib,sosModeActif,setSosModeActif,ideesMomentConfig,setIdeesMomentConfig,evenementsSaisonniers,setEvenementsSaisonniers,customCatActivites,setCustomCatActivites,customCatSorties,setCustomCatSorties,customCatEvenements,setCustomCatEvenements,adminComms,setAdminComms,ressourcesSites,setRessourcesSites,ressourcesContacts,setRessourcesContacts,ressourcesPdf,setRessourcesPdf,devisBoostDemandes,setDevisBoostDemandes,boosts,onActiverBoost:activerBoost,onRetirerBoost:retirerBoostSupabase,demoMode,setDemoMode}):null}
         </main>
       </div>
     </div>
@@ -11575,7 +11583,17 @@ export default function App(){
   const [evenementsSaisonniers,setEvenementsSaisonniers]=useState([
     {id:"noel",type:"christmas",nom:"Noël",actif:false,essaiActif:false,apercuGratuitJours:3,apercuGratuitType:"premiers",apercuGratuitCartesPostales:1},
   ]);
-  const addReport=(report)=>setAdminReports(prev=>[{...report,id:Date.now(),date:new Date().toLocaleDateString("fr-FR"),statut:"pending",signalePar:currentUser?.email||report.signalePar||"anonyme"},...prev]);
+  const addReport=async(report)=>{
+    const nouveau={...report,id:Date.now(),date:new Date().toLocaleDateString("fr-FR"),statut:"pending",signalePar:currentUser?.email||report.signalePar||"anonyme"};
+    setAdminReports(prev=>[nouveau,...prev]);
+    try{
+      const {data:inserted}=await supabase.from("signalements").insert({
+        item_type:report.type,titre:report.titre,raison:report.raison,detail:report.detail||"",
+        signale_par:nouveau.signalePar,statut:"pending",
+      }).select().single();
+      if(inserted)setAdminReports(prev=>prev.map(r=>r===nouveau?{...r,id:inserted.id}:r));
+    }catch(e){ /* le signalement reste visible localement même si la sauvegarde échoue */ }
+  };
   const addDeletedTitle=(titre)=>setDeletedTitles(prev=>new Set([...prev,titre]));
   const addPendingContrib=(item)=>setPendingContribs(prev=>[{...item,id:Date.now(),_createdAt:new Date().toISOString(),_statut:"published",_signalements:0,_raisonSignalement:"",_auteur:currentUser?.nom||"Anonyme",_auteurEmail:currentUser?.email||"non connecté"},...prev]);
   const updateContrib=(id,changes)=>setPendingContribs(prev=>prev.map(c=>c.id===id?{...c,...changes}:c));
@@ -11636,6 +11654,15 @@ export default function App(){
       }catch(e){ /* erreur réseau — reste sur les techniques par défaut */ }
     })();
   },[]);
+  // ── Chargement des signalements depuis Supabase (données globales) ──
+  useEffect(()=>{
+    (async()=>{
+      try{
+        const {data}=await supabase.from("signalements").select("*").order("created_at",{ascending:false});
+        if(data)setAdminReports(data.map(r=>({id:r.id,type:r.item_type,titre:r.titre,raison:r.raison,detail:r.detail,signalePar:r.signale_par,statut:r.statut,date:r.created_at?new Date(r.created_at).toLocaleDateString("fr-FR"):""})));
+      }catch(e){ /* erreur réseau — reste vide */ }
+    })();
+  },[]);
   // ── Sauvegarde globale — toutes les données privées en 1 clé ─────────────
   const sauvegarderPrivé=async(données)=>{
     try{ await window.storage.set("app_v1_private",JSON.stringify(données),false); }catch(e){}
@@ -11674,7 +11701,7 @@ export default function App(){
           if(d.sosModeActif!==undefined)setSosModeActif(d.sosModeActif);
           if(d.pendingContribs)setPendingContribs(d.pendingContribs);
           if(d.deletedTitles)setDeletedTitles(new Set(d.deletedTitles));
-          if(d.adminReports)setAdminReports(d.adminReports);
+          // adminReports chargés depuis Supabase, plus depuis le stockage local
           if(d.customCatActivites)setCustomCatActivites(d.customCatActivites);
           if(d.customCatSorties)setCustomCatSorties(d.customCatSorties);
           if(d.customCatEvenements)setCustomCatEvenements(d.customCatEvenements);

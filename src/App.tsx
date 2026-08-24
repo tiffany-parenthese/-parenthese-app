@@ -2456,8 +2456,10 @@ function PageBiblio({pendingContribs=[],setPendingContribs,adminActivites=[],adm
 
   // Items avec signalement pending -> masqués jusqu'à résolution
   const blockedTitles=new Set([...adminReports.filter(r=>r.statut==="pending").map(r=>r.titre),...deletedTitles]);
+  // Élément de base remplacé par une version modifiée (contribution) : on cache l'original pour ne pas avoir de doublon
+  const shadowedActTitles=new Set(approvedActs.map(a=>a.nom||a.titre));
   const searchQ=globalSearch.toLowerCase();
-  const actFilteredBase=[...ACTIVITES,...adminPublished,...approvedActs].filter(a=>!blockedTitles.has(a.nom)&&!blockedTitles.has(a.titre)).filter(a=>
+  const actFilteredBase=[...ACTIVITES.filter(a=>!shadowedActTitles.has(a.nom)&&!shadowedActTitles.has(a.titre)),...adminPublished,...approvedActs].filter(a=>!blockedTitles.has(a.nom)&&!blockedTitles.has(a.titre)).filter(a=>
     (!filterLieu||a.lieu===filterLieu)&&
     (!filterMotiv||a.energie===filterMotiv)&&
     (!filterCategorie||a.categorie===filterCategorie)&&
@@ -2492,13 +2494,15 @@ function PageBiblio({pendingContribs=[],setPendingContribs,adminActivites=[],adm
     return{id:e.id,nom:e.titre,titre:e.titre,categorie:e.type,ville:e.ville,dept:e.dept,date:e.date,prix:prixStr,gratuit:isGratuit,age:"Tous ages",desc:e.desc,tnd:{tsa:3,tdah:3,dys:3},etiquettes:e.etiquettes||[]};
   });
   const approvedSorts=pendingContribs.filter(c=>c._type==="sortie"&&c._statut!=="rejected");
-  const sortFiltered=[...SORTIES,...adminSortiesPubliees,...approvedSorts].filter(s=>!blockedTitles.has(s.nom)).filter(s=>(!filterDept||s.dept===filterDept)&&(!filterType||s.type===filterType)&&(!searchQ||(s.nom||"").toLowerCase().includes(searchQ)||(s.type||"").toLowerCase().includes(searchQ)||(s.ville||"").toLowerCase().includes(searchQ))&&(filterAccess.length===0||filterAccess.every(k=>s.accessibilite?.signaux?.[k]===true))).sort((a,b)=>(estBoosteItem(b,"sortie")?1:0)-(estBoosteItem(a,"sortie")?1:0));
+  const shadowedSortTitles=new Set(approvedSorts.map(s=>s.nom||s.titre));
+  const sortFiltered=[...SORTIES.filter(s=>!shadowedSortTitles.has(s.nom)&&!shadowedSortTitles.has(s.titre)),...adminSortiesPubliees,...approvedSorts].filter(s=>!blockedTitles.has(s.nom)).filter(s=>(!filterDept||s.dept===filterDept)&&(!filterType||s.type===filterType)&&(!searchQ||(s.nom||"").toLowerCase().includes(searchQ)||(s.type||"").toLowerCase().includes(searchQ)||(s.ville||"").toLowerCase().includes(searchQ))&&(filterAccess.length===0||filterAccess.every(k=>s.accessibilite?.signaux?.[k]===true))).sort((a,b)=>(estBoosteItem(b,"sortie")?1:0)-(estBoosteItem(a,"sortie")?1:0));
   const signaler=(id)=>setSigSort(prev=>({...prev,[id]:(prev[id]||0)+1}));
   const cardStyle={background:WH,borderRadius:14,padding:"14px 16px",border:BD,cursor:"pointer"};
   const selStyle={flex:1,padding:"8px 10px",borderRadius:10,border:BD,background:WH,fontSize:13};
 
   const approvedEvts=pendingContribs.filter(c=>c._type==="evenement"&&c._statut!=="rejected");
-  const allEvts=[...evenements,...adminEvenementsPublies,...approvedEvts].filter(e=>!blockedTitles.has(e.titre)&&!blockedTitles.has(e.nom)).sort((a,b)=>(estBoosteItem(b,"evenement")?1:0)-(estBoosteItem(a,"evenement")?1:0));
+  const shadowedEvtTitles=new Set(approvedEvts.map(e=>e.nom||e.titre));
+  const allEvts=[...evenements.filter(e=>!shadowedEvtTitles.has(e.nom)&&!shadowedEvtTitles.has(e.titre)),...adminEvenementsPublies,...approvedEvts].filter(e=>!blockedTitles.has(e.titre)&&!blockedTitles.has(e.nom)).sort((a,b)=>(estBoosteItem(b,"evenement")?1:0)-(estBoosteItem(a,"evenement")?1:0));
   const evtFiltered=allEvts.filter(e=>{
     if(evtCat&&e.categorie!==evtCat&&e.type!==evtCat)return false;
     if(evtDept&&e.dept!==evtDept)return false;
@@ -3346,8 +3350,10 @@ function PageAccueil({favoris,setFavoris,setPage,customEvents=[],popupShown=new 
   const adminPublishedSortsGen=(adminSorties||[]).filter(o=>o.statut==="published");
   const masqueesActKeysGen=new Set(masquees.filter(m=>m._type==="activite").map(m=>m.id||m.nom||m.titre));
   const masqueesSortKeysGen=new Set(masquees.filter(m=>m._type==="sortie").map(m=>m.id||m.nom||m.titre));
-  const toutesActivites=[...ACTIVITES,...adminPublishedActs,...approvedActs].filter(a=>!blockedTitles.has(a.nom)&&!blockedTitles.has(a.titre)).filter(a=>!masqueesActKeysGen.has(a.id||a.nom||a.titre));
-  const toutesSorties=[...SORTIES,...adminPublishedSortsGen,...approvedSortsGen].filter(s=>!blockedTitles.has(s.nom)&&!blockedTitles.has(s.titre)).filter(s=>!masqueesSortKeysGen.has(s.id||s.nom||s.titre));
+  const shadowedActTitlesGen=new Set(approvedActs.map(a=>a.nom||a.titre));
+  const shadowedSortTitlesGen=new Set(approvedSortsGen.map(s=>s.nom||s.titre));
+  const toutesActivites=[...ACTIVITES.filter(a=>!shadowedActTitlesGen.has(a.nom)&&!shadowedActTitlesGen.has(a.titre)),...adminPublishedActs,...approvedActs].filter(a=>!blockedTitles.has(a.nom)&&!blockedTitles.has(a.titre)).filter(a=>!masqueesActKeysGen.has(a.id||a.nom||a.titre));
+  const toutesSorties=[...SORTIES.filter(s=>!shadowedSortTitlesGen.has(s.nom)&&!shadowedSortTitlesGen.has(s.titre)),...adminPublishedSortsGen,...approvedSortsGen].filter(s=>!blockedTitles.has(s.nom)&&!blockedTitles.has(s.titre)).filter(s=>!masqueesSortKeysGen.has(s.id||s.nom||s.titre));
   const [resultsAList,setResultsAList]=useState(null);
   const genActivite=()=>{
     const ageNum=ageEnfant?parseInt(ageEnfant):null;
@@ -9835,26 +9841,36 @@ function Signalements({userReports=[],setUserReports,sharedActivites=[],setShare
   const handleFormSubmitEdit=async(data,type)=>{
     const r=editModal.report;
     const ancienTitre=r.titre;
-    console.log("[DEBUG edit] Ancien titre :",ancienTitre,"| Nouvelles données :",data);
-    console.log("[DEBUG edit] pendingContribs correspondants AVANT :",pendingContribs.filter(c=>c.nom===ancienTitre||c.titre===ancienTitre));
     resolveAllForTitre(ancienTitre);
     const nouveauNom=data.nom||ancienTitre;
     const merge=item=>({...item,...data,nom:nouveauNom,titre:nouveauNom});
-    // Met à jour la contribution communautaire si c'est la source de l'élément
-    if(setPendingContribs)setPendingContribs(prev=>prev.map(c=>(c.nom===ancienTitre||c.titre===ancienTitre)?merge(c):c));
-    // Met à jour aussi le pool admin au cas où l'élément y serait géré
-    if(type==="sortie"&&setSharedSorties)setSharedSorties(prev=>prev.map(s=>(s.nom===ancienTitre||s.titre===ancienTitre)?merge(s):s));
-    else if(type==="evenement"&&setSharedEvenements)setSharedEvenements(prev=>prev.map(e=>(e.nom===ancienTitre||e.titre===ancienTitre)?merge(e):e));
-    else if(setSharedActivites)setSharedActivites(prev=>prev.map(a=>(a.nom===ancienTitre||a.titre===ancienTitre)?merge(a):a));
+    const existeDansPending=pendingContribs.some(c=>c.nom===ancienTitre||c.titre===ancienTitre);
+    const existeDansAdmin=type==="sortie"?sharedSorties.some(s=>s.nom===ancienTitre||s.titre===ancienTitre)
+      :type==="evenement"?sharedEvenements.some(e=>e.nom===ancienTitre||e.titre===ancienTitre)
+      :sharedActivites.some(a=>a.nom===ancienTitre||a.titre===ancienTitre);
+    if(existeDansPending&&setPendingContribs){
+      // Met à jour la contribution communautaire existante
+      setPendingContribs(prev=>prev.map(c=>(c.nom===ancienTitre||c.titre===ancienTitre)?merge(c):c));
+    }else if(!existeDansAdmin&&setPendingContribs){
+      // Élément intégré au code de base (jamais en base) : on crée une version modifiée qui le remplace à l'affichage
+      setPendingContribs(prev=>[...prev,{...data,nom:nouveauNom,titre:nouveauNom,id:"edit"+Date.now(),_type:type,_statut:"published",_vu:true}]);
+    }
+    if(existeDansAdmin){
+      if(type==="sortie"&&setSharedSorties)setSharedSorties(prev=>prev.map(s=>(s.nom===ancienTitre||s.titre===ancienTitre)?merge(s):s));
+      else if(type==="evenement"&&setSharedEvenements)setSharedEvenements(prev=>prev.map(e=>(e.nom===ancienTitre||e.titre===ancienTitre)?merge(e):e));
+      else if(setSharedActivites)setSharedActivites(prev=>prev.map(a=>(a.nom===ancienTitre||a.titre===ancienTitre)?merge(a):a));
+    }
     // Sauvegarde réelle côté Supabase pour que la modification survive au rechargement
     const table=type==="sortie"?"sorties":type==="evenement"?"evenements":"activites";
+    const payload={nom:nouveauNom,...data};
     try{
-      const payload={nom:nouveauNom,...data};
-      const r1=await supabase.from(table).update(payload).eq("nom",ancienTitre).select();
-      const r2=await supabase.from(table).update(payload).eq("titre",ancienTitre).select();
-      console.log("[DEBUG edit] Lignes mises à jour (nom) :",r1.data,"Erreur :",r1.error);
-      console.log("[DEBUG edit] Lignes mises à jour (titre) :",r2.data,"Erreur :",r2.error);
-    }catch(e){ console.log("[DEBUG edit] Exception Supabase :",e); }
+      if(existeDansPending||existeDansAdmin){
+        await supabase.from(table).update(payload).eq("nom",ancienTitre);
+        await supabase.from(table).update(payload).eq("titre",ancienTitre);
+      }else{
+        await supabase.from(table).insert(payload);
+      }
+    }catch(e){ /* échec réseau — la modification reste correcte localement */ }
     setEditModal(null);
   };
   const deleteItem=()=>{

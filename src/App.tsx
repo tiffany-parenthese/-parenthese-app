@@ -369,6 +369,20 @@ const POINTS_ANTICIPER_MAP={
   "Faire des cupcakes":["pa2","pa5","pa6","pa8","pa13","pa14"],
   "Puzzle geant":["pa5","pa7","pa11","pa12"],
 };
+const ADAPTATIONS_MAP={
+  a1:"Ne nécessite pas de communication verbale",
+  a2:"Pas de contrainte de temps — l'enfant va à son rythme",
+  a3:"Peut se faire seul sans aide d'un adulte",
+  a4:"Peut s'arrêter et reprendre sans perdre le fil",
+  a5:"3 étapes maximum, facile à expliquer",
+  a6:"Ne nécessite pas de toucher des matières inconfortables",
+  a7:"Pas de contact physique imposé",
+  a8:"Pas de bruits forts ou soudains",
+  a9:"L'enfant voit ce qu'il crée (dessin, gâteau, construction...)",
+  a10:"Convient aux enfants qui ont du mal à rester assis",
+  a11:"Pas de frustration si le résultat n'est pas parfait",
+  a12:"L'enfant peut choisir comment faire à sa façon",
+};
 const MATERIEL_MAP={"Peinture avec une eponge":["Eponge","Peinture lavable","Feuille A4"],"Faire des cupcakes":["Farine","Oeufs","Beurre","Sucre","Moules"],"Puzzle geant":["Puzzle"],"Lecture a voix haute":["Livre"],"Balade a velo":["Velo","Casque"],"Planter des graines":["Graines","Pot","Terre","Arrosoir"],"Foot dans le jardin":["Ballon"],"Jeu de role":["Deguisements"],"Soiree jeux de societe":["Jeu de societe"],"Jeu de flechettes mousse":["Flechettes mousse","Cible"]};
 const ETAPES_MAP={"Peinture avec une eponge":["Trempe l eponge","Tamponne sur la feuille","Laisse secher 5 min"],"Faire des cupcakes":["Prechauffe le four","Melange les ingredients","Verse dans les moules","Enfourne 20 min","Decore"],"Puzzle geant":["Etale les pieces","Commence par les bords","Assemble par zones"],"Lecture a voix haute":["Choisis un livre","Installez-vous","Lis avec le ton","Discutez"],"Balade a velo":["Verifiez les velos","Choisissez l itineraire","Partez","Pause gouter"],"Planter des graines":["Remplis le pot","Fais un trou","Depose les graines","Arrose","Place au soleil"],"Foot dans le jardin":["Delimitez le terrain","Formez les equipes","C est parti"],"Jeu de role":["Choisissez vos personnages","Inventez une situation","Jouez"],"Soiree jeux de societe":["Choisissez un jeu","Lisez les regles","Jouez"],"Jeu de flechettes mousse":["Accrochez la cible","Definissez les regles","Lancez"]};
 const AVIS_DEMO=[
@@ -1946,7 +1960,7 @@ function ActivityDetailPage({activity,isFavorite,onToggleFavorite,onBack,onRepor
               {/* Adaptations */}
               {adaps.length>0&&(
                 <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:12}}>
-                  {adaps.map(a=><span key={a} style={{background:"#ECFDF5",color:"#065F46",fontSize:11,padding:"4px 10px",borderRadius:20,border:"1px solid #A7F3D0"}}>✓ {a}</span>)}
+                  {adaps.map(a=><span key={a} style={{background:"#ECFDF5",color:"#065F46",fontSize:11,padding:"4px 10px",borderRadius:20,border:"1px solid #A7F3D0"}}>✓ {ADAPTATIONS_MAP[a]||a}</span>)}
                 </div>
               )}
               {/* Commentaire */}

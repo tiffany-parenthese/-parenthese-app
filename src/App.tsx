@@ -917,22 +917,26 @@ const compresserImage=(file,maxDim=900,qualite=0.72)=>new Promise((resolve,rejec
   reader.readAsDataURL(file);
 });
 
-function FormActivite({onClose,onSubmit,customCatActivites=[]}){
-  const [titre,setTitre]=useState("");
-  const [photoPreview,setPhotoPreview]=useState(null);
-  const [desc,setDesc]=useState("");
-  const [duree,setDuree]=useState("");
-  const [difficulte,setDifficulte]=useState("");
-  const [lieu,setLieu]=useState("");
-  const [motivation,setMotivation]=useState("");
-  const [categorie,setCategorie]=useState("");
+function FormActivite({onClose,onSubmit,customCatActivites=[],initialData=null}){
+  const [titre,setTitre]=useState(initialData?.nom||initialData?.titre||"");
+  const [photoPreview,setPhotoPreview]=useState(initialData?.photo||null);
+  const [desc,setDesc]=useState(initialData?.desc||"");
+  const [duree,setDuree]=useState(initialData?.duree||"");
+  const [difficulte,setDifficulte]=useState(initialData?.difficulte||"");
+  const [lieu,setLieu]=useState(initialData?.lieu||"");
+  const [motivation,setMotivation]=useState(initialData?.energie||"");
+  const [categorie,setCategorie]=useState(initialData?.categorie||"");
   const [autreCategorie,setAutreCategorie]=useState("");
-  const [ageMin,setAgeMin]=useState("");
-  const [ageMax,setAgeMax]=useState("");
-  const [materiel,setMateriel]=useState("");
+  const [ageMin,setAgeMin]=useState(initialData?.ageMin||"");
+  const [ageMax,setAgeMax]=useState(initialData?.ageMax||"");
+  const [materiel,setMateriel]=useState(Array.isArray(initialData?.materiel)?initialData.materiel.join(", "):"");
   const [etapes,setEtapes]=useState("");
-  const [accValues,setAccValues]=useState({});
-  const [commentaireTND,setCommentaireTND]=useState("");
+  const [accValues,setAccValues]=useState(()=>{
+    if(!initialData)return{};
+    const v={};["acc_poussette","acc_bebe","acc_allaitement","acc_langer","acc_aire03","acc_peubruyant","pmr_fauteuil","pmr_escaliers","pmr_parking","pmr_toilettes","pmr_personnel","pmr_chemin","tsa_foule","tsa_calme","tsa_lumiere","tsa_retrait","tsa_bruit","tsa_personnel","tdah_espace","tdah_physique","tdah_attente","tdah_stimulation","dys_visuels","dys_nonecrite","dys_rythme","dys_personnel"].forEach(k=>{if(initialData[k])v[k]=true;});
+    return v;
+  });
+  const [commentaireTND,setCommentaireTND]=useState(initialData?.commentaireTND||"");
   const [localErrors,setLocalErrors]=useState({});
   const [profilsTND,setProfilsTND]=useState({tsa:false,tdah:false,dys:false,tous:false});
   const [niveauxSensoriels,setNiveauxSensoriels]=useState({bruit:0,visuel:0,physique:0,attention:0});
@@ -948,14 +952,14 @@ function FormActivite({onClose,onSubmit,customCatActivites=[]}){
     const categorieFinale=categorie==="Autre"?(autreCategorie.trim()||"Autre"):categorie;
     const age=(ageMin&&ageMax)?`${ageMin.replace(" an","").replace(" ans","")} - ${ageMax}`:(ageMin||ageMax||"Tous ages");
     const tndData={tsa:profilsTND.tsa||profilsTND.tous?5:0,tdah:profilsTND.tdah||profilsTND.tous?5:0,dys:profilsTND.dys||profilsTND.tous?5:0};
-    if(onSubmit)onSubmit({nom:titre.trim(),categorie:categorieFinale,lieu,energie:motivation,age,duree,difficulte,materiel:materiel?materiel.split(",").map(m=>m.trim()).filter(Boolean):[],etapes:etapes?etapes.split("\n").map(s=>s.trim()).filter(Boolean):[],desc:desc.trim(),photo:photoPreview,tnd:tndData,profilsTND,niveauxSensoriels,adaptations,commentaireTND:commentaireTND.trim(),pointsAnticiper:pointsAnticiperSel,...accValues,_type:"activite"});
+    if(onSubmit)onSubmit({id:initialData?.id,nom:titre.trim(),categorie:categorieFinale,lieu,energie:motivation,age,duree,difficulte,materiel:materiel?materiel.split(",").map(m=>m.trim()).filter(Boolean):[],etapes:etapes?etapes.split("\n").map(s=>s.trim()).filter(Boolean):[],desc:desc.trim(),photo:photoPreview,tnd:tndData,profilsTND,niveauxSensoriels,adaptations,commentaireTND:commentaireTND.trim(),pointsAnticiper:pointsAnticiperSel,...accValues,_type:"activite"});
   };
   const se=(err)=>({padding:"12px 14px",borderRadius:12,border:"1px solid "+(err?"#EF4444":"rgba(108,92,231,0.15)"),fontSize:14,width:"100%",boxSizing:"border-box",background:WH,fontFamily:"inherit"});
   const Err=({k})=>localErrors[k]?<p style={{margin:"3px 0 0",fontSize:11,color:"#EF4444"}}>{localErrors[k]}</p>:null;
   return(
     <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.5)",zIndex:50,display:"flex",alignItems:"flex-start",justifyContent:"center",overflowY:"auto",padding:"20px 12px 40px"}}>
       <div style={{background:WH,borderRadius:20,width:"100%",maxWidth:420,boxSizing:"border-box"}}>
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"20px 20px 0"}}><h2 style={{fontSize:18,fontWeight:600,color:TX,margin:0}}>Proposer une activite</h2><button onClick={onClose} style={{background:"none",border:"none",fontSize:20,cursor:"pointer",color:TM}}>x</button></div>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"20px 20px 0"}}><h2 style={{fontSize:18,fontWeight:600,color:TX,margin:0}}>{initialData?"Modifier l'activite":"Proposer une activite"}</h2><button onClick={onClose} style={{background:"none",border:"none",fontSize:20,cursor:"pointer",color:TM}}>x</button></div>
         <div style={{padding:"16px 20px 24px",display:"flex",flexDirection:"column",gap:12}}>
           <Field label="Titre" required><input value={titre} onChange={e=>setTitre(e.target.value)} placeholder="Ex : Peinture avec les doigts" style={se(localErrors.titre)}/><Err k="titre"/></Field>
           <Field label="Photo (optionnel)">
@@ -1110,35 +1114,35 @@ function FormActivite({onClose,onSubmit,customCatActivites=[]}){
             ))}
           </div>
 
-          <button onClick={handleSubmit} disabled={envoiEnCours} style={{padding:14,borderRadius:14,background:envoiEnCours?"#C4B8F8":V,border:"none",color:WH,fontWeight:700,fontSize:15,cursor:envoiEnCours?"default":"pointer",width:"100%"}}>{envoiEnCours?"Envoi en cours...":"Envoyer ma suggestion"}</button>
+          <button onClick={handleSubmit} disabled={envoiEnCours} style={{padding:14,borderRadius:14,background:envoiEnCours?"#C4B8F8":V,border:"none",color:WH,fontWeight:700,fontSize:15,cursor:envoiEnCours?"default":"pointer",width:"100%"}}>{envoiEnCours?"Envoi en cours...":initialData?"Enregistrer les modifications":"Envoyer ma suggestion"}</button>
         </div>
       </div>
     </div>
   );
 }
 
-function FormSortie({onClose,onSubmit,customCatSorties=[]}){
-  const [nom,setNom]=useState("");
-  const [photoPreview,setPhotoPreview]=useState(null);
-  const [desc,setDesc]=useState("");
-  const [ville,setVille]=useState("");
-  const [dept,setDept]=useState("");
+function FormSortie({onClose,onSubmit,customCatSorties=[],initialData=null}){
+  const [nom,setNom]=useState(initialData?.nom||initialData?.titre||"");
+  const [photoPreview,setPhotoPreview]=useState(initialData?.photo||null);
+  const [desc,setDesc]=useState(initialData?.desc||"");
+  const [ville,setVille]=useState(initialData?.ville||"");
+  const [dept,setDept]=useState(initialData?.dept||"");
   const [typeAutreSortie,setTypeAutreSortie]=useState("");
   const [showAutreSortiePopup,setShowAutreSortiePopup]=useState(false);
   const [typeAutreSortieTemp,setTypeAutreSortieTemp]=useState("");
-  const [typeSortieSelected,setTypeSortieSelected]=useState("");
-  const [tarif,setTarif]=useState("");
-  const [horaires,setHoraires]=useState("");
+  const [typeSortieSelected,setTypeSortieSelected]=useState(initialData?.type||"");
+  const [tarif,setTarif]=useState(initialData?.prix||"");
+  const [horaires,setHoraires]=useState(initialData?.horaires||"");
   const [pmrValues,setPmrValues]=useState({});
   const [tndSon,setTndSon]=useState("");
   const [tndAffluence,setTndAffluence]=useState("");
   const [tndPrevision,setTndPrevision]=useState("");
   const [tndZoneCalme,setTndZoneCalme]=useState(null);
-  const [commentaireTND,setCommentaireTND]=useState("");
-  const [accessSignaux,setAccessSignaux]=useState({filePrioritaire:false,poussette:false,pmr:false,espacePause:false,environnementCalme:false,espaceBouger:false,supportsVisuels:false,personnelForme:false});
-  const [accessHeuresCalmes,setAccessHeuresCalmes]=useState("");
-  const [accessDistanceMarche,setAccessDistanceMarche]=useState("");
-  const [accessConseil,setAccessConseil]=useState("");
+  const [commentaireTND,setCommentaireTND]=useState(initialData?.commentaireTND||"");
+  const [accessSignaux,setAccessSignaux]=useState(initialData?.accessibilite?.signaux||{filePrioritaire:false,poussette:false,pmr:false,espacePause:false,environnementCalme:false,espaceBouger:false,supportsVisuels:false,personnelForme:false});
+  const [accessHeuresCalmes,setAccessHeuresCalmes]=useState(initialData?.accessibilite?.heuresCalmes||"");
+  const [accessDistanceMarche,setAccessDistanceMarche]=useState(initialData?.accessibilite?.distanceMarche||"");
+  const [accessConseil,setAccessConseil]=useState(initialData?.accessibilite?.conseil||"");
   const [demandeBoost,setDemandeBoost]=useState(false);
   const [boostEmail,setBoostEmail]=useState("");
   const [localErrors,setLocalErrors]=useState({});
@@ -1155,14 +1159,14 @@ function FormSortie({onClose,onSubmit,customCatSorties=[]}){
       signaux:accessSignaux,
       details:{...Object.fromEntries(Object.keys(accessSignaux).map(k=>[k,null])),heuresCalmes:accessHeuresCalmes.trim()||undefined,distanceMarche:accessDistanceMarche.trim()||undefined,conseilCommunaute:accessConseil.trim()||undefined},
     };
-    if(onSubmit)onSubmit({nom:nom.trim(),type:typeFinal,dept,ville:ville.trim(),desc:desc.trim(),photo:photoPreview,prix:tarif.trim()||"Gratuit",horaires:horaires.trim(),tnd,...pmrValues,commentaireTND:commentaireTND.trim(),accessibilite,_demandeBoost:demandeBoost,_type:"sortie"});
+    if(onSubmit)onSubmit({id:initialData?.id,nom:nom.trim(),type:typeFinal,dept,ville:ville.trim(),desc:desc.trim(),photo:photoPreview,prix:tarif.trim()||"Gratuit",horaires:horaires.trim(),tnd,...pmrValues,commentaireTND:commentaireTND.trim(),accessibilite,_demandeBoost:demandeBoost,_type:"sortie"});
   };
   const se=(err)=>({padding:"12px 14px",borderRadius:12,border:"1px solid "+(err?"#EF4444":"rgba(108,92,231,0.15)"),fontSize:14,width:"100%",boxSizing:"border-box",background:WH,fontFamily:"inherit"});
   const Err=({k})=>localErrors[k]?<p style={{margin:"3px 0 0",fontSize:11,color:"#EF4444"}}>{localErrors[k]}</p>:null;
   return(
     <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.5)",zIndex:50,display:"flex",alignItems:"flex-start",justifyContent:"center",overflowY:"auto",padding:"20px 12px 40px"}}>
       <div style={{background:WH,borderRadius:20,width:"100%",maxWidth:420,boxSizing:"border-box"}}>
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"20px 20px 0"}}><h2 style={{fontSize:18,fontWeight:600,color:TX,margin:0}}>Proposer une sortie</h2><button onClick={onClose} style={{background:"none",border:"none",fontSize:20,cursor:"pointer",color:TM}}>x</button></div>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"20px 20px 0"}}><h2 style={{fontSize:18,fontWeight:600,color:TX,margin:0}}>{initialData?"Modifier la sortie":"Proposer une sortie"}</h2><button onClick={onClose} style={{background:"none",border:"none",fontSize:20,cursor:"pointer",color:TM}}>x</button></div>
         <div style={{padding:"16px 20px 24px",display:"flex",flexDirection:"column",gap:12}}>
           <Field label="Nom" required><input value={nom} onChange={e=>setNom(e.target.value)} placeholder="Nom de la sortie" style={se(localErrors.nom)}/><Err k="nom"/></Field>
           <Field label="Photo (optionnel)">
@@ -1298,7 +1302,7 @@ function FormSortie({onClose,onSubmit,customCatSorties=[]}){
             </div>
           </div>
 
-          <button onClick={handleSubmit} disabled={envoiEnCours} style={{padding:14,borderRadius:14,background:envoiEnCours?"#C4B8F8":V,border:"none",color:WH,fontWeight:700,fontSize:15,cursor:envoiEnCours?"default":"pointer",width:"100%"}}>{envoiEnCours?"Envoi en cours...":"Envoyer ma suggestion"}</button>
+          <button onClick={handleSubmit} disabled={envoiEnCours} style={{padding:14,borderRadius:14,background:envoiEnCours?"#C4B8F8":V,border:"none",color:WH,fontWeight:700,fontSize:15,cursor:envoiEnCours?"default":"pointer",width:"100%"}}>{envoiEnCours?"Envoi en cours...":initialData?"Enregistrer les modifications":"Envoyer ma suggestion"}</button>
         </div>
       </div>
       {showAutreSortiePopup&&(<div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.6)",zIndex:9999,display:"flex",alignItems:"center",justifyContent:"center",padding:"0 24px"}} onClick={()=>setShowAutreSortiePopup(false)}><div onClick={e=>e.stopPropagation()} style={{background:WH,borderRadius:20,padding:24,width:"100%",maxWidth:320,boxShadow:"0 8px 40px rgba(0,0,0,0.25)"}}><p style={{margin:"0 0 4px",fontSize:16,fontWeight:700,color:TX,textAlign:"center"}}>Autre type de sortie</p><input value={typeAutreSortieTemp} onChange={e=>setTypeAutreSortieTemp(e.target.value)} placeholder="Ex : Randonnee, Aquaparc..." style={{padding:"12px 14px",borderRadius:12,border:"1.5px solid "+V,fontSize:14,width:"100%",boxSizing:"border-box",fontFamily:"inherit",outline:"none",marginBottom:16}}/><div style={{display:"flex",gap:10}}><button onClick={()=>setShowAutreSortiePopup(false)} style={{flex:1,padding:"11px 0",borderRadius:28,background:BG,border:"1px solid #E5E7EB",color:TX,fontSize:14,cursor:"pointer"}}>Annuler</button><button onClick={()=>{if(typeAutreSortieTemp.trim()){setTypeAutreSortie(typeAutreSortieTemp.trim());setTypeSortieSelected("autre");}setShowAutreSortiePopup(false);}} style={{flex:1,padding:"11px 0",borderRadius:28,background:V,border:"none",color:WH,fontWeight:600,fontSize:14,cursor:"pointer"}}>Confirmer</button></div></div></div>)}
@@ -1306,18 +1310,18 @@ function FormSortie({onClose,onSubmit,customCatSorties=[]}){
   );
 }
 
-function FormEvenement({onClose,onSubmit,onOpenAutrePopup,typeAutre,typeEvt,setTypeEvt,customCatEvenements=[]}){
-  const [nom,setNom]=useState("");
-  const [desc,setDesc]=useState("");
-  const [photoPreview,setPhotoPreview]=useState(null);
-  const [ville,setVille]=useState("");
-  const [dept,setDept]=useState("");
-  const [dateDebut,setDateDebut]=useState("");
-  const [dateFin,setDateFin]=useState("");
-  const [horaires,setHoraires]=useState("");
-  const [tarif,setTarif]=useState("");
-  const [adresse,setAdresse]=useState("");
-  const [commentaireTND,setCommentaireTND]=useState("");
+function FormEvenement({onClose,onSubmit,onOpenAutrePopup,typeAutre,typeEvt,setTypeEvt,customCatEvenements=[],initialData=null}){
+  const [nom,setNom]=useState(initialData?.nom||initialData?.titre||"");
+  const [desc,setDesc]=useState(initialData?.desc||"");
+  const [photoPreview,setPhotoPreview]=useState(initialData?.photo||null);
+  const [ville,setVille]=useState(initialData?.ville||"");
+  const [dept,setDept]=useState(initialData?.dept||"");
+  const [dateDebut,setDateDebut]=useState(initialData?.date||"");
+  const [dateFin,setDateFin]=useState(initialData?.fin||"");
+  const [horaires,setHoraires]=useState(initialData?.horaires||"");
+  const [tarif,setTarif]=useState(initialData?.prix||"");
+  const [adresse,setAdresse]=useState(initialData?.adresse||"");
+  const [commentaireTND,setCommentaireTND]=useState(initialData?.commentaireTND||"");
   const [tndSon,setTndSon]=useState("");
   const [tndAffluence,setTndAffluence]=useState("");
   const [tndPrevision,setTndPrevision]=useState("");
@@ -1337,7 +1341,7 @@ function FormEvenement({onClose,onSubmit,onOpenAutrePopup,typeAutre,typeEvt,setT
     const isGratuit=!tarif.trim()||tarif.toLowerCase().includes("gratuit");
     const categorieFinale=typeEvt==="autre"?(typeAutre||"autre"):typeEvt;
     const tnd=tndSon||tndAffluence||tndPrevision||tndZoneCalme!==null?{son:tndSon||undefined,affluence:tndAffluence||undefined,prevision:tndPrevision||undefined,zonecalme:tndZoneCalme!==null?tndZoneCalme:undefined}:undefined;
-    onSubmit({nom:nom.trim(),desc:desc.trim(),categorie:categorieFinale,ville:ville.trim()+" ("+dept+")",dept,date:dateDebut,periode:detectPeriode(dateDebut),prix:tarif.trim()||"Non renseigne",gratuit:isGratuit,communaute:true,signalements:0,age:"Tous ages",dates:datesStr,photo:photoPreview,adresse:adresse.trim(),commentaireTND:commentaireTND.trim(),tnd,...pmrValues,_demandeBoost:demandeBoost});
+    onSubmit({id:initialData?.id,nom:nom.trim(),desc:desc.trim(),categorie:categorieFinale,ville:ville.trim()+" ("+dept+")",dept,date:dateDebut,periode:detectPeriode(dateDebut),prix:tarif.trim()||"Non renseigne",gratuit:isGratuit,communaute:true,signalements:0,age:"Tous ages",dates:datesStr,photo:photoPreview,adresse:adresse.trim(),commentaireTND:commentaireTND.trim(),tnd,...pmrValues,_demandeBoost:demandeBoost});
   };
   const se=(err)=>({padding:"12px 14px",borderRadius:12,fontSize:14,width:"100%",boxSizing:"border-box",background:WH,border:"1px solid "+(err?"#EF4444":"rgba(108,92,231,0.15)")});
   const Err=({k})=>localErrors[k]?<p style={{margin:"3px 0 0",fontSize:11,color:"#EF4444"}}>{localErrors[k]}</p>:null;
@@ -1431,7 +1435,7 @@ function FormEvenement({onClose,onSubmit,onOpenAutrePopup,typeAutre,typeEvt,setT
             </div>
           </div>
 
-          <div style={{display:"flex",gap:10}}><button onClick={onClose} style={{flex:1,padding:14,borderRadius:28,background:WH,border:"1.5px solid #E5E7EB",color:"#374151",fontWeight:500,fontSize:14,cursor:"pointer"}}>Annuler</button><button onClick={handleSubmit} disabled={envoiEnCours} style={{flex:2,padding:14,borderRadius:28,background:envoiEnCours?"#C4B8F8":V,border:"none",color:WH,fontWeight:700,fontSize:14,cursor:envoiEnCours?"default":"pointer"}}>{envoiEnCours?"Envoi en cours...":"Envoyer"}</button></div>
+          <div style={{display:"flex",gap:10}}><button onClick={onClose} style={{flex:1,padding:14,borderRadius:28,background:WH,border:"1.5px solid #E5E7EB",color:"#374151",fontWeight:500,fontSize:14,cursor:"pointer"}}>Annuler</button><button onClick={handleSubmit} disabled={envoiEnCours} style={{flex:2,padding:14,borderRadius:28,background:envoiEnCours?"#C4B8F8":V,border:"none",color:WH,fontWeight:700,fontSize:14,cursor:envoiEnCours?"default":"pointer"}}>{envoiEnCours?"Envoi en cours...":initialData?"Enregistrer":"Envoyer"}</button></div>
         </div>
       </div>
     </div>
@@ -9809,11 +9813,16 @@ function Signalements({userReports=[],setUserReports,sharedActivites=[],setShare
   const typeColor = {activite:["#a78bfa","rgba(124,58,237,0.15)"],sortie:["#f472b6","rgba(236,72,153,0.15)"],evenement:["#fb923c","rgba(249,115,22,0.15)"],comment:["#94a3b8","rgba(148,163,184,0.15)"]};
   const typeIcon = {activite:"🎨",sortie:"🗺️",evenement:"📅"};
   const ACC_KEYS=["acc_poussette","acc_bebe","acc_allaitement","acc_langer","acc_aire03","acc_peubruyant","pmr_fauteuil","pmr_escaliers","pmr_parking","pmr_toilettes","pmr_personnel","pmr_chemin","tsa_foule","tsa_calme","tsa_lumiere","tsa_retrait","tsa_bruit","tsa_personnel","tdah_espace","tdah_physique","tdah_attente","tdah_stimulation","dys_visuels","dys_nonecrite","dys_rythme","dys_personnel"];
+  const [editLiveItem,setEditLiveItem]=useState(null);
+  const [editTypeEvt,setEditTypeEvt]=useState("");
   const openEdit=(r)=>{
-    const live=(r.type==="activite"&&sharedActivites.find(a=>a.nom===r.titre||a.titre===r.titre))||null;
-    const accFlags={};
-    ACC_KEYS.forEach(k=>{ accFlags[k]=!!(live&&live[k]); });
-    setEditForm({titre:r.titre,raison:r.raison,detail:r.detail||"",desc:r.desc||"",duree:r.duree||"",difficulte:r.difficulte||"",lieu:r.lieu||"",energie:r.energie||"",categorie:r.categorie||"",ageMin:r.ageMin||"",ageMax:r.ageMax||"",materielStr:Array.isArray(r.materiel)?r.materiel.join(", "):"",dept:r.dept||"",adresse:r.adresse||"",horaires:r.horaires||"",prix:r.prix||"",date:r.date||"",fin:r.fin||"",ville:r.ville||"",organisateur:r.organisateur||"",type:r.typeEvt||"",...accFlags});
+    const trouve=(liste)=>liste.find(x=>x.nom===r.titre||x.titre===r.titre);
+    let live=null;
+    if(r.type==="sortie") live=trouve(pendingContribs.filter(c=>c._type==="sortie"))||trouve(sharedSorties);
+    else if(r.type==="evenement") live=trouve(pendingContribs.filter(c=>c._type==="evenement"))||trouve(sharedEvenements);
+    else live=trouve(pendingContribs.filter(c=>c._type==="activite"||!c._type))||trouve(sharedActivites);
+    setEditLiveItem(live||{nom:r.titre});
+    setEditTypeEvt(live?.categorie||live?.type||"");
     setEditModal({report:r,mode:"edit"});
   };
   const openDelete=(r)=>setEditModal({report:r,mode:"delete"});
@@ -9823,55 +9832,23 @@ function Signalements({userReports=[],setUserReports,sharedActivites=[],setShare
     setReports(prev=>prev.map(x=>idsAResoudre.includes(x.id)?{...x,statut:"resolved"}:x));
     idsAResoudre.forEach(id=>{supabase.from("signalements").update({statut:"resolved"}).eq("id",id).then(()=>{},()=>{});});
   };
-  const saveEdit=()=>{
+  const handleFormSubmitEdit=async(data,type)=>{
     const r=editModal.report;
-    resolveAllForTitre(r.titre);
-    const titre=r.titre;
-    const garde=(val,fallback)=>(val!==undefined&&val!==null&&val!==""?val:fallback);
-    if(r.type==="sortie"&&setSharedSorties){
-      setSharedSorties(prev=>prev.map(s=>(s.nom===titre||s.titre===titre)?{
-        ...s,
-        titre:garde(editForm.titre,s.titre),
-        nom:garde(editForm.titre,s.nom),
-        dept:garde(editForm.dept,s.dept),
-        adresse:garde(editForm.adresse,s.adresse),
-        horaires:garde(editForm.horaires,s.horaires),
-        prix:garde(editForm.prix,s.prix),
-        ville:garde(editForm.ville,s.ville),
-        type:garde(editForm.categorie,s.type),
-      }:s));
-    }else if(r.type==="evenement"&&setSharedEvenements){
-      setSharedEvenements(prev=>prev.map(e=>(e.nom===titre||e.titre===titre)?{
-        ...e,
-        titre:garde(editForm.titre,e.titre),
-        nom:garde(editForm.titre,e.nom),
-        ville:garde(editForm.ville,e.ville),
-        dept:garde(editForm.dept,e.dept),
-        date:garde(editForm.date,e.date),
-        fin:garde(editForm.fin,e.fin),
-        prix:garde(editForm.prix,e.prix),
-        organisateur:garde(editForm.organisateur,e.organisateur),
-        type:garde(editForm.type,e.type),
-      }:e));
-    }else if(setSharedActivites){
-      const accUpdates={};
-      ACC_KEYS.forEach(k=>{ accUpdates[k]=!!editForm[k]; });
-      setSharedActivites(prev=>prev.map(a=>(a.nom===titre||a.titre===titre)?{
-        ...a,
-        titre:garde(editForm.titre,a.titre),
-        nom:garde(editForm.titre,a.nom),
-        desc:garde(editForm.desc,a.desc),
-        duree:garde(editForm.duree,a.duree),
-        difficulte:garde(editForm.difficulte,a.difficulte),
-        lieu:garde(editForm.lieu,a.lieu),
-        energie:garde(editForm.energie,a.energie),
-        categorie:garde(editForm.categorie,a.categorie),
-        ageMin:garde(editForm.ageMin,a.ageMin),
-        ageMax:garde(editForm.ageMax,a.ageMax),
-        materiel:editForm.materielStr?editForm.materielStr.split(",").map(m=>m.trim()).filter(Boolean):a.materiel,
-        ...accUpdates,
-      }:a));
-    }
+    const ancienTitre=r.titre;
+    resolveAllForTitre(ancienTitre);
+    const nouveauNom=data.nom||ancienTitre;
+    const merge=item=>({...item,...data,nom:nouveauNom,titre:nouveauNom});
+    // Met à jour la contribution communautaire si c'est la source de l'élément
+    if(setPendingContribs)setPendingContribs(prev=>prev.map(c=>(c.nom===ancienTitre||c.titre===ancienTitre)?merge(c):c));
+    // Met à jour aussi le pool admin au cas où l'élément y serait géré
+    if(type==="sortie"&&setSharedSorties)setSharedSorties(prev=>prev.map(s=>(s.nom===ancienTitre||s.titre===ancienTitre)?merge(s):s));
+    else if(type==="evenement"&&setSharedEvenements)setSharedEvenements(prev=>prev.map(e=>(e.nom===ancienTitre||e.titre===ancienTitre)?merge(e):e));
+    else if(setSharedActivites)setSharedActivites(prev=>prev.map(a=>(a.nom===ancienTitre||a.titre===ancienTitre)?merge(a):a));
+    // Sauvegarde réelle côté Supabase pour que la modification survive au rechargement
+    const table=type==="sortie"?"sorties":type==="evenement"?"evenements":"activites";
+    try{
+      await supabase.from(table).update({nom:nouveauNom,...data}).or(`nom.eq.${ancienTitre},titre.eq.${ancienTitre}`);
+    }catch(e){ /* échec réseau — la modification reste correcte localement */ }
     setEditModal(null);
   };
   const deleteItem=()=>{
@@ -9932,80 +9909,20 @@ function Signalements({userReports=[],setUserReports,sharedActivites=[],setShare
       {/* Modal modifier — carte complète selon le type */}
       {editModal?.mode==="edit"&&(()=>{
         const r=editModal.report;
-        const tf=(key)=>setEditForm(prev=>({...prev,[key]:!prev[key]}));
-        const chkStyle=(active)=>({display:"flex",alignItems:"center",gap:6,padding:"6px 10px",borderRadius:8,border:`1px solid ${active?"rgba(124,58,237,0.4)":C.border}`,background:active?"rgba(124,58,237,0.1)":"transparent",color:active?"#a78bfa":C.muted,fontSize:12,cursor:"pointer",userSelect:"none",marginBottom:4});
         return(
-        <Modal title={"✏️ Modifier : "+r.titre} onClose={()=>setEditModal(null)} width={600}>
-          {/* Bandeau signalement */}
-          <div style={{background:"rgba(234,88,12,0.1)",borderRadius:10,padding:"10px 14px",marginBottom:18,display:"flex",gap:8,alignItems:"flex-start"}}>
+        <>
+          {/* Bandeau signalement flottant au-dessus du formulaire */}
+          <div style={{position:"fixed",top:12,left:"50%",transform:"translateX(-50%)",zIndex:60,background:"#7c2d12",borderRadius:12,padding:"10px 16px",display:"flex",gap:8,alignItems:"flex-start",maxWidth:400,boxShadow:"0 4px 14px rgba(0,0,0,0.3)"}}>
             <span style={{fontSize:16,flexShrink:0}}>🚩</span>
             <div>
-              <p style={{margin:"0 0 2px",fontSize:12,fontWeight:700,color:"#fb923c"}}>Raison du signalement : {r.raison}</p>
-              {r.detail&&<p style={{margin:0,fontSize:11,color:"#fb923c",opacity:0.8,fontStyle:"italic"}}>"{r.detail}"</p>}
+              <p style={{margin:"0 0 2px",fontSize:12,fontWeight:700,color:"#fdba74"}}>Signalé : {r.raison}</p>
+              {r.detail&&<p style={{margin:0,fontSize:11,color:"#fdba74",opacity:0.8,fontStyle:"italic"}}>"{r.detail}"</p>}
             </div>
           </div>
-
-          {/* CARTE ACTIVITE */}
-          {r.type==="activite"&&(<div>
-            <AdminField label="Titre *"><input style={s.input} value={editForm.titre||""} onChange={e=>setEditForm({...editForm,titre:e.target.value})}/></AdminField>
-            <AdminField label="Description"><textarea style={{...s.input,minHeight:70,resize:"vertical"}} value={editForm.desc||""} onChange={e=>setEditForm({...editForm,desc:e.target.value})} placeholder="Description de l activite..."/></AdminField>
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
-              <AdminField label="Duree"><select style={s.input} value={editForm.duree||""} onChange={e=>setEditForm({...editForm,duree:e.target.value})}><option value="">Choisir</option>{["moins de 15 min","15-30 min","30-60 min","1h-2h","2h+"].map(v=><option key={v}>{v}</option>)}</select></AdminField>
-              <AdminField label="Difficulte"><select style={s.input} value={editForm.difficulte||""} onChange={e=>setEditForm({...editForm,difficulte:e.target.value})}><option value="">Choisir</option>{["Facile","Moyen","Difficile"].map(v=><option key={v}>{v}</option>)}</select></AdminField>
-              <AdminField label="Lieu"><select style={s.input} value={editForm.lieu||""} onChange={e=>setEditForm({...editForm,lieu:e.target.value})}><option value="">Choisir</option><option value="interieur">Interieur</option><option value="exterieur">Exterieur</option></select></AdminField>
-              <AdminField label="Motivation"><select style={s.input} value={editForm.energie||""} onChange={e=>setEditForm({...editForm,energie:e.target.value})}><option value="">Choisir</option><option value="fatigue">Fatigue</option><option value="motiv">Motiv</option></select></AdminField>
-            </div>
-            <AdminField label="Categorie"><select style={s.input} value={editForm.categorie||""} onChange={e=>setEditForm({...editForm,categorie:e.target.value})}><option value="">Choisir</option>{[...CATEGORIES_ACT_ALL,...customCatActivites.map(c=>c.label)].map(v=><option key={v}>{v}</option>)}</select></AdminField>
-            <AdminField label="Age conseille">
-              <div style={{display:"flex",gap:8}}>
-                <select style={{...s.input,flex:1}} value={editForm.ageMin||""} onChange={e=>setEditForm({...editForm,ageMin:e.target.value})}><option value="">De...</option>{["0 an","1 an","2 ans","3 ans","4 ans","5 ans","6 ans","7 ans","8 ans","9 ans","10 ans","11 ans","12 ans"].map(v=><option key={v}>{v}</option>)}</select>
-                <select style={{...s.input,flex:1}} value={editForm.ageMax||""} onChange={e=>setEditForm({...editForm,ageMax:e.target.value})}><option value="">A...</option>{["1 an","2 ans","3 ans","4 ans","5 ans","6 ans","7 ans","8 ans","9 ans","10 ans","11 ans","12 ans","12 ans+"].map(v=><option key={v}>{v}</option>)}</select>
-              </div>
-            </AdminField>
-            <AdminField label="Materiel"><input style={s.input} value={editForm.materielStr||""} onChange={e=>setEditForm({...editForm,materielStr:e.target.value})} placeholder="Ex: peinture, papier"/></AdminField>
-            <div style={{borderTop:`1px solid ${C.border}`,paddingTop:14,marginBottom:14}}>
-              <p style={{margin:"0 0 8px",fontSize:12,fontWeight:700,color:"#3b82f6"}}>♿ PMR</p>
-              <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:10}}>{[["pmr_fauteuil","Acces fauteuil"],["pmr_escaliers","Sans escaliers"],["pmr_parking","Parking PMR"],["pmr_toilettes","Toilettes adaptees"],["pmr_personnel","Personnel forme"],["pmr_chemin","Chemin accessible"]].map(([k,l])=>(<div key={k} onClick={()=>tf(k)} style={chkStyle(!!editForm[k])}><span>{editForm[k]?"☑":"☐"}</span>{l}</div>))}</div>
-              <p style={{margin:"0 0 6px",fontSize:12,fontWeight:700,color:"#a78bfa"}}>🧩 TND</p>
-              <p style={{margin:"0 0 6px",fontSize:11,fontWeight:600,color:"#8b5cf6"}}>TSA</p>
-              <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:8}}>{[["tsa_foule","Peu de foule"],["tsa_calme","Env calme"],["tsa_lumiere","Lumiere douce"],["tsa_retrait","Espace retrait"],["tsa_bruit","Peu de bruit"],["tsa_personnel","Personnel TSA"]].map(([k,l])=>(<div key={k} onClick={()=>tf(k)} style={chkStyle(!!editForm[k])}><span>{editForm[k]?"☑":"☐"}</span>{l}</div>))}</div>
-              <p style={{margin:"0 0 6px",fontSize:11,fontWeight:600,color:"#ec4899"}}>TDAH</p>
-              <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:8}}>{[["tdah_espace","Grand espace"],["tdah_physique","Activite physique"],["tdah_attente","Peu attente"],["tdah_stimulation","Stimulation variee"]].map(([k,l])=>(<div key={k} onClick={()=>tf(k)} style={chkStyle(!!editForm[k])}><span>{editForm[k]?"☑":"☐"}</span>{l}</div>))}</div>
-              <p style={{margin:"0 0 6px",fontSize:11,fontWeight:600,color:"#06b6d4"}}>DYS</p>
-              <div style={{display:"flex",flexWrap:"wrap",gap:6}}>{[["dys_visuels","Supports visuels"],["dys_nonecrite","Non ecrite"],["dys_rythme","Rythme libre"],["dys_personnel","Personnel DYS"]].map(([k,l])=>(<div key={k} onClick={()=>tf(k)} style={chkStyle(!!editForm[k])}><span>{editForm[k]?"☑":"☐"}</span>{l}</div>))}</div>
-            </div>
-          </div>)}
-
-          {/* CARTE SORTIE */}
-          {r.type==="sortie"&&(<div>
-            <AdminField label="Nom *"><input style={s.input} value={editForm.titre||""} onChange={e=>setEditForm({...editForm,titre:e.target.value})}/></AdminField>
-            <AdminField label="Departement"><input style={s.input} value={editForm.dept||""} onChange={e=>setEditForm({...editForm,dept:e.target.value})} placeholder="Paris (75)"/></AdminField>
-            <AdminField label="Adresse"><input style={s.input} value={editForm.adresse||""} onChange={e=>setEditForm({...editForm,adresse:e.target.value})}/></AdminField>
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
-              <AdminField label="Horaires"><input style={s.input} value={editForm.horaires||""} onChange={e=>setEditForm({...editForm,horaires:e.target.value})} placeholder="9h-18h"/></AdminField>
-              <AdminField label="Prix"><input style={s.input} value={editForm.prix||""} onChange={e=>setEditForm({...editForm,prix:e.target.value})} placeholder="Gratuit"/></AdminField>
-            </div>
-            <AdminField label="Categorie"><select style={s.input} value={editForm.categorie||""} onChange={e=>setEditForm({...editForm,categorie:e.target.value})}><option value="">Choisir</option>{[...TYPES_SORTIE,...customCatSorties.map(c=>c.label)].map(v=><option key={v}>{v}</option>)}</select></AdminField>
-          </div>)}
-
-          {/* CARTE EVENEMENT */}
-          {r.type==="evenement"&&(<div>
-            <AdminField label="Titre *"><input style={s.input} value={editForm.titre||""} onChange={e=>setEditForm({...editForm,titre:e.target.value})}/></AdminField>
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
-              <AdminField label="Date debut"><input type="date" style={s.input} value={editForm.date||""} onChange={e=>setEditForm({...editForm,date:e.target.value})}/></AdminField>
-              <AdminField label="Date fin"><input type="date" style={s.input} value={editForm.fin||""} onChange={e=>setEditForm({...editForm,fin:e.target.value})}/></AdminField>
-              <AdminField label="Ville"><input style={s.input} value={editForm.ville||""} onChange={e=>setEditForm({...editForm,ville:e.target.value})}/></AdminField>
-              <AdminField label="Prix"><input style={s.input} value={editForm.prix||""} onChange={e=>setEditForm({...editForm,prix:e.target.value})} placeholder="Gratuit"/></AdminField>
-            </div>
-            <AdminField label="Organisateur"><input style={s.input} value={editForm.organisateur||""} onChange={e=>setEditForm({...editForm,organisateur:e.target.value})}/></AdminField>
-            <AdminField label="Type"><select style={s.input} value={editForm.type||""} onChange={e=>setEditForm({...editForm,type:e.target.value})}><option value="">Choisir</option>{[...EVT_CATEGORIES,...customCatEvenements].map(c=><option key={c.k} value={c.k}>{c.emoji} {c.label}</option>)}</select></AdminField>
-          </div>)}
-
-          <div style={{display:"flex",justifyContent:"flex-end",gap:8,marginTop:12,paddingTop:12,borderTop:`1px solid ${C.border}`}}>
-            <button style={s.btnOutline(C.muted)} onClick={()=>setEditModal(null)}>Annuler</button>
-            <button style={s.btn(C.accent)} onClick={saveEdit}>✅ Enregistrer et resoudre</button>
-          </div>
-        </Modal>
+          {r.type==="activite"&&<FormActivite initialData={editLiveItem} customCatActivites={customCatActivites} onClose={()=>setEditModal(null)} onSubmit={data=>handleFormSubmitEdit(data,"activite")}/>}
+          {r.type==="sortie"&&<FormSortie initialData={editLiveItem} customCatSorties={customCatSorties} onClose={()=>setEditModal(null)} onSubmit={data=>handleFormSubmitEdit(data,"sortie")}/>}
+          {r.type==="evenement"&&<FormEvenement initialData={editLiveItem} customCatEvenements={customCatEvenements} typeEvt={editTypeEvt} setTypeEvt={setEditTypeEvt} typeAutre="" onOpenAutrePopup={()=>{}} onClose={()=>setEditModal(null)} onSubmit={data=>handleFormSubmitEdit(data,"evenement")}/>}
+        </>
         );
       })()}
 

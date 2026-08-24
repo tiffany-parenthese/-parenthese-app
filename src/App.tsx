@@ -7719,7 +7719,7 @@ function Dashboard({sharedActivites=[],sharedSorties=[],sharedEvenements=[],pend
     {label:"Activités publiées",val:MOCK_ACTIVITES.filter(a=>a.statut==="published").length+sharedActivites.filter(a=>a.statut==="published").length+pendingContribs.filter(c=>c._type==="activite"&&c._statut==="published").length,sub:`Admin: ${MOCK_ACTIVITES.filter(a=>a.statut==="published").length+sharedActivites.filter(a=>a.statut==="published").length} · Utilisateurs: ${pendingContribs.filter(c=>c._type==="activite"&&c._statut==="published").length}`,emoji:"🎨",color:C.accent},
     {label:"Sorties",val:MOCK_SORTIES.length+sharedSorties.length+pendingContribs.filter(c=>c._type==="sortie"&&c._statut==="published").length,sub:`Admin: ${MOCK_SORTIES.length+sharedSorties.length} · Utilisateurs: ${pendingContribs.filter(c=>c._type==="sortie"&&c._statut==="published").length}`,emoji:"🗺️",color:C.pink},
     {label:"Événements",val:MOCK_EVENTS.length+sharedEvenements.length+pendingContribs.filter(c=>c._type==="evenement"&&c._statut==="published").length,sub:`Admin: ${MOCK_EVENTS.length+sharedEvenements.length} · Utilisateurs: ${pendingContribs.filter(c=>c._type==="evenement"&&c._statut==="published").length}`,emoji:"📅",color:C.orange},
-    {label:"Signalements",val:dashUserReports.length+MOCK_REPORTS.length,sub:`${[...dashUserReports,...MOCK_REPORTS].filter(r=>r.statut==="pending").length} en attente · ${[...dashUserReports,...MOCK_REPORTS].filter(r=>r.statut==="resolved").length} résolus`,emoji:"🚩",color:C.red},
+    {label:"Signalements",val:dashUserReports.length,sub:`${dashUserReports.filter(r=>r.statut==="pending").length} en attente · ${dashUserReports.filter(r=>r.statut==="resolved").length} résolus`,emoji:"🚩",color:C.red},
     {label:"Abonnements actifs",val:MOCK_SUBS.filter(s=>s.statut==="active").length,sub:`Mensuel: ${MOCK_SUBS.filter(s=>s.statut==="active"&&s.plan==="mensuel").length} · Annuel: ${MOCK_SUBS.filter(s=>s.statut==="active"&&s.plan==="annuel").length}`,emoji:"💳",color:C.green},
   ];
   const pendingContribsCount=pendingContribs.filter(c=>c._statut==="pending").length;
@@ -9819,7 +9819,7 @@ function Abonnements() {
 }
 
 function Signalements({userReports=[],setUserReports,sharedActivites=[],setSharedActivites,sharedSorties=[],setSharedSorties,sharedEvenements=[],setSharedEvenements,onDeleteTitle,customCatActivites=[],customCatSorties=[],customCatEvenements=[],pendingContribs=[],setPendingContribs}) {
-  const [reports,setReports] = useState(MOCK_REPORTS);
+  const [reports,setReports] = useState([]);
   const [editModal,setEditModal] = useState(null); // {report, mode:'edit'|'delete'}
   const [editForm,setEditForm] = useState({});
   const allReports=[...userReports,...reports].sort((a,b)=>Number(b.id)-Number(a.id)||0);
@@ -11024,7 +11024,7 @@ function AdminSOS({sosLib=[],setSosLib,sosModeActif=true,setSosModeActif}){
 function PageAdmin({onLogout,pendingContribs=[],setPendingContribs,updateContrib,adminActivites=[],setAdminActivites,adminSorties=[],setAdminSorties,adminEvenements=[],setAdminEvenements,adminReports=[],setAdminReports,addDeletedTitle,adminCustomEvents=[],setAdminCustomEvents,sosLib=[],setSosLib,sosModeActif=true,setSosModeActif,ideesMomentConfig=[],setIdeesMomentConfig,evenementsSaisonniers=[],setEvenementsSaisonniers,customCatActivites=[],setCustomCatActivites,customCatSorties=[],setCustomCatSorties,customCatEvenements=[],setCustomCatEvenements,adminComms=[],setAdminComms,ressourcesSites=[],setRessourcesSites,ressourcesContacts=[],setRessourcesContacts,ressourcesPdf=[],setRessourcesPdf,devisBoostDemandes=[],setDevisBoostDemandes,boosts=[],setBoosts,activerBoost,retirerBoostSupabase,demoMode=false,setDemoMode}) {
   const [page,setPage] = useState("dashboard");
   const [collapsed,setCollapsed] = useState(false);
-  const pendingReports = [...adminReports,...MOCK_REPORTS].filter(r=>r.statut==="pending").length;
+  const pendingReports = adminReports.filter(r=>r.statut==="pending").length;
   return (
     <div style={{display:"flex",minHeight:"100vh",background:C.bg,fontFamily:"'DM Sans',system-ui,sans-serif",color:C.text}}>
       {/* Sidebar */}

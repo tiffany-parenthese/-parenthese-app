@@ -9849,8 +9849,11 @@ function Signalements({userReports=[],setUserReports,sharedActivites=[],setShare
     // Sauvegarde réelle côté Supabase pour que la modification survive au rechargement
     const table=type==="sortie"?"sorties":type==="evenement"?"evenements":"activites";
     try{
-      const {error}=await supabase.from(table).update({nom:nouveauNom,...data}).or(`nom.eq.${ancienTitre},titre.eq.${ancienTitre}`);
-      console.log("[DEBUG edit] Erreur Supabase :",error);
+      const payload={nom:nouveauNom,...data};
+      const r1=await supabase.from(table).update(payload).eq("nom",ancienTitre).select();
+      const r2=await supabase.from(table).update(payload).eq("titre",ancienTitre).select();
+      console.log("[DEBUG edit] Lignes mises à jour (nom) :",r1.data,"Erreur :",r1.error);
+      console.log("[DEBUG edit] Lignes mises à jour (titre) :",r2.data,"Erreur :",r2.error);
     }catch(e){ console.log("[DEBUG edit] Exception Supabase :",e); }
     setEditModal(null);
   };
@@ -9868,7 +9871,8 @@ function Signalements({userReports=[],setUserReports,sharedActivites=[],setShare
     if(setPendingContribs)setPendingContribs(prev=>prev.filter(c=>c.nom!==titre&&c.titre!==titre));
     // supprime réellement la ligne côté Supabase pour que l'élément ne réapparaisse pas au rechargement
     const table=type==="sortie"?"sorties":type==="evenement"?"evenements":"activites";
-    supabase.from(table).delete().or(`nom.eq.${titre},titre.eq.${titre}`).then(()=>{},()=>{});
+    supabase.from(table).delete().eq("nom",titre).then(()=>{},()=>{});
+    supabase.from(table).delete().eq("titre",titre).then(()=>{},()=>{});
     if(onDeleteTitle)onDeleteTitle(titre);
     setEditModal(null);
   };

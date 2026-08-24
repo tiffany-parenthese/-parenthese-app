@@ -930,7 +930,7 @@ function FormActivite({onClose,onSubmit,customCatActivites=[],initialData=null})
   const [ageMin,setAgeMin]=useState(initialData?.ageMin||"");
   const [ageMax,setAgeMax]=useState(initialData?.ageMax||"");
   const [materiel,setMateriel]=useState(Array.isArray(initialData?.materiel)?initialData.materiel.join(", "):"");
-  const [etapes,setEtapes]=useState("");
+  const [etapes,setEtapes]=useState(Array.isArray(initialData?.etapes)?initialData.etapes.join("\n"):"");
   const [accValues,setAccValues]=useState(()=>{
     if(!initialData)return{};
     const v={};["acc_poussette","acc_bebe","acc_allaitement","acc_langer","acc_aire03","acc_peubruyant","pmr_fauteuil","pmr_escaliers","pmr_parking","pmr_toilettes","pmr_personnel","pmr_chemin","tsa_foule","tsa_calme","tsa_lumiere","tsa_retrait","tsa_bruit","tsa_personnel","tdah_espace","tdah_physique","tdah_attente","tdah_stimulation","dys_visuels","dys_nonecrite","dys_rythme","dys_personnel"].forEach(k=>{if(initialData[k])v[k]=true;});
@@ -9824,9 +9824,9 @@ function Signalements({userReports=[],setUserReports,sharedActivites=[],setShare
   const openEdit=(r)=>{
     const trouve=(liste)=>liste.find(x=>x.nom===r.titre||x.titre===r.titre);
     let live=null;
-    if(r.type==="sortie") live=trouve(pendingContribs.filter(c=>c._type==="sortie"))||trouve(sharedSorties);
-    else if(r.type==="evenement") live=trouve(pendingContribs.filter(c=>c._type==="evenement"))||trouve(sharedEvenements);
-    else live=trouve(pendingContribs.filter(c=>c._type==="activite"||!c._type))||trouve(sharedActivites);
+    if(r.type==="sortie") live=trouve(pendingContribs.filter(c=>c._type==="sortie"))||trouve(sharedSorties)||trouve(SORTIES);
+    else if(r.type==="evenement") live=trouve(pendingContribs.filter(c=>c._type==="evenement"))||trouve(sharedEvenements)||trouve(EVENEMENTS_INIT);
+    else live=trouve(pendingContribs.filter(c=>c._type==="activite"||!c._type))||trouve(sharedActivites)||trouve(ACTIVITES);
     setEditLiveItem(live||{nom:r.titre});
     setEditTypeEvt(live?.categorie||live?.type||"");
     setEditModal({report:r,mode:"edit"});

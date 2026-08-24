@@ -10109,12 +10109,32 @@ function Communication({ideesMomentConfig=[],setIdeesMomentConfig,adminComms=[],
   const [modal,setModal] = useState(null);
   const [form,setForm] = useState({type:"banner",titre:"",message:"",debut:"",fin:"",actif:false});
   const [selectedIdee,setSelectedIdee] = useState(null); // index of selected idee
-  const toggleActif = (id) => setComms(comms.map(c=>c.id===id?{...c,actif:!c.actif}:c));
-  const save = () => {
+  const toggleActif = (id) => {
+    setComms(comms.map(c=>c.id===id?{...c,actif:!c.actif}:c));
+    const c=comms.find(x=>x.id===id);
+    if(c&&/^[0-9a-f]{8}-/.test(id))supabase.from("communications").update({actif:!c.actif}).eq("id",id).then(()=>{},()=>{});
+  };
+  const save = async() => {
     if(!form.titre||!form.message) return;
-    if(modal?.mode==="edit") setComms(comms.map(c=>c.id===modal.item.id?{...c,...form}:c));
-    else setComms([...comms,{id:Date.now().toString(),...form}]);
+    if(modal?.mode==="edit"){
+      setComms(comms.map(c=>c.id===modal.item.id?{...c,...form}:c));
+      if(/^[0-9a-f]{8}-/.test(modal.item.id)){
+        try{ await supabase.from("communications").update({type:form.type,titre:form.titre,message:form.message,debut:form.debut||null,fin:form.fin||null,actif:!!form.actif}).eq("id",modal.item.id); }
+        catch(e){ /* échec réseau — reste correct localement */ }
+      }
+    }else{
+      const nouveau={id:Date.now().toString(),...form};
+      setComms([...comms,nouveau]);
+      try{
+        const {data:inserted}=await supabase.from("communications").insert({type:form.type,titre:form.titre,message:form.message,debut:form.debut||null,fin:form.fin||null,actif:!!form.actif}).select().single();
+        if(inserted)setComms(prev=>prev.map(c=>c===nouveau?{...c,id:inserted.id}:c));
+      }catch(e){ /* le message reste visible localement même si la sauvegarde échoue */ }
+    }
     setModal(null);
+  };
+  const supprimerComm=(id)=>{
+    setComms(comms.filter(c=>c.id!==id));
+    if(/^[0-9a-f]{8}-/.test(id))supabase.from("communications").delete().eq("id",id).then(()=>{},()=>{});
   };
   const typeInfo = {banner:["📢","Bandeau","#3b82f6"],popup:["💬","Pop-up","#7c3aed"],push:["🔔","Notification push","#10b981"]};
   return (
@@ -10176,7 +10196,7 @@ function Communication({ideesMomentConfig=[],setIdeesMomentConfig,adminComms=[],
                   setPreviewComm(comm);
                 }}>👁️ Aperçu</button>
                 <button style={{...s.btnOutline(C.accent),flex:1}} onClick={()=>{setForm({...comm});setModal({mode:"edit",item:comm});}}>✏️ Modifier</button>
-                <button style={s.btnOutline(C.red)} onClick={()=>setComms(comms.filter(c=>c.id!==comm.id))}>🗑️</button>
+                <button style={s.btnOutline(C.red)} onClick={()=>supprimerComm(comm.id)}>🗑️</button>
               </div>
             </div>
           );
@@ -11649,6 +11669,15 @@ export default function App(){
           setCustomCatEvenements(data.filter(c=>c.type==="evenement").map(c=>({id:c.id,k:c.cle,label:c.label,emoji:c.emoji})));
         }
       }catch(e){ /* erreur réseau — reste sur les catégories par défaut */ }
+    })();
+  },[]);
+  // ── Chargement des communications admin depuis Supabase (données globales) ──
+  useEffect(()=>{
+    (async()=>{
+      try{
+        const {data}=await supabase.from("communications").select("*").order("created_at",{ascending:false});
+        if(data&&data.length>0)setAdminComms(data.map(c=>({id:c.id,type:c.type,titre:c.titre,message:c.message,debut:c.debut,fin:c.fin,actif:c.actif})));
+      }catch(e){ /* erreur réseau — reste sur les messages par défaut */ }
     })();
   },[]);
   // ── Sauvegarde globale — toutes les données privées en 1 clé ─────────────

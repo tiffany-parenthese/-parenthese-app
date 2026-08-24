@@ -4988,7 +4988,7 @@ function Toggle({on,onChange,disabled=false}){
   );
 }
 
-function PagePremium({onBack,onSubscribe,isLoggedIn=true,onRequireAuth,premiumTrialUsed=false,onStartTrial}){
+function PagePremium({onBack,onSubscribe,isLoggedIn=true,onRequireAuth,premiumTrialUsed=false,onStartTrial,onAppliquerCodePromo}){
   const [planChoisi,setPlanChoisi]=useState("annuel"); // "mensuel" | "annuel"
   const [showPaiement,setShowPaiement]=useState(false);
   const [carteNum,setCarteNum]=useState("");
@@ -4996,6 +4996,11 @@ function PagePremium({onBack,onSubscribe,isLoggedIn=true,onRequireAuth,premiumTr
   const [carteCvc,setCarteCvc]=useState("");
   const [traitement,setTraitement]=useState(false);
   const [infoModal,setInfoModal]=useState(null);
+  const [showCodePromo,setShowCodePromo]=useState(false);
+  const [codePromoValue,setCodePromoValue]=useState("");
+  const [codePromoEnCours,setCodePromoEnCours]=useState(false);
+  const [codePromoMsg,setCodePromoMsg]=useState(null);
+  const [reductionActive,setReductionActive]=useState(0); // pourcentage de réduction actif, 0 = aucune
   const avantages=[
     {
       emoji:"📅",titre:"Planning hebdomadaire",desc:"Génère le planning complet de la semaine",
@@ -5197,15 +5202,28 @@ function PagePremium({onBack,onSubscribe,isLoggedIn=true,onRequireAuth,premiumTr
         </div>
 
         {/* Tarifs */}
+        {reductionActive>0&&(
+          <div style={{background:"linear-gradient(135deg,#6C5CE7,#8B5CF6)",borderRadius:14,padding:"10px 14px",marginBottom:12,textAlign:"center"}}>
+            <p style={{margin:0,fontSize:13,fontWeight:700,color:WH}}>🎉 Réduction de {reductionActive}% appliquée !</p>
+          </div>
+        )}
         <div style={{display:"flex",gap:10,marginBottom:20}}>
           <button onClick={()=>setPlanChoisi("mensuel")} style={{flex:1,textAlign:"left",background:WH,borderRadius:16,padding:"16px 14px",border:`2px solid ${planChoisi==="mensuel"?"#6C5CE7":"rgba(0,0,0,0.08)"}`,cursor:"pointer"}}>
             <p style={{margin:"0 0 4px",fontSize:12,fontWeight:700,color:TM}}>Mensuel</p>
-            <p style={{margin:0,fontSize:20,fontWeight:800,color:TX}}>4,99€<span style={{fontSize:12,fontWeight:500,color:TM}}>/mois</span></p>
+            {reductionActive>0?(
+              <p style={{margin:0,fontSize:20,fontWeight:800,color:TX}}>{(4.99*(1-reductionActive/100)).toFixed(2).replace(".",",")}€<span style={{fontSize:12,fontWeight:500,color:TM}}>/mois</span> <span style={{fontSize:12,color:TM,textDecoration:"line-through",fontWeight:500}}>4,99€</span></p>
+            ):(
+              <p style={{margin:0,fontSize:20,fontWeight:800,color:TX}}>4,99€<span style={{fontSize:12,fontWeight:500,color:TM}}>/mois</span></p>
+            )}
           </button>
           <button onClick={()=>setPlanChoisi("annuel")} style={{flex:1,textAlign:"left",background:WH,borderRadius:16,padding:"16px 14px",border:`2px solid ${planChoisi==="annuel"?"#6C5CE7":"rgba(0,0,0,0.08)"}`,cursor:"pointer",position:"relative"}}>
             <span style={{position:"absolute",top:-10,right:10,background:"#6C5CE7",color:WH,fontSize:9,fontWeight:700,padding:"2px 8px",borderRadius:10}}>Meilleure offre</span>
             <p style={{margin:"0 0 4px",fontSize:12,fontWeight:700,color:TM}}>Annuel</p>
-            <p style={{margin:0,fontSize:20,fontWeight:800,color:TX}}>39,99€<span style={{fontSize:12,fontWeight:500,color:TM}}>/an</span></p>
+            {reductionActive>0?(
+              <p style={{margin:0,fontSize:20,fontWeight:800,color:TX}}>{(39.99*(1-reductionActive/100)).toFixed(2).replace(".",",")}€<span style={{fontSize:12,fontWeight:500,color:TM}}>/an</span> <span style={{fontSize:12,color:TM,textDecoration:"line-through",fontWeight:500}}>39,99€</span></p>
+            ):(
+              <p style={{margin:0,fontSize:20,fontWeight:800,color:TX}}>39,99€<span style={{fontSize:12,fontWeight:500,color:TM}}>/an</span></p>
+            )}
           </button>
         </div>
 
@@ -5215,6 +5233,24 @@ function PagePremium({onBack,onSubscribe,isLoggedIn=true,onRequireAuth,premiumTr
           <button onClick={handleStartTrial} style={{width:"100%",padding:12,borderRadius:28,background:"rgba(108,92,231,0.1)",border:"2px dashed #6C5CE7",color:"#6C5CE7",fontWeight:600,fontSize:14,cursor:"pointer",marginBottom:10}}>🎁 Essayer 7 jours gratuitement</button>
         )}
         {premiumTrialUsed&&<p style={{textAlign:"center",fontSize:12,color:TM,margin:"0 0 10px"}}>Essai déjà utilisé — abonne-toi pour continuer</p>}
+        {isLoggedIn&&onAppliquerCodePromo&&(
+          !showCodePromo?(
+            <button onClick={()=>setShowCodePromo(true)} style={{width:"100%",padding:0,background:"none",border:"none",color:TM,fontSize:12,cursor:"pointer",textDecoration:"underline",marginBottom:10}}>J'ai un code promo</button>
+          ):(
+            <div style={{display:"flex",gap:8,marginBottom:10}}>
+              <input value={codePromoValue} onChange={e=>{setCodePromoValue(e.target.value.toUpperCase());setCodePromoMsg(null);}} placeholder="CODE PROMO" style={{flex:1,padding:"11px 14px",borderRadius:12,border:"1.5px solid rgba(108,92,231,0.25)",fontSize:13,fontFamily:"inherit",textTransform:"uppercase",boxSizing:"border-box"}}/>
+              <button disabled={codePromoEnCours||!codePromoValue.trim()} onClick={async()=>{
+                setCodePromoEnCours(true);setCodePromoMsg(null);
+                const res=await onAppliquerCodePromo(codePromoValue.trim());
+                setCodePromoMsg(res);
+                setCodePromoEnCours(false);
+                if(res?.ok&&res.type==="reduction")setReductionActive(res.pourcentage);
+                if(res?.ok)setCodePromoValue("");
+              }} style={{padding:"11px 18px",borderRadius:12,background:codePromoEnCours?"#C4B8F8":"#6C5CE7",border:"none",color:WH,fontWeight:700,fontSize:13,cursor:codePromoEnCours?"default":"pointer",whiteSpace:"nowrap"}}>{codePromoEnCours?"...":"Valider"}</button>
+            </div>
+          )
+        )}
+        {codePromoMsg&&<p style={{textAlign:"center",fontSize:12,color:codePromoMsg.ok?"#16A34A":"#DC2626",margin:"0 0 10px",fontWeight:600}}>{codePromoMsg.ok?"✅ ":"❌ "}{codePromoMsg.message}</p>}
         <p style={{textAlign:"center",fontSize:11,color:TM,margin:0}}>Sans engagement · Annulable à tout moment</p>
       </div>
 
@@ -5235,7 +5271,7 @@ function PagePremium({onBack,onSubscribe,isLoggedIn=true,onRequireAuth,premiumTr
                 <>
                   <div style={{fontSize:36,marginBottom:6}}>💳</div>
                   <p style={{margin:"0 0 4px",fontSize:17,fontWeight:800,color:TX}}>Paiement sécurisé</p>
-                  <p style={{margin:0,fontSize:12,color:TM}}>{planChoisi==="annuel"?"39,99€ / an · soit 3,33€/mois":"4,99€ / mois"}</p>
+                  <p style={{margin:0,fontSize:12,color:TM}}>{reductionActive>0?`${(planChoisi==="annuel"?39.99:4.99)*(1-reductionActive/100)>0?((planChoisi==="annuel"?39.99:4.99)*(1-reductionActive/100)).toFixed(2).replace(".",","):""}€ ${planChoisi==="annuel"?"/ an":"/ mois"} (${reductionActive}% de réduction appliquée)`:(planChoisi==="annuel"?"39,99€ / an · soit 3,33€/mois":"4,99€ / mois")}</p>
                 </>
               )}
             </div>
@@ -10109,6 +10145,42 @@ function Communication({ideesMomentConfig=[],setIdeesMomentConfig,adminComms=[],
   const [modal,setModal] = useState(null);
   const [form,setForm] = useState({type:"banner",titre:"",message:"",debut:"",fin:"",actif:false});
   const [selectedIdee,setSelectedIdee] = useState(null); // index of selected idee
+  const [codesPromo,setCodesPromo] = useState([]);
+  const [modalCode,setModalCode] = useState(null);
+  const [formCode,setFormCode] = useState({code:"",description:"",max_utilisations:"",actif:true,type:"gratuit",pourcentage:""});
+  useEffect(()=>{
+    (async()=>{
+      try{
+        const {data}=await supabase.from("promo_codes").select("*").order("created_at",{ascending:false});
+        if(data)setCodesPromo(data);
+      }catch(e){ /* erreur réseau — reste vide */ }
+    })();
+  },[]);
+  const saveCode=async()=>{
+    const code=formCode.code.trim().toUpperCase();
+    if(!code)return;
+    if(formCode.type==="reduction"&&!formCode.pourcentage){alert("Indique un pourcentage de réduction.");return;}
+    const payload={code,description:formCode.description.trim(),max_utilisations:formCode.max_utilisations?parseInt(formCode.max_utilisations):null,actif:!!formCode.actif,type:formCode.type,pourcentage:formCode.type==="reduction"?parseInt(formCode.pourcentage):null};
+    if(modalCode?.mode==="edit"){
+      setCodesPromo(prev=>prev.map(c=>c.id===modalCode.item.id?{...c,...payload}:c));
+      try{ await supabase.from("promo_codes").update(payload).eq("id",modalCode.item.id); }catch(e){}
+    }else{
+      try{
+        const {data:inserted,error}=await supabase.from("promo_codes").insert({...payload,utilisations_actuelles:0}).select().single();
+        if(error){alert("Ce code existe peut-être déjà.");return;}
+        if(inserted)setCodesPromo(prev=>[inserted,...prev]);
+      }catch(e){ alert("Erreur réseau, réessaie."); return; }
+    }
+    setModalCode(null);
+  };
+  const toggleActifCode=(c)=>{
+    setCodesPromo(prev=>prev.map(x=>x.id===c.id?{...x,actif:!x.actif}:x));
+    supabase.from("promo_codes").update({actif:!c.actif}).eq("id",c.id).then(()=>{},()=>{});
+  };
+  const supprimerCode=(id)=>{
+    setCodesPromo(prev=>prev.filter(c=>c.id!==id));
+    supabase.from("promo_codes").delete().eq("id",id).then(()=>{},()=>{});
+  };
   const toggleActif = (id) => {
     setComms(comms.map(c=>c.id===id?{...c,actif:!c.actif}:c));
     const c=comms.find(x=>x.id===id);
@@ -10173,6 +10245,53 @@ function Communication({ideesMomentConfig=[],setIdeesMomentConfig,adminComms=[],
         </div>
         <p style={{fontSize:11,color:C.muted,margin:"10px 0 0"}}>💡 Cliquez sur une vignette pour la modifier en détail.</p>
       </div>
+
+      {/* Codes promo */}
+      <div style={{...s.card,marginBottom:20}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
+          <p style={{fontSize:14,fontWeight:700,color:C.text,margin:0}}>🎁 Codes promo</p>
+          <button style={s.btn(C.accent)} onClick={()=>{setFormCode({code:"",description:"",max_utilisations:"",actif:true});setModalCode({mode:"add"});}}>+ Créer un code</button>
+        </div>
+        <p style={{fontSize:12,color:C.muted,margin:"0 0 14px"}}>Débloque Premium gratuitement pour l'utilisateur qui saisit ce code — pratique pour une promo annoncée dans un bandeau ou une pub.</p>
+        {codesPromo.length===0&&<p style={{fontSize:13,color:C.muted,fontStyle:"italic"}}>Aucun code promo pour le moment.</p>}
+        <div style={{display:"flex",flexDirection:"column",gap:8}}>
+          {codesPromo.map(c=>(
+            <div key={c.id} style={{display:"flex",alignItems:"center",gap:12,padding:"10px 14px",background:"rgba(255,255,255,0.03)",borderRadius:12,border:`1px solid ${c.actif?"rgba(16,185,129,0.3)":C.border}`}}>
+              <div style={{flex:1}}>
+                <div style={{display:"flex",alignItems:"center",gap:8}}>
+                  <p style={{margin:0,fontSize:14,fontWeight:800,color:C.text,fontFamily:"monospace",letterSpacing:"0.5px"}}>{c.code}</p>
+                  <span style={{fontSize:10,fontWeight:700,padding:"2px 8px",borderRadius:10,background:c.type==="reduction"?"rgba(59,130,246,0.15)":"rgba(124,58,237,0.15)",color:c.type==="reduction"?"#3b82f6":"#a78bfa"}}>{c.type==="reduction"?`💸 -${c.pourcentage}%`:"🎁 Gratuit"}</span>
+                </div>
+                {c.description&&<p style={{margin:"2px 0 0",fontSize:12,color:C.muted}}>{c.description}</p>}
+                <p style={{margin:"2px 0 0",fontSize:11,color:C.muted}}>{c.utilisations_actuelles||0} utilisation{(c.utilisations_actuelles||0)>1?"s":""}{c.max_utilisations!=null?` / ${c.max_utilisations} max`:" · illimité"}</p>
+              </div>
+              <button onClick={()=>toggleActifCode(c)} style={{fontSize:11,fontWeight:700,padding:"5px 12px",borderRadius:20,border:"none",cursor:"pointer",background:c.actif?"rgba(16,185,129,0.15)":"rgba(255,255,255,0.06)",color:c.actif?"#10b981":C.muted}}>{c.actif?"✓ Actif":"Inactif"}</button>
+              <button onClick={()=>{setFormCode({code:c.code,description:c.description||"",max_utilisations:c.max_utilisations!=null?String(c.max_utilisations):"",actif:c.actif,type:c.type||"gratuit",pourcentage:c.pourcentage!=null?String(c.pourcentage):""});setModalCode({mode:"edit",item:c});}} style={{background:"none",border:"none",fontSize:14,cursor:"pointer"}}>✏️</button>
+              <button onClick={()=>{if(window.confirm("Supprimer ce code promo ?"))supprimerCode(c.id);}} style={{background:"none",border:"none",fontSize:14,cursor:"pointer"}}>🗑️</button>
+            </div>
+          ))}
+        </div>
+      </div>
+      {modalCode&&(
+        <Modal title={modalCode.mode==="edit"?"Modifier le code":"Nouveau code promo"} onClose={()=>setModalCode(null)}>
+          <AdminField label="Code *"><input style={{...s.input,fontFamily:"monospace",textTransform:"uppercase"}} value={formCode.code} onChange={e=>setFormCode({...formCode,code:e.target.value.toUpperCase()})} placeholder="PROMO30"/></AdminField>
+          <AdminField label="Description (visible en interne)"><input style={s.input} value={formCode.description} onChange={e=>setFormCode({...formCode,description:e.target.value})} placeholder="Ex : Pub Facebook -30% novembre"/></AdminField>
+          <AdminField label="Type de code">
+            <div style={{display:"flex",gap:8}}>
+              <button onClick={()=>setFormCode({...formCode,type:"gratuit"})} style={{flex:1,padding:"10px 12px",borderRadius:10,border:`1.5px solid ${formCode.type==="gratuit"?C.accent:C.border}`,background:formCode.type==="gratuit"?"rgba(124,58,237,0.12)":"transparent",color:formCode.type==="gratuit"?C.accent:C.muted,fontSize:13,fontWeight:formCode.type==="gratuit"?700:400,cursor:"pointer"}}>🎁 Premium gratuit</button>
+              <button onClick={()=>setFormCode({...formCode,type:"reduction"})} style={{flex:1,padding:"10px 12px",borderRadius:10,border:`1.5px solid ${formCode.type==="reduction"?C.accent:C.border}`,background:formCode.type==="reduction"?"rgba(124,58,237,0.12)":"transparent",color:formCode.type==="reduction"?C.accent:C.muted,fontSize:13,fontWeight:formCode.type==="reduction"?700:400,cursor:"pointer"}}>💸 Réduction %</button>
+            </div>
+          </AdminField>
+          {formCode.type==="reduction"&&(
+            <AdminField label="Pourcentage de réduction *"><input type="number" min={1} max={99} style={s.input} value={formCode.pourcentage} onChange={e=>setFormCode({...formCode,pourcentage:e.target.value})} placeholder="Ex : 30"/></AdminField>
+          )}
+          <AdminField label="Nombre d'utilisations max (laisser vide = illimité)"><input type="number" min={1} style={s.input} value={formCode.max_utilisations} onChange={e=>setFormCode({...formCode,max_utilisations:e.target.value})} placeholder="Illimité"/></AdminField>
+          <div style={{display:"flex",justifyContent:"flex-end",gap:8,marginTop:12,paddingTop:12,borderTop:`1px solid ${C.border}`}}>
+            <button style={s.btnOutline(C.muted)} onClick={()=>setModalCode(null)}>Annuler</button>
+            <button style={s.btn(C.accent)} onClick={saveCode}>{modalCode.mode==="edit"?"Enregistrer":"Créer le code"}</button>
+          </div>
+        </Modal>
+      )}
 
       {/* Page détail vignette */}
       {selectedIdee!==null&&ideesMomentConfig[selectedIdee]&&<IdeeDetailModal idee={ideesMomentConfig[selectedIdee]} onSave={changes=>{setIdeesMomentConfig(prev=>prev.map((x,j)=>j===selectedIdee?{...x,...changes}:x));setSelectedIdee(null);}} onClose={()=>setSelectedIdee(null)}/>}
@@ -11461,6 +11580,24 @@ export default function App(){
       // La mise a jour locale reste appliquee meme si la sauvegarde echoue
     }
   };
+  const onAppliquerCodePromo=async(codeTape)=>{
+    if(!currentUser)return{ok:false,message:"Connecte-toi d'abord pour utiliser un code promo."};
+    try{
+      const {data:codeData,error}=await supabase.from("promo_codes").select("*").ilike("code",codeTape).maybeSingle();
+      if(error||!codeData)return{ok:false,message:"Ce code n'existe pas."};
+      if(!codeData.actif)return{ok:false,message:"Ce code n'est plus valide."};
+      if(codeData.max_utilisations!=null&&codeData.utilisations_actuelles>=codeData.max_utilisations)return{ok:false,message:"Ce code a atteint sa limite d'utilisation."};
+      await supabase.from("promo_codes").update({utilisations_actuelles:(codeData.utilisations_actuelles||0)+1}).eq("id",codeData.id);
+      if(codeData.type==="reduction"){
+        return{ok:true,type:"reduction",pourcentage:codeData.pourcentage,message:`Code appliqué — ${codeData.pourcentage}% de réduction sur ton abonnement !`};
+      }
+      try{ await supabase.from("profiles").update({premium:true}).eq("id",currentUser.id); }catch(e2){ /* la mise a jour locale reste appliquee ci-dessous */ }
+      await setPremiumDemo(true);
+      return{ok:true,type:"gratuit",message:codeData.description?`Premium débloqué — ${codeData.description}`:"Premium débloqué avec succès !"};
+    }catch(e){
+      return{ok:false,message:"Erreur réseau, réessaie dans un instant."};
+    }
+  };
   const [page,setPage]=useState("accueil");
   const [favoris,setFavoris]=useState([]);
   const [masquees,setMasquees]=useState([]); // items "ne plus proposer" {id, nom, _type}
@@ -11844,7 +11981,7 @@ export default function App(){
       )}
       {showPremiumPage&&(
         <div style={{position:"fixed",inset:0,background:BG,zIndex:910,overflowY:"auto"}}>
-          <PagePremium onBack={()=>setShowPremiumPage(false)} onSubscribe={handleSubscribe} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} premiumTrialUsed={premiumTrialUsed} onStartTrial={async()=>{
+          <PagePremium onBack={()=>setShowPremiumPage(false)} onSubscribe={handleSubscribe} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} premiumTrialUsed={premiumTrialUsed} onAppliquerCodePromo={onAppliquerCodePromo} onStartTrial={async()=>{
             if(!currentUser?.id){requireAuth&&requireAuth();return;}
             // Vérification serveur — empêche le contournement (localStorage effacé, autre appareil, etc.)
             const {data:profilActuel}=await supabase.from("profiles").select("premium_trial_used").eq("id",currentUser.id).single();

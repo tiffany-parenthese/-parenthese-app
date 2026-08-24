@@ -9835,6 +9835,8 @@ function Signalements({userReports=[],setUserReports,sharedActivites=[],setShare
   const handleFormSubmitEdit=async(data,type)=>{
     const r=editModal.report;
     const ancienTitre=r.titre;
+    console.log("[DEBUG edit] Ancien titre :",ancienTitre,"| Nouvelles données :",data);
+    console.log("[DEBUG edit] pendingContribs correspondants AVANT :",pendingContribs.filter(c=>c.nom===ancienTitre||c.titre===ancienTitre));
     resolveAllForTitre(ancienTitre);
     const nouveauNom=data.nom||ancienTitre;
     const merge=item=>({...item,...data,nom:nouveauNom,titre:nouveauNom});
@@ -9847,8 +9849,9 @@ function Signalements({userReports=[],setUserReports,sharedActivites=[],setShare
     // Sauvegarde réelle côté Supabase pour que la modification survive au rechargement
     const table=type==="sortie"?"sorties":type==="evenement"?"evenements":"activites";
     try{
-      await supabase.from(table).update({nom:nouveauNom,...data}).or(`nom.eq.${ancienTitre},titre.eq.${ancienTitre}`);
-    }catch(e){ /* échec réseau — la modification reste correcte localement */ }
+      const {error}=await supabase.from(table).update({nom:nouveauNom,...data}).or(`nom.eq.${ancienTitre},titre.eq.${ancienTitre}`);
+      console.log("[DEBUG edit] Erreur Supabase :",error);
+    }catch(e){ console.log("[DEBUG edit] Exception Supabase :",e); }
     setEditModal(null);
   };
   const deleteItem=()=>{

@@ -7740,32 +7740,18 @@ const MENU = [
 
 // ─── PAGES ────────────────────────────────────────────────────────────────────
 function Dashboard({sharedActivites=[],sharedSorties=[],sharedEvenements=[],pendingContribs=[],userReports=[],dashUserReports=[],demoMode=false,setDemoMode}) {
-  const [liveUsers,setLiveUsers] = useState(MOCK_USERS.length);
-  const [liveOnline,setLiveOnline] = useState(Math.floor(MOCK_USERS.length*0.4));
-  const [pulse,setPulse] = useState(false);
-  const [history,setHistory] = useState(()=>Array.from({length:12},(_,i)=>({t:i,v:Math.floor(MOCK_USERS.length*0.3)+Math.floor(Math.random()*3)})));
-
-  const liveUsersRef = useRef(liveUsers);
-  const liveOnlineRef = useRef(liveOnline);
-  useEffect(()=>{ liveUsersRef.current=liveUsers; },[liveUsers]);
-  useEffect(()=>{ liveOnlineRef.current=liveOnline; },[liveOnline]);
+  const [totalUsers,setTotalUsers] = useState(null); // null = chargement en cours
   useEffect(()=>{
-    const interval=setInterval(()=>{
-      const delta=Math.random()<0.6?1:Math.random()<0.3?2:0;
-      const onlineDelta=(Math.random()<0.5?1:-1)*(Math.floor(Math.random()*2));
-      if(delta>0){
-        setLiveUsers(p=>p+delta);
-        setPulse(true);
-        setTimeout(()=>setPulse(false),600);
-      }
-      setLiveOnline(p=>Math.max(1,Math.min(p+onlineDelta,liveUsersRef.current)));
-      setHistory(p=>[...p.slice(1),{t:Date.now(),v:liveOnlineRef.current}]);
-    },4000);
-    return()=>clearInterval(interval);
+    (async()=>{
+      try{
+        const {count,error}=await supabase.from("profiles").select("*",{count:"exact",head:true});
+        if(!error&&count!=null)setTotalUsers(count);
+      }catch(e){ /* erreur réseau — reste sur "chargement..." */ }
+    })();
   },[]);
 
   const stats = [
-    {label:"Utilisateurs",val:liveUsers,sub:"dont "+liveOnline+" en ligne",emoji:"👥",color:C.blue},
+    {label:"Utilisateurs",val:totalUsers!=null?totalUsers:"…",sub:"inscrits au total",emoji:"👥",color:C.blue},
     {label:"Activités publiées",val:MOCK_ACTIVITES.filter(a=>a.statut==="published").length+sharedActivites.filter(a=>a.statut==="published").length+pendingContribs.filter(c=>c._type==="activite"&&c._statut==="published").length,sub:`Admin: ${MOCK_ACTIVITES.filter(a=>a.statut==="published").length+sharedActivites.filter(a=>a.statut==="published").length} · Utilisateurs: ${pendingContribs.filter(c=>c._type==="activite"&&c._statut==="published").length}`,emoji:"🎨",color:C.accent},
     {label:"Sorties",val:MOCK_SORTIES.length+sharedSorties.length+pendingContribs.filter(c=>c._type==="sortie"&&c._statut==="published").length,sub:`Admin: ${MOCK_SORTIES.length+sharedSorties.length} · Utilisateurs: ${pendingContribs.filter(c=>c._type==="sortie"&&c._statut==="published").length}`,emoji:"🗺️",color:C.pink},
     {label:"Événements",val:MOCK_EVENTS.length+sharedEvenements.length+pendingContribs.filter(c=>c._type==="evenement"&&c._statut==="published").length,sub:`Admin: ${MOCK_EVENTS.length+sharedEvenements.length} · Utilisateurs: ${pendingContribs.filter(c=>c._type==="evenement"&&c._statut==="published").length}`,emoji:"📅",color:C.orange},
@@ -7797,33 +7783,15 @@ function Dashboard({sharedActivites=[],sharedSorties=[],sharedEvenements=[],pend
         )}
       </div>
 
-      {/* Live users card */}
+      {/* Users card */}
       <div style={{...s.card,marginBottom:16,background:"linear-gradient(135deg,#1e1b4b,#2d1b69)",border:"1px solid rgba(124,58,237,0.3)"}}>
-        <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:14}}>
-          <div>
-            <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:4}}>
-              <div style={{width:8,height:8,borderRadius:"50%",background:C.green,boxShadow:`0 0 6px ${C.green}`,animation:"none"}}/>
-              <span style={{fontSize:11,color:C.green,fontWeight:600,textTransform:"uppercase",letterSpacing:"0.5px"}}>Temps réel</span>
-            </div>
-            <div style={{display:"flex",alignItems:"baseline",gap:10}}>
-              <span style={{fontSize:42,fontWeight:800,color:"#fff",transition:"all 0.3s",transform:pulse?"scale(1.06)":"scale(1)",display:"inline-block"}}>{liveUsers}</span>
-              <span style={{fontSize:13,color:"rgba(255,255,255,0.5)"}}>utilisateurs inscrits</span>
-            </div>
-          </div>
-          <div style={{textAlign:"right"}}>
-            <div style={{fontSize:22,fontWeight:800,color:C.green}}>{liveOnline}</div>
-            <div style={{fontSize:11,color:"rgba(255,255,255,0.4)"}}>en ligne maintenant</div>
-          </div>
+        <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
+          <div style={{width:8,height:8,borderRadius:"50%",background:C.green,boxShadow:`0 0 6px ${C.green}`}}/>
+          <span style={{fontSize:11,color:C.green,fontWeight:600,textTransform:"uppercase",letterSpacing:"0.5px"}}>Données réelles</span>
         </div>
-        {/* Mini sparkline */}
-        <div style={{display:"flex",alignItems:"flex-end",gap:3,height:36}}>
-          {history.map((h,i)=>(
-            <div key={i} style={{flex:1,background:i===history.length-1?"#a78bfa":"rgba(124,58,237,0.35)",borderRadius:"3px 3px 0 0",height:Math.max(4,Math.round((h.v/maxH)*36))+"px",transition:"height 0.4s"}}/>
-          ))}
-        </div>
-        <div style={{display:"flex",justifyContent:"space-between",marginTop:6}}>
-          <span style={{fontSize:10,color:"rgba(255,255,255,0.3)"}}>Il y a 48s</span>
-          <span style={{fontSize:10,color:"rgba(255,255,255,0.3)"}}>Maintenant</span>
+        <div style={{display:"flex",alignItems:"baseline",gap:10}}>
+          <span style={{fontSize:42,fontWeight:800,color:"#fff",display:"inline-block"}}>{totalUsers!=null?totalUsers:"…"}</span>
+          <span style={{fontSize:13,color:"rgba(255,255,255,0.5)"}}>utilisateurs inscrits au total</span>
         </div>
       </div>
 
@@ -7862,9 +7830,9 @@ function Dashboard({sharedActivites=[],sharedSorties=[],sharedEvenements=[],pend
             const revAnnuel=annuelCount*(39.99/12);
             const totalMois=revMensuel+revAnnuel;
             const totalAnnuel=mensuelCount*4.99*12+annuelCount*39.99;
-            const totalUsers=liveUsers||MOCK_USERS.length;
+            const totalUsersMock=totalUsers||MOCK_USERS.length;
             const premiumUsers=MOCK_USERS.filter(u=>u.premium).length;
-            const tauxConversion=Math.round((premiumUsers/totalUsers)*100);
+            const tauxConversion=Math.round((premiumUsers/totalUsersMock)*100);
             return(<>
               {/* Revenus principaux */}
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:16}}>

@@ -7680,8 +7680,9 @@ const Avatar = ({nom,size=36}) => {
   const bg = colors[nom?.charCodeAt(0)%colors.length||0];
   return <div style={{width:size,height:size,borderRadius:"50%",background:bg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:size*0.35,fontWeight:700,color:"#fff",flexShrink:0}}>{initials}</div>;
 };
-const StatCard = ({label,val,sub,color,emoji}) => (
-  <div style={{...s.card,flex:1,minWidth:140}}>
+const StatCard = ({label,val,sub,color,emoji,demo}) => (
+  <div style={{...s.card,flex:1,minWidth:140,position:"relative"}}>
+    {demo&&<span style={{position:"absolute",top:8,right:8,fontSize:9,fontWeight:700,padding:"2px 6px",borderRadius:8,background:"rgba(245,158,11,0.15)",color:"#F59E0B"}}>🧪 démo</span>}
     <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:8}}>
       <span style={{fontSize:22}}>{emoji}</span>
       <span style={{fontSize:11,color:color||C.green,fontWeight:600}}>{sub}</span>
@@ -7741,11 +7742,14 @@ const MENU = [
 // ─── PAGES ────────────────────────────────────────────────────────────────────
 function Dashboard({sharedActivites=[],sharedSorties=[],sharedEvenements=[],pendingContribs=[],userReports=[],dashUserReports=[],demoMode=false,setDemoMode}) {
   const [totalUsers,setTotalUsers] = useState(null); // null = chargement en cours
+  const [premiumUsersReal,setPremiumUsersReal] = useState(null);
   useEffect(()=>{
     (async()=>{
       try{
         const {count,error}=await supabase.from("profiles").select("*",{count:"exact",head:true});
         if(!error&&count!=null)setTotalUsers(count);
+        const {count:countPremium,error:errorP}=await supabase.from("profiles").select("*",{count:"exact",head:true}).eq("premium",true);
+        if(!errorP&&countPremium!=null)setPremiumUsersReal(countPremium);
       }catch(e){ /* erreur réseau — reste sur "chargement..." */ }
     })();
   },[]);
@@ -7756,7 +7760,7 @@ function Dashboard({sharedActivites=[],sharedSorties=[],sharedEvenements=[],pend
     {label:"Sorties",val:MOCK_SORTIES.length+sharedSorties.length+pendingContribs.filter(c=>c._type==="sortie"&&c._statut==="published").length,sub:`Admin: ${MOCK_SORTIES.length+sharedSorties.length} · Utilisateurs: ${pendingContribs.filter(c=>c._type==="sortie"&&c._statut==="published").length}`,emoji:"🗺️",color:C.pink},
     {label:"Événements",val:MOCK_EVENTS.length+sharedEvenements.length+pendingContribs.filter(c=>c._type==="evenement"&&c._statut==="published").length,sub:`Admin: ${MOCK_EVENTS.length+sharedEvenements.length} · Utilisateurs: ${pendingContribs.filter(c=>c._type==="evenement"&&c._statut==="published").length}`,emoji:"📅",color:C.orange},
     {label:"Signalements",val:dashUserReports.length,sub:`${dashUserReports.filter(r=>r.statut==="pending").length} en attente · ${dashUserReports.filter(r=>r.statut==="resolved").length} résolus`,emoji:"🚩",color:C.red},
-    {label:"Abonnements actifs",val:MOCK_SUBS.filter(s=>s.statut==="active").length,sub:`Mensuel: ${MOCK_SUBS.filter(s=>s.statut==="active"&&s.plan==="mensuel").length} · Annuel: ${MOCK_SUBS.filter(s=>s.statut==="active"&&s.plan==="annuel").length}`,emoji:"💳",color:C.green},
+    {label:"Utilisateurs Premium",val:premiumUsersReal!=null?premiumUsersReal:"…",sub:totalUsers!=null&&premiumUsersReal!=null?`Gratuit : ${totalUsers-premiumUsersReal} · Premium : ${premiumUsersReal}`:"",emoji:"⭐",color:C.green},
   ];
   const pendingContribsCount=pendingContribs.filter(c=>c._statut==="pending").length;
   const publishedContribsCount=pendingContribs.filter(c=>c._statut==="published").length;
@@ -7821,7 +7825,10 @@ function Dashboard({sharedActivites=[],sharedSorties=[],sharedEvenements=[],pend
 
       <div style={{display:"grid",gridTemplateColumns:"1fr",gap:16}}>
         <div style={s.card}>
-          <p style={{fontSize:13,fontWeight:700,color:C.text,margin:"0 0 16px"}}>💰 Revenus Premium</p>
+          <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:16}}>
+            <p style={{fontSize:13,fontWeight:700,color:C.text,margin:0}}>💰 Revenus Premium</p>
+            <span style={{fontSize:10,fontWeight:700,padding:"2px 8px",borderRadius:10,background:"rgba(245,158,11,0.15)",color:"#F59E0B"}}>🧪 Mode démo — données simulées</span>
+          </div>
           {(()=>{
             const mensuelCount=MOCK_SUBS.filter(s=>s.plan==="mensuel"&&s.statut==="active").length;
             const annuelCount=MOCK_SUBS.filter(s=>s.plan==="annuel"&&s.statut==="active").length;
@@ -7829,9 +7836,7 @@ function Dashboard({sharedActivites=[],sharedSorties=[],sharedEvenements=[],pend
             const revAnnuel=annuelCount*(39.99/12);
             const totalMois=revMensuel+revAnnuel;
             const totalAnnuel=mensuelCount*4.99*12+annuelCount*39.99;
-            const totalUsersMock=totalUsers||MOCK_USERS.length;
-            const premiumUsers=MOCK_USERS.filter(u=>u.premium).length;
-            const tauxConversion=Math.round((premiumUsers/totalUsersMock)*100);
+            const tauxConversion=(totalUsers&&premiumUsersReal!=null&&totalUsers>0)?Math.round((premiumUsersReal/totalUsers)*100):0;
             return(<>
               {/* Revenus principaux */}
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:16}}>
@@ -7878,8 +7883,8 @@ function Dashboard({sharedActivites=[],sharedSorties=[],sharedEvenements=[],pend
                   <div style={{display:"flex",alignItems:"center",gap:8}}>
                     <span style={{fontSize:20}}>👑</span>
                     <div>
-                      <p style={{margin:0,fontSize:13,fontWeight:700,color:"#fff"}}>Taux de conversion</p>
-                      <p style={{margin:0,fontSize:11,color:"rgba(255,255,255,0.6)"}}>{premiumUsers} Premium / {totalUsers} inscrits</p>
+                      <p style={{margin:0,fontSize:13,fontWeight:700,color:"#fff"}}>Taux de conversion <span style={{fontSize:9,fontWeight:700,padding:"1px 6px",borderRadius:8,background:"rgba(255,255,255,0.2)",marginLeft:4}}>✓ réel</span></p>
+                      <p style={{margin:0,fontSize:11,color:"rgba(255,255,255,0.6)"}}>{premiumUsersReal!=null?premiumUsersReal:"…"} Premium / {totalUsers!=null?totalUsers:"…"} inscrits</p>
                     </div>
                   </div>
                   <span style={{fontSize:26,fontWeight:800,color:"#fff"}}>{tauxConversion}%</span>
@@ -9727,7 +9732,10 @@ function Abonnements() {
   const getTypeColor=(t)=>typeColor[t]||typeColor.default;
   return (
     <div>
-      <h1 style={{fontSize:22,fontWeight:800,color:C.text,margin:"0 0 4px"}}>Abonnements & Revenus</h1>
+      <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:4}}>
+        <h1 style={{fontSize:22,fontWeight:800,color:C.text,margin:0}}>Abonnements & Revenus</h1>
+        <span style={{fontSize:10,fontWeight:700,padding:"3px 9px",borderRadius:10,background:"rgba(245,158,11,0.15)",color:"#F59E0B"}}>🧪 Mode démo — données simulées</span>
+      </div>
       <p style={{fontSize:13,color:C.muted,margin:"0 0 20px"}}>Abonnements Premium et partenariats sponsorisés</p>
 
       {/* Revenus banner */}

@@ -3584,7 +3584,7 @@ function PageAccueil({favoris,setFavoris,setPage,customEvents=[],popupShown=new 
           <p style={{margin:0,fontSize:14,color:TM}}>Trouvez l inspiration parfaite en deux clics pour vos enfants.</p>
           {/* Bandeaux admin actifs */}
         {(adminComms||[]).filter(c=>c.actif&&c.type==="banner").map(c=>(
-          <div key={c.id} onClick={()=>{if(c.codePromo&&onOpenPremium)onOpenPremium(c.codePromo);}} style={{background:"linear-gradient(135deg,#6C5CE7,#a78bfa)",borderRadius:14,padding:"12px 16px",marginBottom:10,display:"flex",alignItems:"center",gap:10,cursor:c.codePromo?"pointer":"default"}}>
+          <div key={c.id} onClick={()=>{console.log("[DEBUG bandeau]",c);if(c.codePromo&&onOpenPremium)onOpenPremium(c.codePromo);}} style={{background:"linear-gradient(135deg,#6C5CE7,#a78bfa)",borderRadius:14,padding:"12px 16px",marginBottom:10,display:"flex",alignItems:"center",gap:10,cursor:c.codePromo?"pointer":"default"}}>
             <span style={{fontSize:20,flexShrink:0}}>📢</span>
             <div style={{flex:1}}>
               <p style={{margin:"0 0 2px",fontSize:13,fontWeight:700,color:"#fff"}}>{c.titre}</p>

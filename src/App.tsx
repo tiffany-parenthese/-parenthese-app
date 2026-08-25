@@ -3584,12 +3584,13 @@ function PageAccueil({favoris,setFavoris,setPage,customEvents=[],popupShown=new 
           <p style={{margin:0,fontSize:14,color:TM}}>Trouvez l inspiration parfaite en deux clics pour vos enfants.</p>
           {/* Bandeaux admin actifs */}
         {(adminComms||[]).filter(c=>c.actif&&c.type==="banner").map(c=>(
-          <div key={c.id} style={{background:"linear-gradient(135deg,#6C5CE7,#a78bfa)",borderRadius:14,padding:"12px 16px",marginBottom:10,display:"flex",alignItems:"center",gap:10}}>
+          <div key={c.id} onClick={()=>{if(c.codePromo&&onOpenPremium)onOpenPremium(c.codePromo);}} style={{background:"linear-gradient(135deg,#6C5CE7,#a78bfa)",borderRadius:14,padding:"12px 16px",marginBottom:10,display:"flex",alignItems:"center",gap:10,cursor:c.codePromo?"pointer":"default"}}>
             <span style={{fontSize:20,flexShrink:0}}>📢</span>
             <div style={{flex:1}}>
               <p style={{margin:"0 0 2px",fontSize:13,fontWeight:700,color:"#fff"}}>{c.titre}</p>
               <p style={{margin:0,fontSize:12,color:"rgba(255,255,255,0.85)"}}>{c.message}</p>
             </div>
+            {c.codePromo&&<span style={{fontSize:18,color:"rgba(255,255,255,0.7)",flexShrink:0}}>→</span>}
           </div>
         ))}
 
@@ -4988,7 +4989,7 @@ function Toggle({on,onChange,disabled=false}){
   );
 }
 
-function PagePremium({onBack,onSubscribe,isLoggedIn=true,onRequireAuth,premiumTrialUsed=false,onStartTrial,onAppliquerCodePromo}){
+function PagePremium({onBack,onSubscribe,isLoggedIn=true,onRequireAuth,premiumTrialUsed=false,onStartTrial,onAppliquerCodePromo,codePromoAuto=null}){
   const [planChoisi,setPlanChoisi]=useState("annuel"); // "mensuel" | "annuel"
   const [showPaiement,setShowPaiement]=useState(false);
   const [carteNum,setCarteNum]=useState("");
@@ -5001,6 +5002,19 @@ function PagePremium({onBack,onSubscribe,isLoggedIn=true,onRequireAuth,premiumTr
   const [codePromoEnCours,setCodePromoEnCours]=useState(false);
   const [codePromoMsg,setCodePromoMsg]=useState(null);
   const [reductionActive,setReductionActive]=useState(0); // pourcentage de réduction actif, 0 = aucune
+  useEffect(()=>{
+    if(!codePromoAuto||!onAppliquerCodePromo)return;
+    setShowCodePromo(true);
+    setCodePromoValue(codePromoAuto);
+    (async()=>{
+      setCodePromoEnCours(true);
+      const res=await onAppliquerCodePromo(codePromoAuto);
+      setCodePromoMsg(res);
+      setCodePromoEnCours(false);
+      if(res?.ok&&res.type==="reduction")setReductionActive(res.pourcentage);
+      if(res?.ok)setCodePromoValue("");
+    })();
+  },[codePromoAuto]);
   const avantages=[
     {
       emoji:"📅",titre:"Planning hebdomadaire",desc:"Génère le planning complet de la semaine",
@@ -10173,10 +10187,10 @@ function Communication({ideesMomentConfig=[],setIdeesMomentConfig,adminComms=[],
       if(formCode.creerBandeau){
         const titreB=formCode.type==="reduction"?`🎁 -${formCode.pourcentage}% sur l'abonnement Premium !`:"🎁 Une surprise vous attend !";
         const messageB=formCode.type==="reduction"?`Utilisez le code ${code} pour profiter de ${formCode.pourcentage}% de réduction sur votre abonnement Premium.`:`Utilisez le code ${code} pour débloquer Premium gratuitement !`;
-        const nouveauBandeau={id:Date.now().toString(),type:"banner",titre:titreB,message:messageB,debut:"",fin:"",actif:true};
+        const nouveauBandeau={id:Date.now().toString(),type:"banner",titre:titreB,message:messageB,debut:"",fin:"",actif:true,codePromo:code};
         setComms(prev=>[...prev,nouveauBandeau]);
         try{
-          const {data:insertedB}=await supabase.from("communications").insert({type:"banner",titre:titreB,message:messageB,actif:true}).select().single();
+          const {data:insertedB}=await supabase.from("communications").insert({type:"banner",titre:titreB,message:messageB,actif:true,code_promo:code}).select().single();
           if(insertedB)setComms(prev=>prev.map(c=>c===nouveauBandeau?{...c,id:insertedB.id}:c));
         }catch(e){ /* le bandeau reste visible localement même si la sauvegarde échoue */ }
       }
@@ -11481,6 +11495,7 @@ export default function App(){
   const [currentUser,setCurrentUser]=useState(null);
   const [showAuthGate,setShowAuthGate]=useState(false);
   const [showPremiumPage,setShowPremiumPage]=useState(false);
+  const [codePromoAuto,setCodePromoAuto]=useState(null);
   const [globalToast,setGlobalToast]=useState(null);
   const chargerEnfantsSupabase=async(userId)=>{
     try{
@@ -11832,7 +11847,7 @@ export default function App(){
     (async()=>{
       try{
         const {data}=await supabase.from("communications").select("*").order("created_at",{ascending:false});
-        if(data&&data.length>0)setAdminComms(data.map(c=>({id:c.id,type:c.type,titre:c.titre,message:c.message,debut:c.debut,fin:c.fin,actif:c.actif})));
+        if(data&&data.length>0)setAdminComms(data.map(c=>({id:c.id,type:c.type,titre:c.titre,message:c.message,debut:c.debut,fin:c.fin,actif:c.actif,codePromo:c.code_promo})));
       }catch(e){ /* erreur réseau — reste sur les messages par défaut */ }
     })();
   },[]);
@@ -11950,7 +11965,7 @@ export default function App(){
   if(!onboardingDone) return <Onboarding onDone={()=>setOnboardingDone(true)}/>;
   const isLoggedIn=!!currentUser;
   const requireAuth=()=>setShowAuthGate(true);
-  const openPremium=()=>setShowPremiumPage(true);
+  const openPremium=(codePromoAuto)=>{setCodePromoAuto(codePromoAuto||null);setShowPremiumPage(true);};
   const handleSubscribe=async()=>{
     await setPremiumDemo(true);
     setShowPremiumPage(false);
@@ -12000,7 +12015,7 @@ export default function App(){
       )}
       {showPremiumPage&&(
         <div style={{position:"fixed",inset:0,background:BG,zIndex:910,overflowY:"auto"}}>
-          <PagePremium onBack={()=>setShowPremiumPage(false)} onSubscribe={handleSubscribe} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} premiumTrialUsed={premiumTrialUsed} onAppliquerCodePromo={onAppliquerCodePromo} onStartTrial={async()=>{
+          <PagePremium onBack={()=>setShowPremiumPage(false)} onSubscribe={handleSubscribe} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} premiumTrialUsed={premiumTrialUsed} onAppliquerCodePromo={onAppliquerCodePromo} codePromoAuto={codePromoAuto} onStartTrial={async()=>{
             if(!currentUser?.id){requireAuth&&requireAuth();return;}
             // Vérification serveur — empêche le contournement (localStorage effacé, autre appareil, etc.)
             const {data:profilActuel}=await supabase.from("profiles").select("premium_trial_used").eq("id",currentUser.id).single();

@@ -7761,7 +7761,6 @@ function Dashboard({sharedActivites=[],sharedSorties=[],sharedEvenements=[],pend
   const pendingContribsCount=pendingContribs.filter(c=>c._statut==="pending").length;
   const publishedContribsCount=pendingContribs.filter(c=>c._statut==="published").length;
   const revenue = MOCK_SUBS.filter(s=>s.statut==="active").reduce((a,s)=>a+(Number(s.montant)||0),0);
-  const maxH=Math.max(...history.map(h=>h.v),1);
   return (
     <div>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:20}}>

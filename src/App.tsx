@@ -369,6 +369,20 @@ const POINTS_ANTICIPER_MAP={
   "Faire des cupcakes":["pa2","pa5","pa6","pa8","pa13","pa14"],
   "Puzzle geant":["pa5","pa7","pa11","pa12"],
 };
+const ADAPTATIONS_MAP={
+  a1:"Ne nécessite pas de communication verbale",
+  a2:"Pas de contrainte de temps — l'enfant va à son rythme",
+  a3:"Peut se faire seul sans aide d'un adulte",
+  a4:"Peut s'arrêter et reprendre sans perdre le fil",
+  a5:"3 étapes maximum, facile à expliquer",
+  a6:"Ne nécessite pas de toucher des matières inconfortables",
+  a7:"Pas de contact physique imposé",
+  a8:"Pas de bruits forts ou soudains",
+  a9:"L'enfant voit ce qu'il crée (dessin, gâteau, construction...)",
+  a10:"Convient aux enfants qui ont du mal à rester assis",
+  a11:"Pas de frustration si le résultat n'est pas parfait",
+  a12:"L'enfant peut choisir comment faire à sa façon",
+};
 const MATERIEL_MAP={"Peinture avec une eponge":["Eponge","Peinture lavable","Feuille A4"],"Faire des cupcakes":["Farine","Oeufs","Beurre","Sucre","Moules"],"Puzzle geant":["Puzzle"],"Lecture a voix haute":["Livre"],"Balade a velo":["Velo","Casque"],"Planter des graines":["Graines","Pot","Terre","Arrosoir"],"Foot dans le jardin":["Ballon"],"Jeu de role":["Deguisements"],"Soiree jeux de societe":["Jeu de societe"],"Jeu de flechettes mousse":["Flechettes mousse","Cible"]};
 const ETAPES_MAP={"Peinture avec une eponge":["Trempe l eponge","Tamponne sur la feuille","Laisse secher 5 min"],"Faire des cupcakes":["Prechauffe le four","Melange les ingredients","Verse dans les moules","Enfourne 20 min","Decore"],"Puzzle geant":["Etale les pieces","Commence par les bords","Assemble par zones"],"Lecture a voix haute":["Choisis un livre","Installez-vous","Lis avec le ton","Discutez"],"Balade a velo":["Verifiez les velos","Choisissez l itineraire","Partez","Pause gouter"],"Planter des graines":["Remplis le pot","Fais un trou","Depose les graines","Arrose","Place au soleil"],"Foot dans le jardin":["Delimitez le terrain","Formez les equipes","C est parti"],"Jeu de role":["Choisissez vos personnages","Inventez une situation","Jouez"],"Soiree jeux de societe":["Choisissez un jeu","Lisez les regles","Jouez"],"Jeu de flechettes mousse":["Accrochez la cible","Definissez les regles","Lancez"]};
 const AVIS_DEMO=[
@@ -917,22 +931,26 @@ const compresserImage=(file,maxDim=900,qualite=0.72)=>new Promise((resolve,rejec
   reader.readAsDataURL(file);
 });
 
-function FormActivite({onClose,onSubmit,customCatActivites=[]}){
-  const [titre,setTitre]=useState("");
-  const [photoPreview,setPhotoPreview]=useState(null);
-  const [desc,setDesc]=useState("");
-  const [duree,setDuree]=useState("");
-  const [difficulte,setDifficulte]=useState("");
-  const [lieu,setLieu]=useState("");
-  const [motivation,setMotivation]=useState("");
-  const [categorie,setCategorie]=useState("");
+function FormActivite({onClose,onSubmit,customCatActivites=[],initialData=null}){
+  const [titre,setTitre]=useState(initialData?.nom||initialData?.titre||"");
+  const [photoPreview,setPhotoPreview]=useState(initialData?.photo||null);
+  const [desc,setDesc]=useState(initialData?.desc||"");
+  const [duree,setDuree]=useState(initialData?.duree||"");
+  const [difficulte,setDifficulte]=useState(initialData?.difficulte||"");
+  const [lieu,setLieu]=useState(initialData?.lieu||"");
+  const [motivation,setMotivation]=useState(initialData?.energie||"");
+  const [categorie,setCategorie]=useState(initialData?.categorie||"");
   const [autreCategorie,setAutreCategorie]=useState("");
-  const [ageMin,setAgeMin]=useState("");
-  const [ageMax,setAgeMax]=useState("");
-  const [materiel,setMateriel]=useState("");
-  const [etapes,setEtapes]=useState("");
-  const [accValues,setAccValues]=useState({});
-  const [commentaireTND,setCommentaireTND]=useState("");
+  const [ageMin,setAgeMin]=useState(initialData?.ageMin||"");
+  const [ageMax,setAgeMax]=useState(initialData?.ageMax||"");
+  const [materiel,setMateriel]=useState(Array.isArray(initialData?.materiel)?initialData.materiel.join(", "):"");
+  const [etapes,setEtapes]=useState(Array.isArray(initialData?.etapes)?initialData.etapes.join("\n"):"");
+  const [accValues,setAccValues]=useState(()=>{
+    if(!initialData)return{};
+    const v={};["acc_poussette","acc_bebe","acc_allaitement","acc_langer","acc_aire03","acc_peubruyant","pmr_fauteuil","pmr_escaliers","pmr_parking","pmr_toilettes","pmr_personnel","pmr_chemin","tsa_foule","tsa_calme","tsa_lumiere","tsa_retrait","tsa_bruit","tsa_personnel","tdah_espace","tdah_physique","tdah_attente","tdah_stimulation","dys_visuels","dys_nonecrite","dys_rythme","dys_personnel"].forEach(k=>{if(initialData[k])v[k]=true;});
+    return v;
+  });
+  const [commentaireTND,setCommentaireTND]=useState(initialData?.commentaireTND||"");
   const [localErrors,setLocalErrors]=useState({});
   const [profilsTND,setProfilsTND]=useState({tsa:false,tdah:false,dys:false,tous:false});
   const [niveauxSensoriels,setNiveauxSensoriels]=useState({bruit:0,visuel:0,physique:0,attention:0});
@@ -948,14 +966,14 @@ function FormActivite({onClose,onSubmit,customCatActivites=[]}){
     const categorieFinale=categorie==="Autre"?(autreCategorie.trim()||"Autre"):categorie;
     const age=(ageMin&&ageMax)?`${ageMin.replace(" an","").replace(" ans","")} - ${ageMax}`:(ageMin||ageMax||"Tous ages");
     const tndData={tsa:profilsTND.tsa||profilsTND.tous?5:0,tdah:profilsTND.tdah||profilsTND.tous?5:0,dys:profilsTND.dys||profilsTND.tous?5:0};
-    if(onSubmit)onSubmit({nom:titre.trim(),categorie:categorieFinale,lieu,energie:motivation,age,duree,difficulte,materiel:materiel?materiel.split(",").map(m=>m.trim()).filter(Boolean):[],etapes:etapes?etapes.split("\n").map(s=>s.trim()).filter(Boolean):[],desc:desc.trim(),photo:photoPreview,tnd:tndData,profilsTND,niveauxSensoriels,adaptations,commentaireTND:commentaireTND.trim(),pointsAnticiper:pointsAnticiperSel,...accValues,_type:"activite"});
+    if(onSubmit)onSubmit({id:initialData?.id,nom:titre.trim(),categorie:categorieFinale,lieu,energie:motivation,age,duree,difficulte,materiel:materiel?materiel.split(",").map(m=>m.trim()).filter(Boolean):[],etapes:etapes?etapes.split("\n").map(s=>s.trim()).filter(Boolean):[],desc:desc.trim(),photo:photoPreview,tnd:tndData,profilsTND,niveauxSensoriels,adaptations,commentaireTND:commentaireTND.trim(),pointsAnticiper:pointsAnticiperSel,...accValues,_type:"activite"});
   };
   const se=(err)=>({padding:"12px 14px",borderRadius:12,border:"1px solid "+(err?"#EF4444":"rgba(108,92,231,0.15)"),fontSize:14,width:"100%",boxSizing:"border-box",background:WH,fontFamily:"inherit"});
   const Err=({k})=>localErrors[k]?<p style={{margin:"3px 0 0",fontSize:11,color:"#EF4444"}}>{localErrors[k]}</p>:null;
   return(
     <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.5)",zIndex:50,display:"flex",alignItems:"flex-start",justifyContent:"center",overflowY:"auto",padding:"20px 12px 40px"}}>
       <div style={{background:WH,borderRadius:20,width:"100%",maxWidth:420,boxSizing:"border-box"}}>
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"20px 20px 0"}}><h2 style={{fontSize:18,fontWeight:600,color:TX,margin:0}}>Proposer une activite</h2><button onClick={onClose} style={{background:"none",border:"none",fontSize:20,cursor:"pointer",color:TM}}>x</button></div>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"20px 20px 0"}}><h2 style={{fontSize:18,fontWeight:600,color:TX,margin:0}}>{initialData?"Modifier l'activite":"Proposer une activite"}</h2><button onClick={onClose} style={{background:"none",border:"none",fontSize:20,cursor:"pointer",color:TM}}>x</button></div>
         <div style={{padding:"16px 20px 24px",display:"flex",flexDirection:"column",gap:12}}>
           <Field label="Titre" required><input value={titre} onChange={e=>setTitre(e.target.value)} placeholder="Ex : Peinture avec les doigts" style={se(localErrors.titre)}/><Err k="titre"/></Field>
           <Field label="Photo (optionnel)">
@@ -1110,35 +1128,35 @@ function FormActivite({onClose,onSubmit,customCatActivites=[]}){
             ))}
           </div>
 
-          <button onClick={handleSubmit} disabled={envoiEnCours} style={{padding:14,borderRadius:14,background:envoiEnCours?"#C4B8F8":V,border:"none",color:WH,fontWeight:700,fontSize:15,cursor:envoiEnCours?"default":"pointer",width:"100%"}}>{envoiEnCours?"Envoi en cours...":"Envoyer ma suggestion"}</button>
+          <button onClick={handleSubmit} disabled={envoiEnCours} style={{padding:14,borderRadius:14,background:envoiEnCours?"#C4B8F8":V,border:"none",color:WH,fontWeight:700,fontSize:15,cursor:envoiEnCours?"default":"pointer",width:"100%"}}>{envoiEnCours?"Envoi en cours...":initialData?"Enregistrer les modifications":"Envoyer ma suggestion"}</button>
         </div>
       </div>
     </div>
   );
 }
 
-function FormSortie({onClose,onSubmit,customCatSorties=[]}){
-  const [nom,setNom]=useState("");
-  const [photoPreview,setPhotoPreview]=useState(null);
-  const [desc,setDesc]=useState("");
-  const [ville,setVille]=useState("");
-  const [dept,setDept]=useState("");
+function FormSortie({onClose,onSubmit,customCatSorties=[],initialData=null}){
+  const [nom,setNom]=useState(initialData?.nom||initialData?.titre||"");
+  const [photoPreview,setPhotoPreview]=useState(initialData?.photo||null);
+  const [desc,setDesc]=useState(initialData?.desc||"");
+  const [ville,setVille]=useState(initialData?.ville||"");
+  const [dept,setDept]=useState(initialData?.dept||"");
   const [typeAutreSortie,setTypeAutreSortie]=useState("");
   const [showAutreSortiePopup,setShowAutreSortiePopup]=useState(false);
   const [typeAutreSortieTemp,setTypeAutreSortieTemp]=useState("");
-  const [typeSortieSelected,setTypeSortieSelected]=useState("");
-  const [tarif,setTarif]=useState("");
-  const [horaires,setHoraires]=useState("");
+  const [typeSortieSelected,setTypeSortieSelected]=useState(initialData?.type||"");
+  const [tarif,setTarif]=useState(initialData?.prix||"");
+  const [horaires,setHoraires]=useState(initialData?.horaires||"");
   const [pmrValues,setPmrValues]=useState({});
   const [tndSon,setTndSon]=useState("");
   const [tndAffluence,setTndAffluence]=useState("");
   const [tndPrevision,setTndPrevision]=useState("");
   const [tndZoneCalme,setTndZoneCalme]=useState(null);
-  const [commentaireTND,setCommentaireTND]=useState("");
-  const [accessSignaux,setAccessSignaux]=useState({filePrioritaire:false,poussette:false,pmr:false,espacePause:false,environnementCalme:false,espaceBouger:false,supportsVisuels:false,personnelForme:false});
-  const [accessHeuresCalmes,setAccessHeuresCalmes]=useState("");
-  const [accessDistanceMarche,setAccessDistanceMarche]=useState("");
-  const [accessConseil,setAccessConseil]=useState("");
+  const [commentaireTND,setCommentaireTND]=useState(initialData?.commentaireTND||"");
+  const [accessSignaux,setAccessSignaux]=useState(initialData?.accessibilite?.signaux||{filePrioritaire:false,poussette:false,pmr:false,espacePause:false,environnementCalme:false,espaceBouger:false,supportsVisuels:false,personnelForme:false});
+  const [accessHeuresCalmes,setAccessHeuresCalmes]=useState(initialData?.accessibilite?.heuresCalmes||"");
+  const [accessDistanceMarche,setAccessDistanceMarche]=useState(initialData?.accessibilite?.distanceMarche||"");
+  const [accessConseil,setAccessConseil]=useState(initialData?.accessibilite?.conseil||"");
   const [demandeBoost,setDemandeBoost]=useState(false);
   const [boostEmail,setBoostEmail]=useState("");
   const [localErrors,setLocalErrors]=useState({});
@@ -1155,14 +1173,14 @@ function FormSortie({onClose,onSubmit,customCatSorties=[]}){
       signaux:accessSignaux,
       details:{...Object.fromEntries(Object.keys(accessSignaux).map(k=>[k,null])),heuresCalmes:accessHeuresCalmes.trim()||undefined,distanceMarche:accessDistanceMarche.trim()||undefined,conseilCommunaute:accessConseil.trim()||undefined},
     };
-    if(onSubmit)onSubmit({nom:nom.trim(),type:typeFinal,dept,ville:ville.trim(),desc:desc.trim(),photo:photoPreview,prix:tarif.trim()||"Gratuit",horaires:horaires.trim(),tnd,...pmrValues,commentaireTND:commentaireTND.trim(),accessibilite,_demandeBoost:demandeBoost,_type:"sortie"});
+    if(onSubmit)onSubmit({id:initialData?.id,nom:nom.trim(),type:typeFinal,dept,ville:ville.trim(),desc:desc.trim(),photo:photoPreview,prix:tarif.trim()||"Gratuit",horaires:horaires.trim(),tnd,...pmrValues,commentaireTND:commentaireTND.trim(),accessibilite,_demandeBoost:demandeBoost,_type:"sortie"});
   };
   const se=(err)=>({padding:"12px 14px",borderRadius:12,border:"1px solid "+(err?"#EF4444":"rgba(108,92,231,0.15)"),fontSize:14,width:"100%",boxSizing:"border-box",background:WH,fontFamily:"inherit"});
   const Err=({k})=>localErrors[k]?<p style={{margin:"3px 0 0",fontSize:11,color:"#EF4444"}}>{localErrors[k]}</p>:null;
   return(
     <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.5)",zIndex:50,display:"flex",alignItems:"flex-start",justifyContent:"center",overflowY:"auto",padding:"20px 12px 40px"}}>
       <div style={{background:WH,borderRadius:20,width:"100%",maxWidth:420,boxSizing:"border-box"}}>
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"20px 20px 0"}}><h2 style={{fontSize:18,fontWeight:600,color:TX,margin:0}}>Proposer une sortie</h2><button onClick={onClose} style={{background:"none",border:"none",fontSize:20,cursor:"pointer",color:TM}}>x</button></div>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"20px 20px 0"}}><h2 style={{fontSize:18,fontWeight:600,color:TX,margin:0}}>{initialData?"Modifier la sortie":"Proposer une sortie"}</h2><button onClick={onClose} style={{background:"none",border:"none",fontSize:20,cursor:"pointer",color:TM}}>x</button></div>
         <div style={{padding:"16px 20px 24px",display:"flex",flexDirection:"column",gap:12}}>
           <Field label="Nom" required><input value={nom} onChange={e=>setNom(e.target.value)} placeholder="Nom de la sortie" style={se(localErrors.nom)}/><Err k="nom"/></Field>
           <Field label="Photo (optionnel)">
@@ -1298,7 +1316,7 @@ function FormSortie({onClose,onSubmit,customCatSorties=[]}){
             </div>
           </div>
 
-          <button onClick={handleSubmit} disabled={envoiEnCours} style={{padding:14,borderRadius:14,background:envoiEnCours?"#C4B8F8":V,border:"none",color:WH,fontWeight:700,fontSize:15,cursor:envoiEnCours?"default":"pointer",width:"100%"}}>{envoiEnCours?"Envoi en cours...":"Envoyer ma suggestion"}</button>
+          <button onClick={handleSubmit} disabled={envoiEnCours} style={{padding:14,borderRadius:14,background:envoiEnCours?"#C4B8F8":V,border:"none",color:WH,fontWeight:700,fontSize:15,cursor:envoiEnCours?"default":"pointer",width:"100%"}}>{envoiEnCours?"Envoi en cours...":initialData?"Enregistrer les modifications":"Envoyer ma suggestion"}</button>
         </div>
       </div>
       {showAutreSortiePopup&&(<div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.6)",zIndex:9999,display:"flex",alignItems:"center",justifyContent:"center",padding:"0 24px"}} onClick={()=>setShowAutreSortiePopup(false)}><div onClick={e=>e.stopPropagation()} style={{background:WH,borderRadius:20,padding:24,width:"100%",maxWidth:320,boxShadow:"0 8px 40px rgba(0,0,0,0.25)"}}><p style={{margin:"0 0 4px",fontSize:16,fontWeight:700,color:TX,textAlign:"center"}}>Autre type de sortie</p><input value={typeAutreSortieTemp} onChange={e=>setTypeAutreSortieTemp(e.target.value)} placeholder="Ex : Randonnee, Aquaparc..." style={{padding:"12px 14px",borderRadius:12,border:"1.5px solid "+V,fontSize:14,width:"100%",boxSizing:"border-box",fontFamily:"inherit",outline:"none",marginBottom:16}}/><div style={{display:"flex",gap:10}}><button onClick={()=>setShowAutreSortiePopup(false)} style={{flex:1,padding:"11px 0",borderRadius:28,background:BG,border:"1px solid #E5E7EB",color:TX,fontSize:14,cursor:"pointer"}}>Annuler</button><button onClick={()=>{if(typeAutreSortieTemp.trim()){setTypeAutreSortie(typeAutreSortieTemp.trim());setTypeSortieSelected("autre");}setShowAutreSortiePopup(false);}} style={{flex:1,padding:"11px 0",borderRadius:28,background:V,border:"none",color:WH,fontWeight:600,fontSize:14,cursor:"pointer"}}>Confirmer</button></div></div></div>)}
@@ -1306,18 +1324,18 @@ function FormSortie({onClose,onSubmit,customCatSorties=[]}){
   );
 }
 
-function FormEvenement({onClose,onSubmit,onOpenAutrePopup,typeAutre,typeEvt,setTypeEvt,customCatEvenements=[]}){
-  const [nom,setNom]=useState("");
-  const [desc,setDesc]=useState("");
-  const [photoPreview,setPhotoPreview]=useState(null);
-  const [ville,setVille]=useState("");
-  const [dept,setDept]=useState("");
-  const [dateDebut,setDateDebut]=useState("");
-  const [dateFin,setDateFin]=useState("");
-  const [horaires,setHoraires]=useState("");
-  const [tarif,setTarif]=useState("");
-  const [adresse,setAdresse]=useState("");
-  const [commentaireTND,setCommentaireTND]=useState("");
+function FormEvenement({onClose,onSubmit,onOpenAutrePopup,typeAutre,typeEvt,setTypeEvt,customCatEvenements=[],initialData=null}){
+  const [nom,setNom]=useState(initialData?.nom||initialData?.titre||"");
+  const [desc,setDesc]=useState(initialData?.desc||"");
+  const [photoPreview,setPhotoPreview]=useState(initialData?.photo||null);
+  const [ville,setVille]=useState(initialData?.ville||"");
+  const [dept,setDept]=useState(initialData?.dept||"");
+  const [dateDebut,setDateDebut]=useState(initialData?.date||"");
+  const [dateFin,setDateFin]=useState(initialData?.fin||"");
+  const [horaires,setHoraires]=useState(initialData?.horaires||"");
+  const [tarif,setTarif]=useState(initialData?.prix||"");
+  const [adresse,setAdresse]=useState(initialData?.adresse||"");
+  const [commentaireTND,setCommentaireTND]=useState(initialData?.commentaireTND||"");
   const [tndSon,setTndSon]=useState("");
   const [tndAffluence,setTndAffluence]=useState("");
   const [tndPrevision,setTndPrevision]=useState("");
@@ -1337,7 +1355,7 @@ function FormEvenement({onClose,onSubmit,onOpenAutrePopup,typeAutre,typeEvt,setT
     const isGratuit=!tarif.trim()||tarif.toLowerCase().includes("gratuit");
     const categorieFinale=typeEvt==="autre"?(typeAutre||"autre"):typeEvt;
     const tnd=tndSon||tndAffluence||tndPrevision||tndZoneCalme!==null?{son:tndSon||undefined,affluence:tndAffluence||undefined,prevision:tndPrevision||undefined,zonecalme:tndZoneCalme!==null?tndZoneCalme:undefined}:undefined;
-    onSubmit({nom:nom.trim(),desc:desc.trim(),categorie:categorieFinale,ville:ville.trim()+" ("+dept+")",dept,date:dateDebut,periode:detectPeriode(dateDebut),prix:tarif.trim()||"Non renseigne",gratuit:isGratuit,communaute:true,signalements:0,age:"Tous ages",dates:datesStr,photo:photoPreview,adresse:adresse.trim(),commentaireTND:commentaireTND.trim(),tnd,...pmrValues,_demandeBoost:demandeBoost});
+    onSubmit({id:initialData?.id,nom:nom.trim(),desc:desc.trim(),categorie:categorieFinale,ville:ville.trim()+" ("+dept+")",dept,date:dateDebut,periode:detectPeriode(dateDebut),prix:tarif.trim()||"Non renseigne",gratuit:isGratuit,communaute:true,signalements:0,age:"Tous ages",dates:datesStr,photo:photoPreview,adresse:adresse.trim(),commentaireTND:commentaireTND.trim(),tnd,...pmrValues,_demandeBoost:demandeBoost});
   };
   const se=(err)=>({padding:"12px 14px",borderRadius:12,fontSize:14,width:"100%",boxSizing:"border-box",background:WH,border:"1px solid "+(err?"#EF4444":"rgba(108,92,231,0.15)")});
   const Err=({k})=>localErrors[k]?<p style={{margin:"3px 0 0",fontSize:11,color:"#EF4444"}}>{localErrors[k]}</p>:null;
@@ -1431,7 +1449,7 @@ function FormEvenement({onClose,onSubmit,onOpenAutrePopup,typeAutre,typeEvt,setT
             </div>
           </div>
 
-          <div style={{display:"flex",gap:10}}><button onClick={onClose} style={{flex:1,padding:14,borderRadius:28,background:WH,border:"1.5px solid #E5E7EB",color:"#374151",fontWeight:500,fontSize:14,cursor:"pointer"}}>Annuler</button><button onClick={handleSubmit} disabled={envoiEnCours} style={{flex:2,padding:14,borderRadius:28,background:envoiEnCours?"#C4B8F8":V,border:"none",color:WH,fontWeight:700,fontSize:14,cursor:envoiEnCours?"default":"pointer"}}>{envoiEnCours?"Envoi en cours...":"Envoyer"}</button></div>
+          <div style={{display:"flex",gap:10}}><button onClick={onClose} style={{flex:1,padding:14,borderRadius:28,background:WH,border:"1.5px solid #E5E7EB",color:"#374151",fontWeight:500,fontSize:14,cursor:"pointer"}}>Annuler</button><button onClick={handleSubmit} disabled={envoiEnCours} style={{flex:2,padding:14,borderRadius:28,background:envoiEnCours?"#C4B8F8":V,border:"none",color:WH,fontWeight:700,fontSize:14,cursor:envoiEnCours?"default":"pointer"}}>{envoiEnCours?"Envoi en cours...":initialData?"Enregistrer":"Envoyer"}</button></div>
         </div>
       </div>
     </div>
@@ -1785,8 +1803,8 @@ function ActivityDetailPage({activity,isFavorite,onToggleFavorite,onBack,onRepor
   const difficulte=activity.difficulte||activity.difficulty||"";
   const lieu=activity.lieu||activity.location||"";
   const motivation=activity.motivation||activity.energie||"";
-  const materiel=MATERIEL_MAP[titre]||null;
-  const etapes=ETAPES_MAP[titre]||null;
+  const materiel=(Array.isArray(activity.materiel)&&activity.materiel.length>0)?activity.materiel:(MATERIEL_MAP[titre]||null);
+  const etapes=(Array.isArray(activity.etapes)&&activity.etapes.length>0)?activity.etapes:(ETAPES_MAP[titre]||null);
   const motLabel=motivation==="fatigue"?"Fatigue":motivation==="motiv"?"Motiv":motivation||"-";
   const lieuLabel=lieu==="interieur"?"Interieur":lieu==="exterieur"?"Exterieur":lieu||"-";
   const card={background:WH,borderRadius:16,padding:14,marginBottom:12,boxShadow:"0 1px 3px rgba(0,0,0,0.06)"};
@@ -1942,7 +1960,7 @@ function ActivityDetailPage({activity,isFavorite,onToggleFavorite,onBack,onRepor
               {/* Adaptations */}
               {adaps.length>0&&(
                 <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:12}}>
-                  {adaps.map(a=><span key={a} style={{background:"#ECFDF5",color:"#065F46",fontSize:11,padding:"4px 10px",borderRadius:20,border:"1px solid #A7F3D0"}}>✓ {a}</span>)}
+                  {adaps.map(a=><span key={a} style={{background:"#ECFDF5",color:"#065F46",fontSize:11,padding:"4px 10px",borderRadius:20,border:"1px solid #A7F3D0"}}>✓ {ADAPTATIONS_MAP[a]||a}</span>)}
                 </div>
               )}
               {/* Commentaire */}
@@ -2452,8 +2470,10 @@ function PageBiblio({pendingContribs=[],setPendingContribs,adminActivites=[],adm
 
   // Items avec signalement pending -> masqués jusqu'à résolution
   const blockedTitles=new Set([...adminReports.filter(r=>r.statut==="pending").map(r=>r.titre),...deletedTitles]);
+  // Élément de base remplacé par une version modifiée (contribution) : on cache l'original pour ne pas avoir de doublon
+  const shadowedActTitles=new Set(approvedActs.map(a=>a.nom||a.titre));
   const searchQ=globalSearch.toLowerCase();
-  const actFilteredBase=[...ACTIVITES,...adminPublished,...approvedActs].filter(a=>!blockedTitles.has(a.nom)&&!blockedTitles.has(a.titre)).filter(a=>
+  const actFilteredBase=[...ACTIVITES.filter(a=>!shadowedActTitles.has(a.nom)&&!shadowedActTitles.has(a.titre)),...adminPublished,...approvedActs].filter(a=>!blockedTitles.has(a.nom)&&!blockedTitles.has(a.titre)).filter(a=>
     (!filterLieu||a.lieu===filterLieu)&&
     (!filterMotiv||a.energie===filterMotiv)&&
     (!filterCategorie||a.categorie===filterCategorie)&&
@@ -2488,13 +2508,15 @@ function PageBiblio({pendingContribs=[],setPendingContribs,adminActivites=[],adm
     return{id:e.id,nom:e.titre,titre:e.titre,categorie:e.type,ville:e.ville,dept:e.dept,date:e.date,prix:prixStr,gratuit:isGratuit,age:"Tous ages",desc:e.desc,tnd:{tsa:3,tdah:3,dys:3},etiquettes:e.etiquettes||[]};
   });
   const approvedSorts=pendingContribs.filter(c=>c._type==="sortie"&&c._statut!=="rejected");
-  const sortFiltered=[...SORTIES,...adminSortiesPubliees,...approvedSorts].filter(s=>!blockedTitles.has(s.nom)).filter(s=>(!filterDept||s.dept===filterDept)&&(!filterType||s.type===filterType)&&(!searchQ||(s.nom||"").toLowerCase().includes(searchQ)||(s.type||"").toLowerCase().includes(searchQ)||(s.ville||"").toLowerCase().includes(searchQ))&&(filterAccess.length===0||filterAccess.every(k=>s.accessibilite?.signaux?.[k]===true))).sort((a,b)=>(estBoosteItem(b,"sortie")?1:0)-(estBoosteItem(a,"sortie")?1:0));
+  const shadowedSortTitles=new Set(approvedSorts.map(s=>s.nom||s.titre));
+  const sortFiltered=[...SORTIES.filter(s=>!shadowedSortTitles.has(s.nom)&&!shadowedSortTitles.has(s.titre)),...adminSortiesPubliees,...approvedSorts].filter(s=>!blockedTitles.has(s.nom)).filter(s=>(!filterDept||s.dept===filterDept)&&(!filterType||s.type===filterType)&&(!searchQ||(s.nom||"").toLowerCase().includes(searchQ)||(s.type||"").toLowerCase().includes(searchQ)||(s.ville||"").toLowerCase().includes(searchQ))&&(filterAccess.length===0||filterAccess.every(k=>s.accessibilite?.signaux?.[k]===true))).sort((a,b)=>(estBoosteItem(b,"sortie")?1:0)-(estBoosteItem(a,"sortie")?1:0));
   const signaler=(id)=>setSigSort(prev=>({...prev,[id]:(prev[id]||0)+1}));
   const cardStyle={background:WH,borderRadius:14,padding:"14px 16px",border:BD,cursor:"pointer"};
   const selStyle={flex:1,padding:"8px 10px",borderRadius:10,border:BD,background:WH,fontSize:13};
 
   const approvedEvts=pendingContribs.filter(c=>c._type==="evenement"&&c._statut!=="rejected");
-  const allEvts=[...evenements,...adminEvenementsPublies,...approvedEvts].filter(e=>!blockedTitles.has(e.titre)&&!blockedTitles.has(e.nom)).sort((a,b)=>(estBoosteItem(b,"evenement")?1:0)-(estBoosteItem(a,"evenement")?1:0));
+  const shadowedEvtTitles=new Set(approvedEvts.map(e=>e.nom||e.titre));
+  const allEvts=[...evenements.filter(e=>!shadowedEvtTitles.has(e.nom)&&!shadowedEvtTitles.has(e.titre)),...adminEvenementsPublies,...approvedEvts].filter(e=>!blockedTitles.has(e.titre)&&!blockedTitles.has(e.nom)).sort((a,b)=>(estBoosteItem(b,"evenement")?1:0)-(estBoosteItem(a,"evenement")?1:0));
   const evtFiltered=allEvts.filter(e=>{
     if(evtCat&&e.categorie!==evtCat&&e.type!==evtCat)return false;
     if(evtDept&&e.dept!==evtDept)return false;
@@ -3342,8 +3364,10 @@ function PageAccueil({favoris,setFavoris,setPage,customEvents=[],popupShown=new 
   const adminPublishedSortsGen=(adminSorties||[]).filter(o=>o.statut==="published");
   const masqueesActKeysGen=new Set(masquees.filter(m=>m._type==="activite").map(m=>m.id||m.nom||m.titre));
   const masqueesSortKeysGen=new Set(masquees.filter(m=>m._type==="sortie").map(m=>m.id||m.nom||m.titre));
-  const toutesActivites=[...ACTIVITES,...adminPublishedActs,...approvedActs].filter(a=>!blockedTitles.has(a.nom)&&!blockedTitles.has(a.titre)).filter(a=>!masqueesActKeysGen.has(a.id||a.nom||a.titre));
-  const toutesSorties=[...SORTIES,...adminPublishedSortsGen,...approvedSortsGen].filter(s=>!blockedTitles.has(s.nom)&&!blockedTitles.has(s.titre)).filter(s=>!masqueesSortKeysGen.has(s.id||s.nom||s.titre));
+  const shadowedActTitlesGen=new Set(approvedActs.map(a=>a.nom||a.titre));
+  const shadowedSortTitlesGen=new Set(approvedSortsGen.map(s=>s.nom||s.titre));
+  const toutesActivites=[...ACTIVITES.filter(a=>!shadowedActTitlesGen.has(a.nom)&&!shadowedActTitlesGen.has(a.titre)),...adminPublishedActs,...approvedActs].filter(a=>!blockedTitles.has(a.nom)&&!blockedTitles.has(a.titre)).filter(a=>!masqueesActKeysGen.has(a.id||a.nom||a.titre));
+  const toutesSorties=[...SORTIES.filter(s=>!shadowedSortTitlesGen.has(s.nom)&&!shadowedSortTitlesGen.has(s.titre)),...adminPublishedSortsGen,...approvedSortsGen].filter(s=>!blockedTitles.has(s.nom)&&!blockedTitles.has(s.titre)).filter(s=>!masqueesSortKeysGen.has(s.id||s.nom||s.titre));
   const [resultsAList,setResultsAList]=useState(null);
   const genActivite=()=>{
     const ageNum=ageEnfant?parseInt(ageEnfant):null;
@@ -3560,12 +3584,13 @@ function PageAccueil({favoris,setFavoris,setPage,customEvents=[],popupShown=new 
           <p style={{margin:0,fontSize:14,color:TM}}>Trouvez l inspiration parfaite en deux clics pour vos enfants.</p>
           {/* Bandeaux admin actifs */}
         {(adminComms||[]).filter(c=>c.actif&&c.type==="banner").map(c=>(
-          <div key={c.id} style={{background:"linear-gradient(135deg,#6C5CE7,#a78bfa)",borderRadius:14,padding:"12px 16px",marginBottom:10,display:"flex",alignItems:"center",gap:10}}>
+          <div key={c.id} onClick={()=>{console.log("[DEBUG bandeau] codePromo =",JSON.stringify(c.codePromo),"| onOpenPremium existe =",!!onOpenPremium);if(c.codePromo&&onOpenPremium)onOpenPremium(c.codePromo);}} style={{background:"linear-gradient(135deg,#6C5CE7,#a78bfa)",borderRadius:14,padding:"12px 16px",marginBottom:10,display:"flex",alignItems:"center",gap:10,cursor:c.codePromo?"pointer":"default"}}>
             <span style={{fontSize:20,flexShrink:0}}>📢</span>
             <div style={{flex:1}}>
               <p style={{margin:"0 0 2px",fontSize:13,fontWeight:700,color:"#fff"}}>{c.titre}</p>
               <p style={{margin:0,fontSize:12,color:"rgba(255,255,255,0.85)"}}>{c.message}</p>
             </div>
+            {c.codePromo&&<span style={{fontSize:18,color:"rgba(255,255,255,0.7)",flexShrink:0}}>→</span>}
           </div>
         ))}
 
@@ -4210,6 +4235,7 @@ function PageAccueil({favoris,setFavoris,setPage,customEvents=[],popupShown=new 
 function PageSOS({sosLib=[],isPremium=false,onOpenPremium,onBack}){
   const [sosCrise,setSosCrise]=useState(null);
   const [sosResults,setSosResults]=useState(null);
+  const [sosDetailActive,setSosDetailActive]=useState(null); // activité en cours de réalisation
   const sosPublished=sosLib.filter(a=>a.statut==="published");
   const FALLBACK_ACTIVITIES=[
     {titre:"Respiration des bulles",desc:"Souffler lentement dans un tube imaginaire pour faire de grosses bulles. Focalise l'attention et régule la respiration.",duree:"1 min",tags:["Silencieux","Partout"],emoji:"🫧"},
@@ -4240,6 +4266,40 @@ function PageSOS({sosLib=[],isPremium=false,onOpenPremium,onBack}){
     <p style={{margin:"0 0 8px",fontSize:12,color:"rgba(255,255,255,0.65)",lineHeight:1.5}}>{act.desc}</p>
     {Array.isArray(act.materiel)&&act.materiel.length>0&&<p style={{margin:0,fontSize:11,color:"rgba(255,255,255,0.35)"}}>Matériel : {act.materiel.join(", ")}</p>}
   </div>);
+
+  if(sosDetailActive){
+    const act=sosDetailActive;
+    return(
+      <div style={{background:"#0f0505",minHeight:"100vh",display:"flex",flexDirection:"column",fontFamily:"system-ui,-apple-system,sans-serif"}}>
+        <div style={{background:"linear-gradient(135deg,#7f1d1d,#dc2626)",padding:"16px 16px 20px",position:"relative"}}>
+          <button onClick={()=>setSosDetailActive(null)} style={{position:"absolute",top:14,left:14,width:34,height:34,borderRadius:"50%",background:"rgba(255,255,255,0.15)",border:"none",color:"#fff",fontSize:18,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>←</button>
+          <div style={{textAlign:"center"}}>
+            <p style={{margin:0,fontSize:13,color:"rgba(255,255,255,0.85)",fontWeight:600}}>C'est parti !</p>
+          </div>
+        </div>
+        <div style={{flex:1,padding:"28px 20px",display:"flex",flexDirection:"column",alignItems:"center",textAlign:"center"}}>
+          {act.emoji&&<p style={{margin:"0 0 8px",fontSize:56}}>{act.emoji}</p>}
+          <p style={{margin:"0 0 14px",fontSize:22,fontWeight:800,color:"#fff"}}>{act.titre}</p>
+          <div style={{display:"flex",gap:6,marginBottom:18,flexWrap:"wrap",justifyContent:"center"}}>
+            {act.duree&&<span style={{fontSize:11,background:"rgba(239,68,68,0.15)",color:"#fca5a5",padding:"4px 10px",borderRadius:10,fontWeight:600}}>⏱ {act.duree}</span>}
+            {act.age&&<span style={{fontSize:11,background:"rgba(255,255,255,0.07)",color:"rgba(255,255,255,0.5)",padding:"4px 10px",borderRadius:10}}>👶 {act.age}</span>}
+            {act.tags&&act.tags.map((t,i)=><span key={i} style={{fontSize:11,background:"rgba(255,255,255,0.05)",color:"rgba(255,255,255,0.4)",padding:"4px 10px",borderRadius:10}}>{t}</span>)}
+          </div>
+          <p style={{margin:"0 0 20px",fontSize:15,color:"rgba(255,255,255,0.8)",lineHeight:1.7,maxWidth:340}}>{act.desc}</p>
+          {Array.isArray(act.materiel)&&act.materiel.length>0&&(
+            <div style={{background:"rgba(255,255,255,0.06)",borderRadius:14,padding:"12px 16px",marginBottom:8,width:"100%",maxWidth:340,boxSizing:"border-box"}}>
+              <p style={{margin:"0 0 4px",fontSize:11,color:"rgba(255,255,255,0.4)",fontWeight:700,textTransform:"uppercase",letterSpacing:"0.5px"}}>Matériel nécessaire</p>
+              <p style={{margin:0,fontSize:13,color:"rgba(255,255,255,0.75)"}}>{act.materiel.join(", ")}</p>
+            </div>
+          )}
+        </div>
+        <div style={{padding:"16px 20px 24px",display:"flex",flexDirection:"column",gap:10}}>
+          <button onClick={()=>{setSosDetailActive(null);reset();onBack&&onBack();}} style={{width:"100%",padding:"15px 0",borderRadius:28,background:"linear-gradient(135deg,#16a34a,#22c55e)",border:"none",color:"#fff",fontWeight:700,fontSize:15,cursor:"pointer"}}>😌 C'est fini, merci !</button>
+          <button onClick={()=>setSosDetailActive(null)} style={{width:"100%",padding:"13px 0",borderRadius:28,background:"rgba(255,255,255,0.07)",border:"1px solid rgba(255,255,255,0.15)",color:"#fff",fontWeight:600,fontSize:13,cursor:"pointer"}}>← Retour aux suggestions</button>
+        </div>
+      </div>
+    );
+  }
 
   if(!isPremium){
     return(
@@ -4298,7 +4358,7 @@ function PageSOS({sosLib=[],isPremium=false,onOpenPremium,onBack}){
             )}
             <div style={{display:"flex",gap:10,marginTop:4}}>
               <button onClick={genSOS} style={{flex:1,padding:"13px 0",borderRadius:28,background:"rgba(255,255,255,0.07)",border:"1px solid rgba(255,255,255,0.15)",color:"#fff",fontWeight:600,fontSize:13,cursor:"pointer"}}>🔄 Autre suggestion</button>
-              <button onClick={()=>{reset();onBack&&onBack();}} style={{flex:1,padding:"13px 0",borderRadius:28,background:"linear-gradient(135deg,#dc2626,#ef4444)",border:"none",color:"#fff",fontWeight:700,fontSize:13,cursor:"pointer"}}>✅ C'est parti !</button>
+              <button onClick={()=>setSosDetailActive(sosResults.main||(sosResults.fallback&&sosResults.fallback[0]))} style={{flex:1,padding:"13px 0",borderRadius:28,background:"linear-gradient(135deg,#dc2626,#ef4444)",border:"none",color:"#fff",fontWeight:700,fontSize:13,cursor:"pointer"}}>✅ C'est parti !</button>
             </div>
           </div>
         )}
@@ -4929,7 +4989,7 @@ function Toggle({on,onChange,disabled=false}){
   );
 }
 
-function PagePremium({onBack,onSubscribe,isLoggedIn=true,onRequireAuth,premiumTrialUsed=false,onStartTrial}){
+function PagePremium({onBack,onSubscribe,isLoggedIn=true,onRequireAuth,premiumTrialUsed=false,onStartTrial,onAppliquerCodePromo,codePromoAuto=null}){
   const [planChoisi,setPlanChoisi]=useState("annuel"); // "mensuel" | "annuel"
   const [showPaiement,setShowPaiement]=useState(false);
   const [carteNum,setCarteNum]=useState("");
@@ -4937,6 +4997,24 @@ function PagePremium({onBack,onSubscribe,isLoggedIn=true,onRequireAuth,premiumTr
   const [carteCvc,setCarteCvc]=useState("");
   const [traitement,setTraitement]=useState(false);
   const [infoModal,setInfoModal]=useState(null);
+  const [showCodePromo,setShowCodePromo]=useState(false);
+  const [codePromoValue,setCodePromoValue]=useState("");
+  const [codePromoEnCours,setCodePromoEnCours]=useState(false);
+  const [codePromoMsg,setCodePromoMsg]=useState(null);
+  const [reductionActive,setReductionActive]=useState(0); // pourcentage de réduction actif, 0 = aucune
+  useEffect(()=>{
+    if(!codePromoAuto||!onAppliquerCodePromo)return;
+    setShowCodePromo(true);
+    setCodePromoValue(codePromoAuto);
+    (async()=>{
+      setCodePromoEnCours(true);
+      const res=await onAppliquerCodePromo(codePromoAuto);
+      setCodePromoMsg(res);
+      setCodePromoEnCours(false);
+      if(res?.ok&&res.type==="reduction")setReductionActive(res.pourcentage);
+      if(res?.ok)setCodePromoValue("");
+    })();
+  },[codePromoAuto]);
   const avantages=[
     {
       emoji:"📅",titre:"Planning hebdomadaire",desc:"Génère le planning complet de la semaine",
@@ -5138,15 +5216,28 @@ function PagePremium({onBack,onSubscribe,isLoggedIn=true,onRequireAuth,premiumTr
         </div>
 
         {/* Tarifs */}
+        {reductionActive>0&&(
+          <div style={{background:"linear-gradient(135deg,#6C5CE7,#8B5CF6)",borderRadius:14,padding:"10px 14px",marginBottom:12,textAlign:"center"}}>
+            <p style={{margin:0,fontSize:13,fontWeight:700,color:WH}}>🎉 Réduction de {reductionActive}% appliquée !</p>
+          </div>
+        )}
         <div style={{display:"flex",gap:10,marginBottom:20}}>
           <button onClick={()=>setPlanChoisi("mensuel")} style={{flex:1,textAlign:"left",background:WH,borderRadius:16,padding:"16px 14px",border:`2px solid ${planChoisi==="mensuel"?"#6C5CE7":"rgba(0,0,0,0.08)"}`,cursor:"pointer"}}>
             <p style={{margin:"0 0 4px",fontSize:12,fontWeight:700,color:TM}}>Mensuel</p>
-            <p style={{margin:0,fontSize:20,fontWeight:800,color:TX}}>4,99€<span style={{fontSize:12,fontWeight:500,color:TM}}>/mois</span></p>
+            {reductionActive>0?(
+              <p style={{margin:0,fontSize:20,fontWeight:800,color:TX}}>{(4.99*(1-reductionActive/100)).toFixed(2).replace(".",",")}€<span style={{fontSize:12,fontWeight:500,color:TM}}>/mois</span> <span style={{fontSize:12,color:TM,textDecoration:"line-through",fontWeight:500}}>4,99€</span></p>
+            ):(
+              <p style={{margin:0,fontSize:20,fontWeight:800,color:TX}}>4,99€<span style={{fontSize:12,fontWeight:500,color:TM}}>/mois</span></p>
+            )}
           </button>
           <button onClick={()=>setPlanChoisi("annuel")} style={{flex:1,textAlign:"left",background:WH,borderRadius:16,padding:"16px 14px",border:`2px solid ${planChoisi==="annuel"?"#6C5CE7":"rgba(0,0,0,0.08)"}`,cursor:"pointer",position:"relative"}}>
             <span style={{position:"absolute",top:-10,right:10,background:"#6C5CE7",color:WH,fontSize:9,fontWeight:700,padding:"2px 8px",borderRadius:10}}>Meilleure offre</span>
             <p style={{margin:"0 0 4px",fontSize:12,fontWeight:700,color:TM}}>Annuel</p>
-            <p style={{margin:0,fontSize:20,fontWeight:800,color:TX}}>39,99€<span style={{fontSize:12,fontWeight:500,color:TM}}>/an</span></p>
+            {reductionActive>0?(
+              <p style={{margin:0,fontSize:20,fontWeight:800,color:TX}}>{(39.99*(1-reductionActive/100)).toFixed(2).replace(".",",")}€<span style={{fontSize:12,fontWeight:500,color:TM}}>/an</span> <span style={{fontSize:12,color:TM,textDecoration:"line-through",fontWeight:500}}>39,99€</span></p>
+            ):(
+              <p style={{margin:0,fontSize:20,fontWeight:800,color:TX}}>39,99€<span style={{fontSize:12,fontWeight:500,color:TM}}>/an</span></p>
+            )}
           </button>
         </div>
 
@@ -5156,6 +5247,24 @@ function PagePremium({onBack,onSubscribe,isLoggedIn=true,onRequireAuth,premiumTr
           <button onClick={handleStartTrial} style={{width:"100%",padding:12,borderRadius:28,background:"rgba(108,92,231,0.1)",border:"2px dashed #6C5CE7",color:"#6C5CE7",fontWeight:600,fontSize:14,cursor:"pointer",marginBottom:10}}>🎁 Essayer 7 jours gratuitement</button>
         )}
         {premiumTrialUsed&&<p style={{textAlign:"center",fontSize:12,color:TM,margin:"0 0 10px"}}>Essai déjà utilisé — abonne-toi pour continuer</p>}
+        {isLoggedIn&&onAppliquerCodePromo&&(
+          !showCodePromo?(
+            <button onClick={()=>setShowCodePromo(true)} style={{width:"100%",padding:0,background:"none",border:"none",color:TM,fontSize:12,cursor:"pointer",textDecoration:"underline",marginBottom:10}}>J'ai un code promo</button>
+          ):(
+            <div style={{display:"flex",gap:8,marginBottom:10}}>
+              <input value={codePromoValue} onChange={e=>{setCodePromoValue(e.target.value.toUpperCase());setCodePromoMsg(null);}} placeholder="CODE PROMO" style={{flex:1,padding:"11px 14px",borderRadius:12,border:"1.5px solid rgba(108,92,231,0.25)",fontSize:13,fontFamily:"inherit",textTransform:"uppercase",boxSizing:"border-box"}}/>
+              <button disabled={codePromoEnCours||!codePromoValue.trim()} onClick={async()=>{
+                setCodePromoEnCours(true);setCodePromoMsg(null);
+                const res=await onAppliquerCodePromo(codePromoValue.trim());
+                setCodePromoMsg(res);
+                setCodePromoEnCours(false);
+                if(res?.ok&&res.type==="reduction")setReductionActive(res.pourcentage);
+                if(res?.ok)setCodePromoValue("");
+              }} style={{padding:"11px 18px",borderRadius:12,background:codePromoEnCours?"#C4B8F8":"#6C5CE7",border:"none",color:WH,fontWeight:700,fontSize:13,cursor:codePromoEnCours?"default":"pointer",whiteSpace:"nowrap"}}>{codePromoEnCours?"...":"Valider"}</button>
+            </div>
+          )
+        )}
+        {codePromoMsg&&<p style={{textAlign:"center",fontSize:12,color:codePromoMsg.ok?"#16A34A":"#DC2626",margin:"0 0 10px",fontWeight:600}}>{codePromoMsg.ok?"✅ ":"❌ "}{codePromoMsg.message}</p>}
         <p style={{textAlign:"center",fontSize:11,color:TM,margin:0}}>Sans engagement · Annulable à tout moment</p>
       </div>
 
@@ -5176,7 +5285,7 @@ function PagePremium({onBack,onSubscribe,isLoggedIn=true,onRequireAuth,premiumTr
                 <>
                   <div style={{fontSize:36,marginBottom:6}}>💳</div>
                   <p style={{margin:"0 0 4px",fontSize:17,fontWeight:800,color:TX}}>Paiement sécurisé</p>
-                  <p style={{margin:0,fontSize:12,color:TM}}>{planChoisi==="annuel"?"39,99€ / an · soit 3,33€/mois":"4,99€ / mois"}</p>
+                  <p style={{margin:0,fontSize:12,color:TM}}>{reductionActive>0?`${(planChoisi==="annuel"?39.99:4.99)*(1-reductionActive/100)>0?((planChoisi==="annuel"?39.99:4.99)*(1-reductionActive/100)).toFixed(2).replace(".",","):""}€ ${planChoisi==="annuel"?"/ an":"/ mois"} (${reductionActive}% de réduction appliquée)`:(planChoisi==="annuel"?"39,99€ / an · soit 3,33€/mois":"4,99€ / mois")}</p>
                 </>
               )}
             </div>
@@ -7660,7 +7769,7 @@ function Dashboard({sharedActivites=[],sharedSorties=[],sharedEvenements=[],pend
     {label:"Activités publiées",val:MOCK_ACTIVITES.filter(a=>a.statut==="published").length+sharedActivites.filter(a=>a.statut==="published").length+pendingContribs.filter(c=>c._type==="activite"&&c._statut==="published").length,sub:`Admin: ${MOCK_ACTIVITES.filter(a=>a.statut==="published").length+sharedActivites.filter(a=>a.statut==="published").length} · Utilisateurs: ${pendingContribs.filter(c=>c._type==="activite"&&c._statut==="published").length}`,emoji:"🎨",color:C.accent},
     {label:"Sorties",val:MOCK_SORTIES.length+sharedSorties.length+pendingContribs.filter(c=>c._type==="sortie"&&c._statut==="published").length,sub:`Admin: ${MOCK_SORTIES.length+sharedSorties.length} · Utilisateurs: ${pendingContribs.filter(c=>c._type==="sortie"&&c._statut==="published").length}`,emoji:"🗺️",color:C.pink},
     {label:"Événements",val:MOCK_EVENTS.length+sharedEvenements.length+pendingContribs.filter(c=>c._type==="evenement"&&c._statut==="published").length,sub:`Admin: ${MOCK_EVENTS.length+sharedEvenements.length} · Utilisateurs: ${pendingContribs.filter(c=>c._type==="evenement"&&c._statut==="published").length}`,emoji:"📅",color:C.orange},
-    {label:"Signalements",val:dashUserReports.length+MOCK_REPORTS.length,sub:`${[...dashUserReports,...MOCK_REPORTS].filter(r=>r.statut==="pending").length} en attente · ${[...dashUserReports,...MOCK_REPORTS].filter(r=>r.statut==="resolved").length} résolus`,emoji:"🚩",color:C.red},
+    {label:"Signalements",val:dashUserReports.length,sub:`${dashUserReports.filter(r=>r.statut==="pending").length} en attente · ${dashUserReports.filter(r=>r.statut==="resolved").length} résolus`,emoji:"🚩",color:C.red},
     {label:"Abonnements actifs",val:MOCK_SUBS.filter(s=>s.statut==="active").length,sub:`Mensuel: ${MOCK_SUBS.filter(s=>s.statut==="active"&&s.plan==="mensuel").length} · Annuel: ${MOCK_SUBS.filter(s=>s.statut==="active"&&s.plan==="annuel").length}`,emoji:"💳",color:C.green},
   ];
   const pendingContribsCount=pendingContribs.filter(c=>c._statut==="pending").length;
@@ -9759,89 +9868,91 @@ function Abonnements() {
   );
 }
 
-function Signalements({userReports=[],setUserReports,sharedActivites=[],setSharedActivites,sharedSorties=[],setSharedSorties,sharedEvenements=[],setSharedEvenements,onDeleteTitle,customCatActivites=[],customCatSorties=[],customCatEvenements=[]}) {
-  const [reports,setReports] = useState(MOCK_REPORTS);
+function Signalements({userReports=[],setUserReports,sharedActivites=[],setSharedActivites,sharedSorties=[],setSharedSorties,sharedEvenements=[],setSharedEvenements,onDeleteTitle,customCatActivites=[],customCatSorties=[],customCatEvenements=[],pendingContribs=[],setPendingContribs}) {
+  const [reports,setReports] = useState([]);
   const [editModal,setEditModal] = useState(null); // {report, mode:'edit'|'delete'}
   const [editForm,setEditForm] = useState({});
   const allReports=[...userReports,...reports].sort((a,b)=>Number(b.id)-Number(a.id)||0);
   const updateAll=(id,st)=>{
     setUserReports(prev=>prev.map(r=>r.id===id?{...r,statut:st}:r));
     setReports(prev=>prev.map(r=>r.id===id?{...r,statut:st}:r));
+    supabase.from("signalements").update({statut:st}).eq("id",id).then(()=>{},()=>{}); // échec réseau — reste correct localement
   };
   const pendingAll = allReports.filter(r=>r.statut==="pending").length;
   const update = (id,st) => updateAll(id,st);
   const typeColor = {activite:["#a78bfa","rgba(124,58,237,0.15)"],sortie:["#f472b6","rgba(236,72,153,0.15)"],evenement:["#fb923c","rgba(249,115,22,0.15)"],comment:["#94a3b8","rgba(148,163,184,0.15)"]};
   const typeIcon = {activite:"🎨",sortie:"🗺️",evenement:"📅"};
   const ACC_KEYS=["acc_poussette","acc_bebe","acc_allaitement","acc_langer","acc_aire03","acc_peubruyant","pmr_fauteuil","pmr_escaliers","pmr_parking","pmr_toilettes","pmr_personnel","pmr_chemin","tsa_foule","tsa_calme","tsa_lumiere","tsa_retrait","tsa_bruit","tsa_personnel","tdah_espace","tdah_physique","tdah_attente","tdah_stimulation","dys_visuels","dys_nonecrite","dys_rythme","dys_personnel"];
+  const [editLiveItem,setEditLiveItem]=useState(null);
+  const [editTypeEvt,setEditTypeEvt]=useState("");
   const openEdit=(r)=>{
-    const live=(r.type==="activite"&&sharedActivites.find(a=>a.nom===r.titre||a.titre===r.titre))||null;
-    const accFlags={};
-    ACC_KEYS.forEach(k=>{ accFlags[k]=!!(live&&live[k]); });
-    setEditForm({titre:r.titre,raison:r.raison,detail:r.detail||"",desc:r.desc||"",duree:r.duree||"",difficulte:r.difficulte||"",lieu:r.lieu||"",energie:r.energie||"",categorie:r.categorie||"",ageMin:r.ageMin||"",ageMax:r.ageMax||"",materielStr:Array.isArray(r.materiel)?r.materiel.join(", "):"",dept:r.dept||"",adresse:r.adresse||"",horaires:r.horaires||"",prix:r.prix||"",date:r.date||"",fin:r.fin||"",ville:r.ville||"",organisateur:r.organisateur||"",type:r.typeEvt||"",...accFlags});
+    const trouve=(liste)=>liste.find(x=>x.nom===r.titre||x.titre===r.titre);
+    let live=null;
+    if(r.type==="sortie") live=trouve(pendingContribs.filter(c=>c._type==="sortie"))||trouve(sharedSorties)||trouve(SORTIES);
+    else if(r.type==="evenement") live=trouve(pendingContribs.filter(c=>c._type==="evenement"))||trouve(sharedEvenements)||trouve(EVENEMENTS_INIT);
+    else live=trouve(pendingContribs.filter(c=>c._type==="activite"||!c._type))||trouve(sharedActivites)||trouve(ACTIVITES);
+    setEditLiveItem(live||{nom:r.titre});
+    setEditTypeEvt(live?.categorie||live?.type||"");
     setEditModal({report:r,mode:"edit"});
   };
   const openDelete=(r)=>setEditModal({report:r,mode:"delete"});
-  const saveEdit=()=>{
+  const resolveAllForTitre=(titre)=>{
+    const idsAResoudre=[...userReports,...reports].filter(r=>r.titre===titre&&r.statut==="pending").map(r=>r.id);
+    setUserReports(prev=>prev.map(x=>idsAResoudre.includes(x.id)?{...x,statut:"resolved"}:x));
+    setReports(prev=>prev.map(x=>idsAResoudre.includes(x.id)?{...x,statut:"resolved"}:x));
+    idsAResoudre.forEach(id=>{supabase.from("signalements").update({statut:"resolved"}).eq("id",id).then(()=>{},()=>{});});
+  };
+  const handleFormSubmitEdit=async(data,type)=>{
     const r=editModal.report;
-    setUserReports(prev=>prev.map(x=>x.id===r.id?{...x,...editForm}:x));
-    setReports(prev=>prev.map(x=>x.id===r.id?{...x,...editForm}:x));
-    const titre=r.titre;
-    const garde=(val,fallback)=>(val!==undefined&&val!==null&&val!==""?val:fallback);
-    if(r.type==="sortie"&&setSharedSorties){
-      setSharedSorties(prev=>prev.map(s=>(s.nom===titre||s.titre===titre)?{
-        ...s,
-        titre:garde(editForm.titre,s.titre),
-        nom:garde(editForm.titre,s.nom),
-        dept:garde(editForm.dept,s.dept),
-        adresse:garde(editForm.adresse,s.adresse),
-        horaires:garde(editForm.horaires,s.horaires),
-        prix:garde(editForm.prix,s.prix),
-        ville:garde(editForm.ville,s.ville),
-        type:garde(editForm.categorie,s.type),
-      }:s));
-    }else if(r.type==="evenement"&&setSharedEvenements){
-      setSharedEvenements(prev=>prev.map(e=>(e.nom===titre||e.titre===titre)?{
-        ...e,
-        titre:garde(editForm.titre,e.titre),
-        nom:garde(editForm.titre,e.nom),
-        ville:garde(editForm.ville,e.ville),
-        dept:garde(editForm.dept,e.dept),
-        date:garde(editForm.date,e.date),
-        fin:garde(editForm.fin,e.fin),
-        prix:garde(editForm.prix,e.prix),
-        organisateur:garde(editForm.organisateur,e.organisateur),
-        type:garde(editForm.type,e.type),
-      }:e));
-    }else if(setSharedActivites){
-      const accUpdates={};
-      ACC_KEYS.forEach(k=>{ accUpdates[k]=!!editForm[k]; });
-      setSharedActivites(prev=>prev.map(a=>(a.nom===titre||a.titre===titre)?{
-        ...a,
-        titre:garde(editForm.titre,a.titre),
-        nom:garde(editForm.titre,a.nom),
-        desc:garde(editForm.desc,a.desc),
-        duree:garde(editForm.duree,a.duree),
-        difficulte:garde(editForm.difficulte,a.difficulte),
-        lieu:garde(editForm.lieu,a.lieu),
-        energie:garde(editForm.energie,a.energie),
-        categorie:garde(editForm.categorie,a.categorie),
-        ageMin:garde(editForm.ageMin,a.ageMin),
-        ageMax:garde(editForm.ageMax,a.ageMax),
-        materiel:editForm.materielStr?editForm.materielStr.split(",").map(m=>m.trim()).filter(Boolean):a.materiel,
-        ...accUpdates,
-      }:a));
+    const ancienTitre=r.titre;
+    resolveAllForTitre(ancienTitre);
+    const nouveauNom=data.nom||ancienTitre;
+    const merge=item=>({...item,...data,nom:nouveauNom,titre:nouveauNom});
+    const existeDansPending=pendingContribs.some(c=>c.nom===ancienTitre||c.titre===ancienTitre);
+    const existeDansAdmin=type==="sortie"?sharedSorties.some(s=>s.nom===ancienTitre||s.titre===ancienTitre)
+      :type==="evenement"?sharedEvenements.some(e=>e.nom===ancienTitre||e.titre===ancienTitre)
+      :sharedActivites.some(a=>a.nom===ancienTitre||a.titre===ancienTitre);
+    if(existeDansPending&&setPendingContribs){
+      // Met à jour la contribution communautaire existante
+      setPendingContribs(prev=>prev.map(c=>(c.nom===ancienTitre||c.titre===ancienTitre)?merge(c):c));
+    }else if(!existeDansAdmin&&setPendingContribs){
+      // Élément intégré au code de base (jamais en base) : on crée une version modifiée qui le remplace à l'affichage
+      setPendingContribs(prev=>[...prev,{...data,nom:nouveauNom,titre:nouveauNom,id:"edit"+Date.now(),_type:type,_statut:"published",_vu:true}]);
     }
-    updateAll(r.id,"resolved");
+    if(existeDansAdmin){
+      if(type==="sortie"&&setSharedSorties)setSharedSorties(prev=>prev.map(s=>(s.nom===ancienTitre||s.titre===ancienTitre)?merge(s):s));
+      else if(type==="evenement"&&setSharedEvenements)setSharedEvenements(prev=>prev.map(e=>(e.nom===ancienTitre||e.titre===ancienTitre)?merge(e):e));
+      else if(setSharedActivites)setSharedActivites(prev=>prev.map(a=>(a.nom===ancienTitre||a.titre===ancienTitre)?merge(a):a));
+    }
+    // Sauvegarde réelle côté Supabase pour que la modification survive au rechargement
+    const table=type==="sortie"?"sorties":type==="evenement"?"evenements":"activites";
+    const payload={nom:nouveauNom,...data};
+    try{
+      if(existeDansPending||existeDansAdmin){
+        await supabase.from(table).update(payload).eq("nom",ancienTitre);
+        await supabase.from(table).update(payload).eq("titre",ancienTitre);
+      }else{
+        await supabase.from(table).insert(payload);
+      }
+    }catch(e){ /* échec réseau — la modification reste correcte localement */ }
     setEditModal(null);
   };
   const deleteItem=()=>{
     const titre=editModal.report.titre;
     const type=editModal.report.type;
-    setUserReports(prev=>prev.filter(r=>r.id!==editModal.report.id));
-    setReports(prev=>prev.filter(r=>r.id!==editModal.report.id));
+    const reportId=editModal.report.id;
+    setUserReports(prev=>prev.filter(r=>r.id!==reportId));
+    setReports(prev=>prev.filter(r=>r.id!==reportId));
+    supabase.from("signalements").delete().eq("id",reportId).then(()=>{},()=>{}); // échec réseau — sera resynchronisé au prochain chargement
     if(type==="sortie"&&setSharedSorties) setSharedSorties(prev=>prev.filter(s=>s.nom!==titre&&s.titre!==titre));
     else if(type==="evenement"&&setSharedEvenements) setSharedEvenements(prev=>prev.filter(e=>e.nom!==titre&&e.titre!==titre));
     else if(setSharedActivites) setSharedActivites(prev=>prev.filter(a=>a.nom!==titre&&a.titre!==titre));
+    // retire aussi les contributions communautaires correspondantes (souvent la source réelle de l'élément signalé)
+    if(setPendingContribs)setPendingContribs(prev=>prev.filter(c=>c.nom!==titre&&c.titre!==titre));
+    // supprime réellement la ligne côté Supabase pour que l'élément ne réapparaisse pas au rechargement
+    const table=type==="sortie"?"sorties":type==="evenement"?"evenements":"activites";
+    supabase.from(table).delete().eq("nom",titre).then(()=>{},()=>{});
+    supabase.from(table).delete().eq("titre",titre).then(()=>{},()=>{});
     if(onDeleteTitle)onDeleteTitle(titre);
     setEditModal(null);
   };
@@ -9885,80 +9996,20 @@ function Signalements({userReports=[],setUserReports,sharedActivites=[],setShare
       {/* Modal modifier — carte complète selon le type */}
       {editModal?.mode==="edit"&&(()=>{
         const r=editModal.report;
-        const tf=(key)=>setEditForm(prev=>({...prev,[key]:!prev[key]}));
-        const chkStyle=(active)=>({display:"flex",alignItems:"center",gap:6,padding:"6px 10px",borderRadius:8,border:`1px solid ${active?"rgba(124,58,237,0.4)":C.border}`,background:active?"rgba(124,58,237,0.1)":"transparent",color:active?"#a78bfa":C.muted,fontSize:12,cursor:"pointer",userSelect:"none",marginBottom:4});
         return(
-        <Modal title={"✏️ Modifier : "+r.titre} onClose={()=>setEditModal(null)} width={600}>
-          {/* Bandeau signalement */}
-          <div style={{background:"rgba(234,88,12,0.1)",borderRadius:10,padding:"10px 14px",marginBottom:18,display:"flex",gap:8,alignItems:"flex-start"}}>
+        <>
+          {/* Bandeau signalement flottant au-dessus du formulaire */}
+          <div style={{position:"fixed",top:12,left:"50%",transform:"translateX(-50%)",zIndex:60,background:"#7c2d12",borderRadius:12,padding:"10px 16px",display:"flex",gap:8,alignItems:"flex-start",maxWidth:400,boxShadow:"0 4px 14px rgba(0,0,0,0.3)"}}>
             <span style={{fontSize:16,flexShrink:0}}>🚩</span>
             <div>
-              <p style={{margin:"0 0 2px",fontSize:12,fontWeight:700,color:"#fb923c"}}>Raison du signalement : {r.raison}</p>
-              {r.detail&&<p style={{margin:0,fontSize:11,color:"#fb923c",opacity:0.8,fontStyle:"italic"}}>"{r.detail}"</p>}
+              <p style={{margin:"0 0 2px",fontSize:12,fontWeight:700,color:"#fdba74"}}>Signalé : {r.raison}</p>
+              {r.detail&&<p style={{margin:0,fontSize:11,color:"#fdba74",opacity:0.8,fontStyle:"italic"}}>"{r.detail}"</p>}
             </div>
           </div>
-
-          {/* CARTE ACTIVITE */}
-          {r.type==="activite"&&(<div>
-            <AdminField label="Titre *"><input style={s.input} value={editForm.titre||""} onChange={e=>setEditForm({...editForm,titre:e.target.value})}/></AdminField>
-            <AdminField label="Description"><textarea style={{...s.input,minHeight:70,resize:"vertical"}} value={editForm.desc||""} onChange={e=>setEditForm({...editForm,desc:e.target.value})} placeholder="Description de l activite..."/></AdminField>
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
-              <AdminField label="Duree"><select style={s.input} value={editForm.duree||""} onChange={e=>setEditForm({...editForm,duree:e.target.value})}><option value="">Choisir</option>{["moins de 15 min","15-30 min","30-60 min","1h-2h","2h+"].map(v=><option key={v}>{v}</option>)}</select></AdminField>
-              <AdminField label="Difficulte"><select style={s.input} value={editForm.difficulte||""} onChange={e=>setEditForm({...editForm,difficulte:e.target.value})}><option value="">Choisir</option>{["Facile","Moyen","Difficile"].map(v=><option key={v}>{v}</option>)}</select></AdminField>
-              <AdminField label="Lieu"><select style={s.input} value={editForm.lieu||""} onChange={e=>setEditForm({...editForm,lieu:e.target.value})}><option value="">Choisir</option><option value="interieur">Interieur</option><option value="exterieur">Exterieur</option></select></AdminField>
-              <AdminField label="Motivation"><select style={s.input} value={editForm.energie||""} onChange={e=>setEditForm({...editForm,energie:e.target.value})}><option value="">Choisir</option><option value="fatigue">Fatigue</option><option value="motiv">Motiv</option></select></AdminField>
-            </div>
-            <AdminField label="Categorie"><select style={s.input} value={editForm.categorie||""} onChange={e=>setEditForm({...editForm,categorie:e.target.value})}><option value="">Choisir</option>{[...CATEGORIES_ACT_ALL,...customCatActivites.map(c=>c.label)].map(v=><option key={v}>{v}</option>)}</select></AdminField>
-            <AdminField label="Age conseille">
-              <div style={{display:"flex",gap:8}}>
-                <select style={{...s.input,flex:1}} value={editForm.ageMin||""} onChange={e=>setEditForm({...editForm,ageMin:e.target.value})}><option value="">De...</option>{["0 an","1 an","2 ans","3 ans","4 ans","5 ans","6 ans","7 ans","8 ans","9 ans","10 ans","11 ans","12 ans"].map(v=><option key={v}>{v}</option>)}</select>
-                <select style={{...s.input,flex:1}} value={editForm.ageMax||""} onChange={e=>setEditForm({...editForm,ageMax:e.target.value})}><option value="">A...</option>{["1 an","2 ans","3 ans","4 ans","5 ans","6 ans","7 ans","8 ans","9 ans","10 ans","11 ans","12 ans","12 ans+"].map(v=><option key={v}>{v}</option>)}</select>
-              </div>
-            </AdminField>
-            <AdminField label="Materiel"><input style={s.input} value={editForm.materielStr||""} onChange={e=>setEditForm({...editForm,materielStr:e.target.value})} placeholder="Ex: peinture, papier"/></AdminField>
-            <div style={{borderTop:`1px solid ${C.border}`,paddingTop:14,marginBottom:14}}>
-              <p style={{margin:"0 0 8px",fontSize:12,fontWeight:700,color:"#3b82f6"}}>♿ PMR</p>
-              <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:10}}>{[["pmr_fauteuil","Acces fauteuil"],["pmr_escaliers","Sans escaliers"],["pmr_parking","Parking PMR"],["pmr_toilettes","Toilettes adaptees"],["pmr_personnel","Personnel forme"],["pmr_chemin","Chemin accessible"]].map(([k,l])=>(<div key={k} onClick={()=>tf(k)} style={chkStyle(!!editForm[k])}><span>{editForm[k]?"☑":"☐"}</span>{l}</div>))}</div>
-              <p style={{margin:"0 0 6px",fontSize:12,fontWeight:700,color:"#a78bfa"}}>🧩 TND</p>
-              <p style={{margin:"0 0 6px",fontSize:11,fontWeight:600,color:"#8b5cf6"}}>TSA</p>
-              <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:8}}>{[["tsa_foule","Peu de foule"],["tsa_calme","Env calme"],["tsa_lumiere","Lumiere douce"],["tsa_retrait","Espace retrait"],["tsa_bruit","Peu de bruit"],["tsa_personnel","Personnel TSA"]].map(([k,l])=>(<div key={k} onClick={()=>tf(k)} style={chkStyle(!!editForm[k])}><span>{editForm[k]?"☑":"☐"}</span>{l}</div>))}</div>
-              <p style={{margin:"0 0 6px",fontSize:11,fontWeight:600,color:"#ec4899"}}>TDAH</p>
-              <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:8}}>{[["tdah_espace","Grand espace"],["tdah_physique","Activite physique"],["tdah_attente","Peu attente"],["tdah_stimulation","Stimulation variee"]].map(([k,l])=>(<div key={k} onClick={()=>tf(k)} style={chkStyle(!!editForm[k])}><span>{editForm[k]?"☑":"☐"}</span>{l}</div>))}</div>
-              <p style={{margin:"0 0 6px",fontSize:11,fontWeight:600,color:"#06b6d4"}}>DYS</p>
-              <div style={{display:"flex",flexWrap:"wrap",gap:6}}>{[["dys_visuels","Supports visuels"],["dys_nonecrite","Non ecrite"],["dys_rythme","Rythme libre"],["dys_personnel","Personnel DYS"]].map(([k,l])=>(<div key={k} onClick={()=>tf(k)} style={chkStyle(!!editForm[k])}><span>{editForm[k]?"☑":"☐"}</span>{l}</div>))}</div>
-            </div>
-          </div>)}
-
-          {/* CARTE SORTIE */}
-          {r.type==="sortie"&&(<div>
-            <AdminField label="Nom *"><input style={s.input} value={editForm.titre||""} onChange={e=>setEditForm({...editForm,titre:e.target.value})}/></AdminField>
-            <AdminField label="Departement"><input style={s.input} value={editForm.dept||""} onChange={e=>setEditForm({...editForm,dept:e.target.value})} placeholder="Paris (75)"/></AdminField>
-            <AdminField label="Adresse"><input style={s.input} value={editForm.adresse||""} onChange={e=>setEditForm({...editForm,adresse:e.target.value})}/></AdminField>
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
-              <AdminField label="Horaires"><input style={s.input} value={editForm.horaires||""} onChange={e=>setEditForm({...editForm,horaires:e.target.value})} placeholder="9h-18h"/></AdminField>
-              <AdminField label="Prix"><input style={s.input} value={editForm.prix||""} onChange={e=>setEditForm({...editForm,prix:e.target.value})} placeholder="Gratuit"/></AdminField>
-            </div>
-            <AdminField label="Categorie"><select style={s.input} value={editForm.categorie||""} onChange={e=>setEditForm({...editForm,categorie:e.target.value})}><option value="">Choisir</option>{[...TYPES_SORTIE,...customCatSorties.map(c=>c.label)].map(v=><option key={v}>{v}</option>)}</select></AdminField>
-          </div>)}
-
-          {/* CARTE EVENEMENT */}
-          {r.type==="evenement"&&(<div>
-            <AdminField label="Titre *"><input style={s.input} value={editForm.titre||""} onChange={e=>setEditForm({...editForm,titre:e.target.value})}/></AdminField>
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
-              <AdminField label="Date debut"><input type="date" style={s.input} value={editForm.date||""} onChange={e=>setEditForm({...editForm,date:e.target.value})}/></AdminField>
-              <AdminField label="Date fin"><input type="date" style={s.input} value={editForm.fin||""} onChange={e=>setEditForm({...editForm,fin:e.target.value})}/></AdminField>
-              <AdminField label="Ville"><input style={s.input} value={editForm.ville||""} onChange={e=>setEditForm({...editForm,ville:e.target.value})}/></AdminField>
-              <AdminField label="Prix"><input style={s.input} value={editForm.prix||""} onChange={e=>setEditForm({...editForm,prix:e.target.value})} placeholder="Gratuit"/></AdminField>
-            </div>
-            <AdminField label="Organisateur"><input style={s.input} value={editForm.organisateur||""} onChange={e=>setEditForm({...editForm,organisateur:e.target.value})}/></AdminField>
-            <AdminField label="Type"><select style={s.input} value={editForm.type||""} onChange={e=>setEditForm({...editForm,type:e.target.value})}><option value="">Choisir</option>{[...EVT_CATEGORIES,...customCatEvenements].map(c=><option key={c.k} value={c.k}>{c.emoji} {c.label}</option>)}</select></AdminField>
-          </div>)}
-
-          <div style={{display:"flex",justifyContent:"flex-end",gap:8,marginTop:12,paddingTop:12,borderTop:`1px solid ${C.border}`}}>
-            <button style={s.btnOutline(C.muted)} onClick={()=>setEditModal(null)}>Annuler</button>
-            <button style={s.btn(C.accent)} onClick={saveEdit}>✅ Enregistrer et resoudre</button>
-          </div>
-        </Modal>
+          {r.type==="activite"&&<FormActivite initialData={editLiveItem} customCatActivites={customCatActivites} onClose={()=>setEditModal(null)} onSubmit={data=>handleFormSubmitEdit(data,"activite")}/>}
+          {r.type==="sortie"&&<FormSortie initialData={editLiveItem} customCatSorties={customCatSorties} onClose={()=>setEditModal(null)} onSubmit={data=>handleFormSubmitEdit(data,"sortie")}/>}
+          {r.type==="evenement"&&<FormEvenement initialData={editLiveItem} customCatEvenements={customCatEvenements} typeEvt={editTypeEvt} setTypeEvt={setEditTypeEvt} typeAutre="" onOpenAutrePopup={()=>{}} onClose={()=>setEditModal(null)} onSubmit={data=>handleFormSubmitEdit(data,"evenement")}/>}
+        </>
         );
       })()}
 
@@ -10108,12 +10159,78 @@ function Communication({ideesMomentConfig=[],setIdeesMomentConfig,adminComms=[],
   const [modal,setModal] = useState(null);
   const [form,setForm] = useState({type:"banner",titre:"",message:"",debut:"",fin:"",actif:false});
   const [selectedIdee,setSelectedIdee] = useState(null); // index of selected idee
-  const toggleActif = (id) => setComms(comms.map(c=>c.id===id?{...c,actif:!c.actif}:c));
-  const save = () => {
+  const [codesPromo,setCodesPromo] = useState([]);
+  const [modalCode,setModalCode] = useState(null);
+  const [formCode,setFormCode] = useState({code:"",description:"",max_utilisations:"",actif:true,type:"gratuit",pourcentage:"",creerBandeau:false});
+  useEffect(()=>{
+    (async()=>{
+      try{
+        const {data}=await supabase.from("promo_codes").select("*").order("created_at",{ascending:false});
+        if(data)setCodesPromo(data);
+      }catch(e){ /* erreur réseau — reste vide */ }
+    })();
+  },[]);
+  const saveCode=async()=>{
+    const code=formCode.code.trim().toUpperCase();
+    if(!code)return;
+    if(formCode.type==="reduction"&&!formCode.pourcentage){alert("Indique un pourcentage de réduction.");return;}
+    const payload={code,description:formCode.description.trim(),max_utilisations:formCode.max_utilisations?parseInt(formCode.max_utilisations):null,actif:!!formCode.actif,type:formCode.type,pourcentage:formCode.type==="reduction"?parseInt(formCode.pourcentage):null};
+    if(modalCode?.mode==="edit"){
+      setCodesPromo(prev=>prev.map(c=>c.id===modalCode.item.id?{...c,...payload}:c));
+      try{ await supabase.from("promo_codes").update(payload).eq("id",modalCode.item.id); }catch(e){}
+    }else{
+      try{
+        const {data:inserted,error}=await supabase.from("promo_codes").insert({...payload,utilisations_actuelles:0}).select().single();
+        if(error){alert("Ce code existe peut-être déjà.");return;}
+        if(inserted)setCodesPromo(prev=>[inserted,...prev]);
+      }catch(e){ alert("Erreur réseau, réessaie."); return; }
+      if(formCode.creerBandeau){
+        const titreB=formCode.type==="reduction"?`🎁 -${formCode.pourcentage}% sur l'abonnement Premium !`:"🎁 Une surprise vous attend !";
+        const messageB=formCode.type==="reduction"?`Utilisez le code ${code} pour profiter de ${formCode.pourcentage}% de réduction sur votre abonnement Premium.`:`Utilisez le code ${code} pour débloquer Premium gratuitement !`;
+        const nouveauBandeau={id:Date.now().toString(),type:"banner",titre:titreB,message:messageB,debut:"",fin:"",actif:true,codePromo:code};
+        setComms(prev=>[...prev,nouveauBandeau]);
+        try{
+          const {data:insertedB}=await supabase.from("communications").insert({type:"banner",titre:titreB,message:messageB,actif:true,code_promo:code}).select().single();
+          if(insertedB)setComms(prev=>prev.map(c=>c===nouveauBandeau?{...c,id:insertedB.id}:c));
+        }catch(e){ /* le bandeau reste visible localement même si la sauvegarde échoue */ }
+      }
+    }
+    setModalCode(null);
+  };
+  const toggleActifCode=(c)=>{
+    setCodesPromo(prev=>prev.map(x=>x.id===c.id?{...x,actif:!x.actif}:x));
+    supabase.from("promo_codes").update({actif:!c.actif}).eq("id",c.id).then(()=>{},()=>{});
+  };
+  const supprimerCode=(id)=>{
+    setCodesPromo(prev=>prev.filter(c=>c.id!==id));
+    supabase.from("promo_codes").delete().eq("id",id).then(()=>{},()=>{});
+  };
+  const toggleActif = (id) => {
+    setComms(comms.map(c=>c.id===id?{...c,actif:!c.actif}:c));
+    const c=comms.find(x=>x.id===id);
+    if(c&&/^[0-9a-f]{8}-/.test(id))supabase.from("communications").update({actif:!c.actif}).eq("id",id).then(()=>{},()=>{});
+  };
+  const save = async() => {
     if(!form.titre||!form.message) return;
-    if(modal?.mode==="edit") setComms(comms.map(c=>c.id===modal.item.id?{...c,...form}:c));
-    else setComms([...comms,{id:Date.now().toString(),...form}]);
+    if(modal?.mode==="edit"){
+      setComms(comms.map(c=>c.id===modal.item.id?{...c,...form}:c));
+      if(/^[0-9a-f]{8}-/.test(modal.item.id)){
+        try{ await supabase.from("communications").update({type:form.type,titre:form.titre,message:form.message,debut:form.debut||null,fin:form.fin||null,actif:!!form.actif}).eq("id",modal.item.id); }
+        catch(e){ /* échec réseau — reste correct localement */ }
+      }
+    }else{
+      const nouveau={id:Date.now().toString(),...form};
+      setComms([...comms,nouveau]);
+      try{
+        const {data:inserted}=await supabase.from("communications").insert({type:form.type,titre:form.titre,message:form.message,debut:form.debut||null,fin:form.fin||null,actif:!!form.actif}).select().single();
+        if(inserted)setComms(prev=>prev.map(c=>c===nouveau?{...c,id:inserted.id}:c));
+      }catch(e){ /* le message reste visible localement même si la sauvegarde échoue */ }
+    }
     setModal(null);
+  };
+  const supprimerComm=(id)=>{
+    setComms(comms.filter(c=>c.id!==id));
+    if(/^[0-9a-f]{8}-/.test(id))supabase.from("communications").delete().eq("id",id).then(()=>{},()=>{});
   };
   const typeInfo = {banner:["📢","Bandeau","#3b82f6"],popup:["💬","Pop-up","#7c3aed"],push:["🔔","Notification push","#10b981"]};
   return (
@@ -10153,6 +10270,62 @@ function Communication({ideesMomentConfig=[],setIdeesMomentConfig,adminComms=[],
         <p style={{fontSize:11,color:C.muted,margin:"10px 0 0"}}>💡 Cliquez sur une vignette pour la modifier en détail.</p>
       </div>
 
+      {/* Codes promo */}
+      <div style={{...s.card,marginBottom:20}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
+          <p style={{fontSize:14,fontWeight:700,color:C.text,margin:0}}>🎁 Codes promo</p>
+          <button style={s.btn(C.accent)} onClick={()=>{setFormCode({code:"",description:"",max_utilisations:"",actif:true,type:"gratuit",pourcentage:"",creerBandeau:true});setModalCode({mode:"add"});}}>+ Créer un code</button>
+        </div>
+        <p style={{fontSize:12,color:C.muted,margin:"0 0 14px"}}>Débloque Premium gratuitement pour l'utilisateur qui saisit ce code — pratique pour une promo annoncée dans un bandeau ou une pub.</p>
+        {codesPromo.length===0&&<p style={{fontSize:13,color:C.muted,fontStyle:"italic"}}>Aucun code promo pour le moment.</p>}
+        <div style={{display:"flex",flexDirection:"column",gap:8}}>
+          {codesPromo.map(c=>(
+            <div key={c.id} style={{display:"flex",alignItems:"center",gap:12,padding:"10px 14px",background:"rgba(255,255,255,0.03)",borderRadius:12,border:`1px solid ${c.actif?"rgba(16,185,129,0.3)":C.border}`}}>
+              <div style={{flex:1}}>
+                <div style={{display:"flex",alignItems:"center",gap:8}}>
+                  <p style={{margin:0,fontSize:14,fontWeight:800,color:C.text,fontFamily:"monospace",letterSpacing:"0.5px"}}>{c.code}</p>
+                  <span style={{fontSize:10,fontWeight:700,padding:"2px 8px",borderRadius:10,background:c.type==="reduction"?"rgba(59,130,246,0.15)":"rgba(124,58,237,0.15)",color:c.type==="reduction"?"#3b82f6":"#a78bfa"}}>{c.type==="reduction"?`💸 -${c.pourcentage}%`:"🎁 Gratuit"}</span>
+                </div>
+                {c.description&&<p style={{margin:"2px 0 0",fontSize:12,color:C.muted}}>{c.description}</p>}
+                <p style={{margin:"2px 0 0",fontSize:11,color:C.muted}}>{c.utilisations_actuelles||0} utilisation{(c.utilisations_actuelles||0)>1?"s":""}{c.max_utilisations!=null?` / ${c.max_utilisations} max`:" · illimité"}</p>
+              </div>
+              <button onClick={()=>toggleActifCode(c)} style={{fontSize:11,fontWeight:700,padding:"5px 12px",borderRadius:20,border:"none",cursor:"pointer",background:c.actif?"rgba(16,185,129,0.15)":"rgba(255,255,255,0.06)",color:c.actif?"#10b981":C.muted}}>{c.actif?"✓ Actif":"Inactif"}</button>
+              <button onClick={()=>{setFormCode({code:c.code,description:c.description||"",max_utilisations:c.max_utilisations!=null?String(c.max_utilisations):"",actif:c.actif,type:c.type||"gratuit",pourcentage:c.pourcentage!=null?String(c.pourcentage):""});setModalCode({mode:"edit",item:c});}} style={{background:"none",border:"none",fontSize:14,cursor:"pointer"}}>✏️</button>
+              <button onClick={()=>{if(window.confirm("Supprimer ce code promo ?"))supprimerCode(c.id);}} style={{background:"none",border:"none",fontSize:14,cursor:"pointer"}}>🗑️</button>
+            </div>
+          ))}
+        </div>
+      </div>
+      {modalCode&&(
+        <Modal title={modalCode.mode==="edit"?"Modifier le code":"Nouveau code promo"} onClose={()=>setModalCode(null)}>
+          <AdminField label="Code *"><input style={{...s.input,fontFamily:"monospace",textTransform:"uppercase"}} value={formCode.code} onChange={e=>setFormCode({...formCode,code:e.target.value.toUpperCase()})} placeholder="PROMO30"/></AdminField>
+          <AdminField label="Description (visible en interne)"><input style={s.input} value={formCode.description} onChange={e=>setFormCode({...formCode,description:e.target.value})} placeholder="Ex : Pub Facebook -30% novembre"/></AdminField>
+          <AdminField label="Type de code">
+            <div style={{display:"flex",gap:8}}>
+              <button onClick={()=>setFormCode({...formCode,type:"gratuit"})} style={{flex:1,padding:"10px 12px",borderRadius:10,border:`1.5px solid ${formCode.type==="gratuit"?C.accent:C.border}`,background:formCode.type==="gratuit"?"rgba(124,58,237,0.12)":"transparent",color:formCode.type==="gratuit"?C.accent:C.muted,fontSize:13,fontWeight:formCode.type==="gratuit"?700:400,cursor:"pointer"}}>🎁 Premium gratuit</button>
+              <button onClick={()=>setFormCode({...formCode,type:"reduction"})} style={{flex:1,padding:"10px 12px",borderRadius:10,border:`1.5px solid ${formCode.type==="reduction"?C.accent:C.border}`,background:formCode.type==="reduction"?"rgba(124,58,237,0.12)":"transparent",color:formCode.type==="reduction"?C.accent:C.muted,fontSize:13,fontWeight:formCode.type==="reduction"?700:400,cursor:"pointer"}}>💸 Réduction %</button>
+            </div>
+          </AdminField>
+          {formCode.type==="reduction"&&(
+            <AdminField label="Pourcentage de réduction *"><input type="number" min={1} max={99} style={s.input} value={formCode.pourcentage} onChange={e=>setFormCode({...formCode,pourcentage:e.target.value})} placeholder="Ex : 30"/></AdminField>
+          )}
+          <AdminField label="Nombre d'utilisations max (laisser vide = illimité)"><input type="number" min={1} style={s.input} value={formCode.max_utilisations} onChange={e=>setFormCode({...formCode,max_utilisations:e.target.value})} placeholder="Illimité"/></AdminField>
+          {modalCode.mode!=="edit"&&(
+            <div onClick={()=>setFormCode({...formCode,creerBandeau:!formCode.creerBandeau})} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",borderRadius:10,border:`1.5px solid ${formCode.creerBandeau?C.accent:C.border}`,background:formCode.creerBandeau?"rgba(124,58,237,0.08)":"transparent",cursor:"pointer",marginBottom:8}}>
+              <span style={{fontSize:16}}>{formCode.creerBandeau?"☑":"☐"}</span>
+              <div>
+                <p style={{margin:0,fontSize:13,fontWeight:600,color:C.text}}>Annoncer ce code sur l'accueil</p>
+                <p style={{margin:0,fontSize:11,color:C.muted}}>Crée automatiquement un bandeau visible par les utilisateurs</p>
+              </div>
+            </div>
+          )}
+          <div style={{display:"flex",justifyContent:"flex-end",gap:8,marginTop:12,paddingTop:12,borderTop:`1px solid ${C.border}`}}>
+            <button style={s.btnOutline(C.muted)} onClick={()=>setModalCode(null)}>Annuler</button>
+            <button style={s.btn(C.accent)} onClick={saveCode}>{modalCode.mode==="edit"?"Enregistrer":"Créer le code"}</button>
+          </div>
+        </Modal>
+      )}
+
       {/* Page détail vignette */}
       {selectedIdee!==null&&ideesMomentConfig[selectedIdee]&&<IdeeDetailModal idee={ideesMomentConfig[selectedIdee]} onSave={changes=>{setIdeesMomentConfig(prev=>prev.map((x,j)=>j===selectedIdee?{...x,...changes}:x));setSelectedIdee(null);}} onClose={()=>setSelectedIdee(null)}/>}
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(300px,1fr))",gap:14}}>
@@ -10175,7 +10348,7 @@ function Communication({ideesMomentConfig=[],setIdeesMomentConfig,adminComms=[],
                   setPreviewComm(comm);
                 }}>👁️ Aperçu</button>
                 <button style={{...s.btnOutline(C.accent),flex:1}} onClick={()=>{setForm({...comm});setModal({mode:"edit",item:comm});}}>✏️ Modifier</button>
-                <button style={s.btnOutline(C.red)} onClick={()=>setComms(comms.filter(c=>c.id!==comm.id))}>🗑️</button>
+                <button style={s.btnOutline(C.red)} onClick={()=>supprimerComm(comm.id)}>🗑️</button>
               </div>
             </div>
           );
@@ -10261,6 +10434,7 @@ function RessourcesAdmin({ressourcesSites=[],setRessourcesSites,ressourcesContac
   const [tab,setTab]=useState("sites");
   const [modal,setModal]=useState(null);
   const [form,setForm]=useState({});
+  const [uploadEnCours,setUploadEnCours]=useState(false);
 
   const configs={
     sites:{data:sites,setData:setRessourcesSites,fields:[{k:"nom",l:"Nom",ph:"Ex : Autisme France"},{k:"url",l:"URL",ph:"https://..."},{k:"emoji",l:"Emoji",ph:"🔵"},{k:"desc",l:"Description",ph:"Description courte du site...",area:true}]},
@@ -10273,11 +10447,11 @@ function RessourcesAdmin({ressourcesSites=[],setRessourcesSites,ressourcesContac
   const openAdd=()=>{setForm(tab==="pdf"?{type:"pdf",acces:"gratuit"}:{});setModal({mode:"add"});};
   const openEdit=(item,i)=>{setForm({...item,_i:i});setModal({mode:"edit"});};
   const save=async()=>{
-    if(!form.nom)return;
+    if(!form.nom){alert("Le champ \"Nom\" est obligatoire.");return;}
     const {_i,id,...clean}=form;
     const table=TABLES[tab];
     const payload=tab==="pdf"
-      ?{nom:clean.nom,type:clean.type,acces:clean.acces,prix:clean.prix,tag:clean.tag,emoji:clean.emoji,description:clean.desc,contenu:clean.contenu}
+      ?{nom:clean.nom,type:clean.type,acces:clean.acces,prix:clean.prix,tag:clean.tag,emoji:clean.emoji,description:clean.desc,contenu:clean.contenu,fichier_url:clean.fichierUrl||null}
       :{nom:clean.nom,url:clean.url,tel:clean.tel,emoji:clean.emoji,description:clean.desc};
     if(modal.mode==="edit"){
       cfg.setData&&cfg.setData(cfg.data.map((it,i)=>i===_i?{...clean,id}:it));
@@ -10412,6 +10586,34 @@ function RessourcesAdmin({ressourcesSites=[],setRessourcesSites,ressourcesContac
               </div>
             </AdminField>
             <AdminField label="Nom *"><input style={s.input} value={form.nom||""} onChange={e=>setForm({...form,nom:e.target.value})} placeholder="Ex : Affiche — La roue des émotions"/></AdminField>
+            <AdminField label={form.type==="affiche"?"Image de l'affiche":form.type==="article"?"Image d'illustration (optionnel)":"Fichier PDF"}>
+              {form.fichierUrl?(
+                <div style={{display:"flex",alignItems:"center",gap:8,padding:"8px 12px",background:C.card,borderRadius:10}}>
+                  <span style={{fontSize:12,color:C.green,flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>✓ {form.fichierNom||"Fichier ajouté"}</span>
+                  <button onClick={()=>setForm({...form,fichierUrl:"",fichierNom:""})} style={{background:"none",border:"none",color:C.red,fontSize:11,cursor:"pointer"}}>Retirer</button>
+                </div>
+              ):(
+                <div>
+                  <input type="file" accept={form.type==="pdf"?"application/pdf":"image/*"} disabled={uploadEnCours} onChange={async e=>{
+                    const file=e.target.files[0];
+                    if(!file)return;
+                    setUploadEnCours(true);
+                    try{
+                      const ext=file.name.split(".").pop();
+                      const path=`${Date.now()}_${Math.random().toString(36).slice(2,8)}.${ext}`;
+                      const {error:upErr}=await supabase.storage.from("ressources-fichiers").upload(path,file);
+                      if(upErr){alert("Erreur lors de l'envoi du fichier : "+upErr.message);}
+                      else{
+                        const {data:pub}=supabase.storage.from("ressources-fichiers").getPublicUrl(path);
+                        setForm(f=>({...f,fichierUrl:pub.publicUrl,fichierNom:file.name}));
+                      }
+                    }catch(err){alert("Erreur lors de l'envoi du fichier.");}
+                    setUploadEnCours(false);
+                  }} style={{fontSize:12}}/>
+                  {uploadEnCours&&<p style={{margin:"6px 0 0",fontSize:11,color:C.muted}}>Envoi en cours...</p>}
+                </div>
+              )}
+            </AdminField>
             <AdminField label="Emoji"><input style={s.input} value={form.emoji||""} onChange={e=>setForm({...form,emoji:e.target.value})} placeholder="🎨"/></AdminField>
             <AdminField label="Tag (optionnel)"><input style={s.input} value={form.tag||""} onChange={e=>setForm({...form,tag:e.target.value})} placeholder="Ex : Affiche A3, À imprimer, Article..."/></AdminField>
             <AdminField label="Description"><textarea style={{...s.input,minHeight:60,resize:"vertical"}} value={form.desc||""} onChange={e=>setForm({...form,desc:e.target.value})} placeholder="Description courte visible dans la liste..."/></AdminField>
@@ -10454,17 +10656,22 @@ function Categories({customCatActivites=[],setCustomCatActivites,customCatSortie
   const [label,setLabel]=useState("");
   const [emoji,setEmoji]=useState("");
   const reset=()=>{setLabel("");setEmoji("");};
-  const ajouterSimple=(liste,setListe,defaults)=>{
+  const ajouterSimple=async(liste,setListe,defaults,type)=>{
     const lab=label.trim();
     if(!lab)return;
     const emo=emoji.trim()||"🏷️";
     const dejaDefaut=defaults.some(d=>d.toLowerCase()===lab.toLowerCase());
     const dejaCustom=liste.some(c=>c.label.toLowerCase()===lab.toLowerCase());
     if(dejaDefaut||dejaCustom){ alert("Cette catégorie existe déjà."); return; }
-    setListe([...liste,{label:lab,emoji:emo}]);
+    const nouvelle={label:lab,emoji:emo};
+    setListe([...liste,nouvelle]);
     reset();
+    try{
+      const {data:inserted}=await supabase.from("categories_custom").insert({type,label:lab,emoji:emo}).select().single();
+      if(inserted)setListe(prev=>prev.map(c=>c===nouvelle?{...c,id:inserted.id}:c));
+    }catch(e){ /* la catégorie reste visible localement même si la sauvegarde échoue */ }
   };
-  const ajouterEvenement=()=>{
+  const ajouterEvenement=async()=>{
     const lab=label.trim();
     if(!lab)return;
     const emo=emoji.trim()||"🎉";
@@ -10472,10 +10679,19 @@ function Categories({customCatActivites=[],setCustomCatActivites,customCatSortie
     const dejaDefaut=EVT_CATEGORIES.some(c=>c.k===k||c.label.toLowerCase()===lab.toLowerCase());
     const dejaCustom=customCatEvenements.some(c=>c.k===k||c.label.toLowerCase()===lab.toLowerCase());
     if(dejaDefaut||dejaCustom){ alert("Cette catégorie existe déjà."); return; }
-    setCustomCatEvenements([...customCatEvenements,{k,label:lab,emoji:emo}]);
+    const nouvelle={k,label:lab,emoji:emo};
+    setCustomCatEvenements([...customCatEvenements,nouvelle]);
     reset();
+    try{
+      const {data:inserted}=await supabase.from("categories_custom").insert({type:"evenement",cle:k,label:lab,emoji:emo}).select().single();
+      if(inserted)setCustomCatEvenements(prev=>prev.map(c=>c===nouvelle?{...c,id:inserted.id}:c));
+    }catch(e){ /* la catégorie reste visible localement même si la sauvegarde échoue */ }
   };
-  const supprimer=(liste,setListe,index)=>setListe(liste.filter((_,i)=>i!==index));
+  const supprimer=(liste,setListe,index)=>{
+    const item=liste[index];
+    setListe(liste.filter((_,i)=>i!==index));
+    if(item?.id){supabase.from("categories_custom").delete().eq("id",item.id).then(()=>{},()=>{});}
+  };
   const tabs=[{k:"activites",label:"Activités",defaults:CATEGORIES_ACT_ALL,custom:customCatActivites},{k:"sorties",label:"Sorties",defaults:TYPES_SORTIE,custom:customCatSorties},{k:"evenements",label:"Événements",defaults:EVT_CATEGORIES.map(c=>c.label),custom:customCatEvenements}];
   const current=tabs.find(t=>t.k===tab);
   return(
@@ -10492,13 +10708,13 @@ function Categories({customCatActivites=[],setCustomCatActivites,customCatSortie
         <div style={{display:"flex",gap:10,alignItems:"flex-end",flexWrap:"wrap"}}>
           <div style={{flex:1,minWidth:160}}>
             <label style={{fontSize:11,color:C.muted,display:"block",marginBottom:6}}>Nom</label>
-            <input style={s.input} value={label} onChange={e=>setLabel(e.target.value)} placeholder="Ex : Theatre" onKeyDown={e=>e.key==="Enter"&&(tab==="evenements"?ajouterEvenement():ajouterSimple(current.custom,tab==="activites"?setCustomCatActivites:setCustomCatSorties,current.defaults))}/>
+            <input style={s.input} value={label} onChange={e=>setLabel(e.target.value)} placeholder="Ex : Theatre" onKeyDown={e=>e.key==="Enter"&&(tab==="evenements"?ajouterEvenement():ajouterSimple(current.custom,tab==="activites"?setCustomCatActivites:setCustomCatSorties,current.defaults,tab==="activites"?"activite":"sortie"))}/>
           </div>
           <div style={{width:90}}>
             <label style={{fontSize:11,color:C.muted,display:"block",marginBottom:6}}>Emoji</label>
             <input style={{...s.input,textAlign:"center",fontSize:18}} value={emoji} onChange={e=>setEmoji(e.target.value)} placeholder="🎭" maxLength={4}/>
           </div>
-          <button style={s.btn(C.accent)} onClick={()=>tab==="evenements"?ajouterEvenement():ajouterSimple(current.custom,tab==="activites"?setCustomCatActivites:setCustomCatSorties,current.defaults)}>+ Ajouter</button>
+          <button style={s.btn(C.accent)} onClick={()=>tab==="evenements"?ajouterEvenement():ajouterSimple(current.custom,tab==="activites"?setCustomCatActivites:setCustomCatSorties,current.defaults,tab==="activites"?"activite":"sortie")}>+ Ajouter</button>
         </div>
       </div>
       <p style={{fontSize:12,fontWeight:700,color:C.muted,margin:"0 0 10px",textTransform:"uppercase",letterSpacing:"0.5px"}}>Catégories par défaut</p>
@@ -10845,12 +11061,38 @@ const PAGES_FN = {dashboard:(props)=><Dashboard {...props}/>,sos:(props)=><Admin
 function AdminSOS({sosLib=[],setSosLib,sosModeActif=true,setSosModeActif}){
   const [modal,setModal]=useState(null);
   const [form,setForm]=useState({titre:"",desc:"",duree:"",age:"",materiel:"",statut:"published"});
-  const save=()=>{
+  const save=async()=>{
     if(!form.titre)return;
-    const item={...form,id:"sos"+Date.now(),materiel:form.materiel?form.materiel.split(",").map(m=>m.trim()):[]};
-    if(modal?.mode==="edit") setSosLib(prev=>prev.map(a=>a.id===modal.item.id?{...a,...item}:a));
-    else setSosLib(prev=>[...prev,item]);
+    const {materiel,id,...rest}=form;
+    const clean={...rest,materiel:materiel?String(materiel).split(",").map(m=>m.trim()):[]};
+    const payload={titre:clean.titre,description:clean.desc,duree:clean.duree,age:clean.age,materiel:clean.materiel,statut:clean.statut,
+      crise_sensorielle:!!clean.crise_sensorielle,crise_emotionnelle:!!clean.crise_emotionnelle,crise_agitation:!!clean.crise_agitation,crise_concentration:!!clean.crise_concentration,
+      profil_ordinaire:!!clean.profil_ordinaire,profil_tsa:!!clean.profil_tsa,profil_tdah:!!clean.profil_tdah,profil_dys:!!clean.profil_dys,profil_bas_age:!!clean.profil_bas_age,
+      lieu_maison:!!clean.lieu_maison,lieu_ecole:!!clean.lieu_ecole,lieu_public:!!clean.lieu_public,lieu_voiture:!!clean.lieu_voiture,lieu_dehors:!!clean.lieu_dehors,
+    };
+    if(modal?.mode==="edit"){
+      setSosLib(prev=>prev.map(a=>a.id===modal.item.id?{...a,...clean,id}:a));
+      if(id){try{await supabase.from("sos_lib").update(payload).eq("id",id);}catch(e){/* échec réseau — reste correct localement */}}
+    }else{
+      const tempId="sos"+Date.now();
+      setSosLib(prev=>[...prev,{...clean,id:tempId}]);
+      try{
+        const {data:inserted}=await supabase.from("sos_lib").insert(payload).select().single();
+        if(inserted)setSosLib(prev=>prev.map(a=>a.id===tempId?{...a,id:inserted.id}:a));
+      }catch(e){ /* la technique reste visible localement même si la sauvegarde échoue */ }
+    }
     setModal(null);
+  };
+  const toggleStatut=async(item)=>{
+    const nouveauStatut=item.statut==="published"?"draft":"published";
+    setSosLib(prev=>prev.map(x=>x.id===item.id?{...x,statut:nouveauStatut}:x));
+    try{ await supabase.from("sos_lib").update({statut:nouveauStatut}).eq("id",item.id); }
+    catch(e){ /* échec réseau — reste correct localement */ }
+  };
+  const supprimer=async(item)=>{
+    setSosLib(prev=>prev.filter(x=>x.id!==item.id));
+    try{ await supabase.from("sos_lib").delete().eq("id",item.id); }
+    catch(e){ /* échec réseau — sera resynchronisé au prochain chargement */ }
   };
   return(
     <div>
@@ -10910,10 +11152,10 @@ function AdminSOS({sosLib=[],setSosLib,sosModeActif=true,setSosModeActif}){
               <td style={{padding:"12px 16px"}}>
                 <div style={{display:"flex",gap:6}}>
                   <button style={s.btnOutline("#ef4444")} onClick={()=>{setForm({...a,materiel:Array.isArray(a.materiel)?a.materiel.join(", "):a.materiel||""});setModal({mode:"edit",item:a});}}>✏️</button>
-                  <button style={s.btnOutline(a.statut==="published"?C.yellow:C.green)} onClick={()=>setSosLib(prev=>prev.map(x=>x.id===a.id?{...x,statut:x.statut==="published"?"draft":"published"}:x))}>
+                  <button style={s.btnOutline(a.statut==="published"?C.yellow:C.green)} onClick={()=>toggleStatut(a)}>
                     {a.statut==="published"?"📝":"✅"}
                   </button>
-                  <button style={s.btnOutline(C.red)} onClick={()=>setSosLib(prev=>prev.filter(x=>x.id!==a.id))}>🗑️</button>
+                  <button style={s.btnOutline(C.red)} onClick={()=>supprimer(a)}>🗑️</button>
                 </div>
               </td>
             </tr>
@@ -10968,7 +11210,7 @@ function AdminSOS({sosLib=[],setSosLib,sosModeActif=true,setSosModeActif}){
 function PageAdmin({onLogout,pendingContribs=[],setPendingContribs,updateContrib,adminActivites=[],setAdminActivites,adminSorties=[],setAdminSorties,adminEvenements=[],setAdminEvenements,adminReports=[],setAdminReports,addDeletedTitle,adminCustomEvents=[],setAdminCustomEvents,sosLib=[],setSosLib,sosModeActif=true,setSosModeActif,ideesMomentConfig=[],setIdeesMomentConfig,evenementsSaisonniers=[],setEvenementsSaisonniers,customCatActivites=[],setCustomCatActivites,customCatSorties=[],setCustomCatSorties,customCatEvenements=[],setCustomCatEvenements,adminComms=[],setAdminComms,ressourcesSites=[],setRessourcesSites,ressourcesContacts=[],setRessourcesContacts,ressourcesPdf=[],setRessourcesPdf,devisBoostDemandes=[],setDevisBoostDemandes,boosts=[],setBoosts,activerBoost,retirerBoostSupabase,demoMode=false,setDemoMode}) {
   const [page,setPage] = useState("dashboard");
   const [collapsed,setCollapsed] = useState(false);
-  const pendingReports = [...adminReports,...MOCK_REPORTS].filter(r=>r.statut==="pending").length;
+  const pendingReports = adminReports.filter(r=>r.statut==="pending").length;
   return (
     <div style={{display:"flex",minHeight:"100vh",background:C.bg,fontFamily:"'DM Sans',system-ui,sans-serif",color:C.text}}>
       {/* Sidebar */}
@@ -11010,7 +11252,7 @@ function PageAdmin({onLogout,pendingContribs=[],setPendingContribs,updateContrib
           </div>
         </header>
         <main style={{flex:1,overflowY:"auto",padding:24}}>
-          {page==="contributions"?<Contributions items={pendingContribs} updateContrib={updateContrib} setPendingContribs={setPendingContribs}/>:PAGES_FN[page]?PAGES_FN[page]({sharedActivites:adminActivites,setSharedActivites:setAdminActivites,sharedSorties:adminSorties,setSharedSorties:setAdminSorties,sharedEvenements:adminEvenements,setSharedEvenements:setAdminEvenements,userReports:adminReports,setUserReports:setAdminReports,onDeleteTitle:addDeletedTitle,sharedCustomEvents:adminCustomEvents,setSharedCustomEvents:setAdminCustomEvents,pendingContribs,dashUserReports:adminReports,sosLib,setSosLib,sosModeActif,setSosModeActif,ideesMomentConfig,setIdeesMomentConfig,evenementsSaisonniers,setEvenementsSaisonniers,customCatActivites,setCustomCatActivites,customCatSorties,setCustomCatSorties,customCatEvenements,setCustomCatEvenements,adminComms,setAdminComms,ressourcesSites,setRessourcesSites,ressourcesContacts,setRessourcesContacts,ressourcesPdf,setRessourcesPdf,devisBoostDemandes,setDevisBoostDemandes,boosts,onActiverBoost:activerBoost,onRetirerBoost:retirerBoostSupabase,demoMode,setDemoMode}):null}
+          {page==="contributions"?<Contributions items={pendingContribs} updateContrib={updateContrib} setPendingContribs={setPendingContribs}/>:PAGES_FN[page]?PAGES_FN[page]({sharedActivites:adminActivites,setSharedActivites:setAdminActivites,sharedSorties:adminSorties,setSharedSorties:setAdminSorties,sharedEvenements:adminEvenements,setSharedEvenements:setAdminEvenements,userReports:adminReports,setUserReports:setAdminReports,onDeleteTitle:addDeletedTitle,sharedCustomEvents:adminCustomEvents,setSharedCustomEvents:setAdminCustomEvents,pendingContribs,setPendingContribs,dashUserReports:adminReports,sosLib,setSosLib,sosModeActif,setSosModeActif,ideesMomentConfig,setIdeesMomentConfig,evenementsSaisonniers,setEvenementsSaisonniers,customCatActivites,setCustomCatActivites,customCatSorties,setCustomCatSorties,customCatEvenements,setCustomCatEvenements,adminComms,setAdminComms,ressourcesSites,setRessourcesSites,ressourcesContacts,setRessourcesContacts,ressourcesPdf,setRessourcesPdf,devisBoostDemandes,setDevisBoostDemandes,boosts,onActiverBoost:activerBoost,onRetirerBoost:retirerBoostSupabase,demoMode,setDemoMode}):null}
         </main>
       </div>
     </div>
@@ -11253,6 +11495,7 @@ export default function App(){
   const [currentUser,setCurrentUser]=useState(null);
   const [showAuthGate,setShowAuthGate]=useState(false);
   const [showPremiumPage,setShowPremiumPage]=useState(false);
+  const [codePromoAuto,setCodePromoAuto]=useState(null);
   const [globalToast,setGlobalToast]=useState(null);
   const chargerEnfantsSupabase=async(userId)=>{
     try{
@@ -11371,6 +11614,24 @@ export default function App(){
       // La mise a jour locale reste appliquee meme si la sauvegarde echoue
     }
   };
+  const onAppliquerCodePromo=async(codeTape)=>{
+    if(!currentUser)return{ok:false,message:"Connecte-toi d'abord pour utiliser un code promo."};
+    try{
+      const {data:codeData,error}=await supabase.from("promo_codes").select("*").ilike("code",codeTape).maybeSingle();
+      if(error||!codeData)return{ok:false,message:"Ce code n'existe pas."};
+      if(!codeData.actif)return{ok:false,message:"Ce code n'est plus valide."};
+      if(codeData.max_utilisations!=null&&codeData.utilisations_actuelles>=codeData.max_utilisations)return{ok:false,message:"Ce code a atteint sa limite d'utilisation."};
+      await supabase.from("promo_codes").update({utilisations_actuelles:(codeData.utilisations_actuelles||0)+1}).eq("id",codeData.id);
+      if(codeData.type==="reduction"){
+        return{ok:true,type:"reduction",pourcentage:codeData.pourcentage,message:`Code appliqué — ${codeData.pourcentage}% de réduction sur ton abonnement !`};
+      }
+      try{ await supabase.from("profiles").update({premium:true}).eq("id",currentUser.id); }catch(e2){ /* la mise a jour locale reste appliquee ci-dessous */ }
+      await setPremiumDemo(true);
+      return{ok:true,type:"gratuit",message:codeData.description?`Premium débloqué — ${codeData.description}`:"Premium débloqué avec succès !"};
+    }catch(e){
+      return{ok:false,message:"Erreur réseau, réessaie dans un instant."};
+    }
+  };
   const [page,setPage]=useState("accueil");
   const [favoris,setFavoris]=useState([]);
   const [masquees,setMasquees]=useState([]); // items "ne plus proposer" {id, nom, _type}
@@ -11485,7 +11746,20 @@ export default function App(){
   const [evenementsSaisonniers,setEvenementsSaisonniers]=useState([
     {id:"noel",type:"christmas",nom:"Noël",actif:false,essaiActif:false,apercuGratuitJours:3,apercuGratuitType:"premiers",apercuGratuitCartesPostales:1},
   ]);
-  const addReport=(report)=>setAdminReports(prev=>[{...report,id:Date.now(),date:new Date().toLocaleDateString("fr-FR"),statut:"pending",signalePar:currentUser?.email||report.signalePar||"anonyme"},...prev]);
+  const addReport=async(report)=>{
+    const nouveau={...report,id:Date.now(),date:new Date().toLocaleDateString("fr-FR"),statut:"pending",signalePar:currentUser?.email||report.signalePar||"anonyme"};
+    setAdminReports(prev=>[nouveau,...prev]);
+    try{
+      const {data:inserted,error}=await supabase.from("signalements").insert({
+        item_type:report.type,titre:report.titre,raison:report.raison,detail:report.detail||"",
+        signale_par:nouveau.signalePar,statut:"pending",
+      }).select().single();
+      console.log("[DEBUG signalements] Résultat insertion :",inserted,"Erreur :",error);
+      if(inserted)setAdminReports(prev=>prev.map(r=>r===nouveau?{...r,id:inserted.id}:r));
+    }catch(e){
+      console.log("[DEBUG signalements] Exception :",e);
+    }
+  };
   const addDeletedTitle=(titre)=>setDeletedTitles(prev=>new Set([...prev,titre]));
   const addPendingContrib=(item)=>setPendingContribs(prev=>[{...item,id:Date.now(),_createdAt:new Date().toISOString(),_statut:"published",_signalements:0,_raisonSignalement:"",_auteur:currentUser?.nom||"Anonyme",_auteurEmail:currentUser?.email||"non connecté"},...prev]);
   const updateContrib=(id,changes)=>setPendingContribs(prev=>prev.map(c=>c.id===id?{...c,...changes}:c));
@@ -11528,8 +11802,53 @@ export default function App(){
         const {data:contactsData}=await supabase.from("ressources_contacts").select("*").order("created_at",{ascending:true});
         if(contactsData&&contactsData.length>0)setRessourcesContacts(contactsData.map(c=>({id:c.id,nom:c.nom,tel:c.tel,emoji:c.emoji,desc:c.description})));
         const {data:docsData}=await supabase.from("ressources_docs").select("*").order("created_at",{ascending:true});
-        if(docsData&&docsData.length>0)setRessourcesPdf(docsData.map(d=>({id:d.id,nom:d.nom,type:d.type,acces:d.acces,prix:d.prix,tag:d.tag,emoji:d.emoji,desc:d.description,contenu:d.contenu,telechargements:d.telechargements,revenu:d.revenu})));
+        if(docsData&&docsData.length>0)setRessourcesPdf(docsData.map(d=>({id:d.id,nom:d.nom,type:d.type,acces:d.acces,prix:d.prix,tag:d.tag,emoji:d.emoji,desc:d.description,contenu:d.contenu,telechargements:d.telechargements,revenu:d.revenu,fichierUrl:d.fichier_url})));
       }catch(e){ /* erreur réseau — reste sur les ressources par défaut */ }
+    })();
+  },[]);
+  // ── Chargement de la bibliothèque SOS depuis Supabase (données globales) ──
+  useEffect(()=>{
+    (async()=>{
+      try{
+        const {data}=await supabase.from("sos_lib").select("*").order("created_at",{ascending:true});
+        if(data&&data.length>0)setSosLib(data.map(s=>({
+          id:s.id,titre:s.titre,desc:s.description,duree:s.duree,age:s.age,materiel:s.materiel||[],statut:s.statut,
+          crise_sensorielle:s.crise_sensorielle,crise_emotionnelle:s.crise_emotionnelle,crise_agitation:s.crise_agitation,crise_concentration:s.crise_concentration,
+          profil_ordinaire:s.profil_ordinaire,profil_tsa:s.profil_tsa,profil_tdah:s.profil_tdah,profil_dys:s.profil_dys,profil_bas_age:s.profil_bas_age,
+          lieu_maison:s.lieu_maison,lieu_ecole:s.lieu_ecole,lieu_public:s.lieu_public,lieu_voiture:s.lieu_voiture,lieu_dehors:s.lieu_dehors,
+        })));
+      }catch(e){ /* erreur réseau — reste sur les techniques par défaut */ }
+    })();
+  },[]);
+  // ── Chargement des signalements depuis Supabase (données globales) ──
+  useEffect(()=>{
+    (async()=>{
+      try{
+        const {data}=await supabase.from("signalements").select("*").order("created_at",{ascending:false});
+        if(data)setAdminReports(data.map(r=>({id:r.id,type:r.item_type,titre:r.titre,raison:r.raison,detail:r.detail,signalePar:r.signale_par,statut:r.statut,date:r.created_at?new Date(r.created_at).toLocaleDateString("fr-FR"):""})));
+      }catch(e){ /* erreur réseau — reste vide */ }
+    })();
+  },[]);
+  // ── Chargement des catégories personnalisées depuis Supabase (données globales) ──
+  useEffect(()=>{
+    (async()=>{
+      try{
+        const {data}=await supabase.from("categories_custom").select("*").order("created_at",{ascending:true});
+        if(data&&data.length>0){
+          setCustomCatActivites(data.filter(c=>c.type==="activite").map(c=>({id:c.id,label:c.label,emoji:c.emoji})));
+          setCustomCatSorties(data.filter(c=>c.type==="sortie").map(c=>({id:c.id,label:c.label,emoji:c.emoji})));
+          setCustomCatEvenements(data.filter(c=>c.type==="evenement").map(c=>({id:c.id,k:c.cle,label:c.label,emoji:c.emoji})));
+        }
+      }catch(e){ /* erreur réseau — reste sur les catégories par défaut */ }
+    })();
+  },[]);
+  // ── Chargement des communications admin depuis Supabase (données globales) ──
+  useEffect(()=>{
+    (async()=>{
+      try{
+        const {data}=await supabase.from("communications").select("*").order("created_at",{ascending:false});
+        if(data&&data.length>0)setAdminComms(data.map(c=>({id:c.id,type:c.type,titre:c.titre,message:c.message,debut:c.debut,fin:c.fin,actif:c.actif,codePromo:c.code_promo})));
+      }catch(e){ /* erreur réseau — reste sur les messages par défaut */ }
     })();
   },[]);
   // ── Sauvegarde globale — toutes les données privées en 1 clé ─────────────
@@ -11570,14 +11889,14 @@ export default function App(){
           if(d.sosModeActif!==undefined)setSosModeActif(d.sosModeActif);
           if(d.pendingContribs)setPendingContribs(d.pendingContribs);
           if(d.deletedTitles)setDeletedTitles(new Set(d.deletedTitles));
-          if(d.adminReports)setAdminReports(d.adminReports);
+          // adminReports chargés depuis Supabase, plus depuis le stockage local
           if(d.customCatActivites)setCustomCatActivites(d.customCatActivites);
           if(d.customCatSorties)setCustomCatSorties(d.customCatSorties);
           if(d.customCatEvenements)setCustomCatEvenements(d.customCatEvenements);
           if(d.adminActivites)setAdminActivites(d.adminActivites);
           if(d.adminSorties)setAdminSorties(d.adminSorties);
           if(d.adminEvenements)setAdminEvenements(d.adminEvenements);
-          if(d.sosLib)setSosLib(d.sosLib);
+          // sosLib chargé depuis Supabase, plus depuis le stockage local
           if(d.devisBoostDemandes)setDevisBoostDemandes(d.devisBoostDemandes);
           if(d.boosts)setBoosts(d.boosts);
           if(d.ressourcesSites)setRessourcesSites(d.ressourcesSites);
@@ -11646,7 +11965,7 @@ export default function App(){
   if(!onboardingDone) return <Onboarding onDone={()=>setOnboardingDone(true)}/>;
   const isLoggedIn=!!currentUser;
   const requireAuth=()=>setShowAuthGate(true);
-  const openPremium=()=>setShowPremiumPage(true);
+  const openPremium=(codePromoAuto)=>{setCodePromoAuto(codePromoAuto||null);setShowPremiumPage(true);};
   const handleSubscribe=async()=>{
     await setPremiumDemo(true);
     setShowPremiumPage(false);
@@ -11696,7 +12015,7 @@ export default function App(){
       )}
       {showPremiumPage&&(
         <div style={{position:"fixed",inset:0,background:BG,zIndex:910,overflowY:"auto"}}>
-          <PagePremium onBack={()=>setShowPremiumPage(false)} onSubscribe={handleSubscribe} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} premiumTrialUsed={premiumTrialUsed} onStartTrial={async()=>{
+          <PagePremium onBack={()=>setShowPremiumPage(false)} onSubscribe={handleSubscribe} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} premiumTrialUsed={premiumTrialUsed} onAppliquerCodePromo={onAppliquerCodePromo} codePromoAuto={codePromoAuto} onStartTrial={async()=>{
             if(!currentUser?.id){requireAuth&&requireAuth();return;}
             // Vérification serveur — empêche le contournement (localStorage effacé, autre appareil, etc.)
             const {data:profilActuel}=await supabase.from("profiles").select("premium_trial_used").eq("id",currentUser.id).single();

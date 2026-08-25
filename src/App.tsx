@@ -9386,7 +9386,14 @@ function Saisonnier({sharedCustomEvents=[],setSharedCustomEvents,evenementsSaiso
   const [selectedEvt,setSelectedEvt] = useState(null); // event being viewed/edited
   const toggle = (id,field) => setSections(sections.map(s=>s.id===id?{...s,[field]:!s[field]}:s));
   const toggleCustom = (id,field) => setCustomEvents(prev=>prev.map(e=>e.id===id?{...e,[field]:!e[field]}:e));
-  const updateFreemium = (id,changes) => setEvenementsSaisonniers&&setEvenementsSaisonniers(prev=>prev.map(e=>e.id===id?{...e,...changes}:e));
+  const updateFreemium = (id,changes) => {
+    setEvenementsSaisonniers&&setEvenementsSaisonniers(prev=>prev.map(e=>e.id===id?{...e,...changes}:e));
+    const item=evenementsSaisonniers.find(e=>e.id===id)||{};
+    const merged={...item,...changes};
+    const payload={id,type:merged.type,nom:merged.nom,actif:merged.actif,essai_actif:merged.essaiActif,
+      apercu_gratuit_jours:merged.apercuGratuitJours,apercu_gratuit_type:merged.apercuGratuitType,apercu_gratuit_cartes_postales:merged.apercuGratuitCartesPostales};
+    supabase.from("evenements_saisonniers_config").upsert(payload).then(()=>{},()=>{});
+  };
   const handleSaveCustom = (evt) => { setCustomEvents(prev=>[...prev,evt]); setCreerEvt(false); };
   const handleUpdateEvt = (updated) => { setCustomEvents(prev=>prev.map(e=>e.id===updated.id?updated:e)); setSelectedEvt(null); };
   const handleDeleteEvt = (id) => { setCustomEvents(prev=>prev.filter(e=>e.id!==id)); setSelectedEvt(null); };
@@ -11729,10 +11736,9 @@ export default function App(){
         item_type:report.type,titre:report.titre,raison:report.raison,detail:report.detail||"",
         signale_par:nouveau.signalePar,statut:"pending",
       }).select().single();
-      console.log("[DEBUG signalements] Résultat insertion :",inserted,"Erreur :",error);
       if(inserted)setAdminReports(prev=>prev.map(r=>r===nouveau?{...r,id:inserted.id}:r));
     }catch(e){
-      console.log("[DEBUG signalements] Exception :",e);
+      // le signalement reste visible localement même si la sauvegarde échoue
     }
   };
   const addDeletedTitle=(titre)=>setDeletedTitles(prev=>new Set([...prev,titre]));
@@ -11824,6 +11830,18 @@ export default function App(){
         const {data}=await supabase.from("communications").select("*").order("created_at",{ascending:false});
         if(data&&data.length>0)setAdminComms(data.map(c=>({id:c.id,type:c.type,titre:c.titre,message:c.message,debut:c.debut,fin:c.fin,actif:c.actif,codePromo:c.code_promo})));
       }catch(e){ /* erreur réseau — reste sur les messages par défaut */ }
+    })();
+  },[]);
+  // ── Chargement des paramètres événements saisonniers depuis Supabase (données globales) ──
+  useEffect(()=>{
+    (async()=>{
+      try{
+        const {data}=await supabase.from("evenements_saisonniers_config").select("*");
+        if(data&&data.length>0)setEvenementsSaisonniers(data.map(e=>({
+          id:e.id,type:e.type,nom:e.nom,actif:e.actif,essaiActif:e.essai_actif,
+          apercuGratuitJours:e.apercu_gratuit_jours,apercuGratuitType:e.apercu_gratuit_type,apercuGratuitCartesPostales:e.apercu_gratuit_cartes_postales,
+        })));
+      }catch(e){ /* erreur réseau — reste sur la config par défaut */ }
     })();
   },[]);
   // ── Sauvegarde globale — toutes les données privées en 1 clé ─────────────

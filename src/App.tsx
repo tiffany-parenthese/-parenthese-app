@@ -3330,6 +3330,7 @@ function PageAccueil({favoris,setFavoris,setPage,customEvents=[],popupShown=new 
   const [resultS,setResultS]=useState(null);
   const [showFiltres,setShowFiltres]=useState(false);
   const [showEvtBiblio,setShowEvtBiblio]=useState(null); // evt object or null
+  const [detailActiviteEvt,setDetailActiviteEvt]=useState(null); // activité affichée en détail
   const [showFichier,setShowFichier]=useState(null); // fichier object or null
   const today=new Date().toISOString().split("T")[0];
   const activeCustomEvents=customEvents.filter(e=>e.actif&&(!e.dateDebut||e.dateDebut<=today)&&(!e.dateFin||e.dateFin>=today));
@@ -4063,7 +4064,7 @@ function PageAccueil({favoris,setFavoris,setPage,customEvents=[],popupShown=new 
                     <p style={{fontSize:13,color:TM}}>Les activités de cet événement arrivent bientôt !</p>
                   </div>
                 ):activites.map(a=>(
-                  <div key={a.id} style={{background:WH,borderRadius:16,padding:"14px 16px",border:"1px solid rgba(0,0,0,0.06)",marginBottom:10,boxShadow:"0 2px 8px rgba(0,0,0,0.05)"}}>
+                  <div key={a.id} onClick={()=>setDetailActiviteEvt({...a,materiel:Array.isArray(a.materiel)?a.materiel:(a.materiel?String(a.materiel).split(",").map(m=>m.trim()).filter(Boolean):[]),etapes:Array.isArray(a.etapes)?a.etapes:(a.etapes?String(a.etapes).split("\n").map(m=>m.trim()).filter(Boolean):[])})} style={{background:WH,borderRadius:16,padding:"14px 16px",border:"1px solid rgba(0,0,0,0.06)",marginBottom:10,boxShadow:"0 2px 8px rgba(0,0,0,0.05)",cursor:"pointer"}}>
                     <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:6}}>
                       <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
                         <span style={{fontSize:11,background:(showEvtBiblio.couleur||"#6C5CE7")+"22",color:(showEvtBiblio.couleur||"#6C5CE7"),padding:"3px 10px",borderRadius:20,fontWeight:600}}>{a.categorie}</span>
@@ -4074,7 +4075,7 @@ function PageAccueil({favoris,setFavoris,setPage,customEvents=[],popupShown=new 
                     {a.desc&&<p style={{margin:"0 0 8px",fontSize:13,color:TM,lineHeight:1.5}}>{a.desc}</p>}
                     {a.age&&<p style={{margin:"0 0 8px",fontSize:12,color:TM}}>👶 {a.age}</p>}
                     {a.materiel&&<div style={{background:BG,borderRadius:10,padding:"8px 12px",marginBottom:8}}><p style={{margin:"0 0 4px",fontSize:11,fontWeight:600,color:TX}}>🛒 Matériel</p><p style={{margin:0,fontSize:12,color:TM}}>{a.materiel}</p></div>}
-                    <button onClick={()=>setFavorisGuarded(prev=>{const exists=prev.find(f=>f.id===a.id&&f._type==="activite");if(exists)return prev;return[...prev,{...a,nom:a.titre,_type:"activite"}];})} style={{width:"100%",padding:"10px 0",borderRadius:28,background:favoris.some(f=>f.id===a.id&&f._type==="activite")?BG:showEvtBiblio.couleur,border:favoris.some(f=>f.id===a.id&&f._type==="activite")?`1.5px solid ${showEvtBiblio.couleur}`:"none",color:favoris.some(f=>f.id===a.id&&f._type==="activite")?showEvtBiblio.couleur:"#fff",fontWeight:700,fontSize:13,cursor:"pointer"}}>
+                    <button onClick={e=>{e.stopPropagation();setFavorisGuarded(prev=>{const exists=prev.find(f=>f.id===a.id&&f._type==="activite");if(exists)return prev;return[...prev,{...a,nom:a.titre,_type:"activite"}];});}} style={{width:"100%",padding:"10px 0",borderRadius:28,background:favoris.some(f=>f.id===a.id&&f._type==="activite")?BG:showEvtBiblio.couleur,border:favoris.some(f=>f.id===a.id&&f._type==="activite")?`1.5px solid ${showEvtBiblio.couleur}`:"none",color:favoris.some(f=>f.id===a.id&&f._type==="activite")?showEvtBiblio.couleur:"#fff",fontWeight:700,fontSize:13,cursor:"pointer"}}>
                       {favoris.some(f=>f.id===a.id&&f._type==="activite")?"❤️ Sauvegardé":"❤️ Sauvegarder"}
                     </button>
                   </div>
@@ -4086,6 +4087,11 @@ function PageAccueil({favoris,setFavoris,setPage,customEvents=[],popupShown=new 
       )}
 
       {showFichier&&<FichierViewer fichier={showFichier} couleur={showFichier.couleur||V} onClose={()=>setShowFichier(null)}/>}
+      {detailActiviteEvt&&(
+        <div style={{position:"fixed",inset:0,zIndex:600,background:"#fff",overflowY:"auto"}}>
+          <ActivityDetailPage activity={detailActiviteEvt} isFavorite={favoris.some(f=>f.id===detailActiviteEvt.id&&f._type==="activite")} onToggleFavorite={()=>setFavorisGuarded(prev=>{const exists=prev.find(f=>f.id===detailActiviteEvt.id&&f._type==="activite");if(exists)return prev.filter(f=>!(f.id===detailActiviteEvt.id&&f._type==="activite"));return[...prev,{...detailActiviteEvt,nom:detailActiviteEvt.titre,_type:"activite"}];})} onBack={()=>setDetailActiviteEvt(null)} isLoggedIn={isLoggedIn} onRequireAuth={onRequireAuth} onMasquer={toggleMasquer?()=>toggleMasquer(detailActiviteEvt,"activite"):undefined} estMasque={estMasque?estMasque(detailActiviteEvt,"activite"):false}/>
+        </div>
+      )}
 
       {/* Pop-up événement saisonnier */}
       {currentPopup&&(
@@ -8749,6 +8755,7 @@ function BiblioNoel({onBack,sharedActivites=[],setSharedActivites}) {
   };
   useScheduler(setActivites,syncActivites);
   const [modal,setModal] = useState(null);
+  const [previewActivite,setPreviewActivite] = useState(null);
   const [form,setForm] = useState({titre:"",categorie:"",lieu:"",energie:"",duree:"",difficulte:"",ageMin:"",ageMax:"",desc:"",materiel:"",etapes:"",premium:false,statut:"draft"});
   const save = () => {
     if(!form.titre) return;
@@ -8785,7 +8792,7 @@ function BiblioNoel({onBack,sharedActivites=[],setSharedActivites}) {
           <tbody>{activites.map((a,i)=>(
             <tr key={a.id} style={{borderTop:`1px solid ${C.border}`}}>
               <td style={{padding:"12px 16px"}}>
-                <p style={{margin:"0 0 4px",fontSize:13,color:C.text,fontWeight:500}}>{a.titre||"Sans titre"}</p>
+                <p onClick={()=>setPreviewActivite({...a,materiel:Array.isArray(a.materiel)?a.materiel:(a.materiel?String(a.materiel).split(",").map(m=>m.trim()).filter(Boolean):[]),etapes:Array.isArray(a.etapes)?a.etapes:(a.etapes?String(a.etapes).split("\n").map(m=>m.trim()).filter(Boolean):[])})} style={{margin:"0 0 4px",fontSize:13,color:C.accent,fontWeight:600,cursor:"pointer",textDecoration:"underline",textDecorationColor:"transparent"}} onMouseEnter={e=>e.target.style.textDecorationColor=C.accent} onMouseLeave={e=>e.target.style.textDecorationColor="transparent"}>{a.titre||"Sans titre"}</p>
                 {a.etiquettes?.length>0&&<div style={{display:"flex",gap:4,flexWrap:"wrap"}}>{a.etiquettes.map((e,i)=><span key={i} style={{fontSize:9,background:e.bg||"#f3f4f6",color:e.color||"#6b7280",padding:"1px 6px",borderRadius:8,fontWeight:600}}>{e.label}</span>)}</div>}
               </td>
               <td style={{padding:"12px 16px"}}><span style={s.badge("rgba(16,185,129,0.15)","#10b981")}>{a.categorie||"-"}</span></td>
@@ -8891,9 +8898,15 @@ function BiblioNoel({onBack,sharedActivites=[],setSharedActivites}) {
         </Modal>
         );
       })()}
+      {previewActivite&&(
+        <div style={{position:"fixed",inset:0,zIndex:100,background:"#fff",overflowY:"auto"}}>
+          <ActivityDetailPage activity={previewActivite} onBack={()=>setPreviewActivite(null)} onReport={()=>{}}/>
+        </div>
+      )}
     </div>
   );
 }
+
 
 function CreerEvenement({onBack,onSave}) {
   const [form,setForm] = useState({nom:"",emoji:"🎉",couleur:"#7c3aed",dateDebut:"",dateFin:"",banner:false,bannerTexte:"",popup:false,popupTexte:"",bibliotheque:true,generateur:true,generateurActif:true,premium:false,essaiActif:false,apercuGratuitJours:3,fichiers:[]});

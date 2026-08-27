@@ -3200,6 +3200,64 @@ function LutinView({onBack,evenementsSaisonniers=[],isPremium=false,onOpenPremiu
 }
 
 
+function VoyageDuLutin({onBack,cartesVoyageLutin=[],evenementsSaisonniers=[],isPremium=false,onOpenPremium}){
+  const evenementNoel = evenementsSaisonniers.find(e=>e.id==="noel");
+  const nbGratuit = evenementNoel?.apercuGratuitCartesPostales??1;
+  const carteEstAccessible=(index)=>isPremium||index<nbGratuit;
+
+  const telecharger=(carte)=>{
+    if(!carte.photoUrl)return;
+    const a=document.createElement("a");
+    a.href=carte.photoUrl;
+    a.download=(carte.titre||"carte-du-lutin").replace(/[^a-z0-9]+/gi,"-")+".jpg";
+    a.target="_blank";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  };
+
+  return(
+    <div style={{background:"#0f1f3d",minHeight:"100vh",fontFamily:"system-ui,-apple-system,sans-serif"}}>
+      <div style={{background:"linear-gradient(135deg,#1e3a6f,#2d5aa8)",padding:"18px 20px 24px",position:"relative"}}>
+        <button onClick={onBack} style={{position:"absolute",top:16,left:16,width:34,height:34,borderRadius:"50%",background:"rgba(255,255,255,0.15)",border:"none",color:"#fff",fontSize:18,cursor:"pointer"}}>←</button>
+        <p style={{margin:"0 0 6px",fontSize:22,fontWeight:800,color:"#fff",textAlign:"center"}}>✈️ Le voyage du lutin</p>
+        <p style={{margin:0,fontSize:13,color:"rgba(255,255,255,0.65)",textAlign:"center"}}>Suis le lutin dans son tour du monde avant Noël</p>
+      </div>
+
+      <div style={{padding:"20px 16px 40px",display:"flex",flexDirection:"column",gap:14}}>
+        {cartesVoyageLutin.length===0&&<p style={{textAlign:"center",fontSize:13,color:"rgba(255,255,255,0.5)"}}>Le voyage n'a pas encore commencé, reviens bientôt !</p>}
+        {cartesVoyageLutin.map((carte,i)=>{
+          const accessible=carteEstAccessible(i);
+          return(
+            <div key={carte.id} style={{background:"rgba(255,255,255,0.06)",borderRadius:18,overflow:"hidden",border:"1px solid rgba(255,255,255,0.1)",position:"relative"}}>
+              {carte.photoUrl?(
+                <img src={carte.photoUrl} alt="" style={{width:"100%",height:180,objectFit:"cover",filter:accessible?"none":"blur(14px)"}}/>
+              ):(
+                <div style={{width:"100%",height:180,display:"flex",alignItems:"center",justifyContent:"center",fontSize:48,filter:accessible?"none":"blur(6px)"}}>✈️</div>
+              )}
+              {!accessible&&(
+                <div style={{position:"absolute",top:0,left:0,right:0,height:180,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:8,background:"rgba(15,31,61,0.5)"}}>
+                  <span style={{fontSize:28}}>🔒</span>
+                  <button onClick={()=>onOpenPremium&&onOpenPremium()} style={{padding:"8px 18px",borderRadius:20,background:"#fff",border:"none",color:"#1e3a6f",fontWeight:700,fontSize:12,cursor:"pointer"}}>Débloquer avec Premium ⭐</button>
+                </div>
+              )}
+              <div style={{padding:"14px 16px"}}>
+                <p style={{margin:"0 0 4px",fontSize:11,color:"rgba(255,255,255,0.4)",fontWeight:700}}>ÉTAPE {i+1}</p>
+                <p style={{margin:"0 0 6px",fontSize:15,fontWeight:800,color:"#fff"}}>{accessible?carte.titre:"🔒 Carte verrouillée"}</p>
+                {accessible&&<p style={{margin:"0 0 10px",fontSize:13,color:"rgba(255,255,255,0.7)",lineHeight:1.5}}>{carte.texte}</p>}
+                {accessible&&carte.photoUrl&&(
+                  <button onClick={()=>telecharger(carte)} style={{width:"100%",padding:"10px 0",borderRadius:14,background:"rgba(255,255,255,0.12)",border:"1px solid rgba(255,255,255,0.2)",color:"#fff",fontWeight:600,fontSize:12,cursor:"pointer"}}>⬇️ Télécharger cette carte</button>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+
 function FichierViewer({fichier,couleur,onClose}){
   const isImage=fichier.type?.startsWith("image");
   const isPdf=fichier.type?.includes("pdf");
@@ -3306,7 +3364,7 @@ function EvtGenerateur({evt,activites,favoris,setFavoris,isPremium=false}){
   );
 }
 
-function PageAccueil({favoris,setFavoris,setPage,customEvents=[],popupShown=new Set(),setPopupShown,ideesMomentConfig=[],isLoggedIn=true,onRequireAuth,evenementsSaisonniers=[],isPremium=false,onOpenPremium,customCatActivites=[],customCatSorties=[],customCatEvenements=[],adminActivites=[],adminSorties=[],pendingContribs=[],setPendingContribs,deletedTitles=new Set(),currentUser=null,sosModeActif=true,enfants=[],enfantActif=null,setEnfantActif,onMarquerFait,historiqueActivites=[],filtresMemoActiv={},setFiltresMemoActiv,filtresMemoSortie={},setFiltresMemoSortie,adminComms=[],masquees=[],toggleMasquer,estMasque,ajouterDemandeDevisBoost,trialEndDate=null,betisesLutin=[]}){
+function PageAccueil({favoris,setFavoris,setPage,customEvents=[],popupShown=new Set(),setPopupShown,ideesMomentConfig=[],isLoggedIn=true,onRequireAuth,evenementsSaisonniers=[],isPremium=false,onOpenPremium,customCatActivites=[],customCatSorties=[],customCatEvenements=[],adminActivites=[],adminSorties=[],pendingContribs=[],setPendingContribs,deletedTitles=new Set(),currentUser=null,sosModeActif=true,enfants=[],enfantActif=null,setEnfantActif,onMarquerFait,historiqueActivites=[],filtresMemoActiv={},setFiltresMemoActiv,filtresMemoSortie={},setFiltresMemoSortie,adminComms=[],masquees=[],toggleMasquer,estMasque,ajouterDemandeDevisBoost,trialEndDate=null,betisesLutin=[],cartesVoyageLutin=[]}){
   const FAVORIS_LIMITE_GRATUIT=10;
   const [showFavorisLimitMsg,setShowFavorisLimitMsg]=useState(false);
   const [rappelAnticiper,setRappelAnticiper]=useState(null); // item activité récemment marquée "fait"
@@ -3344,6 +3402,7 @@ function PageAccueil({favoris,setFavoris,setPage,customEvents=[],popupShown=new 
   const [currentPopup,setCurrentPopup]=useState(null);
   useEffect(()=>{if(pendingPopups.length>0&&!currentPopup){setCurrentPopup(pendingPopups[0]);if(setPopupShown)setPopupShown(prev=>new Set([...prev,pendingPopups[0].id]));}},[]); // eslint-disable-line
   const [showLutinView,setShowLutinView]=useState(false);
+  const [showVoyageLutin,setShowVoyageLutin]=useState(false);
   const [showAdminSheet,setShowAdminSheet]=useState(false);
   const [adminActRandom,setAdminActRandom]=useState(null);
   const [showNatureSheet,setShowNatureSheet]=useState(false);
@@ -3572,6 +3631,7 @@ function PageAccueil({favoris,setFavoris,setPage,customEvents=[],popupShown=new 
   return(
     <div style={{background:BG,minHeight:"100vh",paddingBottom:8}}>
       {showLutinView&&<LutinView onBack={()=>setShowLutinView(false)} evenementsSaisonniers={evenementsSaisonniers} isPremium={isPremium} onOpenPremium={onOpenPremium} betisesLutin={betisesLutin}/>}
+      {showVoyageLutin&&<VoyageDuLutin onBack={()=>setShowVoyageLutin(false)} cartesVoyageLutin={cartesVoyageLutin} evenementsSaisonniers={evenementsSaisonniers} isPremium={isPremium} onOpenPremium={onOpenPremium}/>}
 
       {showFavorisLimitMsg&&(
         <div onClick={()=>setShowFavorisLimitMsg(false)} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.5)",zIndex:600,display:"flex",alignItems:"center",justifyContent:"center",padding:"0 24px"}}>
@@ -3767,13 +3827,18 @@ function PageAccueil({favoris,setFavoris,setPage,customEvents=[],popupShown=new 
 
         {/* Banniere saisonniere — affichage controle par l'admin (Saisonnier) */}
         {evenementsSaisonniers.find(e=>e.id==="noel")?.actif&&(
-          <div style={{background:"linear-gradient(135deg,#EDE9FF 60%,#d4ccf7 100%)",borderRadius:20,padding:"16px 16px",marginBottom:12,display:"flex",alignItems:"center",gap:12,border:BD}}>
-            <span style={{fontSize:40,flexShrink:0}}>🎄</span>
-            <div style={{flex:1}}>
-              <p style={{margin:"0 0 2px",fontSize:14,fontWeight:700,color:TX}}>Le Village du Lutin est ouvert !</p>
-              <p style={{margin:0,fontSize:11,color:TM,lineHeight:1.4}}>Des activites magiques vous attendent jusqu au 24 decembre.</p>
+          <div style={{background:"linear-gradient(135deg,#EDE9FF 60%,#d4ccf7 100%)",borderRadius:20,padding:"16px 16px",marginBottom:12,border:BD}}>
+            <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:10}}>
+              <span style={{fontSize:40,flexShrink:0}}>🎄</span>
+              <div style={{flex:1}}>
+                <p style={{margin:"0 0 2px",fontSize:14,fontWeight:700,color:TX}}>Le Village du Lutin est ouvert !</p>
+                <p style={{margin:0,fontSize:11,color:TM,lineHeight:1.4}}>Des activites magiques vous attendent jusqu au 24 decembre.</p>
+              </div>
             </div>
-            <button onClick={()=>setShowLutinView(true)} style={{background:V,border:"none",borderRadius:28,color:WH,fontWeight:700,fontSize:12,padding:"9px 13px",cursor:"pointer",flexShrink:0,whiteSpace:"nowrap"}}>Decouvrir ✨</button>
+            <div style={{display:"flex",gap:8}}>
+              <button onClick={()=>setShowLutinView(true)} style={{flex:1,background:V,border:"none",borderRadius:28,color:WH,fontWeight:700,fontSize:12,padding:"9px 13px",cursor:"pointer",whiteSpace:"nowrap"}}>🧦 Bêtises ✨</button>
+              <button onClick={()=>setShowVoyageLutin(true)} style={{flex:1,background:"#2d5aa8",border:"none",borderRadius:28,color:WH,fontWeight:700,fontSize:12,padding:"9px 13px",cursor:"pointer",whiteSpace:"nowrap"}}>✈️ Voyage</button>
+            </div>
           </div>
         )}
 
@@ -9040,6 +9105,114 @@ function AdminBetisesLutin({betisesLutin=[],setBetisesLutin,onBack}) {
 }
 
 
+function AdminCartesVoyageLutin({cartesVoyageLutin=[],setCartesVoyageLutin,onBack}) {
+  const [modal,setModal] = useState(null);
+  const [form,setForm] = useState({titre:"",texte:"",photoUrl:""});
+  const [uploadEnCours,setUploadEnCours] = useState(false);
+
+  const openAdd=()=>{setForm({titre:"",texte:"",photoUrl:""});setModal({mode:"add"});};
+  const openEdit=(item)=>{setForm({titre:item.titre||"",texte:item.texte||"",photoUrl:item.photoUrl||""});setModal({mode:"edit",item});};
+
+  const save=async()=>{
+    if(!form.titre.trim()){alert("Le titre est obligatoire.");return;}
+    const payload={titre:form.titre.trim(),texte:form.texte.trim(),photo_url:form.photoUrl||null};
+    if(modal.mode==="edit"){
+      const item=modal.item;
+      setCartesVoyageLutin(prev=>prev.map(c=>c.id===item.id?{...c,titre:payload.titre,texte:payload.texte,photoUrl:payload.photo_url}:c));
+      try{ await supabase.from("cartes_voyage_lutin").update(payload).eq("id",item.id); }catch(e){}
+    }else{
+      const tempId="temp"+Date.now();
+      const nouvelle={id:tempId,titre:payload.titre,texte:payload.texte,photoUrl:payload.photo_url};
+      setCartesVoyageLutin(prev=>[...prev,nouvelle]);
+      try{
+        const {data:inserted}=await supabase.from("cartes_voyage_lutin").insert({...payload,ordre:cartesVoyageLutin.length}).select().single();
+        if(inserted)setCartesVoyageLutin(prev=>prev.map(c=>c.id===tempId?{...c,id:inserted.id}:c));
+      }catch(e){ /* la carte reste visible localement même si la sauvegarde échoue */ }
+    }
+    setModal(null);
+  };
+
+  const supprimer=async(item)=>{
+    if(!window.confirm(`Supprimer la carte "${item.titre}" ?`))return;
+    setCartesVoyageLutin(prev=>prev.filter(c=>c.id!==item.id));
+    try{ await supabase.from("cartes_voyage_lutin").delete().eq("id",item.id); }catch(e){}
+  };
+
+  const uploadPhoto=async(file)=>{
+    setUploadEnCours(true);
+    try{
+      const ext=file.name.split(".").pop();
+      const path=`voyage-lutin/${Date.now()}_${Math.random().toString(36).slice(2,8)}.${ext}`;
+      const {error:upErr}=await supabase.storage.from("ressources-fichiers").upload(path,file);
+      if(upErr){alert("Erreur lors de l'envoi de la photo : "+upErr.message);}
+      else{
+        const {data:pub}=supabase.storage.from("ressources-fichiers").getPublicUrl(path);
+        setForm(f=>({...f,photoUrl:pub.publicUrl}));
+      }
+    }catch(e){alert("Erreur lors de l'envoi de la photo.");}
+    setUploadEnCours(false);
+  };
+
+  return(
+    <div>
+      <div style={{display:"flex",alignItems:"center",gap:14,marginBottom:20}}>
+        <button onClick={onBack} style={{...s.btnOutline(C.muted),display:"flex",alignItems:"center",gap:6}}>← Retour</button>
+        <div>
+          <h1 style={{fontSize:22,fontWeight:800,color:C.text,margin:0}}>✈️ Voyage du lutin</h1>
+          <p style={{fontSize:13,color:C.muted,margin:"4px 0 0"}}>Cartes postales téléchargeables — le tour du monde du lutin avant Noël</p>
+        </div>
+        <button style={{...s.btn(C.accent),marginLeft:"auto"}} onClick={openAdd}>+ Ajouter une carte</button>
+      </div>
+
+      {cartesVoyageLutin.length===0&&<p style={{fontSize:13,color:C.muted,fontStyle:"italic"}}>Aucune carte pour le moment. Ajoute la première étape du voyage !</p>}
+
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(260px,1fr))",gap:14}}>
+        {cartesVoyageLutin.map((c,i)=>(
+          <div key={c.id} style={s.card}>
+            {c.photoUrl?(
+              <img src={c.photoUrl} alt="" style={{width:"100%",height:140,objectFit:"cover",borderRadius:10,marginBottom:10}}/>
+            ):(
+              <div style={{width:"100%",height:140,borderRadius:10,marginBottom:10,background:C.card,display:"flex",alignItems:"center",justifyContent:"center",fontSize:32}}>✈️</div>
+            )}
+            <p style={{margin:"0 0 4px",fontSize:11,color:C.muted,fontWeight:700}}>CARTE {i+1}</p>
+            <p style={{margin:"0 0 6px",fontSize:14,fontWeight:700,color:C.text}}>{c.titre}</p>
+            <p style={{margin:"0 0 10px",fontSize:12,color:C.muted,lineHeight:1.4}}>{c.texte}</p>
+            <div style={{display:"flex",gap:6}}>
+              <button style={s.btnOutline(C.accent)} onClick={()=>openEdit(c)}>✏️ Modifier</button>
+              <button style={s.btnOutline(C.red)} onClick={()=>supprimer(c)}>🗑️</button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {modal&&(
+        <Modal title={modal.mode==="edit"?"Modifier la carte":"Nouvelle carte du voyage"} onClose={()=>setModal(null)}>
+          <AdminField label="Titre *"><input style={s.input} value={form.titre} onChange={e=>setForm({...form,titre:e.target.value})} placeholder="Ex : Étape 1 — Le lutin quitte le Pôle Nord"/></AdminField>
+          <AdminField label="Texte de la carte"><textarea style={{...s.input,minHeight:90,resize:"vertical"}} value={form.texte} onChange={e=>setForm({...form,texte:e.target.value})} placeholder="Raconte cette étape du voyage du lutin..."/></AdminField>
+          <AdminField label="Photo / illustration">
+            {form.photoUrl?(
+              <div style={{display:"flex",alignItems:"center",gap:10}}>
+                <img src={form.photoUrl} alt="" style={{width:64,height:64,borderRadius:10,objectFit:"cover"}}/>
+                <button onClick={()=>setForm({...form,photoUrl:""})} style={{background:"none",border:"none",color:C.red,fontSize:12,cursor:"pointer"}}>Retirer la photo</button>
+              </div>
+            ):(
+              <div>
+                <input type="file" accept="image/*" disabled={uploadEnCours} onChange={e=>{const f=e.target.files[0];if(f)uploadPhoto(f);}} style={{fontSize:12}}/>
+                {uploadEnCours&&<p style={{margin:"6px 0 0",fontSize:11,color:C.muted}}>Envoi en cours...</p>}
+              </div>
+            )}
+          </AdminField>
+          <div style={{display:"flex",justifyContent:"flex-end",gap:8,marginTop:12,paddingTop:12,borderTop:`1px solid ${C.border}`}}>
+            <button style={s.btnOutline(C.muted)} onClick={()=>setModal(null)}>Annuler</button>
+            <button style={s.btn(C.accent)} onClick={save}>{modal.mode==="edit"?"Enregistrer":"Créer"}</button>
+          </div>
+        </Modal>
+      )}
+    </div>
+  );
+}
+
+
 function CreerEvenement({onBack,onSave}) {
   const [form,setForm] = useState({nom:"",emoji:"🎉",couleur:"#7c3aed",dateDebut:"",dateFin:"",banner:false,bannerTexte:"",popup:false,popupTexte:"",bibliotheque:true,generateur:true,generateurActif:true,premium:false,essaiActif:false,apercuGratuitJours:3,fichiers:[]});
   const [bibliothequeActiv,setBibliothequeActiv] = useState([]);
@@ -9522,12 +9695,13 @@ function DetailEvenement({evt,onBack,onSave,onDelete,onArchive,toggleCustom}){
   );
 }
 
-function Saisonnier({sharedCustomEvents=[],setSharedCustomEvents,evenementsSaisonniers=[],setEvenementsSaisonniers,sharedActivites=[],setSharedActivites,betisesLutin=[],setBetisesLutin}) {
+function Saisonnier({sharedCustomEvents=[],setSharedCustomEvents,evenementsSaisonniers=[],setEvenementsSaisonniers,sharedActivites=[],setSharedActivites,betisesLutin=[],setBetisesLutin,cartesVoyageLutin=[],setCartesVoyageLutin}) {
   const [sections,setSections] = useState(MOCK_SEASONAL);
   const customEvents = sharedCustomEvents;
   const setCustomEvents = setSharedCustomEvents||((fn)=>{});
   const [biblioNoel,setBiblioNoel] = useState(false);
   const [betisesLutinAdmin,setBetisesLutinAdmin] = useState(false);
+  const [voyageLutinAdmin,setVoyageLutinAdmin] = useState(false);
   const [creerEvt,setCreerEvt] = useState(false);
   const [selectedEvt,setSelectedEvt] = useState(null); // event being viewed/edited
   const toggle = (id,field) => setSections(sections.map(s=>s.id===id?{...s,[field]:!s[field]}:s));
@@ -9547,6 +9721,7 @@ function Saisonnier({sharedCustomEvents=[],setSharedCustomEvents,evenementsSaiso
   const handleRestoreEvt = (id) => { setCustomEvents(prev=>prev.map(e=>e.id===id?{...e,archive:false}:e)); };
   if(biblioNoel) return <BiblioNoel onBack={()=>setBiblioNoel(false)} sharedActivites={sharedActivites} setSharedActivites={setSharedActivites}/>;
   if(betisesLutinAdmin) return <AdminBetisesLutin onBack={()=>setBetisesLutinAdmin(false)} betisesLutin={betisesLutin} setBetisesLutin={setBetisesLutin}/>;
+  if(voyageLutinAdmin) return <AdminCartesVoyageLutin onBack={()=>setVoyageLutinAdmin(false)} cartesVoyageLutin={cartesVoyageLutin} setCartesVoyageLutin={setCartesVoyageLutin}/>;
   if(creerEvt) return <CreerEvenement onBack={()=>setCreerEvt(false)} onSave={handleSaveCustom}/>;
   if(selectedEvt) return <DetailEvenement evt={selectedEvt} onBack={()=>setSelectedEvt(null)} onSave={handleUpdateEvt} onDelete={handleDeleteEvt} onArchive={handleArchiveEvt} toggleCustom={toggleCustom}/>;
   return (
@@ -9648,11 +9823,11 @@ function Saisonnier({sharedCustomEvents=[],setSharedCustomEvents,evenementsSaiso
               {sec.type==="christmas"&&(
                 <div style={{paddingTop:12,borderTop:`1px solid ${C.border}`,marginTop:4}}>
                   <p style={{margin:"0 0 8px",fontSize:12,color:C.muted,fontWeight:600}}>📚 Contenu dédié</p>
-                  <button onClick={()=>setBiblioNoel(true)} style={{...s.btn("#10b981"),width:"100%",justifyContent:"center",borderRadius:10,marginBottom:8}}>
-                    <span>📚</span> Gérer la bibliothèque Noël →
-                  </button>
-                  <button onClick={()=>setBetisesLutinAdmin(true)} style={{...s.btn("#7c3aed"),width:"100%",justifyContent:"center",borderRadius:10}}>
+                  <button onClick={()=>setBetisesLutinAdmin(true)} style={{...s.btn("#7c3aed"),width:"100%",justifyContent:"center",borderRadius:10,marginBottom:8}}>
                     <span>🧦</span> Gérer les bêtises du lutin →
+                  </button>
+                  <button onClick={()=>setVoyageLutinAdmin(true)} style={{...s.btn("#2d5aa8"),width:"100%",justifyContent:"center",borderRadius:10}}>
+                    <span>✈️</span> Gérer le voyage du lutin →
                   </button>
                   {(() => {
                     const evt = evenementsSaisonniers.find(e=>e.type==="christmas");
@@ -11339,7 +11514,7 @@ function AdminSOS({sosLib=[],setSosLib,sosModeActif=true,setSosModeActif}){
   );
 }
 
-function PageAdmin({onLogout,pendingContribs=[],setPendingContribs,updateContrib,adminActivites=[],setAdminActivites,adminSorties=[],setAdminSorties,adminEvenements=[],setAdminEvenements,adminReports=[],setAdminReports,addDeletedTitle,adminCustomEvents=[],setAdminCustomEvents,sosLib=[],setSosLib,sosModeActif=true,setSosModeActif,ideesMomentConfig=[],setIdeesMomentConfig,evenementsSaisonniers=[],setEvenementsSaisonniers,betisesLutin=[],setBetisesLutin,customCatActivites=[],setCustomCatActivites,customCatSorties=[],setCustomCatSorties,customCatEvenements=[],setCustomCatEvenements,adminComms=[],setAdminComms,ressourcesSites=[],setRessourcesSites,ressourcesContacts=[],setRessourcesContacts,ressourcesPdf=[],setRessourcesPdf,devisBoostDemandes=[],setDevisBoostDemandes,boosts=[],setBoosts,activerBoost,retirerBoostSupabase,demoMode=false,setDemoMode}) {
+function PageAdmin({onLogout,pendingContribs=[],setPendingContribs,updateContrib,adminActivites=[],setAdminActivites,adminSorties=[],setAdminSorties,adminEvenements=[],setAdminEvenements,adminReports=[],setAdminReports,addDeletedTitle,adminCustomEvents=[],setAdminCustomEvents,sosLib=[],setSosLib,sosModeActif=true,setSosModeActif,ideesMomentConfig=[],setIdeesMomentConfig,evenementsSaisonniers=[],setEvenementsSaisonniers,betisesLutin=[],setBetisesLutin,cartesVoyageLutin=[],setCartesVoyageLutin,customCatActivites=[],setCustomCatActivites,customCatSorties=[],setCustomCatSorties,customCatEvenements=[],setCustomCatEvenements,adminComms=[],setAdminComms,ressourcesSites=[],setRessourcesSites,ressourcesContacts=[],setRessourcesContacts,ressourcesPdf=[],setRessourcesPdf,devisBoostDemandes=[],setDevisBoostDemandes,boosts=[],setBoosts,activerBoost,retirerBoostSupabase,demoMode=false,setDemoMode}) {
   const [page,setPage] = useState("dashboard");
   const [collapsed,setCollapsed] = useState(false);
   const pendingReports = adminReports.filter(r=>r.statut==="pending").length;
@@ -11384,7 +11559,7 @@ function PageAdmin({onLogout,pendingContribs=[],setPendingContribs,updateContrib
           </div>
         </header>
         <main style={{flex:1,overflowY:"auto",padding:24}}>
-          {page==="contributions"?<Contributions items={pendingContribs} updateContrib={updateContrib} setPendingContribs={setPendingContribs}/>:PAGES_FN[page]?PAGES_FN[page]({sharedActivites:adminActivites,setSharedActivites:setAdminActivites,sharedSorties:adminSorties,setSharedSorties:setAdminSorties,sharedEvenements:adminEvenements,setSharedEvenements:setAdminEvenements,userReports:adminReports,setUserReports:setAdminReports,onDeleteTitle:addDeletedTitle,sharedCustomEvents:adminCustomEvents,setSharedCustomEvents:setAdminCustomEvents,pendingContribs,setPendingContribs,dashUserReports:adminReports,sosLib,setSosLib,sosModeActif,setSosModeActif,ideesMomentConfig,setIdeesMomentConfig,evenementsSaisonniers,setEvenementsSaisonniers,betisesLutin,setBetisesLutin,customCatActivites,setCustomCatActivites,customCatSorties,setCustomCatSorties,customCatEvenements,setCustomCatEvenements,adminComms,setAdminComms,ressourcesSites,setRessourcesSites,ressourcesContacts,setRessourcesContacts,ressourcesPdf,setRessourcesPdf,devisBoostDemandes,setDevisBoostDemandes,boosts,onActiverBoost:activerBoost,onRetirerBoost:retirerBoostSupabase,demoMode,setDemoMode}):null}
+          {page==="contributions"?<Contributions items={pendingContribs} updateContrib={updateContrib} setPendingContribs={setPendingContribs}/>:PAGES_FN[page]?PAGES_FN[page]({sharedActivites:adminActivites,setSharedActivites:setAdminActivites,sharedSorties:adminSorties,setSharedSorties:setAdminSorties,sharedEvenements:adminEvenements,setSharedEvenements:setAdminEvenements,userReports:adminReports,setUserReports:setAdminReports,onDeleteTitle:addDeletedTitle,sharedCustomEvents:adminCustomEvents,setSharedCustomEvents:setAdminCustomEvents,pendingContribs,setPendingContribs,dashUserReports:adminReports,sosLib,setSosLib,sosModeActif,setSosModeActif,ideesMomentConfig,setIdeesMomentConfig,evenementsSaisonniers,setEvenementsSaisonniers,betisesLutin,setBetisesLutin,cartesVoyageLutin,setCartesVoyageLutin,customCatActivites,setCustomCatActivites,customCatSorties,setCustomCatSorties,customCatEvenements,setCustomCatEvenements,adminComms,setAdminComms,ressourcesSites,setRessourcesSites,ressourcesContacts,setRessourcesContacts,ressourcesPdf,setRessourcesPdf,devisBoostDemandes,setDevisBoostDemandes,boosts,onActiverBoost:activerBoost,onRetirerBoost:retirerBoostSupabase,demoMode,setDemoMode}):null}
         </main>
       </div>
     </div>
@@ -11876,7 +12051,7 @@ export default function App(){
   const [customCatEvenements,setCustomCatEvenements]=useState([]); // [{k,label,emoji}]
   const [popupShown,setPopupShown]=useState(new Set());
   const [evenementsSaisonniers,setEvenementsSaisonniers]=useState([
-    {id:"noel",type:"christmas",nom:"Noël",actif:false,essaiActif:false,apercuGratuitJours:3,apercuGratuitType:"premiers",apercuGratuitCartesPostales:1},
+    {id:"noel",type:"christmas",nom:"Lutin",actif:false,essaiActif:false,apercuGratuitJours:3,apercuGratuitType:"premiers",apercuGratuitCartesPostales:1},
   ]);
   const [betisesLutin,setBetisesLutin]=useState([]);
   useEffect(()=>{
@@ -11885,6 +12060,15 @@ export default function App(){
         const {data}=await supabase.from("betises_lutin").select("*").order("created_at",{ascending:true});
         if(data&&data.length>0)setBetisesLutin(data.map(b=>({id:b.id,titre:b.titre,description:b.description,emoji:b.emoji,photoUrl:b.photo_url,materiel:b.materiel||[]})));
       }catch(e){ /* erreur réseau — reste sur les bêtises par défaut */ }
+    })();
+  },[]);
+  const [cartesVoyageLutin,setCartesVoyageLutin]=useState([]);
+  useEffect(()=>{
+    (async()=>{
+      try{
+        const {data}=await supabase.from("cartes_voyage_lutin").select("*").order("ordre",{ascending:true});
+        if(data)setCartesVoyageLutin(data.map(c=>({id:c.id,titre:c.titre,texte:c.texte,photoUrl:c.photo_url})));
+      }catch(e){ /* erreur réseau — reste vide */ }
     })();
   },[]);
   const addReport=async(report)=>{
@@ -12126,7 +12310,7 @@ export default function App(){
     setTimeout(()=>setGlobalToast(null),3000);
     setTimeout(()=>setShowConfetti(false),4500);
   };
-  if(isAdmin) return <PageAdmin onLogout={()=>{ setIsAdmin(false); setPage("profil"); }} pendingContribs={pendingContribs} setPendingContribs={setPendingContribs} updateContrib={updateContrib} adminActivites={adminActivites} setAdminActivites={setAdminActivites} adminSorties={adminSorties} setAdminSorties={setAdminSorties} adminEvenements={adminEvenements} setAdminEvenements={setAdminEvenements} adminReports={adminReports} setAdminReports={setAdminReports} addDeletedTitle={addDeletedTitle} adminCustomEvents={customEvents} setAdminCustomEvents={setCustomEvents} sosLib={sosLib} setSosLib={setSosLib} sosModeActif={sosModeActif} setSosModeActif={setSosModeActif} ideesMomentConfig={ideesMomentConfig} setIdeesMomentConfig={setIdeesMomentConfig} evenementsSaisonniers={evenementsSaisonniers} setEvenementsSaisonniers={setEvenementsSaisonniers} betisesLutin={betisesLutin} setBetisesLutin={setBetisesLutin} customCatActivites={customCatActivites} setCustomCatActivites={setCustomCatActivites} customCatSorties={customCatSorties} setCustomCatSorties={setCustomCatSorties} customCatEvenements={customCatEvenements} setCustomCatEvenements={setCustomCatEvenements} adminComms={adminComms} setAdminComms={setAdminComms} ressourcesSites={ressourcesSites} setRessourcesSites={setRessourcesSites} ressourcesContacts={ressourcesContacts} setRessourcesContacts={setRessourcesContacts} ressourcesPdf={ressourcesPdf} setRessourcesPdf={setRessourcesPdf} devisBoostDemandes={devisBoostDemandes} setDevisBoostDemandes={setDevisBoostDemandes} boosts={boosts} setBoosts={setBoosts} activerBoost={activerBoost} retirerBoostSupabase={retirerBoostSupabase} demoMode={demoMode} setDemoMode={setDemoMode}/>;
+  if(isAdmin) return <PageAdmin onLogout={()=>{ setIsAdmin(false); setPage("profil"); }} pendingContribs={pendingContribs} setPendingContribs={setPendingContribs} updateContrib={updateContrib} adminActivites={adminActivites} setAdminActivites={setAdminActivites} adminSorties={adminSorties} setAdminSorties={setAdminSorties} adminEvenements={adminEvenements} setAdminEvenements={setAdminEvenements} adminReports={adminReports} setAdminReports={setAdminReports} addDeletedTitle={addDeletedTitle} adminCustomEvents={customEvents} setAdminCustomEvents={setCustomEvents} sosLib={sosLib} setSosLib={setSosLib} sosModeActif={sosModeActif} setSosModeActif={setSosModeActif} ideesMomentConfig={ideesMomentConfig} setIdeesMomentConfig={setIdeesMomentConfig} evenementsSaisonniers={evenementsSaisonniers} setEvenementsSaisonniers={setEvenementsSaisonniers} betisesLutin={betisesLutin} setBetisesLutin={setBetisesLutin} cartesVoyageLutin={cartesVoyageLutin} setCartesVoyageLutin={setCartesVoyageLutin} customCatActivites={customCatActivites} setCustomCatActivites={setCustomCatActivites} customCatSorties={customCatSorties} setCustomCatSorties={setCustomCatSorties} customCatEvenements={customCatEvenements} setCustomCatEvenements={setCustomCatEvenements} adminComms={adminComms} setAdminComms={setAdminComms} ressourcesSites={ressourcesSites} setRessourcesSites={setRessourcesSites} ressourcesContacts={ressourcesContacts} setRessourcesContacts={setRessourcesContacts} ressourcesPdf={ressourcesPdf} setRessourcesPdf={setRessourcesPdf} devisBoostDemandes={devisBoostDemandes} setDevisBoostDemandes={setDevisBoostDemandes} boosts={boosts} setBoosts={setBoosts} activerBoost={activerBoost} retirerBoostSupabase={retirerBoostSupabase} demoMode={demoMode} setDemoMode={setDemoMode}/>;
   return(
     <div style={{maxWidth:390,margin:"0 auto",background:BG,minHeight:"100vh",position:"relative",fontFamily:"system-ui,-apple-system,sans-serif",color:TX,transition:"background 0.3s,color 0.3s"}} className={darkMode?"dm":""}>
       <style>{`
@@ -12194,9 +12378,9 @@ export default function App(){
       </div>}
       <Confetti active={showConfetti}/>
       <div style={{paddingBottom:72}}>
-        {page==="accueil"&&<PageAccueil favoris={favoris} setFavoris={setFavoris} setPage={setPage} customEvents={customEvents} popupShown={popupShown} setPopupShown={setPopupShown} ideesMomentConfig={ideesMomentConfig} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} evenementsSaisonniers={evenementsSaisonniers} isPremium={isPremiumUser} onOpenPremium={openPremium} customCatActivites={customCatActivites} customCatSorties={customCatSorties} customCatEvenements={customCatEvenements} adminActivites={adminActivites} adminSorties={adminSorties} pendingContribs={pendingContribs} setPendingContribs={setPendingContribs} deletedTitles={deletedTitles} currentUser={currentUser} sosModeActif={sosModeActif} enfants={enfants} enfantActif={enfantActif} setEnfantActif={setEnfantActif} onMarquerFait={(item)=>setHistoriqueActivites(prev=>[{id:item.id||Date.now(),nom:item.nom||item.titre||"",categorie:item.categorie||"",date:item._date||new Date().toISOString(),type:"activite",note:item._note||""},...prev.slice(0,99)])} historiqueActivites={historiqueActivites} filtresMemoActiv={filtresMemoActiv} setFiltresMemoActiv={setFiltresMemoActiv} filtresMemoSortie={filtresMemoSortie} setFiltresMemoSortie={setFiltresMemoSortie} adminComms={adminComms} masquees={masquees} toggleMasquer={toggleMasquer} estMasque={estMasque} ajouterDemandeDevisBoost={ajouterDemandeDevisBoost} trialEndDate={trialEndDate} betisesLutin={betisesLutin}/>}
+        {page==="accueil"&&<PageAccueil favoris={favoris} setFavoris={setFavoris} setPage={setPage} customEvents={customEvents} popupShown={popupShown} setPopupShown={setPopupShown} ideesMomentConfig={ideesMomentConfig} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} evenementsSaisonniers={evenementsSaisonniers} isPremium={isPremiumUser} onOpenPremium={openPremium} customCatActivites={customCatActivites} customCatSorties={customCatSorties} customCatEvenements={customCatEvenements} adminActivites={adminActivites} adminSorties={adminSorties} pendingContribs={pendingContribs} setPendingContribs={setPendingContribs} deletedTitles={deletedTitles} currentUser={currentUser} sosModeActif={sosModeActif} enfants={enfants} enfantActif={enfantActif} setEnfantActif={setEnfantActif} onMarquerFait={(item)=>setHistoriqueActivites(prev=>[{id:item.id||Date.now(),nom:item.nom||item.titre||"",categorie:item.categorie||"",date:item._date||new Date().toISOString(),type:"activite",note:item._note||""},...prev.slice(0,99)])} historiqueActivites={historiqueActivites} filtresMemoActiv={filtresMemoActiv} setFiltresMemoActiv={setFiltresMemoActiv} filtresMemoSortie={filtresMemoSortie} setFiltresMemoSortie={setFiltresMemoSortie} adminComms={adminComms} masquees={masquees} toggleMasquer={toggleMasquer} estMasque={estMasque} ajouterDemandeDevisBoost={ajouterDemandeDevisBoost} trialEndDate={trialEndDate} betisesLutin={betisesLutin} cartesVoyageLutin={cartesVoyageLutin}/>}
         {page==="biblio"&&<PageBiblio pendingContribs={pendingContribs} setPendingContribs={setPendingContribs} adminActivites={adminActivites} adminSorties={adminSorties} adminEvenements={adminEvenements} addReport={addReport} adminReports={adminReports} deletedTitles={deletedTitles} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} favoris={favoris} setFavoris={setFavoris} isPremium={isPremiumUser} onOpenPremium={openPremium} customCatActivites={customCatActivites} customCatSorties={customCatSorties} customCatEvenements={customCatEvenements} currentUser={currentUser} enfants={enfants} enfantActif={enfantActif} masquees={masquees} toggleMasquer={toggleMasquer} estMasque={estMasque} boosts={boosts} ajouterDemandeDevisBoost={ajouterDemandeDevisBoost}/>}
-        {page==="generer"&&<PageAccueil favoris={favoris} setFavoris={setFavoris} setPage={setPage} customEvents={customEvents} popupShown={popupShown} setPopupShown={setPopupShown} ideesMomentConfig={ideesMomentConfig} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} evenementsSaisonniers={evenementsSaisonniers} isPremium={isPremiumUser} onOpenPremium={openPremium} customCatActivites={customCatActivites} customCatSorties={customCatSorties} customCatEvenements={customCatEvenements} adminActivites={adminActivites} adminSorties={adminSorties} pendingContribs={pendingContribs} setPendingContribs={setPendingContribs} deletedTitles={deletedTitles} currentUser={currentUser} sosModeActif={sosModeActif} enfants={enfants} enfantActif={enfantActif} setEnfantActif={setEnfantActif} onMarquerFait={(item)=>setHistoriqueActivites(prev=>[{id:item.id||Date.now(),nom:item.nom||item.titre||"",categorie:item.categorie||"",date:item._date||new Date().toISOString(),type:"activite",note:item._note||""},...prev.slice(0,99)])} historiqueActivites={historiqueActivites} filtresMemoActiv={filtresMemoActiv} setFiltresMemoActiv={setFiltresMemoActiv} filtresMemoSortie={filtresMemoSortie} setFiltresMemoSortie={setFiltresMemoSortie} adminComms={adminComms} masquees={masquees} toggleMasquer={toggleMasquer} estMasque={estMasque} ajouterDemandeDevisBoost={ajouterDemandeDevisBoost} trialEndDate={trialEndDate} betisesLutin={betisesLutin}/>}
+        {page==="generer"&&<PageAccueil favoris={favoris} setFavoris={setFavoris} setPage={setPage} customEvents={customEvents} popupShown={popupShown} setPopupShown={setPopupShown} ideesMomentConfig={ideesMomentConfig} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} evenementsSaisonniers={evenementsSaisonniers} isPremium={isPremiumUser} onOpenPremium={openPremium} customCatActivites={customCatActivites} customCatSorties={customCatSorties} customCatEvenements={customCatEvenements} adminActivites={adminActivites} adminSorties={adminSorties} pendingContribs={pendingContribs} setPendingContribs={setPendingContribs} deletedTitles={deletedTitles} currentUser={currentUser} sosModeActif={sosModeActif} enfants={enfants} enfantActif={enfantActif} setEnfantActif={setEnfantActif} onMarquerFait={(item)=>setHistoriqueActivites(prev=>[{id:item.id||Date.now(),nom:item.nom||item.titre||"",categorie:item.categorie||"",date:item._date||new Date().toISOString(),type:"activite",note:item._note||""},...prev.slice(0,99)])} historiqueActivites={historiqueActivites} filtresMemoActiv={filtresMemoActiv} setFiltresMemoActiv={setFiltresMemoActiv} filtresMemoSortie={filtresMemoSortie} setFiltresMemoSortie={setFiltresMemoSortie} adminComms={adminComms} masquees={masquees} toggleMasquer={toggleMasquer} estMasque={estMasque} ajouterDemandeDevisBoost={ajouterDemandeDevisBoost} trialEndDate={trialEndDate} betisesLutin={betisesLutin} cartesVoyageLutin={cartesVoyageLutin}/>}
         {page==="planning"&&<PagePlanning sosLib={sosLib} enfants={enfants} enfantActif={enfantActif} setEnfantActif={setEnfantActif} isPremium={isPremiumUser} onOpenPremium={openPremium} sosModeActif={sosModeActif} adminActivites={adminActivites} pendingContribs={pendingContribs} deletedTitles={deletedTitles}/>}
         {page==="sos"&&<PageSOS sosLib={sosLib} isPremium={isPremiumUser} onOpenPremium={openPremium} onBack={()=>setPage("accueil")}/>}
         {page==="ressources"&&<PageRessources sites={ressourcesSites} contacts={ressourcesContacts} pdfs={ressourcesPdf} setPdfs={setRessourcesPdf} isPremium={isPremiumUser} onOpenPremium={openPremium}/>}

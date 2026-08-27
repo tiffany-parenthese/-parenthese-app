@@ -3201,6 +3201,10 @@ function LutinView({onBack,evenementsSaisonniers=[],isPremium=false,onOpenPremiu
 
 
 function VoyageDuLutin({onBack,cartesVoyageLutin=[],evenementsSaisonniers=[],isPremium=false,onOpenPremium}){
+  const today=new Date().toISOString().slice(0,10);
+  const cartesSorties = cartesVoyageLutin.filter(c=>!c.dateDisponible||c.dateDisponible<=today);
+  const cartesAVenir = cartesVoyageLutin.filter(c=>c.dateDisponible&&c.dateDisponible>today).sort((a,b)=>a.dateDisponible.localeCompare(b.dateDisponible));
+  const prochaineCarte = cartesAVenir[0];
   const evenementNoel = evenementsSaisonniers.find(e=>e.id==="noel");
   const nbGratuit = evenementNoel?.apercuGratuitCartesPostales??1;
   const carteEstAccessible=(index)=>isPremium||index<nbGratuit;
@@ -3238,8 +3242,8 @@ function VoyageDuLutin({onBack,cartesVoyageLutin=[],evenementsSaisonniers=[],isP
       </div>
 
       <div style={{padding:"20px 16px 40px",display:"flex",flexDirection:"column",gap:14}}>
-        {cartesVoyageLutin.length===0&&<p style={{textAlign:"center",fontSize:13,color:"rgba(255,255,255,0.5)"}}>Le voyage n'a pas encore commencé, reviens bientôt !</p>}
-        {cartesVoyageLutin.map((carte,i)=>{
+        {cartesSorties.length===0&&<p style={{textAlign:"center",fontSize:13,color:"rgba(255,255,255,0.5)"}}>Le voyage n'a pas encore commencé, reviens bientôt !</p>}
+        {cartesSorties.map((carte,i)=>{
           const accessible=carteEstAccessible(i);
           return(
             <div key={carte.id} style={{background:"rgba(255,255,255,0.06)",borderRadius:18,overflow:"hidden",border:"1px solid rgba(255,255,255,0.1)",position:"relative"}}>
@@ -3265,6 +3269,11 @@ function VoyageDuLutin({onBack,cartesVoyageLutin=[],evenementsSaisonniers=[],isP
             </div>
           );
         })}
+        {prochaineCarte&&(
+          <div style={{textAlign:"center",padding:"14px 0",opacity:0.6}}>
+            <p style={{margin:0,fontSize:12,color:"rgba(255,255,255,0.7)"}}>🔜 Prochaine carte le {new Date(prochaineCarte.dateDisponible).toLocaleDateString("fr-FR",{day:"numeric",month:"long"})}</p>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -9171,22 +9180,22 @@ function AdminBetisesLutin({betisesLutin=[],setBetisesLutin,onBack}) {
 
 function AdminCartesVoyageLutin({cartesVoyageLutin=[],setCartesVoyageLutin,onBack}) {
   const [modal,setModal] = useState(null);
-  const [form,setForm] = useState({titre:"",texte:"",photoUrl:""});
+  const [form,setForm] = useState({titre:"",texte:"",photoUrl:"",dateDisponible:""});
   const [uploadEnCours,setUploadEnCours] = useState(false);
 
-  const openAdd=()=>{setForm({titre:"",texte:"",photoUrl:""});setModal({mode:"add"});};
-  const openEdit=(item)=>{setForm({titre:item.titre||"",texte:item.texte||"",photoUrl:item.photoUrl||""});setModal({mode:"edit",item});};
+  const openAdd=()=>{setForm({titre:"",texte:"",photoUrl:"",dateDisponible:""});setModal({mode:"add"});};
+  const openEdit=(item)=>{setForm({titre:item.titre||"",texte:item.texte||"",photoUrl:item.photoUrl||"",dateDisponible:item.dateDisponible||""});setModal({mode:"edit",item});};
 
   const save=async()=>{
     if(!form.titre.trim()){alert("Le titre est obligatoire.");return;}
-    const payload={titre:form.titre.trim(),texte:form.texte.trim(),photo_url:form.photoUrl||null};
+    const payload={titre:form.titre.trim(),texte:form.texte.trim(),photo_url:form.photoUrl||null,date_disponible:form.dateDisponible||null};
     if(modal.mode==="edit"){
       const item=modal.item;
-      setCartesVoyageLutin(prev=>prev.map(c=>c.id===item.id?{...c,titre:payload.titre,texte:payload.texte,photoUrl:payload.photo_url}:c));
+      setCartesVoyageLutin(prev=>prev.map(c=>c.id===item.id?{...c,titre:payload.titre,texte:payload.texte,photoUrl:payload.photo_url,dateDisponible:payload.date_disponible}:c));
       try{ await supabase.from("cartes_voyage_lutin").update(payload).eq("id",item.id); }catch(e){}
     }else{
       const tempId="temp"+Date.now();
-      const nouvelle={id:tempId,titre:payload.titre,texte:payload.texte,photoUrl:payload.photo_url};
+      const nouvelle={id:tempId,titre:payload.titre,texte:payload.texte,photoUrl:payload.photo_url,dateDisponible:payload.date_disponible};
       setCartesVoyageLutin(prev=>[...prev,nouvelle]);
       try{
         const {data:inserted}=await supabase.from("cartes_voyage_lutin").insert({...payload,ordre:cartesVoyageLutin.length}).select().single();
@@ -9241,6 +9250,9 @@ function AdminCartesVoyageLutin({cartesVoyageLutin=[],setCartesVoyageLutin,onBac
             <p style={{margin:"0 0 4px",fontSize:11,color:C.muted,fontWeight:700}}>CARTE {i+1}</p>
             <p style={{margin:"0 0 6px",fontSize:14,fontWeight:700,color:C.text}}>{c.titre}</p>
             <p style={{margin:"0 0 10px",fontSize:12,color:C.muted,lineHeight:1.4}}>{c.texte}</p>
+            {c.dateDisponible&&(()=>{const future=new Date(c.dateDisponible)>new Date();return(
+              <p style={{margin:"0 0 10px",fontSize:11,fontWeight:700,color:future?"#7c3aed":"#10b981",display:"flex",alignItems:"center",gap:4}}>{future?"📅 Programmée pour le":"✓ Disponible depuis le"} {new Date(c.dateDisponible).toLocaleDateString("fr-FR")}</p>
+            );})()}
             <div style={{display:"flex",gap:6}}>
               <button style={s.btnOutline(C.accent)} onClick={()=>openEdit(c)}>✏️ Modifier</button>
               <button style={s.btnOutline(C.red)} onClick={()=>supprimer(c)}>🗑️</button>
@@ -9265,6 +9277,10 @@ function AdminCartesVoyageLutin({cartesVoyageLutin=[],setCartesVoyageLutin,onBac
                 {uploadEnCours&&<p style={{margin:"6px 0 0",fontSize:11,color:C.muted}}>Envoi en cours...</p>}
               </div>
             )}
+          </AdminField>
+          <AdminField label="Date de sortie (laisser vide = disponible immédiatement)">
+            <input type="date" style={s.input} value={form.dateDisponible} onChange={e=>setForm({...form,dateDisponible:e.target.value})}/>
+            <p style={{margin:"4px 0 0",fontSize:11,color:C.muted}}>La carte reste invisible jusqu'à cette date, puis apparaît automatiquement.</p>
           </AdminField>
           <div style={{display:"flex",justifyContent:"flex-end",gap:8,marginTop:12,paddingTop:12,borderTop:`1px solid ${C.border}`}}>
             <button style={s.btnOutline(C.muted)} onClick={()=>setModal(null)}>Annuler</button>
@@ -12131,7 +12147,7 @@ export default function App(){
     (async()=>{
       try{
         const {data}=await supabase.from("cartes_voyage_lutin").select("*").order("ordre",{ascending:true});
-        if(data)setCartesVoyageLutin(data.map(c=>({id:c.id,titre:c.titre,texte:c.texte,photoUrl:c.photo_url})));
+        if(data)setCartesVoyageLutin(data.map(c=>({id:c.id,titre:c.titre,texte:c.texte,photoUrl:c.photo_url,dateDisponible:c.date_disponible})));
       }catch(e){ /* erreur réseau — reste vide */ }
     })();
   },[]);

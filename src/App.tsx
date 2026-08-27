@@ -3205,15 +3205,27 @@ function VoyageDuLutin({onBack,cartesVoyageLutin=[],evenementsSaisonniers=[],isP
   const nbGratuit = evenementNoel?.apercuGratuitCartesPostales??1;
   const carteEstAccessible=(index)=>isPremium||index<nbGratuit;
 
-  const telecharger=(carte)=>{
+  const [telechargementEnCours,setTelechargementEnCours]=useState(null);
+  const telecharger=async(carte)=>{
     if(!carte.photoUrl)return;
-    const a=document.createElement("a");
-    a.href=carte.photoUrl;
-    a.download=(carte.titre||"carte-du-lutin").replace(/[^a-z0-9]+/gi,"-")+".jpg";
-    a.target="_blank";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+    setTelechargementEnCours(carte.id);
+    try{
+      const reponse=await fetch(carte.photoUrl);
+      const blob=await reponse.blob();
+      const ext=(blob.type&&blob.type.split("/")[1])||"jpg";
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement("a");
+      a.href=url;
+      a.download=(carte.titre||"carte-du-lutin").replace(/[^a-z0-9]+/gi,"-")+"."+ext;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }catch(e){
+      // Repli si le téléchargement direct échoue : ouvre l'image dans un nouvel onglet
+      window.open(carte.photoUrl,"_blank");
+    }
+    setTelechargementEnCours(null);
   };
 
   return(
@@ -3246,7 +3258,7 @@ function VoyageDuLutin({onBack,cartesVoyageLutin=[],evenementsSaisonniers=[],isP
                 <p style={{margin:"0 0 6px",fontSize:15,fontWeight:800,color:"#fff"}}>{accessible?carte.titre:"🔒 Carte verrouillée"}</p>
                 {accessible&&<p style={{margin:"0 0 10px",fontSize:13,color:"rgba(255,255,255,0.7)",lineHeight:1.5}}>{carte.texte}</p>}
                 {accessible&&carte.photoUrl&&(
-                  <button onClick={()=>telecharger(carte)} style={{width:"100%",padding:"10px 0",borderRadius:14,background:"rgba(255,255,255,0.12)",border:"1px solid rgba(255,255,255,0.2)",color:"#fff",fontWeight:600,fontSize:12,cursor:"pointer"}}>⬇️ Télécharger cette carte</button>
+                  <button onClick={()=>telecharger(carte)} disabled={telechargementEnCours===carte.id} style={{width:"100%",padding:"10px 0",borderRadius:14,background:"rgba(255,255,255,0.12)",border:"1px solid rgba(255,255,255,0.2)",color:"#fff",fontWeight:600,fontSize:12,cursor:telechargementEnCours===carte.id?"default":"pointer"}}>{telechargementEnCours===carte.id?"Téléchargement...":"⬇️ Télécharger cette carte"}</button>
                 )}
               </div>
             </div>
@@ -7557,7 +7569,8 @@ function PageRessources({sites,contacts,pdfs,setPdfs,isPremium=false,onOpenPremi
   const parsePrix=(str)=>{if(!str)return 0;const n=parseFloat(String(str).replace(",",".").replace(/[^\d.]/g,""));return isNaN(n)?0:n;};
   const [toastMsg,setToastMsg]=useState(null);
   const [paiementItem,setPaiementItem]=useState(null); // item en cours de paiement
-  const enregistrerInteraction=(item,type)=>{
+  const [telechargementEnCoursRes,setTelechargementEnCoursRes]=useState(null);
+  const enregistrerInteraction=async(item,type)=>{
     if(setPdfs)setPdfs(prev=>{
       const base=prev&&prev.length>0?prev:MOCK_RESSOURCES_PDF;
       return base.map((it,idx)=>{
@@ -7570,6 +7583,25 @@ function PageRessources({sites,contacts,pdfs,setPdfs,isPremium=false,onOpenPremi
     const msg=type==="achat"?`🛒 Achat confirmé ! Téléchargement de "${item.nom}" en cours...`:`⬇️ Téléchargement de "${item.nom}" en cours...`;
     setToastMsg(msg);
     setTimeout(()=>setToastMsg(null),3500);
+    if(item.fichierUrl){
+      setTelechargementEnCoursRes(item._idx);
+      try{
+        const reponse=await fetch(item.fichierUrl);
+        const blob=await reponse.blob();
+        const ext=item.type==="pdf"?"pdf":(blob.type&&blob.type.split("/")[1])||"pdf";
+        const url=URL.createObjectURL(blob);
+        const a=document.createElement("a");
+        a.href=url;
+        a.download=(item.nom||"document").replace(/[^a-z0-9]+/gi,"-")+"."+ext;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }catch(e){
+        window.open(item.fichierUrl,"_blank");
+      }
+      setTelechargementEnCoursRes(null);
+    }
   };
   const [onglet,setOnglet]=useState("sites");
   const [articleOuvert,setArticleOuvert]=useState(null);
@@ -7675,8 +7707,8 @@ function PageRessources({sites,contacts,pdfs,setPdfs,isPremium=false,onOpenPremi
                       <button onClick={()=>setPaiementItem(p)} style={{width:"100%",padding:"10px 0",borderRadius:28,background:WH,border:"1.5px solid #1D4ED8",color:"#1D4ED8",fontWeight:700,fontSize:13,cursor:"pointer"}}>🛒 Acheter à l'unité {p.prix?"— "+p.prix:""}</button>
                     </div>
                   ):(
-                    <button onClick={()=>{if((p.acces||"gratuit")==="payant"){setPaiementItem(p);}else{enregistrerInteraction(p,"telechargement");}}} style={{width:"100%",padding:"10px 0",borderRadius:28,background:acc.label==="Gratuit"?"#ECFDF5":V,border:"none",color:acc.label==="Gratuit"?"#065F46":"#fff",fontWeight:700,fontSize:13,cursor:"pointer"}}>
-                      {acc.label==="Gratuit"?"⬇️ Télécharger gratuitement":"🛒 Acheter et télécharger"}
+                    <button onClick={()=>{if((p.acces||"gratuit")==="payant"){setPaiementItem(p);}else{enregistrerInteraction(p,"telechargement");}}} disabled={telechargementEnCoursRes===p._idx} style={{width:"100%",padding:"10px 0",borderRadius:28,background:acc.label==="Gratuit"?"#ECFDF5":V,border:"none",color:acc.label==="Gratuit"?"#065F46":"#fff",fontWeight:700,fontSize:13,cursor:telechargementEnCoursRes===p._idx?"default":"pointer"}}>
+                      {telechargementEnCoursRes===p._idx?"Téléchargement...":acc.label==="Gratuit"?"⬇️ Télécharger gratuitement":"🛒 Acheter et télécharger"}
                     </button>
                   )}
                 </div>

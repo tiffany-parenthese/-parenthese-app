@@ -3029,7 +3029,7 @@ function LutinView({onBack,evenementsSaisonniers=[],isPremium=false,onOpenPremiu
   const toutCocher=()=>{const all={};materielUnique.forEach(m=>all[m]=true);setChecked(all);};
 
   return(
-    <div style={{minHeight:"100vh",background:LUTIN_BG,fontFamily:"system-ui,-apple-system,sans-serif",paddingBottom:32}}>
+    <div style={{position:"fixed",inset:0,zIndex:400,overflowY:"auto",minHeight:"100vh",background:LUTIN_BG,fontFamily:"system-ui,-apple-system,sans-serif",paddingBottom:32}}>
 
       {/* Header */}
       <div style={{background:"rgba(26,5,51,0.95)",backdropFilter:"blur(10px)",padding:"14px 16px",display:"flex",alignItems:"center",gap:12,borderBottom:"1px solid rgba(255,255,255,0.08)",position:"sticky",top:0,zIndex:100}}>
@@ -3234,7 +3234,7 @@ function VoyageDuLutin({onBack,cartesVoyageLutin=[],evenementsSaisonniers=[],isP
   };
 
   return(
-    <div style={{background:"#0f1f3d",minHeight:"100vh",fontFamily:"system-ui,-apple-system,sans-serif"}}>
+    <div style={{position:"fixed",inset:0,zIndex:400,overflowY:"auto",background:"#0f1f3d",minHeight:"100vh",fontFamily:"system-ui,-apple-system,sans-serif"}}>
       <div style={{background:"linear-gradient(135deg,#1e3a6f,#2d5aa8)",padding:"18px 20px 24px",position:"relative"}}>
         <button onClick={onBack} style={{position:"absolute",top:16,left:16,width:34,height:34,borderRadius:"50%",background:"rgba(255,255,255,0.15)",border:"none",color:"#fff",fontSize:18,cursor:"pointer"}}>←</button>
         <p style={{margin:"0 0 6px",fontSize:22,fontWeight:800,color:"#fff",textAlign:"center"}}>✈️ Le voyage du lutin</p>

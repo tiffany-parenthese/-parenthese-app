@@ -3212,7 +3212,8 @@ function VoyageDuLutin({onBack,cartesVoyageLutin=[],evenementsSaisonniers=[],isP
     try{
       const reponse=await fetch(carte.photoUrl);
       const blob=await reponse.blob();
-      const ext=(blob.type&&blob.type.split("/")[1])||"jpg";
+      const extMap={"image/jpeg":"jpg","image/jpg":"jpg","image/png":"png","image/webp":"webp","image/gif":"gif","image/svg+xml":"svg"};
+      const ext=extMap[blob.type]||"jpg";
       const url=URL.createObjectURL(blob);
       const a=document.createElement("a");
       a.href=url;
@@ -7588,7 +7589,8 @@ function PageRessources({sites,contacts,pdfs,setPdfs,isPremium=false,onOpenPremi
       try{
         const reponse=await fetch(item.fichierUrl);
         const blob=await reponse.blob();
-        const ext=item.type==="pdf"?"pdf":(blob.type&&blob.type.split("/")[1])||"pdf";
+        const extMap={"image/jpeg":"jpg","image/jpg":"jpg","image/png":"png","image/webp":"webp","image/gif":"gif","image/svg+xml":"svg","application/pdf":"pdf"};
+        const ext=item.type==="pdf"?"pdf":(extMap[blob.type]||"pdf");
         const url=URL.createObjectURL(blob);
         const a=document.createElement("a");
         a.href=url;

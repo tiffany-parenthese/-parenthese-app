@@ -6810,7 +6810,7 @@ function PictogrammeView({ onBack, isPremium = false, onOpenPremium, adminEvenem
   );
 }
 
-function PageProfil({setPage,enfants=[],setEnfants,enfantActif,setEnfantActif,showGestionEnfants,setShowGestionEnfants,currentUser,onLogout,onRequireAuth,isPremium=false,setPremium,evenementsSaisonniers=[],onOpenPremium,onDeleteAccount,favoris=[],adminEvenements=[],pendingContribs=[],darkMode=false,setDarkMode,historiqueActivites=[],setHistoriqueActivites,estBooste,activerBoost,ajouterDemandeDevisBoost}){
+function PageProfil({setPage,enfants=[],setEnfants,enfantActif,setEnfantActif,showGestionEnfants,setShowGestionEnfants,currentUser,onLogout,onRequireAuth,isPremium=false,setPremium,evenementsSaisonniers=[],onOpenPremium,onDeleteAccount,favoris=[],adminEvenements=[],pendingContribs=[],darkMode=false,setDarkMode,historiqueActivites=[],setHistoriqueActivites,estBooste,activerBoost,ajouterDemandeDevisBoost,betisesLutin=[],cartesVoyageLutin=[]}){
   const [boostItem,setBoostItem]=useState(null);
   const isLoggedIn=!!currentUser;
   const [subPage,setSubPage]=useState(null);
@@ -6819,6 +6819,9 @@ function PageProfil({setPage,enfants=[],setEnfants,enfantActif,setEnfantActif,sh
   const [editBuf,setEditBuf]=useState({nom:"",pseudo:""});
   const [showProfilToast,setShowProfilToast]=useState(false);
   const [showPhotoMsg,setShowPhotoMsg]=useState(false);
+  const [showLutinProfil,setShowLutinProfil]=useState(false); // popup de choix
+  const [showLutinBetisesFromProfil,setShowLutinBetisesFromProfil]=useState(false);
+  const [showLutinVoyageFromProfil,setShowLutinVoyageFromProfil]=useState(false);
   const [showAnnulerModal,setShowAnnulerModal]=useState(false);
   const [showAnnulerToast,setShowAnnulerToast]=useState(false);
   const confirmerAnnulationPremium=()=>{
@@ -6917,6 +6920,18 @@ function PageProfil({setPage,enfants=[],setEnfants,enfantActif,setEnfantActif,sh
 
         {!isLoggedIn&&(
           <button onClick={()=>onRequireAuth&&onRequireAuth()} style={{width:"100%",padding:12,borderRadius:14,background:V,border:"none",color:WH,fontWeight:700,fontSize:13,cursor:"pointer",marginBottom:12}}>Se connecter / Créer un compte gratuit</button>
+        )}
+
+        {/* Bandeau événement Lutin — visible si actif, ouvre la page dédiée */}
+        {evenementsSaisonniers.find(e=>e.id==="noel")?.actif&&(
+          <div onClick={()=>setShowLutinProfil(true)} style={{background:"linear-gradient(135deg,#EDE9FF,#d4ccf7)",borderRadius:16,padding:"14px 16px",marginBottom:12,border:BD,display:"flex",alignItems:"center",gap:12,cursor:"pointer"}}>
+            <span style={{fontSize:32,flexShrink:0}}>🎄</span>
+            <div style={{flex:1}}>
+              <p style={{margin:"0 0 2px",fontSize:14,fontWeight:700,color:TX}}>Le Village du Lutin est ouvert !</p>
+              <p style={{margin:0,fontSize:11,color:TM}}>Bêtises du calendrier et voyage du lutin</p>
+            </div>
+            <span style={{fontSize:18,color:V}}>→</span>
+          </div>
         )}
 
         {/* Formulaire edition */}
@@ -7312,6 +7327,21 @@ function PageProfil({setPage,enfants=[],setEnfants,enfantActif,setEnfantActif,sh
           onDemandeDevis={(demande)=>{ajouterDemandeDevisBoost&&ajouterDemandeDevisBoost({...demande,itemType:boostItem._type});}}
         />
       )}
+
+      {/* Popup de choix Village du Lutin */}
+      {showLutinProfil&&(
+        <div onClick={()=>setShowLutinProfil(false)} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.55)",zIndex:700,display:"flex",alignItems:"center",justifyContent:"center",padding:"0 24px"}}>
+          <div onClick={e=>e.stopPropagation()} style={{background:WH,borderRadius:20,padding:24,width:"100%",maxWidth:340,boxSizing:"border-box"}}>
+            <p style={{margin:"0 0 4px",fontSize:36,textAlign:"center"}}>🎄</p>
+            <p style={{margin:"0 0 16px",fontSize:16,fontWeight:800,color:TX,textAlign:"center"}}>Le Village du Lutin</p>
+            <button onClick={()=>{setShowLutinProfil(false);setShowLutinBetisesFromProfil(true);}} style={{width:"100%",padding:14,borderRadius:14,background:V,border:"none",color:WH,fontWeight:700,fontSize:14,cursor:"pointer",marginBottom:10}}>🧦 Les bêtises du lutin</button>
+            <button onClick={()=>{setShowLutinProfil(false);setShowLutinVoyageFromProfil(true);}} style={{width:"100%",padding:14,borderRadius:14,background:"#2d5aa8",border:"none",color:WH,fontWeight:700,fontSize:14,cursor:"pointer",marginBottom:10}}>✈️ Le voyage du lutin</button>
+            <button onClick={()=>setShowLutinProfil(false)} style={{width:"100%",padding:10,background:"none",border:"none",color:TM,fontSize:12,cursor:"pointer"}}>Annuler</button>
+          </div>
+        </div>
+      )}
+      {showLutinBetisesFromProfil&&<LutinView onBack={()=>setShowLutinBetisesFromProfil(false)} evenementsSaisonniers={evenementsSaisonniers} isPremium={isPremium} onOpenPremium={onOpenPremium} betisesLutin={betisesLutin}/>}
+      {showLutinVoyageFromProfil&&<VoyageDuLutin onBack={()=>setShowLutinVoyageFromProfil(false)} cartesVoyageLutin={cartesVoyageLutin} evenementsSaisonniers={evenementsSaisonniers} isPremium={isPremium} onOpenPremium={onOpenPremium}/>}
     </div>
   );
 }
@@ -12418,7 +12448,7 @@ export default function App(){
         {page==="planning"&&<PagePlanning sosLib={sosLib} enfants={enfants} enfantActif={enfantActif} setEnfantActif={setEnfantActif} isPremium={isPremiumUser} onOpenPremium={openPremium} sosModeActif={sosModeActif} adminActivites={adminActivites} pendingContribs={pendingContribs} deletedTitles={deletedTitles}/>}
         {page==="sos"&&<PageSOS sosLib={sosLib} isPremium={isPremiumUser} onOpenPremium={openPremium} onBack={()=>setPage("accueil")}/>}
         {page==="ressources"&&<PageRessources sites={ressourcesSites} contacts={ressourcesContacts} pdfs={ressourcesPdf} setPdfs={setRessourcesPdf} isPremium={isPremiumUser} onOpenPremium={openPremium}/>}
-        {page==="profil"&&<PageProfil setPage={setPage} enfants={enfants} setEnfants={setEnfants} enfantActif={enfantActif} setEnfantActif={setEnfantActif} showGestionEnfants={showGestionEnfants} setShowGestionEnfants={setShowGestionEnfants} currentUser={currentUser} onLogout={handleLogout} onRequireAuth={requireAuth} isPremium={isPremiumUser} setPremium={setPremiumDemo} evenementsSaisonniers={evenementsSaisonniers} onOpenPremium={openPremium} onDeleteAccount={handleDeleteAccount} favoris={favoris} adminEvenements={adminEvenements} pendingContribs={pendingContribs} darkMode={darkMode} setDarkMode={setDarkMode} historiqueActivites={historiqueActivites} setHistoriqueActivites={setHistoriqueActivites} estBooste={estBooste} activerBoost={activerBoost} ajouterDemandeDevisBoost={ajouterDemandeDevisBoost}/>}
+        {page==="profil"&&<PageProfil setPage={setPage} enfants={enfants} setEnfants={setEnfants} enfantActif={enfantActif} setEnfantActif={setEnfantActif} showGestionEnfants={showGestionEnfants} setShowGestionEnfants={setShowGestionEnfants} currentUser={currentUser} onLogout={handleLogout} onRequireAuth={requireAuth} isPremium={isPremiumUser} setPremium={setPremiumDemo} evenementsSaisonniers={evenementsSaisonniers} onOpenPremium={openPremium} onDeleteAccount={handleDeleteAccount} favoris={favoris} adminEvenements={adminEvenements} pendingContribs={pendingContribs} darkMode={darkMode} setDarkMode={setDarkMode} historiqueActivites={historiqueActivites} setHistoriqueActivites={setHistoriqueActivites} estBooste={estBooste} activerBoost={activerBoost} ajouterDemandeDevisBoost={ajouterDemandeDevisBoost} betisesLutin={betisesLutin} cartesVoyageLutin={cartesVoyageLutin}/>}
         {page==="favoris"&&<PageFavoris favoris={favoris} setFavoris={setFavoris} isPremium={isPremiumUser} onBack={()=>setPage("profil")}/>}
       </div>
       <div style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:390,background:WH,borderTop:BD,display:"flex",alignItems:"flex-end",zIndex:200,paddingBottom:4}}>

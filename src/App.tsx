@@ -2856,7 +2856,7 @@ function PageBiblio({pendingContribs=[],setPendingContribs,adminActivites=[],adm
 }
 
 // ─── DONNÉES ────────────────────────────────────────────────────────────────
-const bibliotheque = [
+const MOCK_BETISES_LUTIN = [
   { id:1,  emoji:"🧦", titre:"Le lutin a caché les chaussettes",      description:"Toutes les chaussettes de la maison sont accrochées au sapin !",                                  materiel:["Chaussettes","Pinces à linge"] },
   { id:2,  emoji:"🍫", titre:"Le lutin a mangé le chocolat",           description:"Il a laissé des miettes partout et un petit mot d'excuse...",                                     materiel:["Chocolat","Papier","Stylo"] },
   { id:3,  emoji:"🎨", titre:"Le lutin a fait de la peinture",         description:"Des empreintes de mains vertes sur le mur du couloir !",                                          materiel:["Peinture verte","Papier journal"] },
@@ -2985,9 +2985,10 @@ function Toast({msg}){
 }
 
 // ─── COMPOSANT PRINCIPAL ─────────────────────────────────────────────────────
-function LutinView({onBack,evenementsSaisonniers=[],isPremium=false,onOpenPremium}){
+function LutinView({onBack,evenementsSaisonniers=[],isPremium=false,onOpenPremium,betisesLutin=null}){
+  const bibliotheque = betisesLutin&&betisesLutin.length>0?betisesLutin:MOCK_BETISES_LUTIN;
   const [calendrier,setCalendrier] = useState(
-    Array.from({length:24},(_,i)=>({jour:i+1,betise:bibliotheque[i],debloque:true}))
+    Array.from({length:24},(_,i)=>({jour:i+1,betise:bibliotheque[i]||bibliotheque[i%bibliotheque.length],debloque:true}))
   );
   const [jourSelectionne,setJourSelectionne] = useState(null);
   const [showBibliotheque,setShowBibliotheque] = useState(false);
@@ -3102,7 +3103,11 @@ function LutinView({onBack,evenementsSaisonniers=[],isPremium=false,onOpenPremiu
             <div style={{padding:"22px 20px 28px"}}>
               <p style={{margin:"0 0 4px",fontSize:12,color:"rgba(255,255,255,0.5)",textTransform:"uppercase",letterSpacing:"0.1em"}}>Jour {jourData.jour} — {formatJour(jourData.jour)}</p>
               <div style={{textAlign:"center",margin:"16px 0 12px"}}>
-                <div style={{fontSize:72,marginBottom:8,lineHeight:1}}>{jourData.betise.emoji}</div>
+                {jourData.betise.photoUrl?(
+                  <img src={jourData.betise.photoUrl} alt="" style={{width:"100%",maxHeight:180,objectFit:"cover",borderRadius:14,marginBottom:12}}/>
+                ):(
+                  <div style={{fontSize:72,marginBottom:8,lineHeight:1}}>{jourData.betise.emoji}</div>
+                )}
                 <p style={{margin:"0 0 8px",fontSize:18,fontWeight:800,color:WH,lineHeight:1.3}}>{jourData.betise.titre}</p>
                 <p style={{margin:0,fontSize:13,color:"rgba(255,255,255,0.75)",lineHeight:1.6}}>{jourData.betise.description}</p>
               </div>
@@ -3155,7 +3160,7 @@ function LutinView({onBack,evenementsSaisonniers=[],isPremium=false,onOpenPremiu
                       display:"flex",alignItems:"flex-start",gap:12,
                       transition:"all 0.1s",
                     }}>
-                      <span style={{fontSize:28,flexShrink:0,lineHeight:1}}>{b.emoji}</span>
+                      {b.photoUrl?<img src={b.photoUrl} alt="" style={{width:44,height:44,borderRadius:10,objectFit:"cover",flexShrink:0}}/>:<span style={{fontSize:28,flexShrink:0,lineHeight:1}}>{b.emoji}</span>}
                       <div style={{flex:1,minWidth:0}}>
                         <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:3}}>
                           <p style={{margin:0,fontSize:13,fontWeight:700,color:WH,lineHeight:1.2}}>{b.titre}</p>
@@ -3301,7 +3306,7 @@ function EvtGenerateur({evt,activites,favoris,setFavoris,isPremium=false}){
   );
 }
 
-function PageAccueil({favoris,setFavoris,setPage,customEvents=[],popupShown=new Set(),setPopupShown,ideesMomentConfig=[],isLoggedIn=true,onRequireAuth,evenementsSaisonniers=[],isPremium=false,onOpenPremium,customCatActivites=[],customCatSorties=[],customCatEvenements=[],adminActivites=[],adminSorties=[],pendingContribs=[],setPendingContribs,deletedTitles=new Set(),currentUser=null,sosModeActif=true,enfants=[],enfantActif=null,setEnfantActif,onMarquerFait,historiqueActivites=[],filtresMemoActiv={},setFiltresMemoActiv,filtresMemoSortie={},setFiltresMemoSortie,adminComms=[],masquees=[],toggleMasquer,estMasque,ajouterDemandeDevisBoost,trialEndDate=null}){
+function PageAccueil({favoris,setFavoris,setPage,customEvents=[],popupShown=new Set(),setPopupShown,ideesMomentConfig=[],isLoggedIn=true,onRequireAuth,evenementsSaisonniers=[],isPremium=false,onOpenPremium,customCatActivites=[],customCatSorties=[],customCatEvenements=[],adminActivites=[],adminSorties=[],pendingContribs=[],setPendingContribs,deletedTitles=new Set(),currentUser=null,sosModeActif=true,enfants=[],enfantActif=null,setEnfantActif,onMarquerFait,historiqueActivites=[],filtresMemoActiv={},setFiltresMemoActiv,filtresMemoSortie={},setFiltresMemoSortie,adminComms=[],masquees=[],toggleMasquer,estMasque,ajouterDemandeDevisBoost,trialEndDate=null,betisesLutin=[]}){
   const FAVORIS_LIMITE_GRATUIT=10;
   const [showFavorisLimitMsg,setShowFavorisLimitMsg]=useState(false);
   const [rappelAnticiper,setRappelAnticiper]=useState(null); // item activité récemment marquée "fait"
@@ -3566,7 +3571,7 @@ function PageAccueil({favoris,setFavoris,setPage,customEvents=[],popupShown=new 
   ];
   return(
     <div style={{background:BG,minHeight:"100vh",paddingBottom:8}}>
-      {showLutinView&&<LutinView onBack={()=>setShowLutinView(false)} evenementsSaisonniers={evenementsSaisonniers} isPremium={isPremium} onOpenPremium={onOpenPremium}/>}
+      {showLutinView&&<LutinView onBack={()=>setShowLutinView(false)} evenementsSaisonniers={evenementsSaisonniers} isPremium={isPremium} onOpenPremium={onOpenPremium} betisesLutin={betisesLutin}/>}
 
       {showFavorisLimitMsg&&(
         <div onClick={()=>setShowFavorisLimitMsg(false)} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.5)",zIndex:600,display:"flex",alignItems:"center",justifyContent:"center",padding:"0 24px"}}>
@@ -8908,6 +8913,133 @@ function BiblioNoel({onBack,sharedActivites=[],setSharedActivites}) {
 }
 
 
+function AdminBetisesLutin({betisesLutin=[],setBetisesLutin,onBack}) {
+  const [modal,setModal] = useState(null); // {mode:"add"|"edit",item}
+  const [form,setForm] = useState({titre:"",description:"",emoji:"🎁",photoUrl:"",materiel:""});
+  const [uploadEnCours,setUploadEnCours] = useState(false);
+  const liste = betisesLutin.length>0?betisesLutin:MOCK_BETISES_LUTIN;
+
+  const openAdd=()=>{setForm({titre:"",description:"",emoji:"🎁",photoUrl:"",materiel:""});setModal({mode:"add"});};
+  const openEdit=(item)=>{setForm({titre:item.titre||"",description:item.description||"",emoji:item.emoji||"🎁",photoUrl:item.photoUrl||"",materiel:Array.isArray(item.materiel)?item.materiel.join(", "):(item.materiel||"")});setModal({mode:"edit",item});};
+
+  const save=async()=>{
+    if(!form.titre.trim()){alert("Le titre est obligatoire.");return;}
+    const materielArr=form.materiel?form.materiel.split(",").map(m=>m.trim()).filter(Boolean):[];
+    const payload={titre:form.titre.trim(),description:form.description.trim(),emoji:form.emoji.trim()||"🎁",photo_url:form.photoUrl||null,materiel:materielArr};
+    if(modal.mode==="edit"){
+      const item=modal.item;
+      setBetisesLutin(prev=>{
+        const base=prev.length>0?prev:MOCK_BETISES_LUTIN;
+        return base.map(b=>b.id===item.id?{...b,titre:payload.titre,description:payload.description,emoji:payload.emoji,photoUrl:payload.photo_url,materiel:materielArr}:b);
+      });
+      if(item.id&&/^[0-9a-f]{8}-/.test(String(item.id))){
+        try{ await supabase.from("betises_lutin").update(payload).eq("id",item.id); }catch(e){}
+      }else{
+        // Élément par défaut jamais encore enregistré : on l'insère pour la première fois
+        try{
+          const {data:inserted}=await supabase.from("betises_lutin").insert(payload).select().single();
+          if(inserted)setBetisesLutin(prev=>{
+            const base=prev.length>0?prev:MOCK_BETISES_LUTIN;
+            return base.map(b=>b.id===item.id?{id:inserted.id,titre:payload.titre,description:payload.description,emoji:payload.emoji,photoUrl:payload.photo_url,materiel:materielArr}:b);
+          });
+        }catch(e){ /* reste correct localement même si la sauvegarde échoue */ }
+      }
+    }else{
+      const tempId="temp"+Date.now();
+      const nouveau={id:tempId,titre:payload.titre,description:payload.description,emoji:payload.emoji,photoUrl:payload.photo_url,materiel:materielArr};
+      setBetisesLutin(prev=>[...(prev.length>0?prev:MOCK_BETISES_LUTIN),nouveau]);
+      try{
+        const {data:inserted}=await supabase.from("betises_lutin").insert(payload).select().single();
+        if(inserted)setBetisesLutin(prev=>prev.map(b=>b.id===tempId?{...b,id:inserted.id}:b));
+      }catch(e){ /* la bêtise reste visible localement même si la sauvegarde échoue */ }
+    }
+    setModal(null);
+  };
+
+  const supprimer=async(item)=>{
+    if(!window.confirm(`Supprimer "${item.titre}" ?`))return;
+    setBetisesLutin(prev=>(prev.length>0?prev:MOCK_BETISES_LUTIN).filter(b=>b.id!==item.id));
+    if(item.id&&/^[0-9a-f]{8}-/.test(String(item.id))){
+      try{ await supabase.from("betises_lutin").delete().eq("id",item.id); }catch(e){}
+    }
+  };
+
+  const uploadPhoto=async(file)=>{
+    setUploadEnCours(true);
+    try{
+      const ext=file.name.split(".").pop();
+      const path=`betises/${Date.now()}_${Math.random().toString(36).slice(2,8)}.${ext}`;
+      const {error:upErr}=await supabase.storage.from("ressources-fichiers").upload(path,file);
+      if(upErr){alert("Erreur lors de l'envoi de la photo : "+upErr.message);}
+      else{
+        const {data:pub}=supabase.storage.from("ressources-fichiers").getPublicUrl(path);
+        setForm(f=>({...f,photoUrl:pub.publicUrl}));
+      }
+    }catch(e){alert("Erreur lors de l'envoi de la photo.");}
+    setUploadEnCours(false);
+  };
+
+  return(
+    <div>
+      <div style={{display:"flex",alignItems:"center",gap:14,marginBottom:20}}>
+        <button onClick={onBack} style={{...s.btnOutline(C.muted),display:"flex",alignItems:"center",gap:6}}>← Retour</button>
+        <div>
+          <h1 style={{fontSize:22,fontWeight:800,color:C.text,margin:0}}>🧦 Bêtises du lutin</h1>
+          <p style={{fontSize:13,color:C.muted,margin:"4px 0 0"}}>Gérez le contenu du calendrier de l'Avent (24 jours)</p>
+        </div>
+        <button style={{...s.btn(C.accent),marginLeft:"auto"}} onClick={openAdd}>+ Ajouter une bêtise</button>
+      </div>
+
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))",gap:14}}>
+        {liste.map(b=>(
+          <div key={b.id} style={{...s.card,display:"flex",gap:12,alignItems:"flex-start"}}>
+            {b.photoUrl?(
+              <img src={b.photoUrl} alt="" style={{width:56,height:56,borderRadius:12,objectFit:"cover",flexShrink:0}}/>
+            ):(
+              <div style={{width:56,height:56,borderRadius:12,background:C.card,display:"flex",alignItems:"center",justifyContent:"center",fontSize:28,flexShrink:0}}>{b.emoji}</div>
+            )}
+            <div style={{flex:1,minWidth:0}}>
+              <p style={{margin:"0 0 4px",fontSize:14,fontWeight:700,color:C.text}}>{b.titre}</p>
+              <p style={{margin:"0 0 8px",fontSize:12,color:C.muted,lineHeight:1.4}}>{b.description}</p>
+              <div style={{display:"flex",gap:6}}>
+                <button style={s.btnOutline(C.accent)} onClick={()=>openEdit(b)}>✏️ Modifier</button>
+                <button style={s.btnOutline(C.red)} onClick={()=>supprimer(b)}>🗑️</button>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {modal&&(
+        <Modal title={modal.mode==="edit"?"Modifier la bêtise":"Nouvelle bêtise"} onClose={()=>setModal(null)}>
+          <AdminField label="Titre *"><input style={s.input} value={form.titre} onChange={e=>setForm({...form,titre:e.target.value})} placeholder="Ex : Le lutin a caché les chaussettes"/></AdminField>
+          <AdminField label="Description"><textarea style={{...s.input,minHeight:70,resize:"vertical"}} value={form.description} onChange={e=>setForm({...form,description:e.target.value})} placeholder="Ex : Toutes les chaussettes de la maison sont accrochées au sapin !"/></AdminField>
+          <AdminField label="Photo (remplace l'emoji si ajoutée)">
+            {form.photoUrl?(
+              <div style={{display:"flex",alignItems:"center",gap:10}}>
+                <img src={form.photoUrl} alt="" style={{width:56,height:56,borderRadius:10,objectFit:"cover"}}/>
+                <button onClick={()=>setForm({...form,photoUrl:""})} style={{background:"none",border:"none",color:C.red,fontSize:12,cursor:"pointer"}}>Retirer la photo</button>
+              </div>
+            ):(
+              <div>
+                <input type="file" accept="image/*" disabled={uploadEnCours} onChange={e=>{const f=e.target.files[0];if(f)uploadPhoto(f);}} style={{fontSize:12}}/>
+                {uploadEnCours&&<p style={{margin:"6px 0 0",fontSize:11,color:C.muted}}>Envoi en cours...</p>}
+              </div>
+            )}
+          </AdminField>
+          <AdminField label="Emoji (utilisé si pas de photo)"><input style={s.input} value={form.emoji} onChange={e=>setForm({...form,emoji:e.target.value})} placeholder="🧦"/></AdminField>
+          <AdminField label="Matériel nécessaire (séparé par des virgules)"><input style={s.input} value={form.materiel} onChange={e=>setForm({...form,materiel:e.target.value})} placeholder="Chaussettes, Pinces à linge"/></AdminField>
+          <div style={{display:"flex",justifyContent:"flex-end",gap:8,marginTop:12,paddingTop:12,borderTop:`1px solid ${C.border}`}}>
+            <button style={s.btnOutline(C.muted)} onClick={()=>setModal(null)}>Annuler</button>
+            <button style={s.btn(C.accent)} onClick={save}>{modal.mode==="edit"?"Enregistrer":"Créer"}</button>
+          </div>
+        </Modal>
+      )}
+    </div>
+  );
+}
+
+
 function CreerEvenement({onBack,onSave}) {
   const [form,setForm] = useState({nom:"",emoji:"🎉",couleur:"#7c3aed",dateDebut:"",dateFin:"",banner:false,bannerTexte:"",popup:false,popupTexte:"",bibliotheque:true,generateur:true,generateurActif:true,premium:false,essaiActif:false,apercuGratuitJours:3,fichiers:[]});
   const [bibliothequeActiv,setBibliothequeActiv] = useState([]);
@@ -9390,11 +9522,12 @@ function DetailEvenement({evt,onBack,onSave,onDelete,onArchive,toggleCustom}){
   );
 }
 
-function Saisonnier({sharedCustomEvents=[],setSharedCustomEvents,evenementsSaisonniers=[],setEvenementsSaisonniers,sharedActivites=[],setSharedActivites}) {
+function Saisonnier({sharedCustomEvents=[],setSharedCustomEvents,evenementsSaisonniers=[],setEvenementsSaisonniers,sharedActivites=[],setSharedActivites,betisesLutin=[],setBetisesLutin}) {
   const [sections,setSections] = useState(MOCK_SEASONAL);
   const customEvents = sharedCustomEvents;
   const setCustomEvents = setSharedCustomEvents||((fn)=>{});
   const [biblioNoel,setBiblioNoel] = useState(false);
+  const [betisesLutinAdmin,setBetisesLutinAdmin] = useState(false);
   const [creerEvt,setCreerEvt] = useState(false);
   const [selectedEvt,setSelectedEvt] = useState(null); // event being viewed/edited
   const toggle = (id,field) => setSections(sections.map(s=>s.id===id?{...s,[field]:!s[field]}:s));
@@ -9413,6 +9546,7 @@ function Saisonnier({sharedCustomEvents=[],setSharedCustomEvents,evenementsSaiso
   const handleArchiveEvt = (id) => { setCustomEvents(prev=>prev.map(e=>e.id===id?{...e,actif:false,archive:true}:e)); setSelectedEvt(null); };
   const handleRestoreEvt = (id) => { setCustomEvents(prev=>prev.map(e=>e.id===id?{...e,archive:false}:e)); };
   if(biblioNoel) return <BiblioNoel onBack={()=>setBiblioNoel(false)} sharedActivites={sharedActivites} setSharedActivites={setSharedActivites}/>;
+  if(betisesLutinAdmin) return <AdminBetisesLutin onBack={()=>setBetisesLutinAdmin(false)} betisesLutin={betisesLutin} setBetisesLutin={setBetisesLutin}/>;
   if(creerEvt) return <CreerEvenement onBack={()=>setCreerEvt(false)} onSave={handleSaveCustom}/>;
   if(selectedEvt) return <DetailEvenement evt={selectedEvt} onBack={()=>setSelectedEvt(null)} onSave={handleUpdateEvt} onDelete={handleDeleteEvt} onArchive={handleArchiveEvt} toggleCustom={toggleCustom}/>;
   return (
@@ -9514,8 +9648,11 @@ function Saisonnier({sharedCustomEvents=[],setSharedCustomEvents,evenementsSaiso
               {sec.type==="christmas"&&(
                 <div style={{paddingTop:12,borderTop:`1px solid ${C.border}`,marginTop:4}}>
                   <p style={{margin:"0 0 8px",fontSize:12,color:C.muted,fontWeight:600}}>📚 Contenu dédié</p>
-                  <button onClick={()=>setBiblioNoel(true)} style={{...s.btn("#10b981"),width:"100%",justifyContent:"center",borderRadius:10}}>
+                  <button onClick={()=>setBiblioNoel(true)} style={{...s.btn("#10b981"),width:"100%",justifyContent:"center",borderRadius:10,marginBottom:8}}>
                     <span>📚</span> Gérer la bibliothèque Noël →
+                  </button>
+                  <button onClick={()=>setBetisesLutinAdmin(true)} style={{...s.btn("#7c3aed"),width:"100%",justifyContent:"center",borderRadius:10}}>
+                    <span>🧦</span> Gérer les bêtises du lutin →
                   </button>
                   {(() => {
                     const evt = evenementsSaisonniers.find(e=>e.type==="christmas");
@@ -11247,7 +11384,7 @@ function PageAdmin({onLogout,pendingContribs=[],setPendingContribs,updateContrib
           </div>
         </header>
         <main style={{flex:1,overflowY:"auto",padding:24}}>
-          {page==="contributions"?<Contributions items={pendingContribs} updateContrib={updateContrib} setPendingContribs={setPendingContribs}/>:PAGES_FN[page]?PAGES_FN[page]({sharedActivites:adminActivites,setSharedActivites:setAdminActivites,sharedSorties:adminSorties,setSharedSorties:setAdminSorties,sharedEvenements:adminEvenements,setSharedEvenements:setAdminEvenements,userReports:adminReports,setUserReports:setAdminReports,onDeleteTitle:addDeletedTitle,sharedCustomEvents:adminCustomEvents,setSharedCustomEvents:setAdminCustomEvents,pendingContribs,setPendingContribs,dashUserReports:adminReports,sosLib,setSosLib,sosModeActif,setSosModeActif,ideesMomentConfig,setIdeesMomentConfig,evenementsSaisonniers,setEvenementsSaisonniers,customCatActivites,setCustomCatActivites,customCatSorties,setCustomCatSorties,customCatEvenements,setCustomCatEvenements,adminComms,setAdminComms,ressourcesSites,setRessourcesSites,ressourcesContacts,setRessourcesContacts,ressourcesPdf,setRessourcesPdf,devisBoostDemandes,setDevisBoostDemandes,boosts,onActiverBoost:activerBoost,onRetirerBoost:retirerBoostSupabase,demoMode,setDemoMode}):null}
+          {page==="contributions"?<Contributions items={pendingContribs} updateContrib={updateContrib} setPendingContribs={setPendingContribs}/>:PAGES_FN[page]?PAGES_FN[page]({sharedActivites:adminActivites,setSharedActivites:setAdminActivites,sharedSorties:adminSorties,setSharedSorties:setAdminSorties,sharedEvenements:adminEvenements,setSharedEvenements:setAdminEvenements,userReports:adminReports,setUserReports:setAdminReports,onDeleteTitle:addDeletedTitle,sharedCustomEvents:adminCustomEvents,setSharedCustomEvents:setAdminCustomEvents,pendingContribs,setPendingContribs,dashUserReports:adminReports,sosLib,setSosLib,sosModeActif,setSosModeActif,ideesMomentConfig,setIdeesMomentConfig,evenementsSaisonniers,setEvenementsSaisonniers,betisesLutin,setBetisesLutin,customCatActivites,setCustomCatActivites,customCatSorties,setCustomCatSorties,customCatEvenements,setCustomCatEvenements,adminComms,setAdminComms,ressourcesSites,setRessourcesSites,ressourcesContacts,setRessourcesContacts,ressourcesPdf,setRessourcesPdf,devisBoostDemandes,setDevisBoostDemandes,boosts,onActiverBoost:activerBoost,onRetirerBoost:retirerBoostSupabase,demoMode,setDemoMode}):null}
         </main>
       </div>
     </div>
@@ -11857,6 +11994,16 @@ export default function App(){
       }catch(e){ /* erreur réseau — reste sur la config par défaut */ }
     })();
   },[]);
+  // ── Chargement des bêtises du lutin depuis Supabase (données globales) ──
+  const [betisesLutin,setBetisesLutin]=useState([]);
+  useEffect(()=>{
+    (async()=>{
+      try{
+        const {data}=await supabase.from("betises_lutin").select("*").order("created_at",{ascending:true});
+        if(data&&data.length>0)setBetisesLutin(data.map(b=>({id:b.id,titre:b.titre,description:b.description,emoji:b.emoji,photoUrl:b.photo_url,materiel:b.materiel||[]})));
+      }catch(e){ /* erreur réseau — reste sur les bêtises par défaut */ }
+    })();
+  },[]);
   // ── Sauvegarde globale — toutes les données privées en 1 clé ─────────────
   const sauvegarderPrivé=async(données)=>{
     try{ await window.storage.set("app_v1_private",JSON.stringify(données),false); }catch(e){}
@@ -12048,9 +12195,9 @@ export default function App(){
       </div>}
       <Confetti active={showConfetti}/>
       <div style={{paddingBottom:72}}>
-        {page==="accueil"&&<PageAccueil favoris={favoris} setFavoris={setFavoris} setPage={setPage} customEvents={customEvents} popupShown={popupShown} setPopupShown={setPopupShown} ideesMomentConfig={ideesMomentConfig} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} evenementsSaisonniers={evenementsSaisonniers} isPremium={isPremiumUser} onOpenPremium={openPremium} customCatActivites={customCatActivites} customCatSorties={customCatSorties} customCatEvenements={customCatEvenements} adminActivites={adminActivites} adminSorties={adminSorties} pendingContribs={pendingContribs} setPendingContribs={setPendingContribs} deletedTitles={deletedTitles} currentUser={currentUser} sosModeActif={sosModeActif} enfants={enfants} enfantActif={enfantActif} setEnfantActif={setEnfantActif} onMarquerFait={(item)=>setHistoriqueActivites(prev=>[{id:item.id||Date.now(),nom:item.nom||item.titre||"",categorie:item.categorie||"",date:item._date||new Date().toISOString(),type:"activite",note:item._note||""},...prev.slice(0,99)])} historiqueActivites={historiqueActivites} filtresMemoActiv={filtresMemoActiv} setFiltresMemoActiv={setFiltresMemoActiv} filtresMemoSortie={filtresMemoSortie} setFiltresMemoSortie={setFiltresMemoSortie} adminComms={adminComms} masquees={masquees} toggleMasquer={toggleMasquer} estMasque={estMasque} ajouterDemandeDevisBoost={ajouterDemandeDevisBoost} trialEndDate={trialEndDate}/>}
+        {page==="accueil"&&<PageAccueil favoris={favoris} setFavoris={setFavoris} setPage={setPage} customEvents={customEvents} popupShown={popupShown} setPopupShown={setPopupShown} ideesMomentConfig={ideesMomentConfig} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} evenementsSaisonniers={evenementsSaisonniers} isPremium={isPremiumUser} onOpenPremium={openPremium} customCatActivites={customCatActivites} customCatSorties={customCatSorties} customCatEvenements={customCatEvenements} adminActivites={adminActivites} adminSorties={adminSorties} pendingContribs={pendingContribs} setPendingContribs={setPendingContribs} deletedTitles={deletedTitles} currentUser={currentUser} sosModeActif={sosModeActif} enfants={enfants} enfantActif={enfantActif} setEnfantActif={setEnfantActif} onMarquerFait={(item)=>setHistoriqueActivites(prev=>[{id:item.id||Date.now(),nom:item.nom||item.titre||"",categorie:item.categorie||"",date:item._date||new Date().toISOString(),type:"activite",note:item._note||""},...prev.slice(0,99)])} historiqueActivites={historiqueActivites} filtresMemoActiv={filtresMemoActiv} setFiltresMemoActiv={setFiltresMemoActiv} filtresMemoSortie={filtresMemoSortie} setFiltresMemoSortie={setFiltresMemoSortie} adminComms={adminComms} masquees={masquees} toggleMasquer={toggleMasquer} estMasque={estMasque} ajouterDemandeDevisBoost={ajouterDemandeDevisBoost} trialEndDate={trialEndDate} betisesLutin={betisesLutin}/>}
         {page==="biblio"&&<PageBiblio pendingContribs={pendingContribs} setPendingContribs={setPendingContribs} adminActivites={adminActivites} adminSorties={adminSorties} adminEvenements={adminEvenements} addReport={addReport} adminReports={adminReports} deletedTitles={deletedTitles} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} favoris={favoris} setFavoris={setFavoris} isPremium={isPremiumUser} onOpenPremium={openPremium} customCatActivites={customCatActivites} customCatSorties={customCatSorties} customCatEvenements={customCatEvenements} currentUser={currentUser} enfants={enfants} enfantActif={enfantActif} masquees={masquees} toggleMasquer={toggleMasquer} estMasque={estMasque} boosts={boosts} ajouterDemandeDevisBoost={ajouterDemandeDevisBoost}/>}
-        {page==="generer"&&<PageAccueil favoris={favoris} setFavoris={setFavoris} setPage={setPage} customEvents={customEvents} popupShown={popupShown} setPopupShown={setPopupShown} ideesMomentConfig={ideesMomentConfig} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} evenementsSaisonniers={evenementsSaisonniers} isPremium={isPremiumUser} onOpenPremium={openPremium} customCatActivites={customCatActivites} customCatSorties={customCatSorties} customCatEvenements={customCatEvenements} adminActivites={adminActivites} adminSorties={adminSorties} pendingContribs={pendingContribs} setPendingContribs={setPendingContribs} deletedTitles={deletedTitles} currentUser={currentUser} sosModeActif={sosModeActif} enfants={enfants} enfantActif={enfantActif} setEnfantActif={setEnfantActif} onMarquerFait={(item)=>setHistoriqueActivites(prev=>[{id:item.id||Date.now(),nom:item.nom||item.titre||"",categorie:item.categorie||"",date:item._date||new Date().toISOString(),type:"activite",note:item._note||""},...prev.slice(0,99)])} historiqueActivites={historiqueActivites} filtresMemoActiv={filtresMemoActiv} setFiltresMemoActiv={setFiltresMemoActiv} filtresMemoSortie={filtresMemoSortie} setFiltresMemoSortie={setFiltresMemoSortie} adminComms={adminComms} masquees={masquees} toggleMasquer={toggleMasquer} estMasque={estMasque} ajouterDemandeDevisBoost={ajouterDemandeDevisBoost} trialEndDate={trialEndDate}/>}
+        {page==="generer"&&<PageAccueil favoris={favoris} setFavoris={setFavoris} setPage={setPage} customEvents={customEvents} popupShown={popupShown} setPopupShown={setPopupShown} ideesMomentConfig={ideesMomentConfig} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} evenementsSaisonniers={evenementsSaisonniers} isPremium={isPremiumUser} onOpenPremium={openPremium} customCatActivites={customCatActivites} customCatSorties={customCatSorties} customCatEvenements={customCatEvenements} adminActivites={adminActivites} adminSorties={adminSorties} pendingContribs={pendingContribs} setPendingContribs={setPendingContribs} deletedTitles={deletedTitles} currentUser={currentUser} sosModeActif={sosModeActif} enfants={enfants} enfantActif={enfantActif} setEnfantActif={setEnfantActif} onMarquerFait={(item)=>setHistoriqueActivites(prev=>[{id:item.id||Date.now(),nom:item.nom||item.titre||"",categorie:item.categorie||"",date:item._date||new Date().toISOString(),type:"activite",note:item._note||""},...prev.slice(0,99)])} historiqueActivites={historiqueActivites} filtresMemoActiv={filtresMemoActiv} setFiltresMemoActiv={setFiltresMemoActiv} filtresMemoSortie={filtresMemoSortie} setFiltresMemoSortie={setFiltresMemoSortie} adminComms={adminComms} masquees={masquees} toggleMasquer={toggleMasquer} estMasque={estMasque} ajouterDemandeDevisBoost={ajouterDemandeDevisBoost} trialEndDate={trialEndDate} betisesLutin={betisesLutin}/>}
         {page==="planning"&&<PagePlanning sosLib={sosLib} enfants={enfants} enfantActif={enfantActif} setEnfantActif={setEnfantActif} isPremium={isPremiumUser} onOpenPremium={openPremium} sosModeActif={sosModeActif} adminActivites={adminActivites} pendingContribs={pendingContribs} deletedTitles={deletedTitles}/>}
         {page==="sos"&&<PageSOS sosLib={sosLib} isPremium={isPremiumUser} onOpenPremium={openPremium} onBack={()=>setPage("accueil")}/>}
         {page==="ressources"&&<PageRessources sites={ressourcesSites} contacts={ressourcesContacts} pdfs={ressourcesPdf} setPdfs={setRessourcesPdf} isPremium={isPremiumUser} onOpenPremium={openPremium}/>}

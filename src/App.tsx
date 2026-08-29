@@ -3459,12 +3459,14 @@ function PageAccueil({favoris,setFavoris,setPage,customEvents=[],popupShown=new 
   const approvedSortsGen=(pendingContribs||[]).filter(c=>c._type==="sortie"&&c._statut==="published");
   const adminPublishedActs=(adminActivites||[]).filter(a=>a.statut==="published").map(a=>({...a,nom:a.nom||a.titre}));
   const adminPublishedSortsGen=(adminSorties||[]).filter(o=>o.statut==="published");
-  const masqueesActKeysGen=new Set(masquees.filter(m=>m._type==="activite").map(m=>m.id||m.nom||m.titre));
-  const masqueesSortKeysGen=new Set(masquees.filter(m=>m._type==="sortie").map(m=>m.id||m.nom||m.titre));
+  const masqueesActifsAct=masquees.filter(m=>m._type==="activite");
+  const masqueesActKeysGen=new Set(masqueesActifsAct.flatMap(m=>[m.id,m.nom,m.titre].filter(Boolean).map(String)));
+  const masqueesActifsSort=masquees.filter(m=>m._type==="sortie");
+  const masqueesSortKeysGen=new Set(masqueesActifsSort.flatMap(m=>[m.id,m.nom,m.titre].filter(Boolean).map(String)));
   const shadowedActTitlesGen=new Set(approvedActs.map(a=>a.nom||a.titre));
   const shadowedSortTitlesGen=new Set(approvedSortsGen.map(s=>s.nom||s.titre));
-  const toutesActivites=[...ACTIVITES.filter(a=>!shadowedActTitlesGen.has(a.nom)&&!shadowedActTitlesGen.has(a.titre)),...adminPublishedActs,...approvedActs].filter(a=>!blockedTitles.has(a.nom)&&!blockedTitles.has(a.titre)).filter(a=>!masqueesActKeysGen.has(a.id||a.nom||a.titre));
-  const toutesSorties=[...SORTIES.filter(s=>!shadowedSortTitlesGen.has(s.nom)&&!shadowedSortTitlesGen.has(s.titre)),...adminPublishedSortsGen,...approvedSortsGen].filter(s=>!blockedTitles.has(s.nom)&&!blockedTitles.has(s.titre)).filter(s=>!masqueesSortKeysGen.has(s.id||s.nom||s.titre));
+  const toutesActivites=[...ACTIVITES.filter(a=>!shadowedActTitlesGen.has(a.nom)&&!shadowedActTitlesGen.has(a.titre)),...adminPublishedActs,...approvedActs].filter(a=>!blockedTitles.has(a.nom)&&!blockedTitles.has(a.titre)).filter(a=>!masqueesActKeysGen.has(String(a.id))&&!masqueesActKeysGen.has(String(a.nom))&&!masqueesActKeysGen.has(String(a.titre)));
+  const toutesSorties=[...SORTIES.filter(s=>!shadowedSortTitlesGen.has(s.nom)&&!shadowedSortTitlesGen.has(s.titre)),...adminPublishedSortsGen,...approvedSortsGen].filter(s=>!blockedTitles.has(s.nom)&&!blockedTitles.has(s.titre)).filter(s=>!masqueesSortKeysGen.has(String(s.id))&&!masqueesSortKeysGen.has(String(s.nom))&&!masqueesSortKeysGen.has(String(s.titre)));
   const [resultsAList,setResultsAList]=useState(null);
   const genActivite=()=>{
     const ageNum=ageEnfant?parseInt(ageEnfant):null;
@@ -4494,11 +4496,9 @@ function PagePlanning({sosLib=[],enfants=[],enfantActif,setEnfantActif,isPremium
   const blockedTitlesP=new Set(deletedTitles||[]);
   const approvedActsP=(pendingContribs||[]).filter(c=>c._type==="activite"&&c._statut==="published");
   const adminPubP=(adminActivites||[]).filter(a=>a.statut==="published").map(a=>({...a,nom:a.nom||a.titre,materiel:Array.isArray(a.materiel)?a.materiel:[]}));
-  const masqueesActKeysP=new Set(masquees.filter(m=>m._type==="activite").map(m=>String(m.id||m.nom||m.titre)));
-  const toutesActivitesP=[...ACTIVITES,...adminPubP,...approvedActsP].filter(a=>!blockedTitlesP.has(a.nom)&&!blockedTitlesP.has(a.titre)).filter(a=>!masqueesActKeysP.has(String(a.id||a.nom||a.titre)));
-  console.log("[DEBUG planning] masquees reçues :",masquees);
-  console.log("[DEBUG planning] masqueesActKeysP :",[...masqueesActKeysP]);
-  console.log("[DEBUG planning] Nombre total avant filtre masquage :",[...ACTIVITES,...adminPubP,...approvedActsP].length,"| après filtre :",toutesActivitesP.length);
+  const masqueesActifsActP=masquees.filter(m=>m._type==="activite");
+  const masqueesActKeysP=new Set(masqueesActifsActP.flatMap(m=>[m.id,m.nom,m.titre].filter(Boolean).map(String)));
+  const toutesActivitesP=[...ACTIVITES,...adminPubP,...approvedActsP].filter(a=>!blockedTitlesP.has(a.nom)&&!blockedTitlesP.has(a.titre)).filter(a=>!masqueesActKeysP.has(String(a.id))&&!masqueesActKeysP.has(String(a.nom))&&!masqueesActKeysP.has(String(a.titre)));
   const ALL_MATERIEL=[...new Set(toutesActivitesP.flatMap(a=>a.materiel||[]))].sort();
   const [sansMateriel,setSansMateriel]=useState(false);
   const toggleMat=(m)=>setMaterielDispo(prev=>prev.includes(m)?prev.filter(x=>x!==m):[...prev,m]);
@@ -12076,16 +12076,18 @@ export default function App(){
     }
   };
   const toggleMasquer=(item,itemType)=>{
+    const nom=String(item.nom||item.titre||"");
     const key=String(item.id||item.nom||item.titre);
     setMasquees(prev=>{
-      const existe=prev.some(m=>String(m.id||m.nom||m.titre)===key&&m._type===itemType);
-      if(existe)return prev.filter(m=>!(String(m.id||m.nom||m.titre)===key&&m._type===itemType));
+      const existe=prev.some(m=>m._type===itemType&&(String(m.id||m.nom||m.titre)===key||(nom&&String(m.nom||m.titre||"")===nom)));
+      if(existe)return prev.filter(m=>!(m._type===itemType&&(String(m.id||m.nom||m.titre)===key||(nom&&String(m.nom||m.titre||"")===nom))));
       return [...prev,{...item,_type:itemType}];
     });
   };
   const estMasque=(item,itemType)=>{
+    const nom=String(item?.nom||item?.titre||"");
     const key=String(item?.id||item?.nom||item?.titre);
-    return masquees.some(m=>String(m.id||m.nom||m.titre)===key&&m._type===itemType);
+    return masquees.some(m=>m._type===itemType&&(String(m.id||m.nom||m.titre)===key||(nom&&String(m.nom||m.titre||"")===nom)));
   };
   const [enfants,setEnfants]=useState([]);
   const [enfantActif,setEnfantActif]=useState("1");

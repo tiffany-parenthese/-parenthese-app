@@ -11913,12 +11913,15 @@ export default function App(){
   const chargerMasqueesSupabase=async(userId)=>{
     try{
       const {data,error}=await supabase.from("masquees").select("*").eq("user_id",userId);
+      console.log("[DEBUG masquees] Chargement pour userId :",userId,"| Résultat :",data,"| Erreur :",error);
       if(!error&&data){
         masqueesChargeesDepuisServeur.current=false;
         setMasquees(data.map(m=>({...(m.item_data||{}),id:m.item_id,_type:m.item_type})));
         setTimeout(()=>{masqueesChargeesDepuisServeur.current=true;},0);
       }
-    }catch(e){ /* Pas de masquages ou erreur réseau — reste vide */ }
+    }catch(e){
+      console.log("[DEBUG masquees] Exception chargement :",e);
+    }
   };
   useEffect(()=>{
     let actif=true;
@@ -12344,14 +12347,19 @@ export default function App(){
   },[favoris,currentUser?.id,dataLoaded]);
   // ── Synchronisation des masquages ("ne plus proposer") vers Supabase ──
   const synchroniserMasqueesMaintenant=async()=>{
+    console.log("[DEBUG masquees] Tentative de synchro. currentUser?.id :",currentUser?.id,"| masquees :",masquees);
     if(!currentUser?.id)return;
     try{
-      await supabase.from("masquees").delete().eq("user_id",currentUser.id);
+      const delRes=await supabase.from("masquees").delete().eq("user_id",currentUser.id);
+      console.log("[DEBUG masquees] Suppression préalable :",delRes.error);
       if(masquees.length>0){
         const lignes=masquees.map(m=>({user_id:currentUser.id,item_type:m._type,item_id:String(m.id||m.nom||m.titre),item_data:m}));
-        await supabase.from("masquees").insert(lignes);
+        const insRes=await supabase.from("masquees").insert(lignes);
+        console.log("[DEBUG masquees] Résultat insertion :",insRes.error,"| Lignes envoyées :",lignes);
       }
-    }catch(e){ /* échec réseau — les masquages restent corrects localement, seront resynchronisés au prochain changement */ }
+    }catch(e){
+      console.log("[DEBUG masquees] Exception :",e);
+    }
   };
   useEffect(()=>{
     if(!dataLoaded||!currentUser?.id||!masqueesChargeesDepuisServeur.current)return;

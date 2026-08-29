@@ -2108,6 +2108,7 @@ function SortieCard({s,onClick,onReport,isFav,onToggleFav,customCatSorties=[],on
   const isNew=s._createdAt&&(Date.now()-new Date(s._createdAt).getTime())<7*24*60*60*1000;
   return(
     <div style={{background:WH,borderRadius:16,overflow:"hidden",border:estBoostee?"2px solid #F59E0B":BD,marginBottom:12,boxShadow:estBoostee?"0 4px 14px rgba(245,158,11,0.2)":"0 2px 8px rgba(0,0,0,0.06)"}}>
+      <div style={{background:"#000",color:"#0f0",fontSize:9,padding:"2px 6px",fontFamily:"monospace"}}>DEBUG id={String(s.id)} nom={s.nom} boost={String(estBoostee)}</div>
       <div style={{position:"relative",height:160,background:s.photo?"#000":`linear-gradient(135deg,${tile.bg},${tile.bg})`,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",overflow:"hidden"}} onClick={onClick}>
         {s.photo?<img src={s.photo} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/>:<span style={{fontSize:64}}>{tile.emoji}</span>}
         <button onClick={e=>{e.stopPropagation();onToggleFav&&onToggleFav();}} style={{position:"absolute",top:10,right:10,width:32,height:32,borderRadius:"50%",background:WH,border:"none",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 2px 6px rgba(0,0,0,0.15)",cursor:"pointer",padding:0}}><span style={{fontSize:16}}>{isFav?"❤️":"🤍"}</span></button>

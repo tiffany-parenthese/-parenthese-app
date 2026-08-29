@@ -2384,7 +2384,13 @@ function PageBiblio({pendingContribs=[],setPendingContribs,adminActivites=[],adm
     const key=String(item?.id||item?.nom||item?.titre);
     const nom=item?.nom||item?.titre;
     const maintenant=new Date();
-    return boosts.some(b=>b.itemType===itemType&&(b.itemId===key||(nom&&b.itemNom===nom))&&new Date(b.dateExpiration)>maintenant&&(!b.dateDebut||new Date(b.dateDebut)<=maintenant));
+    const resultat=boosts.some(b=>b.itemType===itemType&&(b.itemId===key||(nom&&b.itemNom===nom))&&new Date(b.dateExpiration)>maintenant&&(!b.dateDebut||new Date(b.dateDebut)<=maintenant));
+    if(nom==="Big Bird"){
+      console.log("[DEBUG boost affichage] item testé :",{key,nom,itemType});
+      console.log("[DEBUG boost affichage] boosts disponibles :",boosts);
+      console.log("[DEBUG boost affichage] résultat :",resultat);
+    }
+    return resultat;
   };
   const [tab,setTab]=useState("activites");
   const [popupBoostEmail,setPopupBoostEmail]=useState(null); // {item,itemType,message}

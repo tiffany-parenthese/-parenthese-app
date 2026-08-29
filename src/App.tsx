@@ -11913,15 +11913,12 @@ export default function App(){
   const chargerMasqueesSupabase=async(userId)=>{
     try{
       const {data,error}=await supabase.from("masquees").select("*").eq("user_id",userId);
-      console.log("[DEBUG masquees] Chargement pour userId :",userId,"| Résultat :",data,"| Erreur :",error);
       if(!error&&data){
         masqueesChargeesDepuisServeur.current=false;
         setMasquees(data.map(m=>({...(m.item_data||{}),id:m.item_id,_type:m.item_type})));
         setTimeout(()=>{masqueesChargeesDepuisServeur.current=true;},0);
       }
-    }catch(e){
-      console.log("[DEBUG masquees] Exception chargement :",e);
-    }
+    }catch(e){ /* Pas de masquages ou erreur réseau — reste vide */ }
   };
   useEffect(()=>{
     let actif=true;
@@ -12066,16 +12063,16 @@ export default function App(){
     }
   };
   const toggleMasquer=(item,itemType)=>{
-    const key=item.id||item.nom||item.titre;
+    const key=String(item.id||item.nom||item.titre);
     setMasquees(prev=>{
-      const existe=prev.some(m=>(m.id||m.nom||m.titre)===key&&m._type===itemType);
-      if(existe)return prev.filter(m=>!((m.id||m.nom||m.titre)===key&&m._type===itemType));
+      const existe=prev.some(m=>String(m.id||m.nom||m.titre)===key&&m._type===itemType);
+      if(existe)return prev.filter(m=>!(String(m.id||m.nom||m.titre)===key&&m._type===itemType));
       return [...prev,{...item,_type:itemType}];
     });
   };
   const estMasque=(item,itemType)=>{
-    const key=item?.id||item?.nom||item?.titre;
-    return masquees.some(m=>(m.id||m.nom||m.titre)===key&&m._type===itemType);
+    const key=String(item?.id||item?.nom||item?.titre);
+    return masquees.some(m=>String(m.id||m.nom||m.titre)===key&&m._type===itemType);
   };
   const [enfants,setEnfants]=useState([]);
   const [enfantActif,setEnfantActif]=useState("1");
@@ -12347,19 +12344,22 @@ export default function App(){
   },[favoris,currentUser?.id,dataLoaded]);
   // ── Synchronisation des masquages ("ne plus proposer") vers Supabase ──
   const synchroniserMasqueesMaintenant=async()=>{
-    console.log("[DEBUG masquees] Tentative de synchro. currentUser?.id :",currentUser?.id,"| masquees :",masquees);
     if(!currentUser?.id)return;
     try{
-      const delRes=await supabase.from("masquees").delete().eq("user_id",currentUser.id);
-      console.log("[DEBUG masquees] Suppression préalable :",delRes.error);
-      if(masquees.length>0){
-        const lignes=masquees.map(m=>({user_id:currentUser.id,item_type:m._type,item_id:String(m.id||m.nom||m.titre),item_data:m}));
-        const insRes=await supabase.from("masquees").insert(lignes);
-        console.log("[DEBUG masquees] Résultat insertion :",insRes.error,"| Lignes envoyées :",lignes);
+      await supabase.from("masquees").delete().eq("user_id",currentUser.id);
+      // Déduplication de sécurité : deux entrées différentes peuvent pointer vers la même clé une fois converties en texte
+      const vues=new Set();
+      const masqueesUniques=masquees.filter(m=>{
+        const cle=m._type+"|"+String(m.id||m.nom||m.titre);
+        if(vues.has(cle))return false;
+        vues.add(cle);
+        return true;
+      });
+      if(masqueesUniques.length>0){
+        const lignes=masqueesUniques.map(m=>({user_id:currentUser.id,item_type:m._type,item_id:String(m.id||m.nom||m.titre),item_data:m}));
+        await supabase.from("masquees").insert(lignes);
       }
-    }catch(e){
-      console.log("[DEBUG masquees] Exception :",e);
-    }
+    }catch(e){ /* échec réseau — les masquages restent corrects localement, seront resynchronisés au prochain changement */ }
   };
   useEffect(()=>{
     if(!dataLoaded||!currentUser?.id||!masqueesChargeesDepuisServeur.current)return;

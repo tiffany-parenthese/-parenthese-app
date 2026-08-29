@@ -2484,6 +2484,8 @@ function PageBiblio({pendingContribs=[],setPendingContribs,adminActivites=[],adm
   const actFiltered=[...actFilteredBase].sort((a,b)=>{
     const boostDiff=(estBoosteItem(b,"activite")?1:0)-(estBoosteItem(a,"activite")?1:0);
     if(boostDiff!==0)return boostDiff;
+    const masqueDiff=((estMasque?estMasque(a,"activite"):false)?1:0)-((estMasque?estMasque(b,"activite"):false)?1:0);
+    if(masqueDiff!==0)return masqueDiff;
     if(matchActif&&sortActiv==="pertinence")return calculerScoreMatch(b,enfantCourantBiblio)-calculerScoreMatch(a,enfantCourantBiblio);
     if(sortActiv==="alpha")return(a.nom||a.titre||"").localeCompare(b.nom||b.titre||"");
     if(sortActiv==="recent")return(b._createdAt||b.date||"").localeCompare(a._createdAt||a.date||"");
@@ -2509,14 +2511,22 @@ function PageBiblio({pendingContribs=[],setPendingContribs,adminActivites=[],adm
   });
   const approvedSorts=pendingContribs.filter(c=>c._type==="sortie"&&c._statut!=="rejected");
   const shadowedSortTitles=new Set(approvedSorts.map(s=>s.nom||s.titre));
-  const sortFiltered=[...SORTIES.filter(s=>!shadowedSortTitles.has(s.nom)&&!shadowedSortTitles.has(s.titre)),...adminSortiesPubliees,...approvedSorts].filter(s=>!blockedTitles.has(s.nom)).filter(s=>(!filterDept||s.dept===filterDept)&&(!filterType||s.type===filterType)&&(!searchQ||(s.nom||"").toLowerCase().includes(searchQ)||(s.type||"").toLowerCase().includes(searchQ)||(s.ville||"").toLowerCase().includes(searchQ))&&(filterAccess.length===0||filterAccess.every(k=>s.accessibilite?.signaux?.[k]===true))).sort((a,b)=>(estBoosteItem(b,"sortie")?1:0)-(estBoosteItem(a,"sortie")?1:0));
+  const sortFiltered=[...SORTIES.filter(s=>!shadowedSortTitles.has(s.nom)&&!shadowedSortTitles.has(s.titre)),...adminSortiesPubliees,...approvedSorts].filter(s=>!blockedTitles.has(s.nom)).filter(s=>(!filterDept||s.dept===filterDept)&&(!filterType||s.type===filterType)&&(!searchQ||(s.nom||"").toLowerCase().includes(searchQ)||(s.type||"").toLowerCase().includes(searchQ)||(s.ville||"").toLowerCase().includes(searchQ))&&(filterAccess.length===0||filterAccess.every(k=>s.accessibilite?.signaux?.[k]===true))).sort((a,b)=>{
+    const boostDiff=(estBoosteItem(b,"sortie")?1:0)-(estBoosteItem(a,"sortie")?1:0);
+    if(boostDiff!==0)return boostDiff;
+    return((estMasque?estMasque(a,"sortie"):false)?1:0)-((estMasque?estMasque(b,"sortie"):false)?1:0);
+  });
   const signaler=(id)=>setSigSort(prev=>({...prev,[id]:(prev[id]||0)+1}));
   const cardStyle={background:WH,borderRadius:14,padding:"14px 16px",border:BD,cursor:"pointer"};
   const selStyle={flex:1,padding:"8px 10px",borderRadius:10,border:BD,background:WH,fontSize:13};
 
   const approvedEvts=pendingContribs.filter(c=>c._type==="evenement"&&c._statut!=="rejected");
   const shadowedEvtTitles=new Set(approvedEvts.map(e=>e.nom||e.titre));
-  const allEvts=[...evenements.filter(e=>!shadowedEvtTitles.has(e.nom)&&!shadowedEvtTitles.has(e.titre)),...adminEvenementsPublies,...approvedEvts].filter(e=>!blockedTitles.has(e.titre)&&!blockedTitles.has(e.nom)).sort((a,b)=>(estBoosteItem(b,"evenement")?1:0)-(estBoosteItem(a,"evenement")?1:0));
+  const allEvts=[...evenements.filter(e=>!shadowedEvtTitles.has(e.nom)&&!shadowedEvtTitles.has(e.titre)),...adminEvenementsPublies,...approvedEvts].filter(e=>!blockedTitles.has(e.titre)&&!blockedTitles.has(e.nom)).sort((a,b)=>{
+    const boostDiff=(estBoosteItem(b,"evenement")?1:0)-(estBoosteItem(a,"evenement")?1:0);
+    if(boostDiff!==0)return boostDiff;
+    return((estMasque?estMasque(a,"evenement"):false)?1:0)-((estMasque?estMasque(b,"evenement"):false)?1:0);
+  });
   const evtFiltered=allEvts.filter(e=>{
     if(evtCat&&e.categorie!==evtCat&&e.type!==evtCat)return false;
     if(evtDept&&e.dept!==evtDept)return false;

@@ -2108,7 +2108,6 @@ function SortieCard({s,onClick,onReport,isFav,onToggleFav,customCatSorties=[],on
   const isNew=s._createdAt&&(Date.now()-new Date(s._createdAt).getTime())<7*24*60*60*1000;
   return(
     <div style={{background:WH,borderRadius:16,overflow:"hidden",border:estBoostee?"2px solid #F59E0B":BD,marginBottom:12,boxShadow:estBoostee?"0 4px 14px rgba(245,158,11,0.2)":"0 2px 8px rgba(0,0,0,0.06)"}}>
-      <div style={{background:"#000",color:"#0f0",fontSize:9,padding:"2px 6px",fontFamily:"monospace"}}>DEBUG id={String(s.id)} nom={s.nom} boost={String(estBoostee)}</div>
       <div style={{position:"relative",height:160,background:s.photo?"#000":`linear-gradient(135deg,${tile.bg},${tile.bg})`,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",overflow:"hidden"}} onClick={onClick}>
         {s.photo?<img src={s.photo} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/>:<span style={{fontSize:64}}>{tile.emoji}</span>}
         <button onClick={e=>{e.stopPropagation();onToggleFav&&onToggleFav();}} style={{position:"absolute",top:10,right:10,width:32,height:32,borderRadius:"50%",background:WH,border:"none",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 2px 6px rgba(0,0,0,0.15)",cursor:"pointer",padding:0}}><span style={{fontSize:16}}>{isFav?"❤️":"🤍"}</span></button>
@@ -2381,7 +2380,6 @@ function CarteInteractive({items,type,onClose,onOpenItem}){
 }
 
 function PageBiblio({pendingContribs=[],setPendingContribs,adminActivites=[],adminSorties=[],adminEvenements=[],addReport,adminReports=[],deletedTitles=new Set(),isLoggedIn=true,onRequireAuth,favoris=[],setFavoris,isPremium=false,onOpenPremium,customCatActivites=[],customCatSorties=[],customCatEvenements=[],currentUser=null,enfants=[],enfantActif=null,masquees=[],toggleMasquer,estMasque,boosts=[],ajouterDemandeDevisBoost}){
-  console.log("[DEBUG PageBiblio] boosts reçus au total :",boosts.length,"| contenu complet :",boosts);
   const estBoosteItem=(item,itemType)=>{
     const key=String(item?.id||item?.nom||item?.titre);
     const nom=item?.nom||item?.titre;
@@ -3686,7 +3684,7 @@ function PageAccueil({favoris,setFavoris,setPage,customEvents=[],popupShown=new 
           <p style={{margin:0,fontSize:14,color:TM}}>Trouvez l inspiration parfaite en deux clics pour vos enfants.</p>
           {/* Bandeaux admin actifs */}
         {(adminComms||[]).filter(c=>c.actif&&c.type==="banner").map(c=>(
-          <div key={c.id} onClick={()=>{console.log("[DEBUG bandeau] codePromo =",JSON.stringify(c.codePromo),"| onOpenPremium existe =",!!onOpenPremium);if(c.codePromo&&onOpenPremium)onOpenPremium(c.codePromo);}} style={{background:"linear-gradient(135deg,#6C5CE7,#a78bfa)",borderRadius:14,padding:"12px 16px",marginBottom:10,display:"flex",alignItems:"center",gap:10,cursor:c.codePromo?"pointer":"default"}}>
+          <div key={c.id} onClick={()=>{if(c.codePromo&&onOpenPremium)onOpenPremium(c.codePromo);}} style={{background:"linear-gradient(135deg,#6C5CE7,#a78bfa)",borderRadius:14,padding:"12px 16px",marginBottom:10,display:"flex",alignItems:"center",gap:10,cursor:c.codePromo?"pointer":"default"}}>
             <span style={{fontSize:20,flexShrink:0}}>📢</span>
             <div style={{flex:1}}>
               <p style={{margin:"0 0 2px",fontSize:13,fontWeight:700,color:"#fff"}}>{c.titre}</p>
@@ -12249,8 +12247,7 @@ export default function App(){
   useEffect(()=>{
     (async()=>{
       try{
-        const {data:boostsData,error:erreurBoosts}=await supabase.from("boosts").select("*");
-        console.log("[DEBUG chargement boosts] Erreur :",erreurBoosts,"| Données reçues :",boostsData);
+        const {data:boostsData}=await supabase.from("boosts").select("*");
         if(boostsData)setBoosts(boostsData.map(b=>({itemId:b.item_id,itemNom:b.item_nom,itemType:b.item_type,jours:b.jours,dateExpiration:b.date_expiration,dateDebut:b.date_debut})));
         const {data:devisData}=await supabase.from("devis_boost").select("*").order("created_at",{ascending:false});
         if(devisData)setDevisBoostDemandes(devisData.map(d=>({id:d.id,item:{id:d.item_id,nom:d.item_nom,titre:d.item_nom},itemType:d.item_type,nom:d.nom,email:d.email,message:d.message,statut:d.statut,date:d.created_at})));

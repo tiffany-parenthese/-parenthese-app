@@ -12046,17 +12046,10 @@ export default function App(){
     const dateDebutISO=debut.toISOString();
     setBoosts(prev=>[...prev.filter(b=>!(b.itemType===itemType&&(b.itemId===key||(nom&&b.itemNom===nom)))),{itemId:key,itemNom:nom,itemType,jours,dateExpiration,dateDebut:dateDebutISO}]);
     try{
-      const del1=await supabase.from("boosts").delete().eq("item_id",String(key)).eq("item_type",itemType);
-      console.log("[DEBUG boost] Suppression par id :",del1.error);
-      if(nom){
-        const del2=await supabase.from("boosts").delete().eq("item_nom",nom).eq("item_type",itemType);
-        console.log("[DEBUG boost] Suppression par nom :",del2.error);
-      }
-      const ins=await supabase.from("boosts").insert({item_id:String(key),item_nom:nom,item_type:itemType,jours,date_expiration:dateExpiration,date_debut:dateDebutISO});
-      console.log("[DEBUG boost] Résultat insertion :",ins.error,"| Données envoyées :",{item_id:String(key),item_nom:nom,item_type:itemType,jours,date_expiration:dateExpiration,date_debut:dateDebutISO});
-    }catch(e){
-      console.log("[DEBUG boost] Exception :",e);
-    }
+      await supabase.from("boosts").delete().eq("item_id",String(key)).eq("item_type",itemType);
+      if(nom)await supabase.from("boosts").delete().eq("item_nom",nom).eq("item_type",itemType);
+      await supabase.from("boosts").insert({item_id:String(key),item_nom:nom,item_type:itemType,jours,date_expiration:dateExpiration,date_debut:dateDebutISO});
+    }catch(e){ /* le boost reste actif localement même si la sauvegarde échoue */ }
   };
   const retirerBoostSupabase=async(item,itemType)=>{
     const key=item.id||item.nom||item.titre;
@@ -12119,6 +12112,36 @@ export default function App(){
     return()=>{window.removeEventListener("click",resetTimer);window.removeEventListener("keydown",resetTimer);if(adminSessionRef.current)clearTimeout(adminSessionRef.current);};
   },[isAdmin]);
   const [pendingContribs,setPendingContribs]=useState([]);
+  // ── Chargement des contributions communautaires (activités/sorties/événements) depuis Supabase ──
+  useEffect(()=>{
+    (async()=>{
+      try{
+        const [{data:actsData},{data:sortsData},{data:evtsData}]=await Promise.all([
+          supabase.from("activites").select("*").eq("communaute",true),
+          supabase.from("sorties").select("*").eq("communaute",true),
+          supabase.from("evenements").select("*").eq("communaute",true),
+        ]);
+        const acts=(actsData||[]).map(a=>({
+          id:a.id,nom:a.nom,titre:a.nom,categorie:a.categorie,lieu:a.lieu,energie:a.energie,age:a.age,duree:a.duree,
+          difficulte:a.difficulte,materiel:a.materiel||[],etapes:a.etapes||[],desc:a.description,photo:a.photo,
+          niveauxSensoriels:a.niveaux_sensoriels,profilsTND:a.profils_tnd,adaptations:a.adaptations||[],
+          caracteristiques:a.caracteristiques,commentaireTND:a.commentaire_tnd,pointsAnticiper:a.points_anticiper||[],
+          _type:"activite",_statut:a.statut||"published",_createdAt:a.created_at,_auteur:a.auteur_nom||"Anonyme",communaute:true,
+        }));
+        const sorts=(sortsData||[]).map(s=>({
+          id:s.id,nom:s.nom,titre:s.nom,type:s.type,dept:s.dept,ville:s.ville,prix:s.prix,horaires:s.horaires,
+          desc:s.description,photo:s.photo,tnd:s.tnd,accessibilite:s.accessibilite,commentaireTND:s.commentaire_tnd,
+          _type:"sortie",_statut:s.statut||"published",_createdAt:s.created_at,_auteur:s.auteur_nom||"Anonyme",communaute:true,
+        }));
+        const evts=(evtsData||[]).map(e=>({
+          id:e.id,nom:e.nom,titre:e.nom,categorie:e.categorie,ville:e.ville,dept:e.dept,date:e.date,prix:e.prix,
+          gratuit:e.gratuit,age:e.age,dates:e.dates,photo:e.photo,adresse:e.adresse,commentaireTND:e.commentaire_tnd,tnd:e.tnd,
+          _type:"evenement",_statut:e.statut||"published",_createdAt:e.created_at,_auteur:e.auteur_nom||"Anonyme",communaute:true,
+        }));
+        if(acts.length>0||sorts.length>0||evts.length>0)setPendingContribs(prev=>[...prev,...acts,...sorts,...evts]);
+      }catch(e){ /* erreur réseau — les contributions communautaires resteront limitées à cette session */ }
+    })();
+  },[]);
   const [adminActivites,setAdminActivites]=useState([]);
   const [adminSorties,setAdminSorties]=useState([]);
   const [adminEvenements,setAdminEvenements]=useState([]);

@@ -12046,10 +12046,17 @@ export default function App(){
     const dateDebutISO=debut.toISOString();
     setBoosts(prev=>[...prev.filter(b=>!(b.itemType===itemType&&(b.itemId===key||(nom&&b.itemNom===nom)))),{itemId:key,itemNom:nom,itemType,jours,dateExpiration,dateDebut:dateDebutISO}]);
     try{
-      await supabase.from("boosts").delete().eq("item_id",String(key)).eq("item_type",itemType);
-      if(nom)await supabase.from("boosts").delete().eq("item_nom",nom).eq("item_type",itemType);
-      await supabase.from("boosts").insert({item_id:String(key),item_nom:nom,item_type:itemType,jours,date_expiration:dateExpiration,date_debut:dateDebutISO});
-    }catch(e){ /* le boost reste actif localement même si la sauvegarde échoue */ }
+      const del1=await supabase.from("boosts").delete().eq("item_id",String(key)).eq("item_type",itemType);
+      console.log("[DEBUG boost] Suppression par id :",del1.error);
+      if(nom){
+        const del2=await supabase.from("boosts").delete().eq("item_nom",nom).eq("item_type",itemType);
+        console.log("[DEBUG boost] Suppression par nom :",del2.error);
+      }
+      const ins=await supabase.from("boosts").insert({item_id:String(key),item_nom:nom,item_type:itemType,jours,date_expiration:dateExpiration,date_debut:dateDebutISO});
+      console.log("[DEBUG boost] Résultat insertion :",ins.error,"| Données envoyées :",{item_id:String(key),item_nom:nom,item_type:itemType,jours,date_expiration:dateExpiration,date_debut:dateDebutISO});
+    }catch(e){
+      console.log("[DEBUG boost] Exception :",e);
+    }
   };
   const retirerBoostSupabase=async(item,itemType)=>{
     const key=item.id||item.nom||item.titre;

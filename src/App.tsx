@@ -4496,6 +4496,9 @@ function PagePlanning({sosLib=[],enfants=[],enfantActif,setEnfantActif,isPremium
   const adminPubP=(adminActivites||[]).filter(a=>a.statut==="published").map(a=>({...a,nom:a.nom||a.titre,materiel:Array.isArray(a.materiel)?a.materiel:[]}));
   const masqueesActKeysP=new Set(masquees.filter(m=>m._type==="activite").map(m=>String(m.id||m.nom||m.titre)));
   const toutesActivitesP=[...ACTIVITES,...adminPubP,...approvedActsP].filter(a=>!blockedTitlesP.has(a.nom)&&!blockedTitlesP.has(a.titre)).filter(a=>!masqueesActKeysP.has(String(a.id||a.nom||a.titre)));
+  console.log("[DEBUG planning] masquees reçues :",masquees);
+  console.log("[DEBUG planning] masqueesActKeysP :",[...masqueesActKeysP]);
+  console.log("[DEBUG planning] Nombre total avant filtre masquage :",[...ACTIVITES,...adminPubP,...approvedActsP].length,"| après filtre :",toutesActivitesP.length);
   const ALL_MATERIEL=[...new Set(toutesActivitesP.flatMap(a=>a.materiel||[]))].sort();
   const [sansMateriel,setSansMateriel]=useState(false);
   const toggleMat=(m)=>setMaterielDispo(prev=>prev.includes(m)?prev.filter(x=>x!==m):[...prev,m]);

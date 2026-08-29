@@ -12136,7 +12136,13 @@ export default function App(){
           gratuit:e.gratuit,age:e.age,dates:e.dates,photo:e.photo,adresse:e.adresse,commentaireTND:e.commentaire_tnd,tnd:e.tnd,
           _type:"evenement",_statut:e.statut||"published",_createdAt:e.created_at,_auteur:e.auteur_nom||"Anonyme",communaute:true,
         }));
-        if(acts.length>0||sorts.length>0||evts.length>0)setPendingContribs(prev=>[...prev,...acts,...sorts,...evts]);
+        if(acts.length>0||sorts.length>0||evts.length>0)setPendingContribs(prev=>{
+          const dejaPresent=(nom,type)=>prev.some(p=>p._type===type&&String(p.nom||p.titre||"").toLowerCase()===String(nom||"").toLowerCase());
+          const nouveauxActs=acts.filter(a=>!dejaPresent(a.nom,"activite"));
+          const nouveauxSorts=sorts.filter(s=>!dejaPresent(s.nom,"sortie"));
+          const nouveauxEvts=evts.filter(e=>!dejaPresent(e.nom,"evenement"));
+          return [...prev,...nouveauxActs,...nouveauxSorts,...nouveauxEvts];
+        });
       }catch(e){ /* erreur réseau — les contributions communautaires resteront limitées à cette session */ }
     })();
   },[]);

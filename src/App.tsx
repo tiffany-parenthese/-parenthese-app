@@ -2382,9 +2382,9 @@ function CarteInteractive({items,type,onClose,onOpenItem}){
 function PageBiblio({pendingContribs=[],setPendingContribs,adminActivites=[],adminSorties=[],adminEvenements=[],addReport,adminReports=[],deletedTitles=new Set(),isLoggedIn=true,onRequireAuth,favoris=[],setFavoris,isPremium=false,onOpenPremium,customCatActivites=[],customCatSorties=[],customCatEvenements=[],currentUser=null,enfants=[],enfantActif=null,masquees=[],toggleMasquer,estMasque,boosts=[],ajouterDemandeDevisBoost}){
   const estBoosteItem=(item,itemType)=>{
     const key=String(item?.id||item?.nom||item?.titre);
-    const b=boosts.find(b=>b.itemId===key&&b.itemType===itemType);
+    const nom=item?.nom||item?.titre;
     const maintenant=new Date();
-    return b&&new Date(b.dateExpiration)>maintenant&&(!b.dateDebut||new Date(b.dateDebut)<=maintenant);
+    return boosts.some(b=>b.itemType===itemType&&(b.itemId===key||(nom&&b.itemNom===nom))&&new Date(b.dateExpiration)>maintenant&&(!b.dateDebut||new Date(b.dateDebut)<=maintenant));
   };
   const [tab,setTab]=useState("activites");
   const [popupBoostEmail,setPopupBoostEmail]=useState(null); // {item,itemType,message}
@@ -12040,26 +12040,31 @@ export default function App(){
   const [devisBoostDemandes,setDevisBoostDemandes]=useState([]); // demandes de devis pour booster
   const activerBoost=async(item,itemType,jours,dateDebut)=>{
     const key=item.id||item.nom||item.titre;
+    const nom=item.nom||item.titre;
     const debut=dateDebut?new Date(dateDebut):new Date();
     const dateExpiration=new Date(debut.getTime()+jours*24*60*60*1000).toISOString();
     const dateDebutISO=debut.toISOString();
-    setBoosts(prev=>[...prev.filter(b=>!(b.itemId===key&&b.itemType===itemType)),{itemId:key,itemType,jours,dateExpiration,dateDebut:dateDebutISO}]);
+    setBoosts(prev=>[...prev.filter(b=>!(b.itemType===itemType&&(b.itemId===key||(nom&&b.itemNom===nom)))),{itemId:key,itemNom:nom,itemType,jours,dateExpiration,dateDebut:dateDebutISO}]);
     try{
       await supabase.from("boosts").delete().eq("item_id",String(key)).eq("item_type",itemType);
-      await supabase.from("boosts").insert({item_id:String(key),item_type:itemType,jours,date_expiration:dateExpiration,date_debut:dateDebutISO});
+      if(nom)await supabase.from("boosts").delete().eq("item_nom",nom).eq("item_type",itemType);
+      await supabase.from("boosts").insert({item_id:String(key),item_nom:nom,item_type:itemType,jours,date_expiration:dateExpiration,date_debut:dateDebutISO});
     }catch(e){ /* le boost reste actif localement même si la sauvegarde échoue */ }
   };
   const retirerBoostSupabase=async(item,itemType)=>{
     const key=item.id||item.nom||item.titre;
-    setBoosts(prev=>prev.filter(b=>!(b.itemId===key&&b.itemType===itemType)));
-    try{ await supabase.from("boosts").delete().eq("item_id",String(key)).eq("item_type",itemType); }
-    catch(e){ /* échec réseau — sera resynchronisé au prochain chargement */ }
+    const nom=item.nom||item.titre;
+    setBoosts(prev=>prev.filter(b=>!(b.itemType===itemType&&(b.itemId===key||(nom&&b.itemNom===nom)))));
+    try{
+      await supabase.from("boosts").delete().eq("item_id",String(key)).eq("item_type",itemType);
+      if(nom)await supabase.from("boosts").delete().eq("item_nom",nom).eq("item_type",itemType);
+    }catch(e){ /* échec réseau — sera resynchronisé au prochain chargement */ }
   };
   const estBooste=(item,itemType)=>{
     const key=String(item?.id||item?.nom||item?.titre);
-    const b=boosts.find(b=>b.itemId===key&&b.itemType===itemType);
+    const nom=item?.nom||item?.titre;
     const maintenant=new Date();
-    return b&&new Date(b.dateExpiration)>maintenant&&(!b.dateDebut||new Date(b.dateDebut)<=maintenant);
+    return boosts.some(b=>b.itemType===itemType&&(b.itemId===key||(nom&&b.itemNom===nom))&&new Date(b.dateExpiration)>maintenant&&(!b.dateDebut||new Date(b.dateDebut)<=maintenant));
   };
   const ajouterDemandeDevisBoost=async(demande)=>{
     const nouvelle={...demande,id:Date.now(),statut:"nouveau"};
@@ -12207,7 +12212,7 @@ export default function App(){
     (async()=>{
       try{
         const {data:boostsData}=await supabase.from("boosts").select("*");
-        if(boostsData)setBoosts(boostsData.map(b=>({itemId:b.item_id,itemType:b.item_type,jours:b.jours,dateExpiration:b.date_expiration,dateDebut:b.date_debut})));
+        if(boostsData)setBoosts(boostsData.map(b=>({itemId:b.item_id,itemNom:b.item_nom,itemType:b.item_type,jours:b.jours,dateExpiration:b.date_expiration,dateDebut:b.date_debut})));
         const {data:devisData}=await supabase.from("devis_boost").select("*").order("created_at",{ascending:false});
         if(devisData)setDevisBoostDemandes(devisData.map(d=>({id:d.id,item:{id:d.item_id,nom:d.item_nom,titre:d.item_nom},itemType:d.item_type,nom:d.nom,email:d.email,message:d.message,statut:d.statut,date:d.created_at})));
       }catch(e){ /* erreur réseau — reste vide, on utilisera la sauvegarde partagée en secours */ }

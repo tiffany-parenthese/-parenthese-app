@@ -12249,7 +12249,8 @@ export default function App(){
   useEffect(()=>{
     (async()=>{
       try{
-        const {data:boostsData}=await supabase.from("boosts").select("*");
+        const {data:boostsData,error:erreurBoosts}=await supabase.from("boosts").select("*");
+        console.log("[DEBUG chargement boosts] Erreur :",erreurBoosts,"| Données reçues :",boostsData);
         if(boostsData)setBoosts(boostsData.map(b=>({itemId:b.item_id,itemNom:b.item_nom,itemType:b.item_type,jours:b.jours,dateExpiration:b.date_expiration,dateDebut:b.date_debut})));
         const {data:devisData}=await supabase.from("devis_boost").select("*").order("created_at",{ascending:false});
         if(devisData)setDevisBoostDemandes(devisData.map(d=>({id:d.id,item:{id:d.item_id,nom:d.item_nom,titre:d.item_nom},itemType:d.item_type,nom:d.nom,email:d.email,message:d.message,statut:d.statut,date:d.created_at})));

@@ -2381,6 +2381,7 @@ function CarteInteractive({items,type,onClose,onOpenItem}){
 }
 
 function PageBiblio({pendingContribs=[],setPendingContribs,adminActivites=[],adminSorties=[],adminEvenements=[],addReport,adminReports=[],deletedTitles=new Set(),isLoggedIn=true,onRequireAuth,favoris=[],setFavoris,isPremium=false,onOpenPremium,customCatActivites=[],customCatSorties=[],customCatEvenements=[],currentUser=null,enfants=[],enfantActif=null,masquees=[],toggleMasquer,estMasque,boosts=[],ajouterDemandeDevisBoost}){
+  console.log("[DEBUG PageBiblio] boosts reçus au total :",boosts.length,"| contenu complet :",boosts);
   const estBoosteItem=(item,itemType)=>{
     const key=String(item?.id||item?.nom||item?.titre);
     const nom=item?.nom||item?.titre;

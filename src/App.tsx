@@ -10330,8 +10330,7 @@ function Signalements({userReports=[],setUserReports,sharedActivites=[],setShare
     const payload={nom:nouveauNom,...data};
     try{
       if(existeDansPending||existeDansAdmin){
-        await supabase.from(table).update(payload).eq("nom",ancienTitre);
-        await supabase.from(table).update(payload).eq("titre",ancienTitre);
+        await supabase.from(table).update(payload).ilike("nom",ancienTitre);
       }else{
         await supabase.from(table).insert(payload);
       }
@@ -10352,8 +10351,7 @@ function Signalements({userReports=[],setUserReports,sharedActivites=[],setShare
     if(setPendingContribs)setPendingContribs(prev=>prev.filter(c=>c.nom!==titre&&c.titre!==titre));
     // supprime réellement la ligne côté Supabase pour que l'élément ne réapparaisse pas au rechargement
     const table=type==="sortie"?"sorties":type==="evenement"?"evenements":"activites";
-    supabase.from(table).delete().eq("nom",titre).then(()=>{},()=>{});
-    supabase.from(table).delete().eq("titre",titre).then(()=>{},()=>{});
+    supabase.from(table).delete().ilike("nom",titre).then(()=>{},()=>{});
     if(onDeleteTitle)onDeleteTitle(titre);
     setEditModal(null);
   };

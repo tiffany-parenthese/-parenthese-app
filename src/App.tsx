@@ -11256,7 +11256,7 @@ function DevisRow({d,boosts,onActiverBoost,onRetirerBoost,traiterDemande,onSuppr
               <p style={{margin:"0 0 6px",fontSize:11,color:C.muted}}>Date de début (laisser vide pour démarrer maintenant) :</p>
               <input type="date" value={dateDebut} onChange={e=>setDateDebut(e.target.value)} min={new Date().toISOString().slice(0,10)} style={{padding:"8px 10px",borderRadius:10,border:`1.5px solid ${C.border}`,background:"transparent",color:C.text,fontSize:13,marginBottom:10,width:"100%",boxSizing:"border-box"}}/>
               <div style={{display:"flex",gap:8}}>
-                <button style={{...s.btn("#F59E0B"),flex:1}} onClick={()=>{onActiverBoost&&onActiverBoost(d.item,d.itemType,jours,dateDebut||undefined);if(d.statut==="nouveau")traiterDemande&&traiterDemande(d.id,"traite");setShowDurees(false);}}>{dateDebut?`Programmer — ${jours}j`:`Activer — ${jours}j`}</button>
+                <button style={{...s.btn("#F59E0B"),flex:1}} onClick={()=>{console.log("[DEBUG activation] Clic sur Activer. d.item :",d.item,"| d.itemType :",d.itemType,"| jours :",jours,"| onActiverBoost existe :",!!onActiverBoost);onActiverBoost&&onActiverBoost(d.item,d.itemType,jours,dateDebut||undefined);if(d.statut==="nouveau")traiterDemande&&traiterDemande(d.id,"traite");setShowDurees(false);}}>{dateDebut?`Programmer — ${jours}j`:`Activer — ${jours}j`}</button>
                 <button style={s.btnOutline(C.muted)} onClick={()=>setShowDurees(false)}>Annuler</button>
               </div>
             </div>

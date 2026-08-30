@@ -6116,10 +6116,17 @@ function GestionEnfants({enfants,setEnfants,enfantActif,setEnfantActif,onBack,is
       const {data:inserted,error}=await supabase.from("enfants").insert(payload).select().single();
       if(!error&&inserted){
         setEnfants(prev=>[...prev,{...data,id:inserted.id}]);
+      }else if(error){
+        alert("La sauvegarde a échoué : "+error.message);
+        return;
       }
     }else{
       const {error}=await supabase.from("enfants").update(payload).eq("id",formMode.id);
       if(!error)setEnfants(prev=>prev.map(e=>e.id===formMode.id?{...e,...data}:e));
+      else{
+        alert("La sauvegarde a échoué : "+error.message);
+        return;
+      }
     }
     setFormMode(null);
   };

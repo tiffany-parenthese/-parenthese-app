@@ -983,7 +983,7 @@ function FormActivite({onClose,onSubmit,customCatActivites=[],initialData=null})
   const [pointsAnticiperSel,setPointsAnticiperSel]=useState([]);
   const [envoiEnCours,setEnvoiEnCours]=useState(false);
   const handlePhoto=async(e)=>{const file=e.target.files[0];if(!file)return;if(file.size>8*1024*1024){alert("Photo trop lourde (max 8MB)");return;}try{const compressed=await compresserImage(file);setPhotoPreview(compressed);}catch(err){alert("Impossible de lire cette image, réessaie avec une autre.");}};
-  const validate=()=>{const e={};if(!titre.trim())e.titre="Champ obligatoire";if(!desc.trim())e.desc="Champ obligatoire";if(!duree)e.duree="Champ obligatoire";if(!difficulte)e.difficulte="Champ obligatoire";if(!lieu)e.lieu="Champ obligatoire";if(!motivation)e.motivation="Champ obligatoire";if(!categorie)e.categorie="Champ obligatoire";setLocalErrors(e);return Object.keys(e).length===0;};
+  const validate=()=>{const e={};if(!titre.trim())e.titre="Champ obligatoire";if(!desc.trim())e.desc="Champ obligatoire";if(!duree)e.duree="Champ obligatoire";if(!difficulte)e.difficulte="Champ obligatoire";if(!lieu)e.lieu="Champ obligatoire";if(!motivation)e.motivation="Champ obligatoire";if(!categorie)e.categorie="Champ obligatoire";if(!Object.values(caracteristiques).some(Boolean))e.caracteristiques="Coche au moins un critère";setLocalErrors(e);return Object.keys(e).length===0;};
   const handleSubmit=()=>{
     if(envoiEnCours)return; // empêche les doubles soumissions par clics multiples
     if(!validate())return;
@@ -1000,6 +1000,18 @@ function FormActivite({onClose,onSubmit,customCatActivites=[],initialData=null})
       <div style={{background:WH,borderRadius:20,width:"100%",maxWidth:420,boxSizing:"border-box"}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"20px 20px 0"}}><h2 style={{fontSize:18,fontWeight:600,color:TX,margin:0}}>{initialData?"Modifier l'activite":"Proposer une activite"}</h2><button onClick={onClose} style={{background:"none",border:"none",fontSize:20,cursor:"pointer",color:TM}}>x</button></div>
         <div style={{padding:"16px 20px 24px",display:"flex",flexDirection:"column",gap:12}}>
+          <div style={{background:"#F5F0EB",borderRadius:16,padding:"16px",border:localErrors.caracteristiques?"1.5px solid #EF4444":"none"}}>
+            <p style={{margin:"0 0 2px",fontSize:14,fontWeight:800,color:"#1a1a1a"}}>🎯 À qui s'adresse cette activité ? <span style={{color:"#EF4444"}}>*</span></p>
+            <p style={{margin:"0 0 12px",fontSize:12,color:TM}}>Coche ce qui s'applique — sert à recommander l'activité aux enfants avec ces besoins</p>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+              {Object.entries(BESOIN_LABELS).map(([k,def])=>(
+                <button key={k} onClick={()=>setCaracteristiques(p=>({...p,[k]:!p[k]}))} style={{padding:"8px 10px",borderRadius:10,border:`1.5px solid ${caracteristiques[k]?V:"#E5E7EB"}`,background:caracteristiques[k]?VL:WH,color:caracteristiques[k]?V:TM,fontSize:11,fontWeight:caracteristiques[k]?700:400,cursor:"pointer",textAlign:"left",display:"flex",alignItems:"center",gap:6}}>
+                  <span>{def.emoji}</span>{def.ok}
+                </button>
+              ))}
+            </div>
+            <Err k="caracteristiques"/>
+          </div>
           <Field label="Titre" required><input value={titre} onChange={e=>setTitre(e.target.value)} placeholder="Ex : Peinture avec les doigts" style={se(localErrors.titre)}/><Err k="titre"/></Field>
           <Field label="Photo (optionnel)">
             <input id="act-photo-input" type="file" accept="image/jpeg,image/png,image/webp" onChange={handlePhoto} style={{display:"none"}}/>
@@ -1078,38 +1090,6 @@ function FormActivite({onClose,onSubmit,customCatActivites=[],initialData=null})
               })}
             </div>
 
-            {/* Partie 3 — Adaptations */}
-            <div>
-              <p style={{margin:"0 0 4px",fontSize:14,fontWeight:800,color:"#1a1a1a"}}>✅ Adaptations possibles</p>
-              <p style={{margin:"0 0 12px",fontSize:12,color:TM}}>Cochez ce qui s'applique à cette activité</p>
-              <div style={{display:"flex",flexDirection:"column",gap:6}}>
-                {[
-                  {id:"a1",label:"Ne nécessite pas de communication verbale",profil:"TSA"},
-                  {id:"a2",label:"Pas de contrainte de temps — l'enfant va à son rythme",profil:"TSA"},
-                  {id:"a3",label:"Peut se faire seul sans aide d'un adulte",profil:"Tous"},
-                  {id:"a4",label:"Peut s'arrêter et reprendre sans perdre le fil",profil:"Tous"},
-                  {id:"a5",label:"3 étapes maximum, facile à expliquer",profil:"DYS"},
-                  {id:"a6",label:"Ne nécessite pas de toucher des matières inconfortables",profil:"TSA"},
-                  {id:"a7",label:"Pas de contact physique imposé",profil:"TSA"},
-                  {id:"a8",label:"Pas de bruits forts ou soudains",profil:"TSA"},
-                  {id:"a9",label:"L'enfant voit ce qu'il crée (dessin, gâteau, construction...)",profil:"Tous"},
-                  {id:"a10",label:"Convient aux enfants qui ont du mal à rester assis",profil:"TDAH"},
-                  {id:"a11",label:"Pas de frustration si le résultat n'est pas parfait",profil:"TSA/DYS"},
-                  {id:"a12",label:"L'enfant peut choisir comment faire à sa façon",profil:"Tous"},
-                ].map(({id,label,profil})=>{
-                  const actif=adaptations.includes(id);
-                  const bs={TSA:{bg:"#EEEDFE",col:"#3C3489"},TDAH:{bg:"#E1F5EE",col:"#085041"},DYS:{bg:"#FAEEDA",col:"#633806"},"TSA/DYS":{bg:"#F3EFFF",col:"#4B3F8F"},Tous:{bg:"#F5F5F5",col:"#666"}}[profil]||{bg:"#F5F5F5",col:"#666"};
-                  return(
-                    <button key={id} onClick={()=>setAdaptations(p=>p.includes(id)?p.filter(x=>x!==id):[...p,id])} style={{padding:"10px 12px",borderRadius:8,border:`1.5px solid ${actif?"#6C5CE7":"#E5E7EB"}`,background:actif?"#EEEDFE":WH,cursor:"pointer",textAlign:"left",display:"flex",alignItems:"center",gap:8,width:"100%"}}>
-                      <span style={{fontSize:16,flexShrink:0,color:actif?"#6C5CE7":"#9CA3AF"}}>{actif?"☑":"☐"}</span>
-                      <span style={{fontSize:13,color:actif?"#3C3489":"#374151",flex:1,lineHeight:1.4}}>{label}</span>
-                      
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
             {/* Commentaire libre */}
             <div>
               <label style={{fontSize:12,color:TM,display:"block",marginBottom:6}}>Conseil TND (optionnel)</label>
@@ -1151,18 +1131,6 @@ function FormActivite({onClose,onSubmit,customCatActivites=[],initialData=null})
                 </div>
               </div>
             ))}
-          </div>
-
-          <div style={{background:"#F5F0EB",borderRadius:16,padding:"16px",marginBottom:14}}>
-            <p style={{margin:"0 0 2px",fontSize:14,fontWeight:800,color:"#1a1a1a"}}>🎯 À qui s'adresse cette activité ?</p>
-            <p style={{margin:"0 0 12px",fontSize:12,color:TM}}>Coche ce qui s'applique — sert à recommander l'activité aux enfants avec ces besoins</p>
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
-              {Object.entries(BESOIN_LABELS).map(([k,def])=>(
-                <button key={k} onClick={()=>setCaracteristiques(p=>({...p,[k]:!p[k]}))} style={{padding:"8px 10px",borderRadius:10,border:`1.5px solid ${caracteristiques[k]?V:"#E5E7EB"}`,background:caracteristiques[k]?VL:WH,color:caracteristiques[k]?V:TM,fontSize:11,fontWeight:caracteristiques[k]?700:400,cursor:"pointer",textAlign:"left",display:"flex",alignItems:"center",gap:6}}>
-                  <span>{def.emoji}</span>{def.ok}
-                </button>
-              ))}
-            </div>
           </div>
 
           <button onClick={handleSubmit} disabled={envoiEnCours} style={{padding:14,borderRadius:14,background:envoiEnCours?"#C4B8F8":V,border:"none",color:WH,fontWeight:700,fontSize:15,cursor:envoiEnCours?"default":"pointer",width:"100%"}}>{envoiEnCours?"Envoi en cours...":initialData?"Enregistrer les modifications":"Envoyer ma suggestion"}</button>

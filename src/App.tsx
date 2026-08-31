@@ -3605,14 +3605,9 @@ function PageAccueil({favoris,setFavoris,setPage,customEvents=[],popupShown=new 
       if(setFiltresMemoSortie)setFiltresMemoSortie({deptS,typeS,ageS,prixS});
       return;
     }
-    if(isPremium){
-      setResultS(source[Math.floor(Math.random()*source.length)]);
-      setResultsSList(null);
-    }else{
-      const shuffled=[...source].sort(()=>Math.random()-0.5);
-      setResultsSList(shuffled.slice(0,Math.min(3,shuffled.length)));
-      setResultS(null);
-    }
+    const shuffled=[...source].sort(()=>Math.random()-0.5);
+    setResultsSList(shuffled.slice(0,Math.min(3,shuffled.length)));
+    setResultS(null);
     setShowFiltresSortie(false);
     if(setFiltresMemoSortie)setFiltresMemoSortie({deptS,typeS,ageS,prixS});
   };

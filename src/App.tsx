@@ -140,13 +140,23 @@ const ACTIVITES=[
 // ─── MATCHING ENFANT / ACTIVITÉ ──────────────────────────────────────────────
 const BESOIN_LABELS={
   calme:{emoji:"🔇",ok:"Environnement calme",ko:"Peut être bruyant"},
+  lumiere:{emoji:"💡",ok:"Lumière douce",ko:"Lumière vive possible"},
   tactile:{emoji:"✋",ok:"Pas de textures difficiles",ko:"Textures présentes"},
-  attention:{emoji:"⏱️",ok:"Courte durée",ko:"Peut être long"},
+  odeurs:{emoji:"👃",ok:"Pas d'odeurs fortes",ko:"Odeurs possibles"},
   previsible:{emoji:"🗓️",ok:"Étapes claires",ko:"Imprévisible"},
-  visuel:{emoji:"👁️",ok:"Résultat visible",ko:"Pas de support visuel"},
+  transition:{emoji:"🔄",ok:"Transitions douces",ko:"Changements brusques"},
+  simple:{emoji:"📋",ok:"Consignes simples",ko:"Consignes complexes"},
+  attention:{emoji:"⏱️",ok:"Courte durée",ko:"Peut être long"},
+  pause:{emoji:"⏸️",ok:"Pauses possibles",ko:"Difficile de s'arrêter"},
+  tempslibre:{emoji:"🕐",ok:"Pas de contrainte de temps",ko:"Rythme imposé"},
   bouger:{emoji:"🏃",ok:"Peut bouger",ko:"Rester assis"},
   verbal:{emoji:"🗣️",ok:"Communication requise",ko:"Pas de parole nécessaire"},
+  foule:{emoji:"👥",ok:"Peu de monde",ko:"Peut être fréquenté"},
+  autonomie:{emoji:"🧩",ok:"Faisable seul",ko:"Aide nécessaire"},
   frustration:{emoji:"😤",ok:"Peu de frustration",ko:"Risque de frustration"},
+  visuel:{emoji:"👁️",ok:"Résultat visible",ko:"Pas de support visuel"},
+  securisant:{emoji:"🛡️",ok:"Environnement rassurant",ko:"Peut être stressant"},
+  quitter:{emoji:"🚪",ok:"Possibilité de partir facilement",ko:"Engagement difficile à interrompre"},
 };
 function calculerScoreMatch(activite,enfant){
   const besoins=enfant?.besoinsMatching||[];
@@ -951,6 +961,11 @@ function FormActivite({onClose,onSubmit,customCatActivites=[],initialData=null})
     return v;
   });
   const [commentaireTND,setCommentaireTND]=useState(initialData?.commentaireTND||"");
+  const [caracteristiques,setCaracteristiques]=useState(()=>{
+    const v={};
+    Object.keys(BESOIN_LABELS).forEach(k=>{v[k]=initialData?.caracteristiques?.[k]===true;});
+    return v;
+  });
   const [localErrors,setLocalErrors]=useState({});
   const [profilsTND,setProfilsTND]=useState({tsa:false,tdah:false,dys:false,tous:false});
   const [niveauxSensoriels,setNiveauxSensoriels]=useState({bruit:0,visuel:0,physique:0,attention:0});
@@ -966,7 +981,7 @@ function FormActivite({onClose,onSubmit,customCatActivites=[],initialData=null})
     const categorieFinale=categorie==="Autre"?(autreCategorie.trim()||"Autre"):categorie;
     const age=(ageMin&&ageMax)?`${ageMin.replace(" an","").replace(" ans","")} - ${ageMax}`:(ageMin||ageMax||"Tous ages");
     const tndData={tsa:profilsTND.tsa||profilsTND.tous?5:0,tdah:profilsTND.tdah||profilsTND.tous?5:0,dys:profilsTND.dys||profilsTND.tous?5:0};
-    if(onSubmit)onSubmit({id:initialData?.id,nom:titre.trim(),categorie:categorieFinale,lieu,energie:motivation,age,duree,difficulte,materiel:materiel?materiel.split(",").map(m=>m.trim()).filter(Boolean):[],etapes:etapes?etapes.split("\n").map(s=>s.trim()).filter(Boolean):[],desc:desc.trim(),photo:photoPreview,tnd:tndData,profilsTND,niveauxSensoriels,adaptations,commentaireTND:commentaireTND.trim(),pointsAnticiper:pointsAnticiperSel,...accValues,_type:"activite"});
+    if(onSubmit)onSubmit({id:initialData?.id,nom:titre.trim(),categorie:categorieFinale,lieu,energie:motivation,age,duree,difficulte,materiel:materiel?materiel.split(",").map(m=>m.trim()).filter(Boolean):[],etapes:etapes?etapes.split("\n").map(s=>s.trim()).filter(Boolean):[],desc:desc.trim(),photo:photoPreview,tnd:tndData,profilsTND,niveauxSensoriels,adaptations,commentaireTND:commentaireTND.trim(),pointsAnticiper:pointsAnticiperSel,caracteristiques,...accValues,_type:"activite"});
   };
   const se=(err)=>({padding:"12px 14px",borderRadius:12,border:"1px solid "+(err?"#EF4444":"rgba(108,92,231,0.15)"),fontSize:14,width:"100%",boxSizing:"border-box",background:WH,fontFamily:"inherit"});
   const Err=({k})=>localErrors[k]?<p style={{margin:"3px 0 0",fontSize:11,color:"#EF4444"}}>{localErrors[k]}</p>:null;
@@ -1126,6 +1141,18 @@ function FormActivite({onClose,onSubmit,customCatActivites=[],initialData=null})
                 </div>
               </div>
             ))}
+          </div>
+
+          <div style={{background:"#F5F0EB",borderRadius:16,padding:"16px",marginBottom:14}}>
+            <p style={{margin:"0 0 2px",fontSize:14,fontWeight:800,color:"#1a1a1a"}}>🎯 À qui s'adresse cette activité ?</p>
+            <p style={{margin:"0 0 12px",fontSize:12,color:TM}}>Coche ce qui s'applique — sert à recommander l'activité aux enfants avec ces besoins</p>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+              {Object.entries(BESOIN_LABELS).map(([k,def])=>(
+                <button key={k} onClick={()=>setCaracteristiques(p=>({...p,[k]:!p[k]}))} style={{padding:"8px 10px",borderRadius:10,border:`1.5px solid ${caracteristiques[k]?V:"#E5E7EB"}`,background:caracteristiques[k]?VL:WH,color:caracteristiques[k]?V:TM,fontSize:11,fontWeight:caracteristiques[k]?700:400,cursor:"pointer",textAlign:"left",display:"flex",alignItems:"center",gap:6}}>
+                  <span>{def.emoji}</span>{def.ok}
+                </button>
+              ))}
+            </div>
           </div>
 
           <button onClick={handleSubmit} disabled={envoiEnCours} style={{padding:14,borderRadius:14,background:envoiEnCours?"#C4B8F8":V,border:"none",color:WH,fontWeight:700,fontSize:15,cursor:envoiEnCours?"default":"pointer",width:"100%"}}>{envoiEnCours?"Envoi en cours...":initialData?"Enregistrer les modifications":"Envoyer ma suggestion"}</button>
@@ -3515,8 +3542,8 @@ function PageAccueil({favoris,setFavoris,setPage,customEvents=[],popupShown=new 
     }
     const shuffled=[...source].sort(()=>Math.random()-0.5);
     // 3 activités pour tout le monde
-    // Premium + besoinsMatching renseignés : nouveau système de matching par score
-    if(isPremium&&enfantCourant&&(enfantCourant.besoinsMatching||[]).length>0){
+    // Premium : matching par score selon les besoins pour les recommandations
+    if(isPremium&&enfantCourant){
       const basePool=toutesActivites.filter(a=>!dislikedIds.has(a.id||a.nom));
       const scored=basePool.map(a=>({...a,_matchScore:calculerScoreMatch(a,enfantCourant)})).sort((a,b)=>b._matchScore-a._matchScore);
       const meilleur=scored[0];
@@ -3525,28 +3552,6 @@ function PageAccueil({favoris,setFavoris,setPage,customEvents=[],popupShown=new 
       }else{
         setResultsAList(scored.slice(0,3).map(a=>({...a,_matchEnfant:enfantCourant,_isMatchFallback:true})));
       }
-      setResultA(null);
-      setShowFiltres(false);
-      if(setFiltresMemoActiv)setFiltresMemoActiv({lieu,energie,ageEnfant});
-      return;
-    }
-    // Premium : triées par score de compatibilité TND avec l'enfant actif (ancien système, sans besoinsMatching)
-    if(isPremium&&enfantCourant){
-      const score=(a)=>{
-        let s=0;
-        const n=enfantCourant.niveauxSensoriels||{};
-        const besoins=enfantCourant.besoins||[];
-        const ns=a.niveauxSensoriels||{};
-        // Correspondance sensorielle (écart faible = bon score)
-        if(ns.bruit!==undefined)s+=Math.max(0,50-Math.abs((n.bruit||50)-(100-ns.bruit)));
-        if(ns.visuel!==undefined)s+=Math.max(0,50-Math.abs((n.lumiere||50)-(100-ns.visuel)));
-        // Correspondance besoins/adaptations
-        const adaps=a.adaptations||[];
-        s+=besoins.filter(b=>adaps.includes(b)).length*15;
-        return s;
-      };
-      const scored=[...shuffled].map(a=>({...a,_score:score(a)})).sort((a,b)=>b._score-a._score);
-      setResultsAList(scored.slice(0,Math.min(3,scored.length)));
     }else{
       setResultsAList(shuffled.slice(0,Math.min(3,shuffled.length)));
     }
@@ -4484,6 +4489,7 @@ function PagePlanning({sosLib=[],enfants=[],enfantActif,setEnfantActif,isPremium
   const masqueesActifsActP=masquees.filter(m=>m._type==="activite");
   const masqueesActKeysP=new Set(masqueesActifsActP.flatMap(m=>[m.id,m.nom,m.titre].filter(Boolean).map(String)));
   const toutesActivitesP=[...ACTIVITES,...adminPubP,...approvedActsP].filter(a=>!blockedTitlesP.has(a.nom)&&!blockedTitlesP.has(a.titre)).filter(a=>!masqueesActKeysP.has(String(a.id))&&!masqueesActKeysP.has(String(a.nom))&&!masqueesActKeysP.has(String(a.titre)));
+  const enfantCourantP=enfants.find(e=>e.id===enfantActif);
   const ALL_MATERIEL=[...new Set(toutesActivitesP.flatMap(a=>a.materiel||[]))].sort();
   const [sansMateriel,setSansMateriel]=useState(false);
   const toggleMat=(m)=>setMaterielDispo(prev=>prev.includes(m)?prev.filter(x=>x!==m):[...prev,m]);
@@ -4494,12 +4500,14 @@ function PagePlanning({sosLib=[],enfants=[],enfantActif,setEnfantActif,isPremium
   const genPlanning=()=>{
     const pool=toutesActivitesP.filter(a=>(!energieP||a.energie===energieP)&&(!lieuP||a.lieu===lieuP)&&actMatOk(a));
     let source=pool.length?pool:toutesActivitesP;
+    const matchActifP=isPremium&&enfantCourantP&&(enfantCourantP.besoinsMatching||[]).length>0;
+    if(matchActifP)source=[...source].sort((a,b)=>calculerScoreMatch(b,enfantCourantP)-calculerScoreMatch(a,enfantCourantP));
     const result=[];const used=new Set();
     for(let i=0;i<count;i++){
       const avail=source.filter(a=>!used.has(a.id));
       if(!avail.length)break;
-      // Favorise les activités les mieux adaptées aux enfants sélectionnés, tout en gardant un peu d'aléatoire
-      const shortlist=tndKeysSelection.length>0?avail.slice(0,Math.max(3,Math.ceil(avail.length*0.6))):avail;
+      // Favorise les activités les mieux adaptées à l'enfant sélectionné, tout en gardant un peu d'aléatoire
+      const shortlist=matchActifP?avail.slice(0,Math.max(3,Math.ceil(avail.length*0.6))):avail;
       const pick=shortlist[Math.floor(Math.random()*shortlist.length)];
       used.add(pick.id);
       result.push({jour:jours[i%7],activite:pick});
@@ -4510,6 +4518,8 @@ function PagePlanning({sosLib=[],enfants=[],enfantActif,setEnfantActif,isPremium
   const remplacer=(i)=>{
     let pool=toutesActivitesP.filter(a=>(!energieP||a.energie===energieP)&&(!lieuP||a.lieu===lieuP)&&actMatOk(a)&&a.id!==planning[i].activite.id);
     if(!pool.length)return;
+    const matchActifP=isPremium&&enfantCourantP&&(enfantCourantP.besoinsMatching||[]).length>0;
+    if(matchActifP)pool=[...pool].sort((a,b)=>calculerScoreMatch(b,enfantCourantP)-calculerScoreMatch(a,enfantCourantP)).slice(0,Math.max(3,Math.ceil(pool.length*0.6)));
     const shortlist=pool;
     setPlanning(prev=>prev.map((p,idx)=>idx===i?{...p,activite:shortlist[Math.floor(Math.random()*shortlist.length)]}:p));
   };
@@ -5928,18 +5938,7 @@ function FormulaireEnfant({enfant,onSave,onCancel,isPremium=false,onOpenPremium}
     niveauxSensoriels:{bruit:50,lumiere:50,foule:50,imprevu:50},
     besoins:[],besoinsMatching:[],
   });
-  const toggleBesoin=(v)=>setForm(p=>({...p,besoins:(p.besoins||[]).includes(v)?(p.besoins||[]).filter(x=>x!==v):[...(p.besoins||[]),v]}));
   const toggleBesoinMatching=(v)=>setForm(p=>({...p,besoinsMatching:(p.besoinsMatching||[]).includes(v)?(p.besoinsMatching||[]).filter(x=>x!==v):[...(p.besoinsMatching||[]),v]}));
-
-  // Besoins regroupés par thème (indépendant de tout diagnostic)
-  const BESOINS_GROUPES=[
-    {titre:"🔇 Environnement sensoriel",items:["Peu de bruit","Lumière douce","Espace de retrait possible","Pas de foule"]},
-    {titre:"🗓️ Structure & prévisibilité",items:["Transitions préparées","Emploi du temps visuel","Peu d'imprévus","Rituel d'entrée/sortie","Environnement prévisible","Pas de surprise"]},
-    {titre:"🏃 Mouvement & rythme",items:["Activité physique possible","Grand espace","Peu d'attente","Pauses fréquentes","Activité courte","Stimulation variée"]},
-    {titre:"📖 Communication & apprentissage",items:["Supports visuels","Pas de lecture requise","Rythme libre","Pas de contrainte d'écriture","Instructions orales","Règles simples","Retour rapide"]},
-    {titre:"🧠 Stimulation & autonomie",items:["Activité stimulante","Complexité adaptée","Autonomie possible","Défis intellectuels"]},
-    {titre:"💛 Sécurité affective",items:["Cadre rassurant","Possibilité de quitter","Peu de monde","Personnel formé"]},
-  ];
 
   return(
     <div style={{background:BG,minHeight:"100vh",fontFamily:"system-ui,-apple-system,sans-serif"}}>
@@ -5973,97 +5972,57 @@ function FormulaireEnfant({enfant,onSave,onCancel,isPremium=false,onOpenPremium}
           </div>
         </div>
 
-        {/* Niveaux sensoriels */}
-        <div style={{background:WH,borderRadius:16,padding:"16px",marginBottom:12,border:BD}}>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
-            <p style={{margin:0,fontSize:14,fontWeight:700,color:TX}}>🎚️ Profil sensoriel</p>
-            {!isPremium&&<span style={{fontSize:10,background:VL,color:V,borderRadius:10,padding:"2px 8px",fontWeight:600}}>⭐ Premium</span>}
-          </div>
-          <p style={{margin:"0 0 14px",fontSize:12,color:TM}}>Le générateur adaptera automatiquement ses suggestions à ces niveaux</p>
-          {isPremium?(
-            [
-              {k:"bruit",icon:"🔊",label:"Tolérance au bruit",left:"Très sensible",right:"Tolère bien"},
-              {k:"lumiere",icon:"💡",label:"Tolérance à la lumière",left:"Très sensible",right:"Tolère bien"},
-              {k:"foule",icon:"👥",label:"Tolérance à la foule",left:"Très sensible",right:"Tolère bien"},
-              {k:"imprevu",icon:"❓",label:"Tolérance à l'imprévu",left:"Besoin de routine",right:"Aime la spontanéité"},
-            ].map(({k,icon,label,left,right})=>{
-              const val=form.niveauxSensoriels[k]||50;
-              const col=val<=30?"#EF4444":val<=60?"#F59E0B":"#10B981";
-              const badge=val<=30?"Très sensible":val<=60?"Modéré":"Tolère bien";
-              return(
-                <div key={k} style={{marginBottom:16}}>
-                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
-                    <span style={{fontSize:13,fontWeight:600,color:TX}}>{icon} {label}</span>
-                    <span style={{fontSize:11,fontWeight:700,color:col,background:col+"18",padding:"2px 10px",borderRadius:20}}>{badge}</span>
-                  </div>
-                  <div style={{display:"flex",alignItems:"center",gap:8}}>
-                    <span style={{fontSize:9,color:TM,width:60,flexShrink:0,textAlign:"right"}}>{left}</span>
-                    <div style={{flex:1,height:5,background:"#E5E7EB",borderRadius:6,overflow:"hidden"}}>
-                      <div style={{height:"100%",width:val+"%",background:col,borderRadius:6,transition:"width 0.2s"}}/>
-                    </div>
-                    <span style={{fontSize:9,color:TM,width:60,flexShrink:0}}>{right}</span>
-                  </div>
-                  <input type="range" min={0} max={100} value={val} onChange={e=>setForm(p=>({...p,niveauxSensoriels:{...p.niveauxSensoriels,[k]:Number(e.target.value)}}))} style={{width:"100%",marginTop:4,accentColor:col,cursor:"pointer"}}/>
-                </div>
-              );
-            })
-          ):(
-            <div style={{textAlign:"center",padding:"12px 0"}}>
-              <p style={{fontSize:12,color:TM,margin:"0 0 10px"}}>Le carnet sensoriel est une fonctionnalité Premium</p>
-              <button onClick={()=>onOpenPremium&&onOpenPremium()} style={{padding:"8px 20px",borderRadius:28,background:V,border:"none",color:WH,fontWeight:600,fontSize:12,cursor:"pointer"}}>⭐ Découvrir Premium</button>
-            </div>
-          )}
-        </div>
-
-        {/* Besoins spécifiques */}
+        {/* Besoins pour les recommandations d'activités */}
         {isPremium&&(
           <div style={{background:WH,borderRadius:16,padding:"16px",marginBottom:12,border:BD}}>
-            <p style={{margin:"0 0 4px",fontSize:14,fontWeight:700,color:TX}}>✅ Besoins spécifiques</p>
-            <p style={{margin:"0 0 14px",fontSize:12,color:TM}}>Cochez ce qui correspond à votre enfant — le générateur en tiendra compte</p>
-            {BESOINS_GROUPES.map(({titre,items})=>(
+            <p style={{margin:"0 0 4px",fontSize:14,fontWeight:700,color:TX}}>🎯 Besoins pour les recommandations</p>
+            <p style={{margin:"0 0 14px",fontSize:12,color:TM}}>Utilisé pour trier et noter les activités selon les besoins de {form.prenom||"votre enfant"}</p>
+            {[
+              {titre:"Environnement sensoriel",items:[
+                {v:"calme",emoji:"🔇",l:"Environnement calme"},
+                {v:"lumiere",emoji:"💡",l:"Lumière douce"},
+                {v:"tactile",emoji:"✋",l:"Sensibilité au toucher"},
+                {v:"odeurs",emoji:"👃",l:"Sensibilité aux odeurs"},
+              ]},
+              {titre:"Structure & prévisibilité",items:[
+                {v:"previsible",emoji:"🗓️",l:"Besoin de prévisibilité"},
+                {v:"transition",emoji:"🔄",l:"Transitions douces"},
+                {v:"simple",emoji:"📋",l:"Consignes simples"},
+              ]},
+              {titre:"Durée & rythme",items:[
+                {v:"attention",emoji:"⏱️",l:"Attention courte"},
+                {v:"pause",emoji:"⏸️",l:"Besoin de pauses"},
+                {v:"tempslibre",emoji:"🕐",l:"Pas de contrainte de temps"},
+                {v:"bouger",emoji:"🏃",l:"Besoin de bouger"},
+              ]},
+              {titre:"Communication & social",items:[
+                {v:"verbal",emoji:"🗣️",l:"À l'aise avec la communication"},
+                {v:"foule",emoji:"👥",l:"Sensibilité à la foule"},
+                {v:"autonomie",emoji:"🧩",l:"Besoin d'accompagnement"},
+              ]},
+              {titre:"Confort émotionnel",items:[
+                {v:"frustration",emoji:"😤",l:"Sensible à la frustration"},
+                {v:"visuel",emoji:"👁️",l:"Support visuel nécessaire"},
+                {v:"securisant",emoji:"🛡️",l:"Besoin d'un cadre rassurant"},
+                {v:"quitter",emoji:"🚪",l:"Besoin de pouvoir partir facilement"},
+              ]},
+            ].map(({titre,items})=>(
               <div key={titre} style={{marginBottom:14}}>
                 <p style={{margin:"0 0 8px",fontSize:12,fontWeight:700,color:"#6B7280"}}>{titre}</p>
-                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>
-                  {items.map(b=>{
-                    const actif=(form.besoins||[]).includes(b);
+                <div style={{display:"flex",flexDirection:"column",gap:6}}>
+                  {items.map(({v,emoji,l})=>{
+                    const actif=(form.besoinsMatching||[]).includes(v);
                     return(
-                      <button key={b} onClick={()=>toggleBesoin(b)} style={{padding:"8px 10px",borderRadius:10,border:`1.5px solid ${actif?V:"#E5E7EB"}`,background:actif?VL:BG,color:actif?V:TM,fontSize:11,fontWeight:actif?700:400,cursor:"pointer",textAlign:"left",display:"flex",alignItems:"center",gap:6}}>
-                        <span>{actif?"☑":"☐"}</span>{b}
+                      <button key={v} onClick={()=>toggleBesoinMatching(v)} style={{padding:"10px 12px",borderRadius:10,border:`1.5px solid ${actif?V:"#E5E7EB"}`,background:actif?VL:BG,cursor:"pointer",display:"flex",alignItems:"center",gap:10,textAlign:"left"}}>
+                        <span style={{fontSize:16,flexShrink:0}}>{emoji}</span>
+                        <span style={{fontSize:13,color:actif?V:TX,fontWeight:actif?700:400,flex:1}}>{l}</span>
+                        <span style={{fontSize:14,color:actif?V:"#D1D5DB"}}>{actif?"☑":"☐"}</span>
                       </button>
                     );
                   })}
                 </div>
               </div>
             ))}
-          </div>
-        )}
-
-        {/* Besoins pour les recommandations d'activités */}
-        {isPremium&&(
-          <div style={{background:WH,borderRadius:16,padding:"16px",marginBottom:12,border:BD}}>
-            <p style={{margin:"0 0 4px",fontSize:14,fontWeight:700,color:TX}}>🎯 Besoins pour les recommandations</p>
-            <p style={{margin:"0 0 14px",fontSize:12,color:TM}}>Utilisé pour trier et noter les activités selon les besoins de {form.prenom||"votre enfant"}</p>
-            <div style={{display:"flex",flexDirection:"column",gap:6}}>
-              {[
-                {v:"calme",emoji:"🔇",l:"Environnement calme"},
-                {v:"tactile",emoji:"✋",l:"Sensibilité au toucher"},
-                {v:"attention",emoji:"⏱️",l:"Attention courte"},
-                {v:"previsible",emoji:"🗓️",l:"Besoin de prévisibilité"},
-                {v:"visuel",emoji:"👁️",l:"Support visuel nécessaire"},
-                {v:"bouger",emoji:"🏃",l:"Besoin de bouger"},
-                {v:"verbal",emoji:"🗣️",l:"À l'aise avec la communication"},
-                {v:"frustration",emoji:"😤",l:"Sensible à la frustration"},
-              ].map(({v,emoji,l})=>{
-                const actif=(form.besoinsMatching||[]).includes(v);
-                return(
-                  <button key={v} onClick={()=>toggleBesoinMatching(v)} style={{padding:"10px 12px",borderRadius:10,border:`1.5px solid ${actif?V:"#E5E7EB"}`,background:actif?VL:BG,cursor:"pointer",display:"flex",alignItems:"center",gap:10,textAlign:"left"}}>
-                    <span style={{fontSize:16,flexShrink:0}}>{emoji}</span>
-                    <span style={{fontSize:13,color:actif?V:TX,fontWeight:actif?700:400,flex:1}}>{l}</span>
-                    <span style={{fontSize:14,color:actif?V:"#D1D5DB"}}>{actif?"☑":"☐"}</span>
-                  </button>
-                );
-              })}
-            </div>
           </div>
         )}
 

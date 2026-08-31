@@ -693,6 +693,7 @@ function AvisForm({isLoggedIn=true,onRequireAuth,tousLesAvis=[],chargement=false
 
 function ListePropositions({items,type,onChoisir,onClose,isPremium=false,enfantActif=null,onMasquer}){
   const [excluded,setExcluded]=useState(new Set());
+  const [detailItem,setDetailItem]=useState(null);
   const visibles=items.filter(item=>!excluded.has(item.id||item.nom));
 
   const emojiFor=(item)=>{
@@ -760,10 +761,10 @@ function ListePropositions({items,type,onChoisir,onClose,isPremium=false,enfantA
               const barColor=matchScore>=70?"#10B981":matchScore>=40?"#F59E0B":"#EF4444";
               return(
                 <div key={item.id||i} style={{background:BG,borderRadius:16,padding:14,border:matchScore>=70?"2px solid #10B981":BD}}>
-                  <div style={{display:"flex",alignItems:"flex-start",gap:12,marginBottom:8}}>
+                  <div onClick={()=>setDetailItem(item)} style={{display:"flex",alignItems:"flex-start",gap:12,marginBottom:8,cursor:"pointer"}}>
                     <span style={{fontSize:28,flexShrink:0}}>{emojiFor(item)}</span>
                     <div style={{flex:1,minWidth:0}}>
-                      <p style={{margin:"0 0 2px",fontSize:14,fontWeight:700,color:TX}}>{item.nom}</p>
+                      <p style={{margin:"0 0 2px",fontSize:14,fontWeight:700,color:TX,textDecoration:"underline",textDecorationColor:"transparent"}}>{item.nom}</p>
                       <p style={{margin:0,fontSize:12,color:TM}}>{item.age||""}{item.duree?" · "+item.duree:""}</p>
                     </div>
                     {matchBadge&&<span style={{fontSize:11,fontWeight:700,color:matchBadge.color,background:matchBadge.bg,padding:"3px 8px",borderRadius:10,flexShrink:0}}>{matchScore}% ✓</span>}
@@ -788,10 +789,10 @@ function ListePropositions({items,type,onChoisir,onClose,isPremium=false,enfantA
             }
             return(
               <div key={item.id||i} style={{background:BG,borderRadius:16,padding:14,border:badge?.col==="#10B981"?"2px solid #10B981":BD}}>
-                <div style={{display:"flex",alignItems:"flex-start",gap:12,marginBottom:8}}>
+                <div onClick={()=>setDetailItem(item)} style={{display:"flex",alignItems:"flex-start",gap:12,marginBottom:8,cursor:"pointer"}}>
                   <span style={{fontSize:28,flexShrink:0}}>{emojiFor(item)}</span>
                   <div style={{flex:1,minWidth:0}}>
-                    <p style={{margin:"0 0 2px",fontSize:14,fontWeight:700,color:TX}}>{item.nom}</p>
+                    <p style={{margin:"0 0 2px",fontSize:14,fontWeight:700,color:TX,textDecoration:"underline",textDecorationColor:"transparent"}}>{item.nom}</p>
                     <p style={{margin:0,fontSize:12,color:TM}}>{type==="sortie"?`${item.ville||""}${item.prix?" · "+item.prix:""}`:`${item.age||""}${item.lieu?" · "+(item.lieu==="interieur"?"Intérieur":"Extérieur"):""}`}</p>
                   </div>
                   {badge&&<span style={{fontSize:11,fontWeight:700,color:badge.col,background:badge.bg,padding:"3px 8px",borderRadius:10,flexShrink:0,border:`1px solid ${badge.col}33`}}>{badge.label}</span>}
@@ -810,6 +811,15 @@ function ListePropositions({items,type,onChoisir,onClose,isPremium=false,enfantA
         )}
         <button onClick={onClose} style={{width:"100%",marginTop:visibles.some(i=>i._isFallback)?0:16,padding:"10px 0",borderRadius:28,background:"none",border:"none",color:TM,fontSize:13,cursor:"pointer"}}>Annuler</button>
       </div>
+      {detailItem&&(
+        <div onClick={e=>e.stopPropagation()} style={{position:"fixed",inset:0,zIndex:600,background:"#fff",overflowY:"auto"}}>
+          {type==="activite"?(
+            <ActivityDetailPage activity={detailItem} matchEnfant={detailItem._matchEnfant||enfantActif} onBack={()=>setDetailItem(null)} onReport={()=>{}}/>
+          ):(
+            <SortieDetailPage sortie={detailItem} onBack={()=>setDetailItem(null)} onReport={()=>{}}/>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -4476,6 +4486,7 @@ function PagePlanning({sosLib=[],enfants=[],enfantActif,setEnfantActif,isPremium
   const [lieuP,setLieuP]=useState(null);
   const [semaineType,setSemaineType]=useState(null); // null | "semaine" | "weekend"
   const [planning,setPlanning]=useState([]);
+  const [detailActivitePlanning,setDetailActivitePlanning]=useState(null);
   const [showFiltresMat,setShowFiltresMat]=useState(false);
   const [materielDispo,setMaterielDispo]=useState([]);
   const [enfantsSelectionnes,setEnfantsSelectionnes]=useState(enfantActif?[enfantActif]:[]);
@@ -4636,7 +4647,7 @@ function PagePlanning({sosLib=[],enfants=[],enfantActif,setEnfantActif,isPremium
         const pct=totalItems>0?Math.round(checkedCount/totalItems*100):0;
         return(<>
           <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:12}}>
-            {planning.map((p,i)=>(<div key={i} style={{background:WH,borderRadius:14,padding:"12px 14px",border:BD,display:"flex",justifyContent:"space-between",alignItems:"center"}}><div style={{flex:1,minWidth:0}}><span style={{fontSize:11,color:TM}}>{p.jour}</span><p style={{margin:"2px 0 0",fontSize:14,fontWeight:500,color:TX,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{p.activite?.nom||""}</p></div><div style={{display:"flex",gap:6,marginLeft:8}}><button onClick={()=>remplacer(i)} style={{background:BG2,border:BD,borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:16}} title="Remplacer">🔄</button></div></div>))}
+            {planning.map((p,i)=>(<div key={i} onClick={()=>p.activite&&setDetailActivitePlanning(p.activite)} style={{background:WH,borderRadius:14,padding:"12px 14px",border:BD,display:"flex",justifyContent:"space-between",alignItems:"center",cursor:p.activite?"pointer":"default"}}><div style={{flex:1,minWidth:0}}><span style={{fontSize:11,color:TM}}>{p.jour}</span><p style={{margin:"2px 0 0",fontSize:14,fontWeight:500,color:TX,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{p.activite?.nom||""}</p></div><div style={{display:"flex",gap:6,marginLeft:8}}><button onClick={e=>{e.stopPropagation();remplacer(i);}} style={{background:BG2,border:BD,borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:16}} title="Remplacer">🔄</button></div></div>))}
           </div>
           {/* Boutons d'action */}
           <div style={{display:"flex",gap:8,marginBottom:12}}>
@@ -4763,6 +4774,11 @@ function PagePlanning({sosLib=[],enfants=[],enfantActif,setEnfantActif,isPremium
         </div>
       )}
       {saveToast&&<Toast msg={saveToast}/>}
+      {detailActivitePlanning&&(
+        <div style={{position:"fixed",inset:0,zIndex:400,background:"#fff",overflowY:"auto"}}>
+          <ActivityDetailPage activity={detailActivitePlanning} matchEnfant={enfantCourantP} onBack={()=>setDetailActivitePlanning(null)} onReport={()=>{}}/>
+        </div>
+      )}
     </div>
   );
 }

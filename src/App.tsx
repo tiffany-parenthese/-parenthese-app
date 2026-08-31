@@ -3543,13 +3543,6 @@ function PageAccueil({favoris,setFavoris,setPage,customEvents=[],popupShown=new 
         // Correspondance besoins/adaptations
         const adaps=a.adaptations||[];
         s+=besoins.filter(b=>adaps.includes(b)).length*15;
-        // Correspondance profil TND
-        const profilsEnfant=enfantCourant.profils||[];
-        const profilsActiv=a.profilsTND||{};
-        if(profilsActiv.tous)s+=20;
-        if(profilsEnfant.includes("TSA")&&profilsActiv.tsa)s+=25;
-        if(profilsEnfant.includes("TDAH")&&profilsActiv.tdah)s+=25;
-        if(profilsEnfant.includes("DYS")&&profilsActiv.dys)s+=25;
         return s;
       };
       const scored=[...shuffled].map(a=>({...a,_score:score(a)})).sort((a,b)=>b._score-a._score);
@@ -3792,11 +3785,6 @@ function PageAccueil({favoris,setFavoris,setPage,customEvents=[],popupShown=new 
                 );
               })}
             </div>
-            {enfantActif&&isPremium&&(()=>{
-              const e=enfants.find(x=>x.id===enfantActif);
-              if(!e||!e.profils?.length)return null;
-              return <p style={{margin:"6px 0 0",fontSize:11,color:TM}}>Profils : {e.profils.map(p=>p.replace("_"," ")).join(", ")}</p>;
-            })()}
           </div>
         )}
 
@@ -4486,9 +4474,6 @@ function PagePlanning({sosLib=[],enfants=[],enfantActif,setEnfantActif,isPremium
   const [showFiltresMat,setShowFiltresMat]=useState(false);
   const [materielDispo,setMaterielDispo]=useState([]);
   const [enfantsSelectionnes,setEnfantsSelectionnes]=useState(enfantActif?[enfantActif]:[]);
-  const PROFIL_TO_TND={TSA:"tsa",TDAH:"tdah",DYS:"dys"};
-  const tndKeysSelection=[...new Set(enfants.filter(e=>enfantsSelectionnes.includes(e.id)).flatMap(e=>e.profils||[]).map(p=>PROFIL_TO_TND[p]).filter(Boolean))];
-  const scoreActivite=(a)=>tndKeysSelection.length===0?0:tndKeysSelection.reduce((s,k)=>s+(a.tnd?.[k]||0),0);
   const joursBase=["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"];
   const joursSemaine=["Lundi","Mardi","Mercredi","Jeudi","Vendredi"];
   const joursWeekend=["Samedi","Dimanche"];
@@ -4509,7 +4494,6 @@ function PagePlanning({sosLib=[],enfants=[],enfantActif,setEnfantActif,isPremium
   const genPlanning=()=>{
     const pool=toutesActivitesP.filter(a=>(!energieP||a.energie===energieP)&&(!lieuP||a.lieu===lieuP)&&actMatOk(a));
     let source=pool.length?pool:toutesActivitesP;
-    if(tndKeysSelection.length>0)source=[...source].sort((a,b)=>scoreActivite(b)-scoreActivite(a));
     const result=[];const used=new Set();
     for(let i=0;i<count;i++){
       const avail=source.filter(a=>!used.has(a.id));
@@ -4526,8 +4510,7 @@ function PagePlanning({sosLib=[],enfants=[],enfantActif,setEnfantActif,isPremium
   const remplacer=(i)=>{
     let pool=toutesActivitesP.filter(a=>(!energieP||a.energie===energieP)&&(!lieuP||a.lieu===lieuP)&&actMatOk(a)&&a.id!==planning[i].activite.id);
     if(!pool.length)return;
-    if(tndKeysSelection.length>0)pool=[...pool].sort((a,b)=>scoreActivite(b)-scoreActivite(a));
-    const shortlist=tndKeysSelection.length>0?pool.slice(0,Math.max(3,Math.ceil(pool.length*0.6))):pool;
+    const shortlist=pool;
     setPlanning(prev=>prev.map((p,idx)=>idx===i?{...p,activite:shortlist[Math.floor(Math.random()*shortlist.length)]}:p));
   };
   const allMateriel=[...new Set(planning.flatMap(p=>p.activite?.materiel||[]))];
@@ -5941,7 +5924,7 @@ function FormulaireEnfant({enfant,onSave,onCancel,isPremium=false,onOpenPremium}
     besoins:enfant.besoins||[],
     besoinsMatching:enfant.besoinsMatching||[],
   }:{
-    prenom:"",age:0,emoji:"👦",couleur:"#6C5CE7",profils:[],
+    prenom:"",age:0,emoji:"👦",couleur:"#6C5CE7",
     niveauxSensoriels:{bruit:50,lumiere:50,foule:50,imprevu:50},
     besoins:[],besoinsMatching:[],
   });
@@ -6108,7 +6091,7 @@ function GestionEnfants({enfants,setEnfants,enfantActif,setEnfantActif,onBack,is
   const save=async(data)=>{
     const payload={
       user_id:userId,prenom:data.prenom,age:data.age,emoji:data.emoji,couleur:data.couleur,
-      profils:data.profils||[],besoins:data.besoins||[],besoins_matching:data.besoinsMatching||[],
+      besoins:data.besoins||[],besoins_matching:data.besoinsMatching||[],
       niveaux_sensoriels:data.niveauxSensoriels||{bruit:50,lumiere:50,foule:50,imprevu:50},
     };
     if(formMode==="add"){
@@ -11910,7 +11893,7 @@ export default function App(){
       if(!error&&data){
         setEnfants(data.map(e=>({
           id:e.id,prenom:e.prenom,age:e.age,emoji:e.emoji,couleur:e.couleur,
-          profils:e.profils||[],besoins:e.besoins||[],besoinsMatching:e.besoins_matching||[],
+          besoins:e.besoins||[],besoinsMatching:e.besoins_matching||[],
           niveauxSensoriels:e.niveaux_sensoriels||{bruit:50,lumiere:50,foule:50,imprevu:50},
         })));
         if(data.length>0)setEnfantActif(prev=>prev||data[0].id);

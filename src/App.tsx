@@ -5940,11 +5940,10 @@ function FormulaireEnfant({enfant,onSave,onCancel,isPremium=false,onOpenPremium}
     niveauxSensoriels:enfant.niveauxSensoriels||{bruit:50,lumiere:50,foule:50,imprevu:50},
     besoins:enfant.besoins||[],
     besoinsMatching:enfant.besoinsMatching||[],
-    notesParent:enfant.notesParent||"",
   }:{
     prenom:"",age:0,emoji:"👦",couleur:"#6C5CE7",profils:[],
     niveauxSensoriels:{bruit:50,lumiere:50,foule:50,imprevu:50},
-    besoins:[],besoinsMatching:[],notesParent:"",
+    besoins:[],besoinsMatching:[],
   });
   const toggleBesoin=(v)=>setForm(p=>({...p,besoins:(p.besoins||[]).includes(v)?(p.besoins||[]).filter(x=>x!==v):[...(p.besoins||[]),v]}));
   const toggleBesoinMatching=(v)=>setForm(p=>({...p,besoinsMatching:(p.besoinsMatching||[]).includes(v)?(p.besoinsMatching||[]).filter(x=>x!==v):[...(p.besoinsMatching||[]),v]}));

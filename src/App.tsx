@@ -6737,12 +6737,20 @@ function PictogrammeView({ onBack, isPremium = false, onOpenPremium, adminEvenem
 
       {showImpression && (
         <div style={{ position: "fixed", inset: 0, background: WH, zIndex: 700, overflowY: "auto" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: BD, position: "sticky", top: 0, background: WH, zIndex: 5 }}>
+          <style>{`
+            @media print {
+              body * { visibility: hidden; }
+              .pictos-print-zone, .pictos-print-zone * { visibility: visible; }
+              .pictos-print-zone { position: absolute; left: 0; top: 0; width: 100%; margin: 0; border: none; box-shadow: none; }
+              .pictos-no-print { display: none !important; }
+            }
+          `}</style>
+          <div className="pictos-no-print" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: BD, position: "sticky", top: 0, background: WH, zIndex: 5 }}>
             <button onClick={handlePrint} style={{ padding: "8px 16px", borderRadius: 20, background: V, border: "none", color: WH, fontWeight: 700, fontSize: 13, cursor: "pointer" }}>🖨️ Imprimer</button>
             <button onClick={() => setShowImpression(false)} style={{ background: "none", border: "none", fontSize: 14, color: TM, cursor: "pointer", fontWeight: 600 }}>✕ Fermer</button>
           </div>
-          {printMsg && <p style={{ margin: "10px 16px 0", fontSize: 12, color: "#D97706", textAlign: "center" }}>Fonction d'impression native bientôt disponible</p>}
-          <div style={{ maxWidth: 600, margin: "20px auto", padding: "32px 24px", border: BD, borderRadius: 8, aspectRatio: "1 / 1.414", boxSizing: "border-box", display: "flex", flexDirection: "column" }}>
+          {printMsg && <p className="pictos-no-print" style={{ margin: "10px 16px 0", fontSize: 12, color: "#D97706", textAlign: "center" }}>Fonction d'impression native bientôt disponible</p>}
+          <div className="pictos-print-zone" style={{ maxWidth: 600, margin: "20px auto", padding: "32px 24px", border: BD, borderRadius: 8, aspectRatio: "1 / 1.414", boxSizing: "border-box", display: "flex", flexDirection: "column" }}>
             <p style={{ margin: "0 0 4px", fontSize: 24, fontWeight: 800, color: TX, textAlign: "center" }}>Mon emploi du temps</p>
             <p style={{ margin: "0 0 28px", fontSize: 16, color: TM, textAlign: "center" }}>{sousTitre}</p>
             <div style={{ flex: 1, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18, alignContent: "start" }}>

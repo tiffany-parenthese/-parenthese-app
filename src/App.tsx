@@ -6770,6 +6770,7 @@ function PageProfil({setPage,enfants=[],setEnfants,enfantActif,setEnfantActif,sh
   const [editBuf,setEditBuf]=useState({nom:"",pseudo:""});
   const [showProfilToast,setShowProfilToast]=useState(false);
   const [showPhotoMsg,setShowPhotoMsg]=useState(false);
+  const [afficherToutesContribs,setAfficherToutesContribs]=useState(false);
   const [showLutinProfil,setShowLutinProfil]=useState(false); // popup de choix
   const [showLutinBetisesFromProfil,setShowLutinBetisesFromProfil]=useState(false);
   const [showLutinVoyageFromProfil,setShowLutinVoyageFromProfil]=useState(false);
@@ -7049,11 +7050,13 @@ function PageProfil({setPage,enfants=[],setEnfants,enfantActif,setEnfantActif,sh
 
         {/* 📬 Mes contributions */}
         {(()=>{
-          const mesContribs=(pendingContribs||[]).filter(c=>c._auteurEmail===currentUser?.email||c._auteur===currentUser?.nom);
+          if(!currentUser)return null;
+          const mesContribs=(pendingContribs||[]).filter(c=>(currentUser.email&&c._auteurEmail===currentUser.email)||(currentUser.nom&&c._auteur===currentUser.nom));
           if(mesContribs.length===0)return null;
           const rejetees=mesContribs.filter(c=>c._statut==="rejected");
           const publiees=mesContribs.filter(c=>c._statut==="published");
           const enAttente=mesContribs.filter(c=>c._statut==="pending");
+          const publieesAffichees=afficherToutesContribs?publiees:publiees.slice(0,3);
           return(
             <div style={{background:WH,borderRadius:16,border:BD,padding:"14px 16px",marginBottom:12}}>
               <p style={{margin:"0 0 10px",fontSize:14,fontWeight:700,color:TX}}>📬 Mes contributions</p>
@@ -7072,7 +7075,7 @@ function PageProfil({setPage,enfants=[],setEnfants,enfantActif,setEnfantActif,sh
                 <div style={{marginBottom:6}}>
                   <p style={{margin:"0 0 8px",fontSize:12,color:"#10B981",fontWeight:600}}>✅ {publiees.length} publiée{publiees.length>1?"s":""}</p>
                   <div style={{display:"flex",flexDirection:"column",gap:6}}>
-                    {publiees.map(c=>{
+                    {publieesAffichees.map(c=>{
                       const itemType=c._type||"activite";
                       const booste=estBooste?estBooste(c,itemType):false;
                       return(
@@ -7083,6 +7086,9 @@ function PageProfil({setPage,enfants=[],setEnfants,enfantActif,setEnfantActif,sh
                       );
                     })}
                   </div>
+                  {!afficherToutesContribs&&publiees.length>3&&(
+                    <button onClick={()=>setAfficherToutesContribs(true)} style={{width:"100%",marginTop:8,padding:"8px 0",background:"none",border:"none",color:V,fontSize:12,fontWeight:600,cursor:"pointer"}}>Voir plus ({publiees.length-3} de plus) →</button>
+                  )}
                 </div>
               )}
               {enAttente.length>0&&<p style={{margin:0,fontSize:12,color:TM}}>⏳ {enAttente.length} en attente de validation</p>}

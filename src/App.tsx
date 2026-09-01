@@ -8338,6 +8338,11 @@ function Activites({sharedActivites,setSharedActivites,customCatActivites=[],pen
   const contribsCommunaute=pendingContribs.filter(c=>c._type==="activite").map(c=>({...c,titre:c.titre||c.nom,_communaute:true}));
   const itemsAffiches=[...contribsCommunaute,...items];
   const syncItems=(newItems)=>{
+    const supprime=items.find(old=>!newItems.some(n=>n.id===old.id));
+    if(supprime&&!MOCK_IDS.has(supprime.id)){
+      const nomItem=supprime.nom||supprime.titre;
+      supabase.from("activites").delete().eq("nom",nomItem).then(()=>{},()=>{});
+    }
     setItems(newItems);
     if(setSharedActivites){
       const mine=newItems.filter(a=>!MOCK_IDS.has(a.id)).map(a=>({...a,_source:"activites"}));
@@ -8585,7 +8590,14 @@ function Sorties({sharedSorties=[],setSharedSorties,customCatSorties=[],setCusto
   const emptyForm={titre:"",dept:"",adresse:"",horaires:"",prix:"",categorie:"",statut:"published",programmation:{date:"",heure:""},etiquettes:[],acc_poussette:false,acc_bebe:false,acc_allaitement:false,acc_langer:false,acc_aire03:false,acc_peubruyant:false,pmr_fauteuil:false,pmr_escaliers:false,pmr_parking:false,pmr_toilettes:false,pmr_personnel:false,pmr_chemin:false,tsa_foule:false,tsa_calme:false,tsa_lumiere:false,tsa_retrait:false,tsa_bruit:false,tsa_personnel:false,tdah_espace:false,tdah_physique:false,tdah_attente:false,tdah_stimulation:false,dys_visuels:false,dys_nonecrite:false,dys_rythme:false,dys_personnel:false};
   const MOCK_IDS=new Set(MOCK_SORTIES.map(o=>o.id));
   const [items,setItems] = useState(()=>[...MOCK_SORTIES,...(sharedSorties||[]).filter(o=>!MOCK_IDS.has(o.id))]);
-  const syncItems=(newItems)=>{setItems(newItems);if(setSharedSorties)setSharedSorties(newItems.filter(o=>!MOCK_IDS.has(o.id)));};
+  const syncItems=(newItems)=>{
+    const supprime=items.find(old=>!newItems.some(n=>n.id===old.id));
+    if(supprime&&!MOCK_IDS.has(supprime.id)){
+      const nomItem=supprime.nom||supprime.titre;
+      supabase.from("sorties").delete().eq("nom",nomItem).then(()=>{},()=>{});
+    }
+    setItems(newItems);if(setSharedSorties)setSharedSorties(newItems.filter(o=>!MOCK_IDS.has(o.id)));
+  };
   useScheduler(setItems,syncItems);
   const [search,setSearch] = useState("");
   const [modal,setModal] = useState(null);
@@ -8709,7 +8721,14 @@ function Sorties({sharedSorties=[],setSharedSorties,customCatSorties=[],setCusto
 function Evenements({sharedEvenements=[],setSharedEvenements,customCatEvenements=[],setCustomCatEvenements,pendingContribs=[]}) {
   const MOCK_IDS=new Set(MOCK_EVENTS.map(o=>o.id));
   const [items,setItems] = useState(()=>[...MOCK_EVENTS,...(sharedEvenements||[]).filter(o=>!MOCK_IDS.has(o.id))]);
-  const syncItems=(newItems)=>{setItems(newItems);if(setSharedEvenements)setSharedEvenements(newItems.filter(o=>!MOCK_IDS.has(o.id)));};
+  const syncItems=(newItems)=>{
+    const supprime=items.find(old=>!newItems.some(n=>n.id===old.id));
+    if(supprime&&!MOCK_IDS.has(supprime.id)){
+      const nomItem=supprime.nom||supprime.titre;
+      supabase.from("evenements").delete().eq("nom",nomItem).then(()=>{},()=>{});
+    }
+    setItems(newItems);if(setSharedEvenements)setSharedEvenements(newItems.filter(o=>!MOCK_IDS.has(o.id)));
+  };
   useScheduler(setItems,syncItems);
   const [search,setSearch] = useState("");
   const [modal,setModal] = useState(null);

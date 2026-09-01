@@ -2447,7 +2447,7 @@ function PageBiblio({pendingContribs=[],setPendingContribs,adminActivites=[],adm
         nom:data.nom,categorie:data.categorie,ville:data.ville,dept:data.dept,date:data.date,date_fin:data.dateFin,
         prix:data.prix,gratuit:data.gratuit,adresse:data.adresse,photo:data.photo,description:data.desc,
         tnd:data.tnd,accessibilite:data.accessibilite,commentaire_tnd:data.commentaireTND,
-        statut:"published",communaute:true,auteur_id:currentUser.id,auteur_nom:currentUser.nom,
+        statut:"pending",communaute:true,auteur_id:currentUser.id,auteur_nom:currentUser.nom,
       }).then(({error})=>{if(error)console.error("Erreur sauvegarde événement Supabase:",error.message);});
     }
     if(data._demandeBoost){
@@ -2457,7 +2457,7 @@ function PageBiblio({pendingContribs=[],setPendingContribs,adminActivites=[],adm
     showToast(data._demandeBoost?"✅ Événement publié !":"✅ Événement publié et visible dans la bibliothèque !");
   };
   const CATEGORIES_ACT=[...CATEGORIES_ACT_ALL,...customCatActivites.map(c=>c.label)];
-  const approvedActs=pendingContribs.filter(c=>c._type==="activite"&&c._statut!=="rejected");
+  const approvedActs=pendingContribs.filter(c=>c._type==="activite"&&c._statut==="published");
   const adminPublished=(adminActivites||[]).filter(a=>a.statut==="published"&&!ACTIVITES.find(x=>x.id===a.id)).map(a=>{
     const age=a.nom?a.age:((a.ageMin&&a.ageMax)?`${String(a.ageMin).replace(" an","").replace(" ans","")} - ${a.ageMax}`:(a.ageMin||a.ageMax||a.age||"Tous ages"));
     const scoreFor=(...flags)=>{const c=flags.filter(Boolean).length;return c?Math.max(1,Math.min(5,c+2)):3;};
@@ -2515,7 +2515,7 @@ function PageBiblio({pendingContribs=[],setPendingContribs,adminActivites=[],adm
     const isGratuit=!prixStr.trim()||prixStr.toLowerCase().includes("gratuit")||prixStr==="0"||prixStr==="0€";
     return{id:e.id,nom:e.titre,titre:e.titre,categorie:e.type,ville:e.ville,dept:e.dept,date:e.date,prix:prixStr,gratuit:isGratuit,age:"Tous ages",desc:e.desc,tnd:{tsa:3,tdah:3,dys:3},etiquettes:e.etiquettes||[]};
   });
-  const approvedSorts=pendingContribs.filter(c=>c._type==="sortie"&&c._statut!=="rejected");
+  const approvedSorts=pendingContribs.filter(c=>c._type==="sortie"&&c._statut==="published");
   const shadowedSortTitles=new Set(approvedSorts.map(s=>s.nom||s.titre));
   const sortFiltered=[...SORTIES.filter(s=>!shadowedSortTitles.has(s.nom)&&!shadowedSortTitles.has(s.titre)),...adminSortiesPubliees,...approvedSorts].filter(s=>!blockedTitles.has(s.nom)).filter(s=>(!filterDept||s.dept===filterDept)&&(!filterType||s.type===filterType)&&(!searchQ||(s.nom||"").toLowerCase().includes(searchQ)||(s.type||"").toLowerCase().includes(searchQ)||(s.ville||"").toLowerCase().includes(searchQ))&&(filterAccess.length===0||filterAccess.every(k=>s.accessibilite?.signaux?.[k]===true))).sort((a,b)=>{
     const boostDiff=(estBoosteItem(b,"sortie")?1:0)-(estBoosteItem(a,"sortie")?1:0);
@@ -2526,7 +2526,7 @@ function PageBiblio({pendingContribs=[],setPendingContribs,adminActivites=[],adm
   const cardStyle={background:WH,borderRadius:14,padding:"14px 16px",border:BD,cursor:"pointer"};
   const selStyle={flex:1,padding:"8px 10px",borderRadius:10,border:BD,background:WH,fontSize:13};
 
-  const approvedEvts=pendingContribs.filter(c=>c._type==="evenement"&&c._statut!=="rejected");
+  const approvedEvts=pendingContribs.filter(c=>c._type==="evenement"&&c._statut==="published");
   const shadowedEvtTitles=new Set(approvedEvts.map(e=>e.nom||e.titre));
   const allEvts=[...evenements.filter(e=>!shadowedEvtTitles.has(e.nom)&&!shadowedEvtTitles.has(e.titre)),...adminEvenementsPublies,...approvedEvts].filter(e=>!blockedTitles.has(e.titre)&&!blockedTitles.has(e.nom)).sort((a,b)=>{
     const boostDiff=(estBoosteItem(b,"evenement")?1:0)-(estBoosteItem(a,"evenement")?1:0);
@@ -2815,7 +2815,7 @@ function PageBiblio({pendingContribs=[],setPendingContribs,adminActivites=[],adm
             difficulte:item.difficulte,materiel:item.materiel,etapes:item.etapes,description:item.desc,photo:item.photo,
             niveaux_sensoriels:item.niveauxSensoriels,profils_tnd:item.profilsTND,adaptations:item.adaptations,
             caracteristiques:item.caracteristiques,commentaire_tnd:item.commentaireTND,points_anticiper:item.pointsAnticiper,
-            statut:"published",communaute:true,auteur_id:currentUser.id,auteur_nom:currentUser.nom,
+            statut:"pending",communaute:true,auteur_id:currentUser.id,auteur_nom:currentUser.nom,
           }).then(({error})=>{if(error)console.error("Erreur sauvegarde activité Supabase:",error.message);});
         }
         setDetail(null);showToast("✅ Activité publiée et visible dans la bibliothèque !");
@@ -2827,7 +2827,7 @@ function PageBiblio({pendingContribs=[],setPendingContribs,adminActivites=[],adm
           supabase.from("sorties").insert({
             nom:item.nom,type:item.type,dept:item.dept,ville:item.ville,prix:item.prix,horaires:item.horaires,
             description:item.desc,photo:item.photo,tnd:item.tnd,accessibilite:item.accessibilite,commentaire_tnd:item.commentaireTND,
-            statut:"published",communaute:true,auteur_id:currentUser.id,auteur_nom:currentUser.nom,
+            statut:"pending",communaute:true,auteur_id:currentUser.id,auteur_nom:currentUser.nom,
           }).then(({error})=>{if(error)console.error("Erreur sauvegarde sortie Supabase:",error.message);});
         }
         if(item._demandeBoost){
@@ -11384,20 +11384,25 @@ function Admins() {
 }
 
 // ─── APP ─────────────────────────────────────────────────────────────────────
-function Contributions({items,updateContrib,setPendingContribs}){
+function Contributions({items,updateContrib,setPendingContribs,supprimerContrib,customCatActivites=[],customCatSorties=[],customCatEvenements=[]}){
   useEffect(()=>{
     if(setPendingContribs&&items.some(c=>!c._vu)){
       setPendingContribs(prev=>prev.map(c=>c._vu?c:{...c,_vu:true}));
     }
   },[]);
+  const [editContrib,setEditContrib]=useState(null); // contribution en cours de modification
   const pending=items.filter(c=>c._statut==="pending").sort((a,b)=>new Date(b._createdAt)-new Date(a._createdAt));
   const signales=items.filter(c=>c._signalements>0&&c._statut!=="rejected").sort((a,b)=>b._signalements-a._signalements);
   const approved=items.filter(c=>c._statut==="published");
   const typeIcon={activite:"🎨",sortie:"🗺️",evenement:"📅"};
   const typeLabel={activite:"Activite",sortie:"Sortie",evenement:"Evenement"};
+  const handleEditSubmit=(data)=>{
+    updateContrib(editContrib.id,data);
+    setEditContrib(null);
+  };
   const Row=({c,showActions=true})=>(
     <div style={{background:c._signalements>0?"rgba(239,68,68,0.06)":"rgba(255,255,255,0.03)",borderRadius:12,padding:"13px 16px",border:`1px solid ${c._signalements>0?"rgba(239,68,68,0.25)":C.border}`,marginBottom:8}}>
-      <div style={{display:"flex",alignItems:"flex-start",gap:12}}>
+      <div onClick={()=>setEditContrib(c)} style={{display:"flex",alignItems:"flex-start",gap:12,cursor:"pointer"}}>
         <div style={{width:38,height:38,borderRadius:10,background:c.photo?"transparent":"rgba(124,58,237,0.12)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0,overflow:"hidden"}}>
           {c.photo?<img src={c.photo} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/>:(typeIcon[c._type]||"📝")}
         </div>
@@ -11407,7 +11412,7 @@ function Contributions({items,updateContrib,setPendingContribs}){
             {c._signalements>0&&<span style={{fontSize:11,background:"rgba(239,68,68,0.15)",color:"#fca5a5",padding:"1px 8px",borderRadius:8,fontWeight:600}}>🚩 {c._signalements} signalement{c._signalements>1?"s":""}</span>}
             <span style={{fontSize:10,color:C.muted,marginLeft:"auto"}}>{c._auteur||"Anonyme"} · {c._createdAt?(()=>{const d=new Date(c._createdAt);return isNaN(d.getTime())?"":d.toLocaleDateString("fr-FR");})():""}</span>
           </div>
-          <p style={{margin:"0 0 2px",fontSize:13,fontWeight:600,color:C.text}}>{c.nom||c.titre||"Sans titre"}</p>
+          <p style={{margin:"0 0 2px",fontSize:13,fontWeight:600,color:C.text,textDecoration:"underline",textDecorationColor:"transparent"}}>{c.nom||c.titre||"Sans titre"} <span style={{fontSize:11,color:C.muted,fontWeight:400}}>✏️</span></p>
           {c._raisonSignalement&&<p style={{margin:"0 0 6px",fontSize:11,color:"#fca5a5"}}>⚠️ Raison : {c._raisonSignalement}</p>}
           <p style={{margin:0,fontSize:11,color:C.muted}}>{c._type==="activite"?c.categorie+" · "+c.age:c._type==="sortie"?c.dept+" · "+c.prix:c.ville}</p>
         </div>
@@ -11418,7 +11423,12 @@ function Contributions({items,updateContrib,setPendingContribs}){
           <button onClick={()=>updateContrib(c.id,{_statut:"rejected"})} style={{flex:1,padding:"8px 0",borderRadius:20,background:"rgba(239,68,68,0.1)",border:"1px solid rgba(239,68,68,0.25)",color:"#fca5a5",fontWeight:700,fontSize:12,cursor:"pointer"}}>❌ Rejeter</button>
         </div>
       )}
-      {showActions&&c._statut==="published"&&<p style={{margin:"8px 0 0",fontSize:11,color:"#6ee7b7",fontWeight:600}}>✅ Validee et visible dans la bibliotheque</p>}
+      {showActions&&c._statut==="published"&&(
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginTop:8}}>
+          <p style={{margin:0,fontSize:11,color:"#6ee7b7",fontWeight:600}}>✅ Validee et visible dans la bibliotheque</p>
+          <button onClick={()=>{if(window.confirm(`Retirer définitivement "${c.nom||c.titre}" de la bibliothèque ?`))supprimerContrib&&supprimerContrib(c);}} style={{background:"none",border:"none",color:"#fca5a5",fontSize:11,fontWeight:600,cursor:"pointer",padding:0}}>🗑️ Retirer de la liste</button>
+        </div>
+      )}
       {showActions&&c._statut==="rejected"&&<p style={{margin:"8px 0 0",fontSize:11,color:"#fca5a5",fontWeight:600}}>❌ Rejetee — non visible</p>}
     </div>
   );
@@ -11448,6 +11458,9 @@ function Contributions({items,updateContrib,setPendingContribs}){
           {approved.map(c=><Row key={c.id} c={c}/>)}
         </div>
       )}
+      {editContrib&&editContrib._type==="activite"&&<FormActivite initialData={editContrib} customCatActivites={customCatActivites} onClose={()=>setEditContrib(null)} onSubmit={handleEditSubmit}/>}
+      {editContrib&&editContrib._type==="sortie"&&<FormSortie initialData={editContrib} customCatSorties={customCatSorties} onClose={()=>setEditContrib(null)} onSubmit={handleEditSubmit}/>}
+      {editContrib&&editContrib._type==="evenement"&&<FormEvenement initialData={editContrib} customCatEvenements={customCatEvenements} typeEvt={editContrib.categorie||""} setTypeEvt={()=>{}} typeAutre="" onOpenAutrePopup={()=>{}} onClose={()=>setEditContrib(null)} onSubmit={handleEditSubmit}/>}
     </div>
   );
 }
@@ -11648,7 +11661,7 @@ function PageAdmin({onLogout,pendingContribs=[],setPendingContribs,updateContrib
           </div>
         </header>
         <main style={{flex:1,overflowY:"auto",padding:24}}>
-          {page==="contributions"?<Contributions items={pendingContribs} updateContrib={updateContrib} setPendingContribs={setPendingContribs}/>:PAGES_FN[page]?PAGES_FN[page]({sharedActivites:adminActivites,setSharedActivites:setAdminActivites,sharedSorties:adminSorties,setSharedSorties:setAdminSorties,sharedEvenements:adminEvenements,setSharedEvenements:setAdminEvenements,userReports:adminReports,setUserReports:setAdminReports,onDeleteTitle:addDeletedTitle,sharedCustomEvents:adminCustomEvents,setSharedCustomEvents:setAdminCustomEvents,pendingContribs,setPendingContribs,dashUserReports:adminReports,sosLib,setSosLib,sosModeActif,setSosModeActif,ideesMomentConfig,setIdeesMomentConfig,evenementsSaisonniers,setEvenementsSaisonniers,betisesLutin,setBetisesLutin,cartesVoyageLutin,setCartesVoyageLutin,customCatActivites,setCustomCatActivites,customCatSorties,setCustomCatSorties,customCatEvenements,setCustomCatEvenements,adminComms,setAdminComms,ressourcesSites,setRessourcesSites,ressourcesContacts,setRessourcesContacts,ressourcesPdf,setRessourcesPdf,devisBoostDemandes,setDevisBoostDemandes,boosts,onActiverBoost:activerBoost,onRetirerBoost:retirerBoostSupabase,demoMode,setDemoMode}):null}
+          {page==="contributions"?<Contributions items={pendingContribs} updateContrib={updateContrib} setPendingContribs={setPendingContribs} supprimerContrib={supprimerContrib} customCatActivites={customCatActivites} customCatSorties={customCatSorties} customCatEvenements={customCatEvenements}/>:PAGES_FN[page]?PAGES_FN[page]({sharedActivites:adminActivites,setSharedActivites:setAdminActivites,sharedSorties:adminSorties,setSharedSorties:setAdminSorties,sharedEvenements:adminEvenements,setSharedEvenements:setAdminEvenements,userReports:adminReports,setUserReports:setAdminReports,onDeleteTitle:addDeletedTitle,sharedCustomEvents:adminCustomEvents,setSharedCustomEvents:setAdminCustomEvents,pendingContribs,setPendingContribs,dashUserReports:adminReports,sosLib,setSosLib,sosModeActif,setSosModeActif,ideesMomentConfig,setIdeesMomentConfig,evenementsSaisonniers,setEvenementsSaisonniers,betisesLutin,setBetisesLutin,cartesVoyageLutin,setCartesVoyageLutin,customCatActivites,setCustomCatActivites,customCatSorties,setCustomCatSorties,customCatEvenements,setCustomCatEvenements,adminComms,setAdminComms,ressourcesSites,setRessourcesSites,ressourcesContacts,setRessourcesContacts,ressourcesPdf,setRessourcesPdf,devisBoostDemandes,setDevisBoostDemandes,boosts,onActiverBoost:activerBoost,onRetirerBoost:retirerBoostSupabase,demoMode,setDemoMode}):null}
         </main>
       </div>
     </div>
@@ -12243,8 +12256,29 @@ export default function App(){
     }
   };
   const addDeletedTitle=(titre)=>setDeletedTitles(prev=>new Set([...prev,titre]));
-  const addPendingContrib=(item)=>setPendingContribs(prev=>[{...item,id:Date.now(),_createdAt:new Date().toISOString(),_statut:"published",_signalements:0,_raisonSignalement:"",_auteur:currentUser?.nom||"Anonyme",_auteurEmail:currentUser?.email||"non connecté"},...prev]);
-  const updateContrib=(id,changes)=>setPendingContribs(prev=>prev.map(c=>c.id===id?{...c,...changes}:c));
+  const addPendingContrib=(item)=>setPendingContribs(prev=>[{...item,id:Date.now(),_createdAt:new Date().toISOString(),_statut:"pending",_signalements:0,_raisonSignalement:"",_auteur:currentUser?.nom||"Anonyme",_auteurEmail:currentUser?.email||"non connecté"},...prev]);
+  const updateContrib=async(id,changes)=>{
+    setPendingContribs(prev=>prev.map(c=>c.id===id?{...c,...changes}:c));
+    const item=pendingContribs.find(c=>c.id===id);
+    if(!item)return;
+    const table=item._type==="sortie"?"sorties":item._type==="evenement"?"evenements":"activites";
+    const payload={};
+    if("_statut" in changes)payload.statut=changes._statut;
+    Object.keys(changes).forEach(k=>{ if(!k.startsWith("_"))payload[k]=changes[k]; });
+    if(Object.keys(payload).length===0)return;
+    try{
+      const nomItem=item.nom||item.titre;
+      await supabase.from(table).update(payload).eq("nom",nomItem);
+    }catch(e){ /* la modification reste correcte localement même si la sauvegarde échoue */ }
+  };
+  const supprimerContrib=async(item)=>{
+    setPendingContribs(prev=>prev.filter(c=>c.id!==item.id));
+    const table=item._type==="sortie"?"sorties":item._type==="evenement"?"evenements":"activites";
+    try{
+      const nomItem=item.nom||item.titre;
+      await supabase.from(table).delete().eq("nom",nomItem);
+    }catch(e){ /* échec réseau — sera resynchronisé au prochain chargement */ }
+  };
 
   // ── Persistance : donnees personnelles (privees) + catalogue admin (partage entre tous) ──
   const [dataLoaded,setDataLoaded]=useState(false);

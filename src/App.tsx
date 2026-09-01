@@ -6590,12 +6590,49 @@ function PictogrammeView({ onBack, isPremium = false, onOpenPremium, adminEvenem
 
   const handlePrint = () => {
     try {
-      if (typeof window !== "undefined" && typeof window.print === "function") {
-        window.print();
-      } else {
-        setPrintMsg(true);
-        setTimeout(() => setPrintMsg(false), 3000);
-      }
+      const items = etapes.map((etape, i) => `
+        <div class="item">
+          <div class="cercle">
+            <span class="numero">${i + 1}</span>
+            <span class="emoji">${etape.emoji}</span>
+          </div>
+          <div class="label">${etape.label}</div>
+        </div>
+      `).join("");
+      const html = `<!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <title>Mon emploi du temps</title>
+          <style>
+            @page { size: A4; margin: 15mm; }
+            * { box-sizing: border-box; }
+            body { font-family: -apple-system, system-ui, sans-serif; margin: 0; padding: 0; }
+            h1 { text-align: center; font-size: 24px; font-weight: 800; margin: 0 0 4px; color: #1a1a1a; }
+            .sous-titre { text-align: center; font-size: 16px; color: #7A7690; margin: 0 0 28px; }
+            .grille { display: flex; flex-wrap: wrap; justify-content: center; gap: 18px; }
+            .item { width: 45%; display: flex; flex-direction: column; align-items: center; gap: 8px; break-inside: avoid; margin-bottom: 12px; }
+            .cercle { position: relative; width: 90px; height: 90px; border-radius: 50%; border: 3px solid #6C5CE7; display: flex; align-items: center; justify-content: center; background: #fff; }
+            .numero { position: absolute; top: -6px; left: -6px; width: 24px; height: 24px; border-radius: 50%; background: #6C5CE7; color: #fff; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+            .emoji { font-size: 48px; }
+            .label { font-size: 14px; font-weight: 700; color: #1a1a1a; text-align: center; }
+            .footer { text-align: center; font-size: 11px; color: #7A7690; margin-top: 28px; }
+          </style>
+        </head>
+        <body>
+          <h1>Mon emploi du temps</h1>
+          <p class="sous-titre">${sousTitre||""}</p>
+          <div class="grille">${items}</div>
+          <p class="footer">Créé avec Parent'Hèse 🧩</p>
+        </body>
+        </html>`;
+      const fenetre = window.open("", "_blank", "width=800,height=1000");
+      if (!fenetre) { setPrintMsg(true); setTimeout(() => setPrintMsg(false), 3000); return; }
+      fenetre.document.open();
+      fenetre.document.write(html);
+      fenetre.document.close();
+      fenetre.onload = () => { fenetre.focus(); fenetre.print(); };
+      setTimeout(() => { try { fenetre.focus(); fenetre.print(); } catch(e){} }, 400);
     } catch (e) {
       setPrintMsg(true);
       setTimeout(() => setPrintMsg(false), 3000);

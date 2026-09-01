@@ -3921,13 +3921,7 @@ function PageAccueil({favoris,setFavoris,setPage,customEvents=[],popupShown=new 
                 <p style={{margin:"0 0 6px",fontSize:12,fontWeight:700,color:TX}}>🛒 Materiel</p>
                 {(act.materiel||[]).map((m,i)=><p key={i} style={{margin:"2px 0",fontSize:12,color:TM}}>• {m}</p>)}
               </div>
-              <div style={{display:"flex",gap:8,marginBottom:12}}>
-                {act.tnd?.tsa!=null&&<span style={{fontSize:11,background:"#8B5CF618",color:"#8B5CF6",padding:"4px 10px",borderRadius:20,fontWeight:600,border:"1px solid #8B5CF640"}}>TSA {act.tnd.tsa}/5</span>}
-                {act.tnd?.tdah!=null&&<span style={{fontSize:11,background:"#EC489918",color:"#EC4899",padding:"4px 10px",borderRadius:20,fontWeight:600,border:"1px solid #EC489940"}}>TDAH {act.tnd.tdah}/5</span>}
-                {act.tnd?.dys!=null&&<span style={{fontSize:11,background:"#06B6D418",color:"#06B6D4",padding:"4px 10px",borderRadius:20,fontWeight:600,border:"1px solid #06B6D440"}}>DYS {act.tnd.dys}/5</span>}
-              </div>
               <div style={{display:"flex",gap:8}}>
-                <button onClick={()=>setAdminActRandom(toutesActivites[Math.floor(Math.random()*toutesActivites.length)])} style={{flex:1,padding:"12px 0",borderRadius:28,background:BG,border:"none",color:TX,fontWeight:600,fontSize:13,cursor:"pointer"}}>🔄 Une autre idée</button>
                 <button onClick={()=>{setFavorisGuarded(prev=>{const exists=prev.find(f=>f.id===act.id&&f._type==="activite");if(exists)return prev;return[...prev,{...act,_type:"activite"}];});setShowAdminSheet(false);}} style={{flex:1,padding:"12px 0",borderRadius:28,background:V,border:"none",color:WH,fontWeight:700,fontSize:13,cursor:"pointer"}}>❤️ Sauvegarder</button>
               </div>
             </div>
@@ -3954,11 +3948,6 @@ function PageAccueil({favoris,setFavoris,setPage,customEvents=[],popupShown=new 
             <div style={{background:BG,borderRadius:12,padding:"10px 14px",marginBottom:16}}>
               <p style={{margin:"0 0 6px",fontSize:12,fontWeight:700,color:TX}}>🎒 On emporte</p>
               {SORTIE_NATURE_ADMIN.materiel.map((m,i)=><p key={i} style={{margin:"2px 0",fontSize:12,color:TM}}>• {m}</p>)}
-            </div>
-            <div style={{display:"flex",gap:8,marginBottom:16}}>
-              <span style={{fontSize:11,background:"#8B5CF618",color:"#8B5CF6",padding:"4px 10px",borderRadius:20,fontWeight:600,border:"1px solid #8B5CF640"}}>TSA {SORTIE_NATURE_ADMIN.tnd.tsa}/5</span>
-              <span style={{fontSize:11,background:"#EC489918",color:"#EC4899",padding:"4px 10px",borderRadius:20,fontWeight:600,border:"1px solid #EC489940"}}>TDAH {SORTIE_NATURE_ADMIN.tnd.tdah}/5</span>
-              <span style={{fontSize:11,background:"#06B6D418",color:"#06B6D4",padding:"4px 10px",borderRadius:20,fontWeight:600,border:"1px solid #06B6D440"}}>DYS {SORTIE_NATURE_ADMIN.tnd.dys}/5</span>
             </div>
             <button onClick={()=>{setFavorisGuarded(prev=>{const exists=prev.find(f=>f.id===SORTIE_NATURE_ADMIN.id&&f._type==="sortie");if(exists)return prev;return[...prev,{...SORTIE_NATURE_ADMIN,_type:"sortie"}];});setShowNatureSheet(false);}} style={{width:"100%",padding:"12px 0",borderRadius:28,background:GR,border:"none",color:WH,fontWeight:700,fontSize:13,cursor:"pointer"}}>❤️ Sauvegarder</button>
           </div>
@@ -10425,7 +10414,7 @@ function Signalements({userReports=[],setUserReports,sharedActivites=[],setShare
   );
 }
 
-function IdeeDetailModal({idee,onSave,onClose}){
+function IdeeDetailModal({idee,onSave,onClose,toutesActivites=[],toutesSorties=[],toutesEvenements=[]}){
   const [form,setForm]=useState({
     label:idee.label||"",
     description:idee.description||"",
@@ -10487,15 +10476,24 @@ function IdeeDetailModal({idee,onSave,onClose}){
             <div><p style={{margin:0,fontSize:13,fontWeight:600,color:C.text}}>Visibilité</p><p style={{margin:0,fontSize:11,color:C.muted}}>{form.actif?"Affiché sur l'accueil":"Masqué de l'accueil"}</p></div>
             <Tog on={form.actif} onChange={()=>setForm(p=>({...p,actif:!p.actif}))}/>
           </div>
-          {/* Activité mise en avant */}
+          {/* Contenu mis en avant */}
           <div style={{marginBottom:14}}>
-            <label style={{fontSize:12,color:C.muted,display:"block",marginBottom:8,fontWeight:500}}>🎯 Activité mise en avant</label>
-            {form.activiteMiseEnAvant?(<div style={{background:"rgba(124,58,237,0.1)",borderRadius:10,padding:"10px 14px",border:`1px solid ${C.accent}44`,display:"flex",alignItems:"center",gap:10,marginBottom:8}}>
-              <div style={{flex:1}}><p style={{margin:0,fontSize:13,fontWeight:600,color:C.text}}>{form.activiteMiseEnAvant.nom}</p><p style={{margin:0,fontSize:11,color:C.muted}}>{form.activiteMiseEnAvant.categorie}</p></div>
-              <button onClick={()=>setForm(p=>({...p,activiteMiseEnAvant:null}))} style={{background:"rgba(239,68,68,0.1)",border:"none",borderRadius:6,color:C.red,cursor:"pointer",fontSize:12,padding:"4px 8px"}}>× Retirer</button>
-            </div>):(<p style={{fontSize:12,color:C.muted,margin:"0 0 8px",fontStyle:"italic"}}>Aucune — la vignette ouvrira la bibliothèque</p>)}
-            <button onClick={()=>setShowBiblio(!showBiblio)} style={{...s.btnOutline(C.accent),width:"100%",justifyContent:"center",padding:"9px 0",borderRadius:10}}>🔍 {form.activiteMiseEnAvant?"Changer":"Choisir dans la bibliothèque"}</button>
-            {showBiblio&&<BiblioSearchPicker onSelect={a=>{ setForm(p=>({...p,activiteMiseEnAvant:a})); setShowBiblio(false); }} allActs={ACTIVITES}/>}
+            {(()=>{
+              const typeConfig={
+                activites:{label:"🎯 Activité mise en avant",pool:toutesActivites,vide:"Aucune — la vignette ouvrira la bibliothèque activités"},
+                nature:{label:"🎯 Sortie mise en avant",pool:toutesSorties,vide:"Aucune — la vignette ouvrira la bibliothèque sorties"},
+                evenements:{label:"🎯 Événement mis en avant",pool:toutesEvenements,vide:"Aucune — la vignette ouvrira la bibliothèque événements"},
+              }[idee.id]||{label:"🎯 Contenu mis en avant",pool:toutesActivites,vide:"Aucune — la vignette ouvrira la bibliothèque"};
+              return(<>
+                <label style={{fontSize:12,color:C.muted,display:"block",marginBottom:8,fontWeight:500}}>{typeConfig.label}</label>
+                {form.activiteMiseEnAvant?(<div style={{background:"rgba(124,58,237,0.1)",borderRadius:10,padding:"10px 14px",border:`1px solid ${C.accent}44`,display:"flex",alignItems:"center",gap:10,marginBottom:8}}>
+                  <div style={{flex:1}}><p style={{margin:0,fontSize:13,fontWeight:600,color:C.text}}>{form.activiteMiseEnAvant.nom}</p><p style={{margin:0,fontSize:11,color:C.muted}}>{form.activiteMiseEnAvant.categorie}</p></div>
+                  <button onClick={()=>setForm(p=>({...p,activiteMiseEnAvant:null}))} style={{background:"rgba(239,68,68,0.1)",border:"none",borderRadius:6,color:C.red,cursor:"pointer",fontSize:12,padding:"4px 8px"}}>× Retirer</button>
+                </div>):(<p style={{fontSize:12,color:C.muted,margin:"0 0 8px",fontStyle:"italic"}}>{typeConfig.vide}</p>)}
+                <button onClick={()=>setShowBiblio(!showBiblio)} style={{...s.btnOutline(C.accent),width:"100%",justifyContent:"center",padding:"9px 0",borderRadius:10}}>🔍 {form.activiteMiseEnAvant?"Changer":"Choisir dans la bibliothèque"}</button>
+                {showBiblio&&<BiblioSearchPicker onSelect={a=>{ setForm(p=>({...p,activiteMiseEnAvant:a})); setShowBiblio(false); }} allActs={typeConfig.pool}/>}
+              </>);
+            })()}
           </div>
           {/* Programmation */}
           <div style={{marginBottom:14}}>
@@ -10536,7 +10534,7 @@ function BiblioSearchPicker({onSelect,allActs=[]}) {
               <p style={{margin:0,fontSize:12,fontWeight:600,color:C.text,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{a.nom}</p>
               <p style={{margin:0,fontSize:10,color:C.muted}}>{a.categorie} · {a.age}</p>
             </div>
-            <span style={{fontSize:10,background:"rgba(124,58,237,0.15)",color:"#a78bfa",padding:"2px 8px",borderRadius:8,flexShrink:0,fontWeight:600}}>{a.energie==="fatigue"?"😴":"⚡"}</span>
+            {a.energie&&<span style={{fontSize:10,background:"rgba(124,58,237,0.15)",color:"#a78bfa",padding:"2px 8px",borderRadius:8,flexShrink:0,fontWeight:600}}>{a.energie==="fatigue"?"😴":"⚡"}</span>}
           </div>
         ))}
         {filtered.length===0&&<p style={{fontSize:12,color:C.muted,textAlign:"center",padding:"12px 0"}}>Aucune activité trouvée</p>}
@@ -10545,7 +10543,10 @@ function BiblioSearchPicker({onSelect,allActs=[]}) {
   );
 }
 
-function Communication({ideesMomentConfig=[],setIdeesMomentConfig,adminComms=[],setAdminComms}) {
+function Communication({ideesMomentConfig=[],setIdeesMomentConfig,adminComms=[],setAdminComms,sharedActivites=[],sharedSorties=[],sharedEvenements=[],pendingContribs=[]}) {
+  const toutesActivitesComm=[...ACTIVITES,...sharedActivites.filter(a=>a.statut==="published"),...pendingContribs.filter(c=>c._type==="activite"&&c._statut==="published")];
+  const toutesSortiesComm=[...SORTIES,...sharedSorties.filter(s=>s.statut==="published"),...pendingContribs.filter(c=>c._type==="sortie"&&c._statut==="published")];
+  const toutesEvenementsComm=[...EVENEMENTS_INIT,...sharedEvenements.filter(e=>e.statut==="published"),...pendingContribs.filter(c=>c._type==="evenement"&&c._statut==="published")];
   const [comms,setComms] = useState(adminComms.length>0?adminComms:MOCK_COMMS);
   // Synchroniser avec App quand comms change
   useEffect(()=>{if(setAdminComms)setAdminComms(comms);},[comms]);
@@ -10721,7 +10722,7 @@ function Communication({ideesMomentConfig=[],setIdeesMomentConfig,adminComms=[],
       )}
 
       {/* Page détail vignette */}
-      {selectedIdee!==null&&ideesMomentConfig[selectedIdee]&&<IdeeDetailModal idee={ideesMomentConfig[selectedIdee]} onSave={changes=>{setIdeesMomentConfig(prev=>prev.map((x,j)=>j===selectedIdee?{...x,...changes}:x));setSelectedIdee(null);}} onClose={()=>setSelectedIdee(null)}/>}
+      {selectedIdee!==null&&ideesMomentConfig[selectedIdee]&&<IdeeDetailModal idee={ideesMomentConfig[selectedIdee]} toutesActivites={toutesActivitesComm} toutesSorties={toutesSortiesComm} toutesEvenements={toutesEvenementsComm} onSave={changes=>{setIdeesMomentConfig(prev=>prev.map((x,j)=>j===selectedIdee?{...x,...changes}:x));setSelectedIdee(null);}} onClose={()=>setSelectedIdee(null)}/>}
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(300px,1fr))",gap:14}}>
         {comms.map(comm=>{
           const [emoji,label,color] = typeInfo[comm.type]||typeInfo.banner;

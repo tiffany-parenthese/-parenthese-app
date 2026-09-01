@@ -4444,7 +4444,7 @@ function PageSOS({sosLib=[],isPremium=false,onOpenPremium,onBack}){
   );
 }
 
-function PagePlanning({sosLib=[],enfants=[],enfantActif,setEnfantActif,isPremium=false,onOpenPremium,sosModeActif=true,adminActivites=[],pendingContribs=[],deletedTitles=new Set(),masquees=[],adminReports=[]}){
+function PagePlanning({sosLib=[],enfants=[],enfantActif,setEnfantActif,isPremium=false,onOpenPremium,sosModeActif=true,adminActivites=[],pendingContribs=[],deletedTitles=new Set(),masquees=[],adminReports=[],currentUser=null}){
   const [count,setCount]=useState(3);
   const [energieP,setEnergieP]=useState(null);
   const [lieuP,setLieuP]=useState(null);
@@ -4524,6 +4524,9 @@ function PagePlanning({sosLib=[],enfants=[],enfantActif,setEnfantActif,isPremium
     setIsSaving(true);
     try{
       await window.storage.set("planning_hebdo",JSON.stringify({planning,checkedMat,enfantsSelectionnes}));
+      if(currentUser?.id){
+        try{ await supabase.from("profiles").update({a_sauvegarde_planning:true}).eq("id",currentUser.id); }catch(e2){}
+      }
       setSaveToast("💾 Planning et liste de courses sauvegardés !");
     }catch(e){
       setSaveToast("⚠️ La sauvegarde a échoué, réessayez.");
@@ -4900,7 +4903,7 @@ const BADGES_DEF=[
   {id:"streak3",emoji:"🔥",titre:"3 jours de suite",desc:"Utilisez l'app 3 jours consécutifs",cond:(s)=>s.streak>=3},
   {id:"explorer",emoji:"🗺️",titre:"Explorateur",desc:"Sauvegardez votre première sortie en favori",cond:(s)=>s.favSorties>=1},
   {id:"family5",emoji:"👨‍👩‍👧‍👦",titre:"Grande famille",desc:"Ajoutez 2 profils enfants",cond:(s)=>s.enfants>=2},
-  {id:"tnd_pro",emoji:"🧩",titre:"Expert TND",desc:"Renseignez le carnet sensoriel d'un enfant",cond:(s)=>s.carnetSensoriel},
+  {id:"tnd_pro",emoji:"🧩",titre:"Profil détaillé",desc:"Renseignez les besoins pour les recommandations d'un enfant",cond:(s)=>s.carnetSensoriel},
   {id:"history10",emoji:"📊",titre:"Régulier",desc:"Réalisez 10 activités",cond:(s)=>s.historique>=10},
   {id:"history30",emoji:"🏆",titre:"Champion",desc:"Réalisez 30 activités",cond:(s)=>s.historique>=30},
   {id:"reviewer",emoji:"⭐",titre:"Critique",desc:"Laissez un premier avis",cond:(s)=>s.avis>=1},
@@ -6761,7 +6764,7 @@ function PictogrammeView({ onBack, isPremium = false, onOpenPremium, adminEvenem
   );
 }
 
-function PageProfil({setPage,enfants=[],setEnfants,enfantActif,setEnfantActif,showGestionEnfants,setShowGestionEnfants,currentUser,onLogout,onRequireAuth,isPremium=false,setPremium,evenementsSaisonniers=[],onOpenPremium,onDeleteAccount,favoris=[],adminEvenements=[],pendingContribs=[],darkMode=false,setDarkMode,historiqueActivites=[],setHistoriqueActivites,estBooste,activerBoost,ajouterDemandeDevisBoost,betisesLutin=[],cartesVoyageLutin=[]}){
+function PageProfil({setPage,enfants=[],setEnfants,enfantActif,setEnfantActif,showGestionEnfants,setShowGestionEnfants,currentUser,onLogout,onRequireAuth,isPremium=false,setPremium,evenementsSaisonniers=[],onOpenPremium,onDeleteAccount,favoris=[],adminEvenements=[],pendingContribs=[],darkMode=false,setDarkMode,historiqueActivites=[],setHistoriqueActivites,estBooste,activerBoost,ajouterDemandeDevisBoost,betisesLutin=[],cartesVoyageLutin=[],mesAvisCount=0,aSauvegardePlanning=false}){
   const [boostItem,setBoostItem]=useState(null);
   const isLoggedIn=!!currentUser;
   const [subPage,setSubPage]=useState(null);
@@ -6819,17 +6822,18 @@ function PageProfil({setPage,enfants=[],setEnfants,enfantActif,setEnfantActif,sh
   if(subPage==="pictogrammes") return <PictogrammeView onBack={()=>setSubPage(null)} isPremium={isPremium} onOpenPremium={onOpenPremium} adminEvenements={adminEvenements} pendingContribs={pendingContribs}/>;
   if(subPage==="historique") return <PageHistorique historique={historiqueActivites} onBack={()=>setSubPage(null)} onClear={()=>setHistoriqueActivites&&setHistoriqueActivites([])}/>;
   if(subPage==="badges"){
+    const mesContribsPubliees=(pendingContribs||[]).filter(c=>c._statut==="published"&&currentUser&&((currentUser.email&&c._auteurEmail===currentUser.email)||(currentUser.nom&&c._auteur===currentUser.nom)));
     const badgeStats={
       historique:historiqueActivites.length,
       streak:(()=>{const dates=[...new Set(historiqueActivites.map(h=>h.date?.slice(0,10)).filter(Boolean))].sort().reverse();let s=0,cur=new Date();for(const d of dates){const diff=Math.floor((cur-new Date(d))/(1000*60*60*24));if(diff>1)break;s++;cur=new Date(d);}return s;})(),
       favSorties:favoris.filter(f=>f._type==="sortie").length,
       favTotal:favoris.length,
       enfants:enfants.length,
-      carnetSensoriel:enfants.some(e=>Object.values(e.niveauxSensoriels||{}).some(v=>v!==50)),
+      carnetSensoriel:enfants.some(e=>(e.besoinsMatching||[]).length>0),
       isPremium,
-      contributions:0, // tracked externally
-      plannings:0,     // tracked externally
-      avis:0,          // tracked externally
+      contributions:mesContribsPubliees.length,
+      plannings:aSauvegardePlanning?1:0,
+      avis:mesAvisCount,
     };
     return <PageBadges stats={badgeStats} onBack={()=>setSubPage(null)}/>;
   }
@@ -7033,7 +7037,8 @@ function PageProfil({setPage,enfants=[],setEnfants,enfantActif,setEnfantActif,sh
 
         {/* 🏅 Mes badges */}
         {(()=>{
-          const badgeStats={historique:historiqueActivites.length,streak:0,favSorties:favoris.filter(f=>f._type==="sortie").length,favTotal:favoris.length,enfants:enfants.length,carnetSensoriel:enfants.some(e=>Object.values(e.niveauxSensoriels||{}).some(v=>v!==50)),isPremium,contributions:0,plannings:0,avis:0};
+          const mesContribsPublieesResume=(pendingContribs||[]).filter(c=>c._statut==="published"&&currentUser&&((currentUser.email&&c._auteurEmail===currentUser.email)||(currentUser.nom&&c._auteur===currentUser.nom)));
+          const badgeStats={historique:historiqueActivites.length,streak:0,favSorties:favoris.filter(f=>f._type==="sortie").length,favTotal:favoris.length,enfants:enfants.length,carnetSensoriel:enfants.some(e=>(e.besoinsMatching||[]).length>0),isPremium,contributions:mesContribsPublieesResume.length,plannings:aSauvegardePlanning?1:0,avis:mesAvisCount};
           const nbBadges=BADGES_DEF.filter(b=>b.cond(badgeStats)).length;
           return(
             <div onClick={()=>setSubPage("badges")} style={{background:WH,borderRadius:16,padding:"14px 16px",border:BD,marginBottom:12,display:"flex",alignItems:"center",gap:14,cursor:"pointer"}}>
@@ -12133,6 +12138,22 @@ export default function App(){
       }catch(e){ /* erreur réseau — reste sur les bêtises par défaut */ }
     })();
   },[]);
+  // ── Statistiques de progression (badges) — comptage réel des avis et du drapeau planning ──
+  const [mesAvisCount,setMesAvisCount]=useState(0);
+  const [aSauvegardePlanning,setASauvegardePlanning]=useState(false);
+  useEffect(()=>{
+    if(!currentUser?.id)return;
+    (async()=>{
+      try{
+        const {count}=await supabase.from("avis").select("*",{count:"exact",head:true}).eq("user_id",currentUser.id);
+        if(count!=null)setMesAvisCount(count);
+      }catch(e){ /* erreur réseau — reste à 0 */ }
+      try{
+        const {data}=await supabase.from("profiles").select("a_sauvegarde_planning").eq("id",currentUser.id).single();
+        if(data)setASauvegardePlanning(!!data.a_sauvegarde_planning);
+      }catch(e){ /* erreur réseau — reste false */ }
+    })();
+  },[currentUser?.id]);
   const [cartesVoyageLutin,setCartesVoyageLutin]=useState([]);
   useEffect(()=>{
     (async()=>{
@@ -12460,10 +12481,10 @@ export default function App(){
         {page==="accueil"&&<PageAccueil favoris={favoris} setFavoris={setFavoris} setPage={setPage} customEvents={customEvents} popupShown={popupShown} setPopupShown={setPopupShown} ideesMomentConfig={ideesMomentConfig} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} evenementsSaisonniers={evenementsSaisonniers} isPremium={isPremiumUser} onOpenPremium={openPremium} customCatActivites={customCatActivites} customCatSorties={customCatSorties} customCatEvenements={customCatEvenements} adminActivites={adminActivites} adminSorties={adminSorties} pendingContribs={pendingContribs} setPendingContribs={setPendingContribs} deletedTitles={deletedTitles} currentUser={currentUser} sosModeActif={sosModeActif} enfants={enfants} enfantActif={enfantActif} setEnfantActif={setEnfantActif} onMarquerFait={(item)=>setHistoriqueActivites(prev=>[{id:item.id||Date.now(),nom:item.nom||item.titre||"",categorie:item.categorie||"",date:item._date||new Date().toISOString(),type:"activite",note:item._note||""},...prev.slice(0,99)])} historiqueActivites={historiqueActivites} filtresMemoActiv={filtresMemoActiv} setFiltresMemoActiv={setFiltresMemoActiv} filtresMemoSortie={filtresMemoSortie} setFiltresMemoSortie={setFiltresMemoSortie} adminComms={adminComms} masquees={masquees} toggleMasquer={toggleMasquer} estMasque={estMasque} ajouterDemandeDevisBoost={ajouterDemandeDevisBoost} trialEndDate={trialEndDate} betisesLutin={betisesLutin} cartesVoyageLutin={cartesVoyageLutin}/>}
         {page==="biblio"&&<PageBiblio pendingContribs={pendingContribs} setPendingContribs={setPendingContribs} adminActivites={adminActivites} adminSorties={adminSorties} adminEvenements={adminEvenements} addReport={addReport} adminReports={adminReports} deletedTitles={deletedTitles} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} favoris={favoris} setFavoris={setFavoris} isPremium={isPremiumUser} onOpenPremium={openPremium} customCatActivites={customCatActivites} customCatSorties={customCatSorties} customCatEvenements={customCatEvenements} currentUser={currentUser} enfants={enfants} enfantActif={enfantActif} masquees={masquees} toggleMasquer={toggleMasquer} estMasque={estMasque} boosts={boosts} ajouterDemandeDevisBoost={ajouterDemandeDevisBoost}/>}
         {page==="generer"&&<PageAccueil favoris={favoris} setFavoris={setFavoris} setPage={setPage} customEvents={customEvents} popupShown={popupShown} setPopupShown={setPopupShown} ideesMomentConfig={ideesMomentConfig} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} evenementsSaisonniers={evenementsSaisonniers} isPremium={isPremiumUser} onOpenPremium={openPremium} customCatActivites={customCatActivites} customCatSorties={customCatSorties} customCatEvenements={customCatEvenements} adminActivites={adminActivites} adminSorties={adminSorties} pendingContribs={pendingContribs} setPendingContribs={setPendingContribs} deletedTitles={deletedTitles} currentUser={currentUser} sosModeActif={sosModeActif} enfants={enfants} enfantActif={enfantActif} setEnfantActif={setEnfantActif} onMarquerFait={(item)=>setHistoriqueActivites(prev=>[{id:item.id||Date.now(),nom:item.nom||item.titre||"",categorie:item.categorie||"",date:item._date||new Date().toISOString(),type:"activite",note:item._note||""},...prev.slice(0,99)])} historiqueActivites={historiqueActivites} filtresMemoActiv={filtresMemoActiv} setFiltresMemoActiv={setFiltresMemoActiv} filtresMemoSortie={filtresMemoSortie} setFiltresMemoSortie={setFiltresMemoSortie} adminComms={adminComms} masquees={masquees} toggleMasquer={toggleMasquer} estMasque={estMasque} ajouterDemandeDevisBoost={ajouterDemandeDevisBoost} trialEndDate={trialEndDate} betisesLutin={betisesLutin} cartesVoyageLutin={cartesVoyageLutin}/>}
-        {page==="planning"&&<PagePlanning sosLib={sosLib} enfants={enfants} enfantActif={enfantActif} setEnfantActif={setEnfantActif} isPremium={isPremiumUser} onOpenPremium={openPremium} sosModeActif={sosModeActif} adminActivites={adminActivites} pendingContribs={pendingContribs} deletedTitles={deletedTitles} masquees={masquees} adminReports={adminReports}/>}
+        {page==="planning"&&<PagePlanning sosLib={sosLib} enfants={enfants} enfantActif={enfantActif} setEnfantActif={setEnfantActif} isPremium={isPremiumUser} onOpenPremium={openPremium} sosModeActif={sosModeActif} adminActivites={adminActivites} pendingContribs={pendingContribs} deletedTitles={deletedTitles} masquees={masquees} adminReports={adminReports} currentUser={currentUser}/>}
         {page==="sos"&&<PageSOS sosLib={sosLib} isPremium={isPremiumUser} onOpenPremium={openPremium} onBack={()=>setPage("accueil")}/>}
         {page==="ressources"&&<PageRessources sites={ressourcesSites} contacts={ressourcesContacts} pdfs={ressourcesPdf} setPdfs={setRessourcesPdf} isPremium={isPremiumUser} onOpenPremium={openPremium}/>}
-        {page==="profil"&&<PageProfil setPage={setPage} enfants={enfants} setEnfants={setEnfants} enfantActif={enfantActif} setEnfantActif={setEnfantActif} showGestionEnfants={showGestionEnfants} setShowGestionEnfants={setShowGestionEnfants} currentUser={currentUser} onLogout={handleLogout} onRequireAuth={requireAuth} isPremium={isPremiumUser} setPremium={setPremiumDemo} evenementsSaisonniers={evenementsSaisonniers} onOpenPremium={openPremium} onDeleteAccount={handleDeleteAccount} favoris={favoris} adminEvenements={adminEvenements} pendingContribs={pendingContribs} darkMode={darkMode} setDarkMode={setDarkMode} historiqueActivites={historiqueActivites} setHistoriqueActivites={setHistoriqueActivites} estBooste={estBooste} activerBoost={activerBoost} ajouterDemandeDevisBoost={ajouterDemandeDevisBoost} betisesLutin={betisesLutin} cartesVoyageLutin={cartesVoyageLutin}/>}
+        {page==="profil"&&<PageProfil setPage={setPage} enfants={enfants} setEnfants={setEnfants} enfantActif={enfantActif} setEnfantActif={setEnfantActif} showGestionEnfants={showGestionEnfants} setShowGestionEnfants={setShowGestionEnfants} currentUser={currentUser} onLogout={handleLogout} onRequireAuth={requireAuth} isPremium={isPremiumUser} setPremium={setPremiumDemo} evenementsSaisonniers={evenementsSaisonniers} onOpenPremium={openPremium} onDeleteAccount={handleDeleteAccount} favoris={favoris} adminEvenements={adminEvenements} pendingContribs={pendingContribs} darkMode={darkMode} setDarkMode={setDarkMode} historiqueActivites={historiqueActivites} setHistoriqueActivites={setHistoriqueActivites} estBooste={estBooste} activerBoost={activerBoost} ajouterDemandeDevisBoost={ajouterDemandeDevisBoost} betisesLutin={betisesLutin} cartesVoyageLutin={cartesVoyageLutin} mesAvisCount={mesAvisCount} aSauvegardePlanning={aSauvegardePlanning}/>}
         {page==="favoris"&&<PageFavoris favoris={favoris} setFavoris={setFavoris} isPremium={isPremiumUser} onBack={()=>setPage("profil")}/>}
       </div>
       <div style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:390,background:WH,borderTop:BD,display:"flex",alignItems:"flex-end",zIndex:200,paddingBottom:4}}>

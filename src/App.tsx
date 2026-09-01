@@ -6741,7 +6741,9 @@ function PictogrammeView({ onBack, isPremium = false, onOpenPremium, adminEvenem
             @media print {
               body * { visibility: hidden; }
               .pictos-print-zone, .pictos-print-zone * { visibility: visible; }
-              .pictos-print-zone { position: absolute; left: 0; top: 0; width: 100%; margin: 0; border: none; box-shadow: none; }
+              .pictos-print-zone { position: absolute; left: 0; top: 0; width: 100%; margin: 0; border: none; box-shadow: none; aspect-ratio: unset !important; height: auto !important; }
+              .pictos-print-grid { break-inside: avoid; }
+              .pictos-print-item { break-inside: avoid; }
               .pictos-no-print { display: none !important; }
             }
           `}</style>
@@ -6753,9 +6755,9 @@ function PictogrammeView({ onBack, isPremium = false, onOpenPremium, adminEvenem
           <div className="pictos-print-zone" style={{ maxWidth: 600, margin: "20px auto", padding: "32px 24px", border: BD, borderRadius: 8, aspectRatio: "1 / 1.414", boxSizing: "border-box", display: "flex", flexDirection: "column" }}>
             <p style={{ margin: "0 0 4px", fontSize: 24, fontWeight: 800, color: TX, textAlign: "center" }}>Mon emploi du temps</p>
             <p style={{ margin: "0 0 28px", fontSize: 16, color: TM, textAlign: "center" }}>{sousTitre}</p>
-            <div style={{ flex: 1, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18, alignContent: "start" }}>
+            <div className="pictos-print-grid" style={{ flex: 1, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18, alignContent: "start" }}>
               {etapes.map((etape, i) => (
-                <div key={i} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+                <div key={i} className="pictos-print-item" style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
                   <div style={{ position: "relative", width: 90, height: 90, borderRadius: "50%", border: `3px solid ${V}`, display: "flex", alignItems: "center", justifyContent: "center", background: WH }}>
                     <span style={{ position: "absolute", top: -6, left: -6, width: 24, height: 24, borderRadius: "50%", background: V, color: WH, fontSize: 12, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center" }}>{i + 1}</span>
                     <span style={{ fontSize: 48 }}>{etape.emoji}</span>

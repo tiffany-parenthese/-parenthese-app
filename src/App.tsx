@@ -6787,7 +6787,14 @@ function PageProfil({setPage,enfants=[],setEnfants,enfantActif,setEnfantActif,sh
   };
   const saveProfile=()=>{if(!editBuf.nom.trim())return;setProfil(prev=>({...prev,nom:editBuf.nom.trim(),pseudo:editBuf.pseudo.trim()}));setEditMode(false);setShowProfilToast(true);setTimeout(()=>setShowProfilToast(false),3000);};
   const initiales=profil.nom?.trim()?profil.nom.trim()[0].toUpperCase():"👤";
-  const [contributions,setContributions]=useState({total:3,activites:2,sorties:1,evenements:0,tnd:0});
+  const mesContribsToutes=(pendingContribs||[]).filter(c=>c._statut==="published"&&currentUser&&((currentUser.email&&c._auteurEmail===currentUser.email)||(currentUser.nom&&c._auteur===currentUser.nom)));
+  const contributions={
+    total:mesContribsToutes.length,
+    activites:mesContribsToutes.filter(c=>c._type==="activite").length,
+    sorties:mesContribsToutes.filter(c=>c._type==="sortie").length,
+    evenements:mesContribsToutes.filter(c=>c._type==="evenement").length,
+    tnd:mesContribsToutes.filter(c=>c._type==="sortie"&&c.tnd&&Object.values(c.tnd).some(v=>Number(v)>0)).length,
+  };
   const [popupTrophee,setPopupTrophee]=useState(null);
   const trophees=[
     {id:"t1",emoji:"🌱",nom:"Premiere contribution",desc:"Tu as propose ta 1ere activite, sortie ou evenement",requis:1,type:"total"},
@@ -6807,14 +6814,17 @@ function PageProfil({setPage,enfants=[],setEnfants,enfantActif,setEnfantActif,sh
   const progressPct=prochain?Math.min(100,(contributions[prochain.type]/prochain.requis)*100):100;
   const tropheesProg=trophees.slice(0,5);
   const tropheesSpec=trophees.slice(5);
-  const addContrib=()=>{
-    setContributions(prev=>{
-      const next={...prev,total:prev.total+1};
-      const newDebloques=trophees.filter(t=>next[t.type]>=t.requis&&prev[t.type]<t.requis);
-      if(newDebloques.length>0)setPopupTrophee(newDebloques[0]);
-      return next;
-    });
-  };
+  const contributionsTotalPrecedent=useRef(null);
+  useEffect(()=>{
+    if(contributionsTotalPrecedent.current===null){
+      contributionsTotalPrecedent.current=contributions;
+      return;
+    }
+    const prev=contributionsTotalPrecedent.current;
+    const nouveauxDebloques=trophees.filter(t=>contributions[t.type]>=t.requis&&(prev[t.type]||0)<t.requis);
+    if(nouveauxDebloques.length>0)setPopupTrophee(nouveauxDebloques[0]);
+    contributionsTotalPrecedent.current=contributions;
+  },[contributions.total,contributions.activites,contributions.sorties,contributions.evenements,contributions.tnd]);
   if(subPage==="notifications") return <PageNotifications onBack={()=>setSubPage(null)}/>;
   if(subPage==="confidentialite") return <PageConfidentialite onBack={()=>setSubPage(null)} onDeleteAccount={onDeleteAccount}/>;
   if(subPage==="aide") return <PageAide onBack={()=>setSubPage(null)} onGoConfidentialite={()=>setSubPage("confidentialite")} isPremium={isPremium} setPremium={setPremium} onOpenPremium={onOpenPremium}/>;

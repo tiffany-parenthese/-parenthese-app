@@ -6741,9 +6741,9 @@ function PictogrammeView({ onBack, isPremium = false, onOpenPremium, adminEvenem
             @media print {
               body * { visibility: hidden; }
               .pictos-print-zone, .pictos-print-zone * { visibility: visible; }
-              .pictos-print-zone { position: absolute; left: 0; top: 0; width: 100%; margin: 0; border: none; box-shadow: none; aspect-ratio: unset !important; height: auto !important; }
-              .pictos-print-grid { break-inside: avoid; }
-              .pictos-print-item { break-inside: avoid; }
+              .pictos-print-zone { position: absolute; left: 0; top: 0; width: 100%; margin: 0; border: none; box-shadow: none; aspect-ratio: unset !important; height: auto !important; display: block !important; }
+              .pictos-print-grid { display: flex !important; flex-wrap: wrap !important; gap: 18px !important; justify-content: center !important; }
+              .pictos-print-item { width: calc(50% - 9px) !important; break-inside: avoid; page-break-inside: avoid; margin: 0 0 18px 0 !important; }
               .pictos-no-print { display: none !important; }
             }
           `}</style>

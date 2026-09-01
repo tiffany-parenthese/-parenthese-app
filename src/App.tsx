@@ -6811,7 +6811,7 @@ function PageProfil({setPage,enfants=[],setEnfants,enfantActif,setEnfantActif,sh
   const tropheesDebloques=trophees.filter(t=>isDebloque(t)).length;
   const prochain=trophees.find(t=>!isDebloque(t));
   const prochainPalier=prochain?prochain.requis:contributions.total;
-  const progressPct=prochain?Math.min(100,(contributions[prochain.type]/prochain.requis)*100):100;
+  const progressPct=Math.round((tropheesDebloques/trophees.length)*100);
   const tropheesProg=trophees.slice(0,5);
   const tropheesSpec=trophees.slice(5);
   const contributionsTotalPrecedent=useRef(null);

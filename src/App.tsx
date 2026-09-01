@@ -1000,18 +1000,6 @@ function FormActivite({onClose,onSubmit,customCatActivites=[],initialData=null})
       <div style={{background:WH,borderRadius:20,width:"100%",maxWidth:420,boxSizing:"border-box"}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"20px 20px 0"}}><h2 style={{fontSize:18,fontWeight:600,color:TX,margin:0}}>{initialData?"Modifier l'activite":"Proposer une activite"}</h2><button onClick={onClose} style={{background:"none",border:"none",fontSize:20,cursor:"pointer",color:TM}}>x</button></div>
         <div style={{padding:"16px 20px 24px",display:"flex",flexDirection:"column",gap:12}}>
-          <div style={{background:"#F5F0EB",borderRadius:16,padding:"16px",border:localErrors.caracteristiques?"1.5px solid #EF4444":"none"}}>
-            <p style={{margin:"0 0 2px",fontSize:14,fontWeight:800,color:"#1a1a1a"}}>🎯 À qui s'adresse cette activité ? <span style={{color:"#EF4444"}}>*</span></p>
-            <p style={{margin:"0 0 12px",fontSize:12,color:TM}}>Coche ce qui s'applique — sert à recommander l'activité aux enfants avec ces besoins</p>
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
-              {Object.entries(BESOIN_LABELS).map(([k,def])=>(
-                <button key={k} onClick={()=>setCaracteristiques(p=>({...p,[k]:!p[k]}))} style={{padding:"8px 10px",borderRadius:10,border:`1.5px solid ${caracteristiques[k]?V:"#E5E7EB"}`,background:caracteristiques[k]?VL:WH,color:caracteristiques[k]?V:TM,fontSize:11,fontWeight:caracteristiques[k]?700:400,cursor:"pointer",textAlign:"left",display:"flex",alignItems:"center",gap:6}}>
-                  <span>{def.emoji}</span>{def.ok}
-                </button>
-              ))}
-            </div>
-            <Err k="caracteristiques"/>
-          </div>
           <Field label="Titre" required><input value={titre} onChange={e=>setTitre(e.target.value)} placeholder="Ex : Peinture avec les doigts" style={se(localErrors.titre)}/><Err k="titre"/></Field>
           <Field label="Photo (optionnel)">
             <input id="act-photo-input" type="file" accept="image/jpeg,image/png,image/webp" onChange={handlePhoto} style={{display:"none"}}/>
@@ -1052,6 +1040,19 @@ function FormActivite({onClose,onSubmit,customCatActivites=[],initialData=null})
           <Field label="Age conseille"><div style={{display:"flex",gap:8}}><select value={ageMin} onChange={e=>setAgeMin(e.target.value)} style={{padding:"12px 14px",borderRadius:12,border:"1px solid rgba(108,92,231,0.15)",fontSize:14,flex:1,background:WH}}><option value="">De...</option>{["0 an","1 an","2 ans","3 ans","4 ans","5 ans","6 ans","7 ans","8 ans","9 ans","10 ans","11 ans","12 ans"].map(v=><option key={v}>{v}</option>)}</select><select value={ageMax} onChange={e=>setAgeMax(e.target.value)} style={{padding:"12px 14px",borderRadius:12,border:"1px solid rgba(108,92,231,0.15)",fontSize:14,flex:1,background:WH}}><option value="">A...</option>{["1 an","2 ans","3 ans","4 ans","5 ans","6 ans","7 ans","8 ans","9 ans","10 ans","11 ans","12 ans","12 ans+"].map(v=><option key={v}>{v}</option>)}</select></div></Field>
           <Field label="Materiel necessaire"><input value={materiel} onChange={e=>setMateriel(e.target.value)} placeholder="Ex : peinture, papier, tablier" style={FS}/></Field>
           <Field label="Etapes"><textarea value={etapes} onChange={e=>setEtapes(e.target.value)} placeholder="1. Preparer..." rows={4} style={FST}/></Field>
+
+          <div style={{background:"#F5F0EB",borderRadius:16,padding:"16px",border:localErrors.caracteristiques?"1.5px solid #EF4444":"none"}}>
+            <p style={{margin:"0 0 2px",fontSize:14,fontWeight:800,color:"#1a1a1a"}}>🎯 À qui s'adresse cette activité ? <span style={{color:"#EF4444"}}>*</span></p>
+            <p style={{margin:"0 0 12px",fontSize:12,color:TM}}>Coche ce qui s'applique — sert à recommander l'activité aux enfants avec ces besoins</p>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+              {Object.entries(BESOIN_LABELS).map(([k,def])=>(
+                <button key={k} onClick={()=>setCaracteristiques(p=>({...p,[k]:!p[k]}))} style={{padding:"8px 10px",borderRadius:10,border:`1.5px solid ${caracteristiques[k]?V:"#E5E7EB"}`,background:caracteristiques[k]?VL:WH,color:caracteristiques[k]?V:TM,fontSize:11,fontWeight:caracteristiques[k]?700:400,cursor:"pointer",textAlign:"left",display:"flex",alignItems:"center",gap:6}}>
+                  <span>{def.emoji}</span>{def.ok}
+                </button>
+              ))}
+            </div>
+            <Err k="caracteristiques"/>
+          </div>
           
           <div style={{background:"#FFFBEB",borderRadius:12,padding:"10px 14px",border:"1px solid #FDE68A",display:"flex",gap:10,alignItems:"flex-start"}}><span style={{fontSize:16,flexShrink:0}}>👶</span><p style={{margin:0,fontSize:12,color:"#92400E",lineHeight:1.5}}>Les activites proposees doivent etre destinees aux enfants.</p></div>
 

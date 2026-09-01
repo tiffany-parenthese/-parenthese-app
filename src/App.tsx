@@ -6976,12 +6976,11 @@ function PageProfil({setPage,enfants=[],setEnfants,enfantActif,setEnfantActif,sh
         {/* 🎯 Barre de complétion du profil */}
         {(()=>{
           const steps=[
-            {done:isLoggedIn,label:"Se connecter",emoji:"🔐"},
-            {done:enfants.length>0,label:"Ajouter un enfant",emoji:"👶"},
-            {done:enfants.some(e=>((e.besoins||[]).length>0)),label:"Renseigner les besoins de l'enfant",emoji:"✅"},
-            {done:isPremium?enfants.some(e=>Object.values(e.niveauxSensoriels||{}).some(v=>v!==50)):true,label:"Compléter le carnet sensoriel",emoji:"🧠",premium:true},
-            {done:historiqueActivites.length>0,label:"Réaliser une première activité",emoji:"✅"},
-            {done:favoris.length>0,label:"Sauvegarder un favori",emoji:"❤️"},
+            {done:isLoggedIn,label:"Se connecter",emoji:"🔐",action:null},
+            {done:enfants.length>0,label:"Ajouter un enfant",emoji:"👶",action:()=>setShowGestionEnfants(true)},
+            {done:enfants.some(e=>(e.besoinsMatching||[]).length>0),label:"Renseigner les besoins de l'enfant",emoji:"✅",action:()=>setShowGestionEnfants(true)},
+            {done:historiqueActivites.length>0,label:"Réaliser une première activité",emoji:"🪄",action:()=>setPage("generer")},
+            {done:favoris.length>0,label:"Sauvegarder un favori",emoji:"❤️",action:()=>setPage("accueil")},
           ];
           const done=steps.filter(s=>s.done).length;
           const total=steps.length;
@@ -6997,10 +6996,10 @@ function PageProfil({setPage,enfants=[],setEnfants,enfantActif,setEnfantActif,sh
                 <div style={{width:(done/total*100)+"%",height:"100%",background:"linear-gradient(90deg,#6C5CE7,#a78bfa)",borderRadius:10,transition:"width 0.5s"}}/>
               </div>
               {next&&(
-                <div style={{background:VL,borderRadius:10,padding:"8px 12px",display:"flex",alignItems:"center",gap:8}}>
+                <div onClick={()=>next.action&&next.action()} style={{background:VL,borderRadius:10,padding:"8px 12px",display:"flex",alignItems:"center",gap:8,cursor:next.action?"pointer":"default"}}>
                   <span style={{fontSize:16,flexShrink:0}}>{next.emoji}</span>
-                  <p style={{margin:0,fontSize:12,color:V,fontWeight:600}}>{next.label}{next.premium?" ⭐":""}</p>
-                  <span style={{marginLeft:"auto",fontSize:11,color:TM}}>Prochain →</span>
+                  <p style={{margin:0,fontSize:12,color:V,fontWeight:600}}>{next.label}</p>
+                  {next.action&&<span style={{marginLeft:"auto",fontSize:11,color:TM}}>Prochain →</span>}
                 </div>
               )}
             </div>

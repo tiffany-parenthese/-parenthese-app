@@ -3897,7 +3897,8 @@ function PageAccueil({favoris,setFavoris,setPage,customEvents=[],popupShown=new 
       </div>
 
       {showAdminSheet&&(()=>{
-        const act=adminActRandom||ACTIVITE_ADMIN;
+        const cfgActivites=ideesMomentConfig.find(c=>c.id==="activites");
+        const act=adminActRandom||cfgActivites?.activiteMiseEnAvant||ACTIVITE_ADMIN;
         return(
           <div onClick={()=>setShowAdminSheet(false)} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.45)",zIndex:500,display:"flex",alignItems:"flex-end",justifyContent:"center"}}>
             <div onClick={e=>e.stopPropagation()} style={{background:WH,borderRadius:"24px 24px 0 0",padding:"24px 20px 36px",width:"100%",maxWidth:390,boxShadow:"0 -4px 32px rgba(0,0,0,0.12)"}}>
@@ -3929,7 +3930,10 @@ function PageAccueil({favoris,setFavoris,setPage,customEvents=[],popupShown=new 
         );
       })()}
 
-      {showNatureSheet&&(
+      {showNatureSheet&&(()=>{
+        const cfgNature=ideesMomentConfig.find(c=>c.id==="nature");
+        const sortie=cfgNature?.activiteMiseEnAvant||SORTIE_NATURE_ADMIN;
+        return(
         <div onClick={()=>setShowNatureSheet(false)} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.45)",zIndex:500,display:"flex",alignItems:"flex-end",justifyContent:"center"}}>
           <div onClick={e=>e.stopPropagation()} style={{background:WH,borderRadius:"24px 24px 0 0",padding:"24px 20px 36px",width:"100%",maxWidth:390,boxShadow:"0 -4px 32px rgba(0,0,0,0.12)",maxHeight:"88vh",overflowY:"auto"}}>
             <div style={{width:36,height:4,borderRadius:4,background:"#E0E0E0",margin:"0 auto 16px"}}/>
@@ -3938,21 +3942,24 @@ function PageAccueil({favoris,setFavoris,setPage,customEvents=[],popupShown=new 
               <p style={{margin:0,fontSize:12,color:GR,fontWeight:600}}>{SORTIE_NATURE_ADMIN.adminNote}</p>
             </div>
             <div style={{display:"flex",gap:8,marginBottom:8,alignItems:"center"}}>
-              <span style={{fontSize:11,background:"#EDFAF3",color:GR,padding:"3px 10px",borderRadius:20,fontWeight:600,border:"1px solid #6ee7b740"}}>{SORTIE_NATURE_ADMIN.type}</span>
+              <span style={{fontSize:11,background:"#EDFAF3",color:GR,padding:"3px 10px",borderRadius:20,fontWeight:600,border:"1px solid #6ee7b740"}}>{sortie.type||sortie.categorie}</span>
               <span style={{fontSize:12,color:TM}}>🌳 Exterieur</span>
-              <span style={{fontSize:12,color:TM}}>📍 {SORTIE_NATURE_ADMIN.ville}</span>
+              <span style={{fontSize:12,color:TM}}>📍 {sortie.ville}</span>
             </div>
-            <p style={{margin:"0 0 4px",fontSize:19,fontWeight:800,color:TX}}>{SORTIE_NATURE_ADMIN.nom}</p>
-            <p style={{margin:"0 0 12px",fontSize:12,color:TM}}>{SORTIE_NATURE_ADMIN.age} · {SORTIE_NATURE_ADMIN.prix} · Dept {SORTIE_NATURE_ADMIN.dept}</p>
-            <p style={{margin:"0 0 14px",fontSize:13,color:TX,lineHeight:1.6}}>{SORTIE_NATURE_ADMIN.desc}</p>
-            <div style={{background:BG,borderRadius:12,padding:"10px 14px",marginBottom:16}}>
-              <p style={{margin:"0 0 6px",fontSize:12,fontWeight:700,color:TX}}>🎒 On emporte</p>
-              {SORTIE_NATURE_ADMIN.materiel.map((m,i)=><p key={i} style={{margin:"2px 0",fontSize:12,color:TM}}>• {m}</p>)}
-            </div>
-            <button onClick={()=>{setFavorisGuarded(prev=>{const exists=prev.find(f=>f.id===SORTIE_NATURE_ADMIN.id&&f._type==="sortie");if(exists)return prev;return[...prev,{...SORTIE_NATURE_ADMIN,_type:"sortie"}];});setShowNatureSheet(false);}} style={{width:"100%",padding:"12px 0",borderRadius:28,background:GR,border:"none",color:WH,fontWeight:700,fontSize:13,cursor:"pointer"}}>❤️ Sauvegarder</button>
+            <p style={{margin:"0 0 4px",fontSize:19,fontWeight:800,color:TX}}>{sortie.nom}</p>
+            <p style={{margin:"0 0 12px",fontSize:12,color:TM}}>{sortie.age||"Tous ages"} · {sortie.prix} · Dept {sortie.dept}</p>
+            <p style={{margin:"0 0 14px",fontSize:13,color:TX,lineHeight:1.6}}>{sortie.desc}</p>
+            {(sortie.materiel||[]).length>0&&(
+              <div style={{background:BG,borderRadius:12,padding:"10px 14px",marginBottom:16}}>
+                <p style={{margin:"0 0 6px",fontSize:12,fontWeight:700,color:TX}}>🎒 On emporte</p>
+                {sortie.materiel.map((m,i)=><p key={i} style={{margin:"2px 0",fontSize:12,color:TM}}>• {m}</p>)}
+              </div>
+            )}
+            <button onClick={()=>{setFavorisGuarded(prev=>{const exists=prev.find(f=>f.id===sortie.id&&f._type==="sortie");if(exists)return prev;return[...prev,{...sortie,_type:"sortie"}];});setShowNatureSheet(false);}} style={{width:"100%",padding:"12px 0",borderRadius:28,background:GR,border:"none",color:WH,fontWeight:700,fontSize:13,cursor:"pointer"}}>❤️ Sauvegarder</button>
           </div>
         </div>
-      )}
+        );
+      })()}
 
       {showLutinSheet&&!lutinDetail&&(
         <div onClick={()=>setShowLutinSheet(false)} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.55)",zIndex:500,display:"flex",alignItems:"flex-end",justifyContent:"center"}}>
@@ -4023,7 +4030,10 @@ function PageAccueil({favoris,setFavoris,setPage,customEvents=[],popupShown=new 
         </div>
       )}
 
-      {showEvtAdminSheet&&(
+      {showEvtAdminSheet&&(()=>{
+        const cfgEvt=ideesMomentConfig.find(c=>c.id==="evenements");
+        const evt=cfgEvt?.activiteMiseEnAvant||EVT_ADMIN;
+        return(
         <div onClick={()=>setShowEvtAdminSheet(false)} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.45)",zIndex:500,display:"flex",alignItems:"flex-end",justifyContent:"center"}}>
           <div onClick={e=>e.stopPropagation()} style={{background:WH,borderRadius:"24px 24px 0 0",padding:"24px 20px 36px",width:"100%",maxWidth:390,boxShadow:"0 -4px 32px rgba(0,0,0,0.12)",maxHeight:"88vh",overflowY:"auto"}}>
             <div style={{width:36,height:4,borderRadius:4,background:"#E0E0E0",margin:"0 auto 16px"}}/>
@@ -4032,16 +4042,16 @@ function PageAccueil({favoris,setFavoris,setPage,customEvents=[],popupShown=new 
               <p style={{margin:0,fontSize:12,color:OR,fontWeight:600}}>{EVT_ADMIN.adminNote}</p>
             </div>
             <div style={{background:OR,borderRadius:10,padding:"5px 14px",display:"inline-block",marginBottom:10}}>
-              <span style={{fontSize:11,fontWeight:700,color:WH}}>{EVT_ADMIN.date.split("-").reverse().join("/")} · {EVT_ADMIN.ville}</span>
+              <span style={{fontSize:11,fontWeight:700,color:WH}}>{evt.date?evt.date.split("-").reverse().join("/"):""} · {evt.ville}</span>
             </div>
             <div style={{display:"flex",gap:8,marginBottom:8,alignItems:"center",flexWrap:"wrap"}}>
-              <span style={{fontSize:11,background:"#FFF3E0",color:OR,padding:"3px 10px",borderRadius:20,fontWeight:600,border:"1px solid #fbbf2440"}}>🎪 {EVT_ADMIN.categorie.charAt(0).toUpperCase()+EVT_ADMIN.categorie.slice(1)}</span>
-              <span style={{fontSize:11,background:"#D1FAE5",color:"#065F46",padding:"3px 10px",borderRadius:20,fontWeight:600}}>🆓 Gratuit</span>
-              <span style={{fontSize:12,color:TM}}>👶 {EVT_ADMIN.age}</span>
+              <span style={{fontSize:11,background:"#FFF3E0",color:OR,padding:"3px 10px",borderRadius:20,fontWeight:600,border:"1px solid #fbbf2440"}}>🎪 {(evt.categorie||"").charAt(0).toUpperCase()+(evt.categorie||"").slice(1)}</span>
+              <span style={{fontSize:11,background:"#D1FAE5",color:"#065F46",padding:"3px 10px",borderRadius:20,fontWeight:600}}>{evt.gratuit||evt.prix==="Gratuit"?"🆓 Gratuit":evt.prix}</span>
+              <span style={{fontSize:12,color:TM}}>👶 {evt.age||"Tous ages"}</span>
             </div>
-            <p style={{margin:"0 0 4px",fontSize:19,fontWeight:800,color:TX}}>{EVT_ADMIN.nom}</p>
-            <p style={{margin:"0 0 14px",fontSize:12,color:TM}}>📍 {EVT_ADMIN.ville} · Dept {EVT_ADMIN.dept}</p>
-            <p style={{margin:"0 0 16px",fontSize:13,color:TX,lineHeight:1.6}}>{EVT_ADMIN.desc}</p>
+            <p style={{margin:"0 0 4px",fontSize:19,fontWeight:800,color:TX}}>{evt.nom}</p>
+            <p style={{margin:"0 0 14px",fontSize:12,color:TM}}>📍 {evt.ville} · Dept {evt.dept}</p>
+            <p style={{margin:"0 0 16px",fontSize:13,color:TX,lineHeight:1.6}}>{evt.desc}</p>
             <div style={{marginBottom:16}}>
               <p style={{margin:"0 0 8px",fontSize:13,fontWeight:700,color:TX}}>🧩 Infos accessibilité TND</p>
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>
@@ -4054,7 +4064,8 @@ function PageAccueil({favoris,setFavoris,setPage,customEvents=[],popupShown=new 
             <button onClick={()=>setShowEvtAdminSheet(false)} style={{width:"100%",padding:"12px 0",borderRadius:28,background:OR,border:"none",color:WH,fontWeight:700,fontSize:13,cursor:"pointer"}}>✅ Noté, on y va !</button>
           </div>
         </div>
-      )}
+        );
+      })()}
 
       {/* Page bibliothèque événement */}
       {showEvtBiblio&&(

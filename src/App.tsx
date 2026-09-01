@@ -12139,6 +12139,16 @@ export default function App(){
   const [evenementsSaisonniers,setEvenementsSaisonniers]=useState([
     {id:"noel",type:"christmas",nom:"Lutin",actif:false,essaiActif:false,apercuGratuitJours:3,apercuGratuitType:"premiers",apercuGratuitCartesPostales:1},
   ]);
+  const marquerActiviteFaite=async(item)=>{
+    const nouvelleEntree={id:item.id||Date.now(),nom:item.nom||item.titre||"",categorie:item.categorie||"",date:item._date||new Date().toISOString(),type:"activite",note:item._note||""};
+    setHistoriqueActivites(prev=>[nouvelleEntree,...prev.slice(0,99)]);
+    if(currentUser?.id){
+      try{
+        const {data:inserted}=await supabase.from("historique_activites").insert({user_id:currentUser.id,nom:nouvelleEntree.nom,categorie:nouvelleEntree.categorie,date:nouvelleEntree.date,type:nouvelleEntree.type,note:nouvelleEntree.note}).select().single();
+        if(inserted)setHistoriqueActivites(prev=>prev.map(h=>h===nouvelleEntree?{...h,id:inserted.id}:h));
+      }catch(e){ /* l'entrée reste visible localement même si la sauvegarde échoue */ }
+    }
+  };
   const [betisesLutin,setBetisesLutin]=useState([]);
   useEffect(()=>{
     (async()=>{
@@ -12196,6 +12206,15 @@ export default function App(){
   const [premiumTrialUsed,setPremiumTrialUsed]=useState(false);
   const [trialEndDate,setTrialEndDate]=useState(null); // date ISO de fin d'essai gratuit
   const [historiqueActivites,setHistoriqueActivites]=useState([]); // [{id,nom,date,type}]
+  useEffect(()=>{
+    if(!currentUser?.id)return;
+    (async()=>{
+      try{
+        const {data}=await supabase.from("historique_activites").select("*").eq("user_id",currentUser.id).order("created_at",{ascending:false}).limit(100);
+        if(data)setHistoriqueActivites(data.map(h=>({id:h.id,nom:h.nom,categorie:h.categorie,date:h.date,type:h.type,note:h.note})));
+      }catch(e){ /* erreur réseau — reste vide */ }
+    })();
+  },[currentUser?.id]);
   const [darkMode,setDarkMode]=useState(false);
   const [showConfetti,setShowConfetti]=useState(false);
   const [isOnline,setIsOnline]=useState(typeof navigator!=="undefined"?navigator.onLine:true);
@@ -12310,7 +12329,7 @@ export default function App(){
           if(d.onboarding_done)setOnboardingDone(d.onboarding_done);
           if(d.popup_shown)setPopupShown(new Set(Array.isArray(d.popup_shown)?d.popup_shown:[]));
           if(d.dark_mode!==undefined)setDarkMode(d.dark_mode);
-          if(d.historique_activites)setHistoriqueActivites(d.historique_activites);
+          // historique chargé depuis Supabase, plus depuis le stockage local
           if(d.premium_trial_used)setPremiumTrialUsed(d.premium_trial_used);
           if(d.trial_end_date)setTrialEndDate(d.trial_end_date);
           if(d.filtres_memo_activ)setFiltresMemoActiv(d.filtres_memo_activ);
@@ -12391,7 +12410,7 @@ export default function App(){
   useEffect(()=>{
     if(!dataLoaded)return;
     const timer=setTimeout(()=>{
-      sauvegarderPrivé({onboarding_done:onboardingDone,popup_shown:[...popupShown],dark_mode:darkMode,historique_activites:historiqueActivites,filtres_memo_activ:filtresMemoActiv,filtres_memo_sortie:filtresMemoSortie});
+      sauvegarderPrivé({onboarding_done:onboardingDone,popup_shown:[...popupShown],dark_mode:darkMode,filtres_memo_activ:filtresMemoActiv,filtres_memo_sortie:filtresMemoSortie});
     },1500);
     return()=>clearTimeout(timer);
   },[popupShown,onboardingDone,historiqueActivites,darkMode,filtresMemoActiv,filtresMemoSortie,dataLoaded]);
@@ -12488,9 +12507,9 @@ export default function App(){
       </div>}
       <Confetti active={showConfetti}/>
       <div style={{paddingBottom:72}}>
-        {page==="accueil"&&<PageAccueil favoris={favoris} setFavoris={setFavoris} setPage={setPage} customEvents={customEvents} popupShown={popupShown} setPopupShown={setPopupShown} ideesMomentConfig={ideesMomentConfig} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} evenementsSaisonniers={evenementsSaisonniers} isPremium={isPremiumUser} onOpenPremium={openPremium} customCatActivites={customCatActivites} customCatSorties={customCatSorties} customCatEvenements={customCatEvenements} adminActivites={adminActivites} adminSorties={adminSorties} pendingContribs={pendingContribs} setPendingContribs={setPendingContribs} deletedTitles={deletedTitles} currentUser={currentUser} sosModeActif={sosModeActif} enfants={enfants} enfantActif={enfantActif} setEnfantActif={setEnfantActif} onMarquerFait={(item)=>setHistoriqueActivites(prev=>[{id:item.id||Date.now(),nom:item.nom||item.titre||"",categorie:item.categorie||"",date:item._date||new Date().toISOString(),type:"activite",note:item._note||""},...prev.slice(0,99)])} historiqueActivites={historiqueActivites} filtresMemoActiv={filtresMemoActiv} setFiltresMemoActiv={setFiltresMemoActiv} filtresMemoSortie={filtresMemoSortie} setFiltresMemoSortie={setFiltresMemoSortie} adminComms={adminComms} masquees={masquees} toggleMasquer={toggleMasquer} estMasque={estMasque} ajouterDemandeDevisBoost={ajouterDemandeDevisBoost} trialEndDate={trialEndDate} betisesLutin={betisesLutin} cartesVoyageLutin={cartesVoyageLutin}/>}
+        {page==="accueil"&&<PageAccueil favoris={favoris} setFavoris={setFavoris} setPage={setPage} customEvents={customEvents} popupShown={popupShown} setPopupShown={setPopupShown} ideesMomentConfig={ideesMomentConfig} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} evenementsSaisonniers={evenementsSaisonniers} isPremium={isPremiumUser} onOpenPremium={openPremium} customCatActivites={customCatActivites} customCatSorties={customCatSorties} customCatEvenements={customCatEvenements} adminActivites={adminActivites} adminSorties={adminSorties} pendingContribs={pendingContribs} setPendingContribs={setPendingContribs} deletedTitles={deletedTitles} currentUser={currentUser} sosModeActif={sosModeActif} enfants={enfants} enfantActif={enfantActif} setEnfantActif={setEnfantActif} onMarquerFait={marquerActiviteFaite} historiqueActivites={historiqueActivites} filtresMemoActiv={filtresMemoActiv} setFiltresMemoActiv={setFiltresMemoActiv} filtresMemoSortie={filtresMemoSortie} setFiltresMemoSortie={setFiltresMemoSortie} adminComms={adminComms} masquees={masquees} toggleMasquer={toggleMasquer} estMasque={estMasque} ajouterDemandeDevisBoost={ajouterDemandeDevisBoost} trialEndDate={trialEndDate} betisesLutin={betisesLutin} cartesVoyageLutin={cartesVoyageLutin}/>}
         {page==="biblio"&&<PageBiblio pendingContribs={pendingContribs} setPendingContribs={setPendingContribs} adminActivites={adminActivites} adminSorties={adminSorties} adminEvenements={adminEvenements} addReport={addReport} adminReports={adminReports} deletedTitles={deletedTitles} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} favoris={favoris} setFavoris={setFavoris} isPremium={isPremiumUser} onOpenPremium={openPremium} customCatActivites={customCatActivites} customCatSorties={customCatSorties} customCatEvenements={customCatEvenements} currentUser={currentUser} enfants={enfants} enfantActif={enfantActif} masquees={masquees} toggleMasquer={toggleMasquer} estMasque={estMasque} boosts={boosts} ajouterDemandeDevisBoost={ajouterDemandeDevisBoost}/>}
-        {page==="generer"&&<PageAccueil favoris={favoris} setFavoris={setFavoris} setPage={setPage} customEvents={customEvents} popupShown={popupShown} setPopupShown={setPopupShown} ideesMomentConfig={ideesMomentConfig} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} evenementsSaisonniers={evenementsSaisonniers} isPremium={isPremiumUser} onOpenPremium={openPremium} customCatActivites={customCatActivites} customCatSorties={customCatSorties} customCatEvenements={customCatEvenements} adminActivites={adminActivites} adminSorties={adminSorties} pendingContribs={pendingContribs} setPendingContribs={setPendingContribs} deletedTitles={deletedTitles} currentUser={currentUser} sosModeActif={sosModeActif} enfants={enfants} enfantActif={enfantActif} setEnfantActif={setEnfantActif} onMarquerFait={(item)=>setHistoriqueActivites(prev=>[{id:item.id||Date.now(),nom:item.nom||item.titre||"",categorie:item.categorie||"",date:item._date||new Date().toISOString(),type:"activite",note:item._note||""},...prev.slice(0,99)])} historiqueActivites={historiqueActivites} filtresMemoActiv={filtresMemoActiv} setFiltresMemoActiv={setFiltresMemoActiv} filtresMemoSortie={filtresMemoSortie} setFiltresMemoSortie={setFiltresMemoSortie} adminComms={adminComms} masquees={masquees} toggleMasquer={toggleMasquer} estMasque={estMasque} ajouterDemandeDevisBoost={ajouterDemandeDevisBoost} trialEndDate={trialEndDate} betisesLutin={betisesLutin} cartesVoyageLutin={cartesVoyageLutin}/>}
+        {page==="generer"&&<PageAccueil favoris={favoris} setFavoris={setFavoris} setPage={setPage} customEvents={customEvents} popupShown={popupShown} setPopupShown={setPopupShown} ideesMomentConfig={ideesMomentConfig} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} evenementsSaisonniers={evenementsSaisonniers} isPremium={isPremiumUser} onOpenPremium={openPremium} customCatActivites={customCatActivites} customCatSorties={customCatSorties} customCatEvenements={customCatEvenements} adminActivites={adminActivites} adminSorties={adminSorties} pendingContribs={pendingContribs} setPendingContribs={setPendingContribs} deletedTitles={deletedTitles} currentUser={currentUser} sosModeActif={sosModeActif} enfants={enfants} enfantActif={enfantActif} setEnfantActif={setEnfantActif} onMarquerFait={marquerActiviteFaite} historiqueActivites={historiqueActivites} filtresMemoActiv={filtresMemoActiv} setFiltresMemoActiv={setFiltresMemoActiv} filtresMemoSortie={filtresMemoSortie} setFiltresMemoSortie={setFiltresMemoSortie} adminComms={adminComms} masquees={masquees} toggleMasquer={toggleMasquer} estMasque={estMasque} ajouterDemandeDevisBoost={ajouterDemandeDevisBoost} trialEndDate={trialEndDate} betisesLutin={betisesLutin} cartesVoyageLutin={cartesVoyageLutin}/>}
         {page==="planning"&&<PagePlanning sosLib={sosLib} enfants={enfants} enfantActif={enfantActif} setEnfantActif={setEnfantActif} isPremium={isPremiumUser} onOpenPremium={openPremium} sosModeActif={sosModeActif} adminActivites={adminActivites} pendingContribs={pendingContribs} deletedTitles={deletedTitles} masquees={masquees} adminReports={adminReports} currentUser={currentUser}/>}
         {page==="sos"&&<PageSOS sosLib={sosLib} isPremium={isPremiumUser} onOpenPremium={openPremium} onBack={()=>setPage("accueil")}/>}
         {page==="ressources"&&<PageRessources sites={ressourcesSites} contacts={ressourcesContacts} pdfs={ressourcesPdf} setPdfs={setRessourcesPdf} isPremium={isPremiumUser} onOpenPremium={openPremium}/>}

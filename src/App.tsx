@@ -10048,7 +10048,7 @@ function Saisonnier({sharedCustomEvents=[],setSharedCustomEvents,evenementsSaiso
   );
 }
 
-function Utilisateurs() {
+function Utilisateurs({premiumPourTous=false,togglePremiumPourTous}) {
   const [users,setUsers] = useState([]);
   const [chargement,setChargement] = useState(true);
   const [search,setSearch] = useState("");
@@ -10122,6 +10122,22 @@ function Utilisateurs() {
           <span style={{fontSize:12,fontWeight:700,color:C.green,whiteSpace:"nowrap"}}>{Math.round(users.filter(u=>u.statut==="active").length/users.length*100)}%</span>
         </div>
       </div>
+
+      {/* 🎉 Premium temporaire pour tous */}
+      <div style={{...s.card,marginBottom:20,padding:"16px 20px",background:premiumPourTous?"rgba(245,158,11,0.08)":s.card.background,border:premiumPourTous?"1px solid rgba(245,158,11,0.4)":s.card.border}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:16}}>
+          <div style={{flex:1}}>
+            <p style={{margin:"0 0 2px",fontSize:14,fontWeight:700,color:C.text}}>🎉 Premium temporaire pour tous</p>
+            <p style={{margin:0,fontSize:12,color:C.muted}}>{premiumPourTous?"Activé — tous les utilisateurs ont accès au Premium en ce moment, même sans abonnement.":"Débloque le Premium pour tout le monde (événement, promo...) sans toucher aux vrais abonnements."}</p>
+          </div>
+          <button onClick={()=>{
+            if(premiumPourTous||window.confirm("Activer le Premium pour TOUS les utilisateurs, même ceux qui n'ont pas payé ? Tu pourras désactiver à tout moment pour ne garder que les vrais abonnés.")){
+              togglePremiumPourTous&&togglePremiumPourTous();
+            }
+          }} style={{padding:"10px 20px",borderRadius:20,border:"none",fontWeight:700,fontSize:13,cursor:"pointer",flexShrink:0,background:premiumPourTous?"#f59e0b":"rgba(245,158,11,0.15)",color:premiumPourTous?"#1a1a1a":"#f59e0b"}}>{premiumPourTous?"✅ Activé — Désactiver":"Activer pour tous"}</button>
+        </div>
+      </div>
+
       <SearchBar value={search} onChange={setSearch} placeholder="Rechercher par nom ou email..."/>
       <div style={{display:"flex",gap:8,marginBottom:16}}>
         {["","active","suspended","premium"].map(f=><button key={f} onClick={()=>setFilter(f)} style={{...s.btnOutline(filter===f?C.accent:C.muted),background:filter===f?"rgba(124,58,237,0.15)":"transparent"}}>{f===""?"Tous":f==="active"?"Actifs":f==="suspended"?"Suspendus":"👑 Premium"}</button>)}
@@ -11551,7 +11567,7 @@ function Contributions({items,updateContrib,setPendingContribs,supprimerContrib,
   );
 }
 
-const PAGES_FN = {dashboard:(props)=><Dashboard {...props}/>,sos:(props)=><AdminSOS {...props}/>,activites:(props)=><Activites {...props}/>,sorties:(props)=><Sorties {...props}/>,evenements:(props)=><Evenements {...props}/>,saisonnier:(props)=><Saisonnier {...props}/>,categories:(props)=><Categories {...props}/>,ressources:(props)=><RessourcesAdmin {...props}/>,boost:(props)=><AdminBoost {...props}/>,utilisateurs:()=><Utilisateurs/>,abonnements:()=><Abonnements/>,signalements:(props)=><Signalements {...props}/>,communication:(props)=><Communication key="comm" {...props}/>,admins:()=><Admins/>};
+const PAGES_FN = {dashboard:(props)=><Dashboard {...props}/>,sos:(props)=><AdminSOS {...props}/>,activites:(props)=><Activites {...props}/>,sorties:(props)=><Sorties {...props}/>,evenements:(props)=><Evenements {...props}/>,saisonnier:(props)=><Saisonnier {...props}/>,categories:(props)=><Categories {...props}/>,ressources:(props)=><RessourcesAdmin {...props}/>,boost:(props)=><AdminBoost {...props}/>,utilisateurs:(props)=><Utilisateurs {...props}/>,abonnements:()=><Abonnements/>,signalements:(props)=><Signalements {...props}/>,communication:(props)=><Communication key="comm" {...props}/>,admins:()=><Admins/>};
 
 function AdminSOS({sosLib=[],setSosLib,sosModeActif=true,setSosModeActif}){
   const [modal,setModal]=useState(null);
@@ -11702,7 +11718,7 @@ function AdminSOS({sosLib=[],setSosLib,sosModeActif=true,setSosModeActif}){
   );
 }
 
-function PageAdmin({onLogout,pendingContribs=[],setPendingContribs,updateContrib,supprimerContrib,adminActivites=[],setAdminActivites,adminSorties=[],setAdminSorties,adminEvenements=[],setAdminEvenements,adminReports=[],setAdminReports,addDeletedTitle,adminCustomEvents=[],setAdminCustomEvents,sosLib=[],setSosLib,sosModeActif=true,setSosModeActif,ideesMomentConfig=[],setIdeesMomentConfig,evenementsSaisonniers=[],setEvenementsSaisonniers,betisesLutin=[],setBetisesLutin,cartesVoyageLutin=[],setCartesVoyageLutin,customCatActivites=[],setCustomCatActivites,customCatSorties=[],setCustomCatSorties,customCatEvenements=[],setCustomCatEvenements,adminComms=[],setAdminComms,ressourcesSites=[],setRessourcesSites,ressourcesContacts=[],setRessourcesContacts,ressourcesPdf=[],setRessourcesPdf,devisBoostDemandes=[],setDevisBoostDemandes,boosts=[],setBoosts,activerBoost,retirerBoostSupabase,demoMode=false,setDemoMode}) {
+function PageAdmin({onLogout,pendingContribs=[],setPendingContribs,updateContrib,supprimerContrib,adminActivites=[],setAdminActivites,adminSorties=[],setAdminSorties,adminEvenements=[],setAdminEvenements,adminReports=[],setAdminReports,addDeletedTitle,adminCustomEvents=[],setAdminCustomEvents,sosLib=[],setSosLib,sosModeActif=true,setSosModeActif,ideesMomentConfig=[],setIdeesMomentConfig,evenementsSaisonniers=[],setEvenementsSaisonniers,betisesLutin=[],setBetisesLutin,cartesVoyageLutin=[],setCartesVoyageLutin,customCatActivites=[],setCustomCatActivites,customCatSorties=[],setCustomCatSorties,customCatEvenements=[],setCustomCatEvenements,adminComms=[],setAdminComms,ressourcesSites=[],setRessourcesSites,ressourcesContacts=[],setRessourcesContacts,ressourcesPdf=[],setRessourcesPdf,devisBoostDemandes=[],setDevisBoostDemandes,boosts=[],setBoosts,activerBoost,retirerBoostSupabase,demoMode=false,setDemoMode,premiumPourTous=false,togglePremiumPourTous}) {
   const [page,setPage] = useState("dashboard");
   const [collapsed,setCollapsed] = useState(false);
   const pendingReports = adminReports.filter(r=>r.statut==="pending").length;
@@ -11747,7 +11763,7 @@ function PageAdmin({onLogout,pendingContribs=[],setPendingContribs,updateContrib
           </div>
         </header>
         <main style={{flex:1,overflowY:"auto",padding:24}}>
-          {page==="contributions"?<Contributions items={pendingContribs} updateContrib={updateContrib} setPendingContribs={setPendingContribs} supprimerContrib={supprimerContrib} customCatActivites={customCatActivites} customCatSorties={customCatSorties} customCatEvenements={customCatEvenements}/>:PAGES_FN[page]?PAGES_FN[page]({sharedActivites:adminActivites,setSharedActivites:setAdminActivites,sharedSorties:adminSorties,setSharedSorties:setAdminSorties,sharedEvenements:adminEvenements,setSharedEvenements:setAdminEvenements,userReports:adminReports,setUserReports:setAdminReports,onDeleteTitle:addDeletedTitle,sharedCustomEvents:adminCustomEvents,setSharedCustomEvents:setAdminCustomEvents,pendingContribs,setPendingContribs,updateContrib,dashUserReports:adminReports,sosLib,setSosLib,sosModeActif,setSosModeActif,ideesMomentConfig,setIdeesMomentConfig,evenementsSaisonniers,setEvenementsSaisonniers,betisesLutin,setBetisesLutin,cartesVoyageLutin,setCartesVoyageLutin,customCatActivites,setCustomCatActivites,customCatSorties,setCustomCatSorties,customCatEvenements,setCustomCatEvenements,adminComms,setAdminComms,ressourcesSites,setRessourcesSites,ressourcesContacts,setRessourcesContacts,ressourcesPdf,setRessourcesPdf,devisBoostDemandes,setDevisBoostDemandes,boosts,onActiverBoost:activerBoost,onRetirerBoost:retirerBoostSupabase,demoMode,setDemoMode}):null}
+          {page==="contributions"?<Contributions items={pendingContribs} updateContrib={updateContrib} setPendingContribs={setPendingContribs} supprimerContrib={supprimerContrib} customCatActivites={customCatActivites} customCatSorties={customCatSorties} customCatEvenements={customCatEvenements}/>:PAGES_FN[page]?PAGES_FN[page]({sharedActivites:adminActivites,setSharedActivites:setAdminActivites,sharedSorties:adminSorties,setSharedSorties:setAdminSorties,sharedEvenements:adminEvenements,setSharedEvenements:setAdminEvenements,userReports:adminReports,setUserReports:setAdminReports,onDeleteTitle:addDeletedTitle,sharedCustomEvents:adminCustomEvents,setSharedCustomEvents:setAdminCustomEvents,pendingContribs,setPendingContribs,updateContrib,dashUserReports:adminReports,sosLib,setSosLib,sosModeActif,setSosModeActif,ideesMomentConfig,setIdeesMomentConfig,evenementsSaisonniers,setEvenementsSaisonniers,betisesLutin,setBetisesLutin,cartesVoyageLutin,setCartesVoyageLutin,customCatActivites,setCustomCatActivites,customCatSorties,setCustomCatSorties,customCatEvenements,setCustomCatEvenements,adminComms,setAdminComms,ressourcesSites,setRessourcesSites,ressourcesContacts,setRessourcesContacts,ressourcesPdf,setRessourcesPdf,devisBoostDemandes,setDevisBoostDemandes,boosts,onActiverBoost:activerBoost,onRetirerBoost:retirerBoostSupabase,demoMode,setDemoMode,premiumPourTous,togglePremiumPourTous}):null}
         </main>
       </div>
     </div>
@@ -12086,7 +12102,23 @@ export default function App(){
     setPage("accueil");
   };
   const [demoMode,setDemoMode]=useState(false);
-  const isPremiumUser=!!currentUser?.premium||demoMode;
+  const [premiumPourTous,setPremiumPourTous]=useState(false);
+  useEffect(()=>{
+    (async()=>{
+      try{
+        const {data}=await supabase.from("app_config").select("premium_pour_tous").eq("id",1).single();
+        if(data)setPremiumPourTous(!!data.premium_pour_tous);
+      }catch(e){ /* erreur réseau — reste false */ }
+    })();
+  },[]);
+  const isPremiumUser=!!currentUser?.premium||demoMode||premiumPourTous;
+  const togglePremiumPourTous=async()=>{
+    const nouvelleValeur=!premiumPourTous;
+    setPremiumPourTous(nouvelleValeur);
+    try{
+      await supabase.from("app_config").upsert({id:1,premium_pour_tous:nouvelleValeur});
+    }catch(e){ /* échec réseau — reste correct localement pour cette session */ }
+  };
 
   const activerDemo=()=>{
     setDemoMode(true);
@@ -12606,7 +12638,7 @@ export default function App(){
     setTimeout(()=>setGlobalToast(null),3000);
     setTimeout(()=>setShowConfetti(false),4500);
   };
-  if(isAdmin) return <PageAdmin onLogout={()=>{ setIsAdmin(false); setPage("profil"); }} pendingContribs={pendingContribs} setPendingContribs={setPendingContribs} updateContrib={updateContrib} supprimerContrib={supprimerContrib} adminActivites={adminActivites} setAdminActivites={setAdminActivites} adminSorties={adminSorties} setAdminSorties={setAdminSorties} adminEvenements={adminEvenements} setAdminEvenements={setAdminEvenements} adminReports={adminReports} setAdminReports={setAdminReports} addDeletedTitle={addDeletedTitle} adminCustomEvents={customEvents} setAdminCustomEvents={setCustomEvents} sosLib={sosLib} setSosLib={setSosLib} sosModeActif={sosModeActif} setSosModeActif={setSosModeActif} ideesMomentConfig={ideesMomentConfig} setIdeesMomentConfig={setIdeesMomentConfig} evenementsSaisonniers={evenementsSaisonniers} setEvenementsSaisonniers={setEvenementsSaisonniers} betisesLutin={betisesLutin} setBetisesLutin={setBetisesLutin} cartesVoyageLutin={cartesVoyageLutin} setCartesVoyageLutin={setCartesVoyageLutin} customCatActivites={customCatActivites} setCustomCatActivites={setCustomCatActivites} customCatSorties={customCatSorties} setCustomCatSorties={setCustomCatSorties} customCatEvenements={customCatEvenements} setCustomCatEvenements={setCustomCatEvenements} adminComms={adminComms} setAdminComms={setAdminComms} ressourcesSites={ressourcesSites} setRessourcesSites={setRessourcesSites} ressourcesContacts={ressourcesContacts} setRessourcesContacts={setRessourcesContacts} ressourcesPdf={ressourcesPdf} setRessourcesPdf={setRessourcesPdf} devisBoostDemandes={devisBoostDemandes} setDevisBoostDemandes={setDevisBoostDemandes} boosts={boosts} setBoosts={setBoosts} activerBoost={activerBoost} retirerBoostSupabase={retirerBoostSupabase} demoMode={demoMode} setDemoMode={setDemoMode}/>;
+  if(isAdmin) return <PageAdmin onLogout={()=>{ setIsAdmin(false); setPage("profil"); }} pendingContribs={pendingContribs} setPendingContribs={setPendingContribs} updateContrib={updateContrib} supprimerContrib={supprimerContrib} adminActivites={adminActivites} setAdminActivites={setAdminActivites} adminSorties={adminSorties} setAdminSorties={setAdminSorties} adminEvenements={adminEvenements} setAdminEvenements={setAdminEvenements} adminReports={adminReports} setAdminReports={setAdminReports} addDeletedTitle={addDeletedTitle} adminCustomEvents={customEvents} setAdminCustomEvents={setCustomEvents} sosLib={sosLib} setSosLib={setSosLib} sosModeActif={sosModeActif} setSosModeActif={setSosModeActif} ideesMomentConfig={ideesMomentConfig} setIdeesMomentConfig={setIdeesMomentConfig} evenementsSaisonniers={evenementsSaisonniers} setEvenementsSaisonniers={setEvenementsSaisonniers} betisesLutin={betisesLutin} setBetisesLutin={setBetisesLutin} cartesVoyageLutin={cartesVoyageLutin} setCartesVoyageLutin={setCartesVoyageLutin} customCatActivites={customCatActivites} setCustomCatActivites={setCustomCatActivites} customCatSorties={customCatSorties} setCustomCatSorties={setCustomCatSorties} customCatEvenements={customCatEvenements} setCustomCatEvenements={setCustomCatEvenements} adminComms={adminComms} setAdminComms={setAdminComms} ressourcesSites={ressourcesSites} setRessourcesSites={setRessourcesSites} ressourcesContacts={ressourcesContacts} setRessourcesContacts={setRessourcesContacts} ressourcesPdf={ressourcesPdf} setRessourcesPdf={setRessourcesPdf} devisBoostDemandes={devisBoostDemandes} setDevisBoostDemandes={setDevisBoostDemandes} boosts={boosts} setBoosts={setBoosts} activerBoost={activerBoost} retirerBoostSupabase={retirerBoostSupabase} demoMode={demoMode} setDemoMode={setDemoMode} premiumPourTous={premiumPourTous} togglePremiumPourTous={togglePremiumPourTous}/>;
   return(
     <div style={{maxWidth:390,margin:"0 auto",background:BG,minHeight:"100vh",position:"relative",fontFamily:"system-ui,-apple-system,sans-serif",color:TX,transition:"background 0.3s,color 0.3s"}} className={darkMode?"dm":""}>
       <style>{`

@@ -12495,6 +12495,7 @@ export default function App(){
           if(d.onboarding_done)setOnboardingDone(d.onboarding_done);
           if(d.popup_shown)setPopupShown(new Set(Array.isArray(d.popup_shown)?d.popup_shown:[]));
           if(d.dark_mode!==undefined)setDarkMode(d.dark_mode);
+          if(d.is_admin)setIsAdmin(true);
           // historique chargé depuis Supabase, plus depuis le stockage local
           if(d.premium_trial_used)setPremiumTrialUsed(d.premium_trial_used);
           if(d.trial_end_date)setTrialEndDate(d.trial_end_date);
@@ -12576,10 +12577,10 @@ export default function App(){
   useEffect(()=>{
     if(!dataLoaded)return;
     const timer=setTimeout(()=>{
-      sauvegarderPrivé({onboarding_done:onboardingDone,popup_shown:[...popupShown],dark_mode:darkMode,filtres_memo_activ:filtresMemoActiv,filtres_memo_sortie:filtresMemoSortie});
+      sauvegarderPrivé({onboarding_done:onboardingDone,popup_shown:[...popupShown],dark_mode:darkMode,filtres_memo_activ:filtresMemoActiv,filtres_memo_sortie:filtresMemoSortie,is_admin:isAdmin});
     },1500);
     return()=>clearTimeout(timer);
-  },[popupShown,onboardingDone,historiqueActivites,darkMode,filtresMemoActiv,filtresMemoSortie,dataLoaded]);
+  },[popupShown,onboardingDone,historiqueActivites,darkMode,filtresMemoActiv,filtresMemoSortie,dataLoaded,isAdmin]);
 
 
   useEffect(()=>{

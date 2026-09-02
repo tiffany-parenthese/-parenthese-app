@@ -2534,6 +2534,7 @@ function PageBiblio({pendingContribs=[],setPendingContribs,adminActivites=[],adm
     return((estMasque?estMasque(a,"evenement"):false)?1:0)-((estMasque?estMasque(b,"evenement"):false)?1:0);
   });
   const evtFiltered=allEvts.filter(e=>{
+    if(e.date&&e.date<new Date().toISOString().slice(0,10))return false;
     if(evtCat&&e.categorie!==evtCat&&e.type!==evtCat)return false;
     if(evtDept&&e.dept!==evtDept)return false;
     if(evtDateDe&&e.date<evtDateDe)return false;
@@ -8332,11 +8333,17 @@ function useScheduler(setItems,syncFn){
   },[]);
 }
 
-function Activites({sharedActivites,setSharedActivites,customCatActivites=[],pendingContribs=[]}) {
+function Activites({sharedActivites,setSharedActivites,customCatActivites=[],pendingContribs=[],setPendingContribs,updateContrib}) {
   const MOCK_IDS=new Set(MOCK_ACTIVITES.map(a=>a.id));
   const [items,setItems] = useState(()=>[...MOCK_ACTIVITES,...(sharedActivites||[]).filter(a=>!MOCK_IDS.has(a.id)&&a._source!=="noel")]);
   const contribsCommunaute=pendingContribs.filter(c=>c._type==="activite").map(c=>({...c,titre:c.titre||c.nom,_communaute:true}));
   const itemsAffiches=[...contribsCommunaute,...items];
+  const supprimerContribItem=(item)=>{
+    if(!window.confirm(`Retirer définitivement "${item.titre||item.nom}" de la bibliothèque ?`))return;
+    if(setPendingContribs)setPendingContribs(prev=>prev.filter(c=>c.id!==item.id));
+    const nomItem=item.nom||item.titre;
+    supabase.from("activites").delete().eq("nom",nomItem).then(()=>{},()=>{});
+  };
   const syncItems=(newItems)=>{
     const supprime=items.find(old=>!newItems.some(n=>n.id===old.id));
     if(supprime&&!MOCK_IDS.has(supprime.id)){
@@ -8402,7 +8409,7 @@ function Activites({sharedActivites,setSharedActivites,customCatActivites=[],pen
               <div>{a.premium?"👑 Premium":"🆓 Gratuit"}</div>
             </div>
             {a._communaute?(
-              <p style={{fontSize:11,color:C.muted,margin:0,fontStyle:"italic"}}>Gérer via l'onglet "📥 Contributions"</p>
+              <button style={{...s.btnOutline(C.red),width:"100%"}} onClick={()=>supprimerContribItem(a)}>🗑️ Retirer de la bibliothèque</button>
             ):(
               <div style={{display:"flex",gap:6}}>
                 <button style={{...s.btnOutline(C.accent),flex:1}} onClick={()=>{setForm({...emptyForm,...a});setModal({mode:"edit",item:a});}}>✏️ Modifier</button>
@@ -8585,11 +8592,17 @@ function Activites({sharedActivites,setSharedActivites,customCatActivites=[],pen
   );
 }
 
-function Sorties({sharedSorties=[],setSharedSorties,customCatSorties=[],setCustomCatSorties,pendingContribs=[]}) {
+function Sorties({sharedSorties=[],setSharedSorties,customCatSorties=[],setCustomCatSorties,pendingContribs=[],setPendingContribs,updateContrib}) {
   const DEPTS_ALL=[["01","Ain"],["02","Aisne"],["03","Allier"],["04","Alpes-de-Haute-Provence"],["05","Hautes-Alpes"],["06","Alpes-Maritimes"],["07","Ardeche"],["08","Ardennes"],["09","Ariege"],["10","Aube"],["11","Aude"],["12","Aveyron"],["13","Bouches-du-Rhone"],["14","Calvados"],["15","Cantal"],["16","Charente"],["17","Charente-Maritime"],["18","Cher"],["19","Correze"],["20","Corse"],["21","Cote-d-Or"],["22","Cotes-d-Armor"],["23","Creuse"],["24","Dordogne"],["25","Doubs"],["26","Drome"],["27","Eure"],["28","Eure-et-Loir"],["29","Finistere"],["30","Gard"],["31","Haute-Garonne"],["32","Gers"],["33","Gironde"],["34","Herault"],["35","Ille-et-Vilaine"],["36","Indre"],["37","Indre-et-Loire"],["38","Isere"],["39","Jura"],["40","Landes"],["41","Loir-et-Cher"],["42","Loire"],["43","Haute-Loire"],["44","Loire-Atlantique"],["45","Loiret"],["46","Lot"],["47","Lot-et-Garonne"],["48","Lozere"],["49","Maine-et-Loire"],["50","Manche"],["51","Marne"],["52","Haute-Marne"],["53","Mayenne"],["54","Meurthe-et-Moselle"],["55","Meuse"],["56","Morbihan"],["57","Moselle"],["58","Nievre"],["59","Nord"],["60","Oise"],["61","Orne"],["62","Pas-de-Calais"],["63","Puy-de-Dome"],["64","Pyrenees-Atlantiques"],["65","Hautes-Pyrenees"],["66","Pyrenees-Orientales"],["67","Bas-Rhin"],["68","Haut-Rhin"],["69","Rhone"],["70","Haute-Saone"],["71","Saone-et-Loire"],["72","Sarthe"],["73","Savoie"],["74","Haute-Savoie"],["75","Paris"],["76","Seine-Maritime"],["77","Seine-et-Marne"],["78","Yvelines"],["79","Deux-Sevres"],["80","Somme"],["81","Tarn"],["82","Tarn-et-Garonne"],["83","Var"],["84","Vaucluse"],["85","Vendee"],["86","Vienne"],["87","Haute-Vienne"],["88","Vosges"],["89","Yonne"],["90","Territoire de Belfort"],["91","Essonne"],["92","Hauts-de-Seine"],["93","Seine-Saint-Denis"],["94","Val-de-Marne"],["95","Val-d-Oise"],["971","Guadeloupe"],["972","Martinique"],["973","Guyane"],["974","La Reunion"]];
   const emptyForm={titre:"",dept:"",adresse:"",horaires:"",prix:"",categorie:"",statut:"published",programmation:{date:"",heure:""},etiquettes:[],acc_poussette:false,acc_bebe:false,acc_allaitement:false,acc_langer:false,acc_aire03:false,acc_peubruyant:false,pmr_fauteuil:false,pmr_escaliers:false,pmr_parking:false,pmr_toilettes:false,pmr_personnel:false,pmr_chemin:false,tsa_foule:false,tsa_calme:false,tsa_lumiere:false,tsa_retrait:false,tsa_bruit:false,tsa_personnel:false,tdah_espace:false,tdah_physique:false,tdah_attente:false,tdah_stimulation:false,dys_visuels:false,dys_nonecrite:false,dys_rythme:false,dys_personnel:false};
   const MOCK_IDS=new Set(MOCK_SORTIES.map(o=>o.id));
   const [items,setItems] = useState(()=>[...MOCK_SORTIES,...(sharedSorties||[]).filter(o=>!MOCK_IDS.has(o.id))]);
+  const supprimerContribItem=(item)=>{
+    if(!window.confirm(`Retirer définitivement "${item.titre||item.nom}" de la bibliothèque ?`))return;
+    if(setPendingContribs)setPendingContribs(prev=>prev.filter(c=>c.id!==item.id));
+    const nomItem=item.nom||item.titre;
+    supabase.from("sorties").delete().eq("nom",nomItem).then(()=>{},()=>{});
+  };
   const syncItems=(newItems)=>{
     const supprime=items.find(old=>!newItems.some(n=>n.id===old.id));
     if(supprime&&!MOCK_IDS.has(supprime.id)){
@@ -8638,7 +8651,7 @@ function Sorties({sharedSorties=[],setSharedSorties,customCatSorties=[],setCusto
             <p style={{fontSize:12,color:C.muted,margin:"0 0 10px"}}>📍 {o.dept}</p>
             <div style={{fontSize:12,color:C.muted,marginBottom:12}}><div>🕐 {o.horaires}</div><div>💶 {o.prix}</div></div>
             {o._communaute?(
-              <p style={{fontSize:11,color:C.muted,margin:0,fontStyle:"italic"}}>Gérer via l'onglet "📥 Contributions"</p>
+              <button style={{...s.btnOutline(C.red),width:"100%"}} onClick={()=>supprimerContribItem(o)}>🗑️ Retirer de la bibliothèque</button>
             ):(
               <div style={{display:"flex",gap:6}}>
                 <button style={{...s.btnOutline(C.accent),flex:1}} onClick={()=>{setForm({...emptyForm,...o});setModal({mode:"edit",item:o});}}>✏️ Modifier</button>
@@ -8718,9 +8731,51 @@ function Sorties({sharedSorties=[],setSharedSorties,customCatSorties=[],setCusto
   );
 }
 
-function Evenements({sharedEvenements=[],setSharedEvenements,customCatEvenements=[],setCustomCatEvenements,pendingContribs=[]}) {
+function useAutoExpireEvenements(items,setItems,MOCK_IDS){
+  useEffect(()=>{
+    const check=()=>{
+      const aujourdhui=new Date().toISOString().slice(0,10);
+      setItems(prev=>{
+        const expires=prev.filter(item=>!MOCK_IDS.has(item.id)&&item.date&&item.date<aujourdhui);
+        if(expires.length===0)return prev;
+        expires.forEach(item=>{
+          const nomItem=item.nom||item.titre;
+          supabase.from("evenements").delete().eq("nom",nomItem).then(()=>{},()=>{});
+        });
+        return prev.filter(item=>!expires.some(e=>e.id===item.id));
+      });
+    };
+    check();
+    const interval=setInterval(check,60000);
+    return()=>clearInterval(interval);
+  },[]);
+}
+
+function Evenements({sharedEvenements=[],setSharedEvenements,customCatEvenements=[],setCustomCatEvenements,pendingContribs=[],setPendingContribs,updateContrib}) {
   const MOCK_IDS=new Set(MOCK_EVENTS.map(o=>o.id));
   const [items,setItems] = useState(()=>[...MOCK_EVENTS,...(sharedEvenements||[]).filter(o=>!MOCK_IDS.has(o.id))]);
+  useAutoExpireEvenements(items,setItems,MOCK_IDS);
+  useEffect(()=>{
+    const check=()=>{
+      const aujourdhui=new Date().toISOString().slice(0,10);
+      const expirees=pendingContribs.filter(c=>c._type==="evenement"&&c._statut!=="rejected"&&c.date&&c.date<aujourdhui);
+      if(expirees.length===0)return;
+      expirees.forEach(item=>{
+        const nomItem=item.nom||item.titre;
+        supabase.from("evenements").delete().eq("nom",nomItem).then(()=>{},()=>{});
+      });
+      if(setPendingContribs)setPendingContribs(prev=>prev.filter(c=>!expirees.some(e=>e.id===c.id)));
+    };
+    check();
+    const interval=setInterval(check,60000);
+    return()=>clearInterval(interval);
+  },[pendingContribs]);
+  const supprimerContribItem=(item)=>{
+    if(!window.confirm(`Retirer définitivement "${item.titre||item.nom}" de la bibliothèque ?`))return;
+    if(setPendingContribs)setPendingContribs(prev=>prev.filter(c=>c.id!==item.id));
+    const nomItem=item.nom||item.titre;
+    supabase.from("evenements").delete().eq("nom",nomItem).then(()=>{},()=>{});
+  };
   const syncItems=(newItems)=>{
     const supprime=items.find(old=>!newItems.some(n=>n.id===old.id));
     if(supprime&&!MOCK_IDS.has(supprime.id)){
@@ -8772,7 +8827,7 @@ function Evenements({sharedEvenements=[],setSharedEvenements,customCatEvenements
               {a.prix&&<div>💶 {a.prix}</div>}
             </div>
             {a._communaute?(
-              <p style={{fontSize:11,color:C.muted,margin:0,fontStyle:"italic"}}>Gérer via l'onglet "📥 Contributions"</p>
+              <button style={{...s.btnOutline(C.red),width:"100%"}} onClick={()=>supprimerContribItem(a)}>🗑️ Retirer de la bibliothèque</button>
             ):(
               <div style={{display:"flex",gap:6}}>
                 <button style={{...s.btnOutline(C.accent),flex:1}} onClick={()=>{setForm({...a});setModal({mode:"edit",item:a});}}>✏️ Modifier</button>
@@ -11692,7 +11747,7 @@ function PageAdmin({onLogout,pendingContribs=[],setPendingContribs,updateContrib
           </div>
         </header>
         <main style={{flex:1,overflowY:"auto",padding:24}}>
-          {page==="contributions"?<Contributions items={pendingContribs} updateContrib={updateContrib} setPendingContribs={setPendingContribs} supprimerContrib={supprimerContrib} customCatActivites={customCatActivites} customCatSorties={customCatSorties} customCatEvenements={customCatEvenements}/>:PAGES_FN[page]?PAGES_FN[page]({sharedActivites:adminActivites,setSharedActivites:setAdminActivites,sharedSorties:adminSorties,setSharedSorties:setAdminSorties,sharedEvenements:adminEvenements,setSharedEvenements:setAdminEvenements,userReports:adminReports,setUserReports:setAdminReports,onDeleteTitle:addDeletedTitle,sharedCustomEvents:adminCustomEvents,setSharedCustomEvents:setAdminCustomEvents,pendingContribs,setPendingContribs,dashUserReports:adminReports,sosLib,setSosLib,sosModeActif,setSosModeActif,ideesMomentConfig,setIdeesMomentConfig,evenementsSaisonniers,setEvenementsSaisonniers,betisesLutin,setBetisesLutin,cartesVoyageLutin,setCartesVoyageLutin,customCatActivites,setCustomCatActivites,customCatSorties,setCustomCatSorties,customCatEvenements,setCustomCatEvenements,adminComms,setAdminComms,ressourcesSites,setRessourcesSites,ressourcesContacts,setRessourcesContacts,ressourcesPdf,setRessourcesPdf,devisBoostDemandes,setDevisBoostDemandes,boosts,onActiverBoost:activerBoost,onRetirerBoost:retirerBoostSupabase,demoMode,setDemoMode}):null}
+          {page==="contributions"?<Contributions items={pendingContribs} updateContrib={updateContrib} setPendingContribs={setPendingContribs} supprimerContrib={supprimerContrib} customCatActivites={customCatActivites} customCatSorties={customCatSorties} customCatEvenements={customCatEvenements}/>:PAGES_FN[page]?PAGES_FN[page]({sharedActivites:adminActivites,setSharedActivites:setAdminActivites,sharedSorties:adminSorties,setSharedSorties:setAdminSorties,sharedEvenements:adminEvenements,setSharedEvenements:setAdminEvenements,userReports:adminReports,setUserReports:setAdminReports,onDeleteTitle:addDeletedTitle,sharedCustomEvents:adminCustomEvents,setSharedCustomEvents:setAdminCustomEvents,pendingContribs,setPendingContribs,updateContrib,dashUserReports:adminReports,sosLib,setSosLib,sosModeActif,setSosModeActif,ideesMomentConfig,setIdeesMomentConfig,evenementsSaisonniers,setEvenementsSaisonniers,betisesLutin,setBetisesLutin,cartesVoyageLutin,setCartesVoyageLutin,customCatActivites,setCustomCatActivites,customCatSorties,setCustomCatSorties,customCatEvenements,setCustomCatEvenements,adminComms,setAdminComms,ressourcesSites,setRessourcesSites,ressourcesContacts,setRessourcesContacts,ressourcesPdf,setRessourcesPdf,devisBoostDemandes,setDevisBoostDemandes,boosts,onActiverBoost:activerBoost,onRetirerBoost:retirerBoostSupabase,demoMode,setDemoMode}):null}
         </main>
       </div>
     </div>

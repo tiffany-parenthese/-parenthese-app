@@ -3656,6 +3656,7 @@ function PageAccueil({favoris,setFavoris,setPage,customEvents=[],popupShown=new 
           <p style={{margin:"0 0 6px",fontSize:26,fontWeight:800,color:TX,lineHeight:1.2}}>Que souhaitez-vous<br/>faire aujourd hui ? 🪄</p>
           <p style={{margin:0,fontSize:14,color:TM}}>Trouvez l inspiration parfaite en deux clics pour vos enfants.</p>
           {/* Bandeaux admin actifs */}
+        <div style={{background:"#000",color:"#0f0",fontSize:10,padding:8,marginBottom:10,fontFamily:"monospace",wordBreak:"break-all",borderRadius:8}}>DEBUG adminComms ({adminComms.length} élément{adminComms.length!==1?"s":""}) : {JSON.stringify(adminComms.map(c=>({id:c.id,titre:c.titre,type:c.type,actif:c.actif})))}</div>
         {(adminComms||[]).filter(c=>c.actif&&c.type==="banner").map(c=>(
           <div key={c.id} onClick={()=>{if(c.codePromo&&onOpenPremium)onOpenPremium(c.codePromo);}} style={{background:"linear-gradient(135deg,#6C5CE7,#a78bfa)",borderRadius:14,padding:"12px 16px",marginBottom:10,display:"flex",alignItems:"center",gap:10,cursor:c.codePromo?"pointer":"default"}}>
             <span style={{fontSize:20,flexShrink:0}}>📢</span>
@@ -10649,8 +10650,15 @@ function Communication({ideesMomentConfig=[],setIdeesMomentConfig,adminComms=[],
   const toutesSortiesComm=[...SORTIES,...sharedSorties.filter(s=>s.statut==="published"),...pendingContribs.filter(c=>c._type==="sortie"&&c._statut==="published")];
   const toutesEvenementsComm=[...EVENEMENTS_INIT,...sharedEvenements.filter(e=>e.statut==="published"),...pendingContribs.filter(c=>c._type==="evenement"&&c._statut==="published")];
   const [comms,setComms] = useState(adminComms.length>0?adminComms:MOCK_COMMS);
+  const initialiseDepuisReel=useRef(adminComms.length>0);
+  useEffect(()=>{
+    if(!initialiseDepuisReel.current){
+      setComms(adminComms.length>0?adminComms:[]);
+      initialiseDepuisReel.current=true;
+    }
+  },[adminComms]);
   // Synchroniser avec App quand comms change
-  useEffect(()=>{if(setAdminComms)setAdminComms(comms);},[comms]);
+  useEffect(()=>{if(setAdminComms&&initialiseDepuisReel.current)setAdminComms(comms);},[comms]);
   const [previewComm,setPreviewComm] = useState(null);
   const [modal,setModal] = useState(null);
   const [form,setForm] = useState({type:"banner",titre:"",message:"",debut:"",fin:"",actif:false});
@@ -10726,7 +10734,7 @@ function Communication({ideesMomentConfig=[],setIdeesMomentConfig,adminComms=[],
   };
   const supprimerComm=(id)=>{
     setComms(comms.filter(c=>c.id!==id));
-    if(/^[0-9a-f]{8}-/.test(id))supabase.from("communications").delete().eq("id",id).then(()=>{},()=>{});
+    supabase.from("communications").delete().eq("id",id).then(()=>{},()=>{});
   };
   const typeInfo = {banner:["📢","Bandeau","#3b82f6"],popup:["💬","Pop-up","#7c3aed"],push:["🔔","Notification push","#10b981"]};
   return (
@@ -12490,7 +12498,7 @@ export default function App(){
     (async()=>{
       try{
         const {data}=await supabase.from("communications").select("*").order("created_at",{ascending:false});
-        if(data&&data.length>0)setAdminComms(data.map(c=>({id:c.id,type:c.type,titre:c.titre,message:c.message,debut:c.debut,fin:c.fin,actif:c.actif,codePromo:c.code_promo})));
+        if(data)setAdminComms(data.map(c=>({id:c.id,type:c.type,titre:c.titre,message:c.message,debut:c.debut,fin:c.fin,actif:c.actif,codePromo:c.code_promo})));
       }catch(e){ /* erreur réseau — reste sur les messages par défaut */ }
     })();
   },[]);
@@ -12558,7 +12566,6 @@ export default function App(){
           if(d.ressourcesSites)setRessourcesSites(d.ressourcesSites);
           if(d.ressourcesContacts)setRessourcesContacts(d.ressourcesContacts);
           if(d.ressourcesPdf)setRessourcesPdf(d.ressourcesPdf);
-          if(d.adminComms)setAdminComms(d.adminComms);
         }
       }catch(e){}
       // Note : la session utilisateur est désormais entièrement gérée par Supabase Auth (voir plus bas)
@@ -12618,10 +12625,10 @@ export default function App(){
   useEffect(()=>{
     if(!dataLoaded)return;
     const timer=setTimeout(()=>{
-      sauvegarderPartagé({customEvents,ideesMomentConfig,evenementsSaisonniers,sosModeActif,pendingContribs,deletedTitles:[...deletedTitles],adminReports,customCatActivites,customCatSorties,customCatEvenements,adminActivites,adminSorties,adminEvenements,sosLib,devisBoostDemandes,boosts,ressourcesSites,ressourcesContacts,ressourcesPdf,adminComms});
+      sauvegarderPartagé({customEvents,ideesMomentConfig,evenementsSaisonniers,sosModeActif,pendingContribs,deletedTitles:[...deletedTitles],adminReports,customCatActivites,customCatSorties,customCatEvenements,adminActivites,adminSorties,adminEvenements,sosLib,devisBoostDemandes,boosts,ressourcesSites,ressourcesContacts,ressourcesPdf});
     },2000);
     return()=>clearTimeout(timer);
-  },[customEvents,ideesMomentConfig,evenementsSaisonniers,sosModeActif,pendingContribs,deletedTitles,adminReports,customCatActivites,customCatSorties,customCatEvenements,adminActivites,adminSorties,adminEvenements,sosLib,devisBoostDemandes,boosts,ressourcesSites,ressourcesContacts,ressourcesPdf,adminComms,dataLoaded]);
+  },[customEvents,ideesMomentConfig,evenementsSaisonniers,sosModeActif,pendingContribs,deletedTitles,adminReports,customCatActivites,customCatSorties,customCatEvenements,adminActivites,adminSorties,adminEvenements,sosLib,devisBoostDemandes,boosts,ressourcesSites,ressourcesContacts,ressourcesPdf,dataLoaded]);
 
   const leftTabs=[{k:"biblio",icon:"📖",label:"Biblio"},{k:"ressources",icon:"🧠",label:"Ressources"}];
   const rightTabs=[{k:"planning",icon:"📅",label:"Planning"},{k:"profil",icon:"👤",label:"Profil"}];

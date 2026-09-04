@@ -3656,7 +3656,6 @@ function PageAccueil({favoris,setFavoris,setPage,customEvents=[],popupShown=new 
           <p style={{margin:"0 0 6px",fontSize:26,fontWeight:800,color:TX,lineHeight:1.2}}>Que souhaitez-vous<br/>faire aujourd hui ? 🪄</p>
           <p style={{margin:0,fontSize:14,color:TM}}>Trouvez l inspiration parfaite en deux clics pour vos enfants.</p>
           {/* Bandeaux admin actifs */}
-        <div style={{background:"#000",color:"#0f0",fontSize:10,padding:8,marginBottom:10,fontFamily:"monospace",wordBreak:"break-all",borderRadius:8}}>DEBUG adminComms ({adminComms.length} élément{adminComms.length!==1?"s":""}) : {JSON.stringify(adminComms.map(c=>({id:c.id,titre:c.titre,type:c.type,actif:c.actif})))}</div>
         {(adminComms||[]).filter(c=>c.actif&&c.type==="banner").map(c=>(
           <div key={c.id} onClick={()=>{if(c.codePromo&&onOpenPremium)onOpenPremium(c.codePromo);}} style={{background:"linear-gradient(135deg,#6C5CE7,#a78bfa)",borderRadius:14,padding:"12px 16px",marginBottom:10,display:"flex",alignItems:"center",gap:10,cursor:c.codePromo?"pointer":"default"}}>
             <span style={{fontSize:20,flexShrink:0}}>📢</span>

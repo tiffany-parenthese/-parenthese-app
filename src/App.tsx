@@ -9875,7 +9875,10 @@ function Saisonnier({sharedCustomEvents=[],setSharedCustomEvents,evenementsSaiso
     const merged={...item,...changes};
     const payload={id,type:merged.type,nom:merged.nom,actif:merged.actif,essai_actif:merged.essaiActif,
       apercu_gratuit_jours:merged.apercuGratuitJours,apercu_gratuit_type:merged.apercuGratuitType,apercu_gratuit_cartes_postales:merged.apercuGratuitCartesPostales};
-    supabase.from("evenements_saisonniers_config").upsert(payload).then(()=>{},()=>{});
+    console.log("[DEBUG saisonnier] Payload envoyé à Supabase :",payload);
+    supabase.from("evenements_saisonniers_config").upsert(payload).then(
+      (res)=>{ if(res.error) console.log("[DEBUG saisonnier] ERREUR upsert :",res.error); else console.log("[DEBUG saisonnier] Upsert réussi :",res); }
+    );
   };
   const handleSaveCustom = (evt) => { setCustomEvents(prev=>[...prev,evt]); setCreerEvt(false); };
   const handleUpdateEvt = (updated) => { setCustomEvents(prev=>prev.map(e=>e.id===updated.id?updated:e)); setSelectedEvt(null); };

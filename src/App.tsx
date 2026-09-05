@@ -8362,7 +8362,13 @@ function Activites({sharedActivites,setSharedActivites,customCatActivites=[],pen
   const {slice:filteredPage,Pagination:PagActiv,reset:resetPagActiv}=usePagination(filtered,8);
   useEffect(()=>resetPagActiv(),[search,filterStatut]);
   const save = () => {
-    if(!form.titre) return;
+    if(!form.titre){alert("Le titre de l'activité est obligatoire.");return;}
+    if(!form.desc){alert("La description est obligatoire.");return;}
+    if(!form.duree){alert("La durée est obligatoire.");return;}
+    if(!form.difficulte){alert("La difficulté est obligatoire.");return;}
+    if(!form.lieu){alert("Le lieu (intérieur/extérieur) est obligatoire.");return;}
+    if(!form.energie){alert("La motivation (fatigue/motiv) est obligatoire.");return;}
+    if(!form.categorie){alert("La catégorie est obligatoire.");return;}
     const normalized={
       ...form,
       nom:form.titre,
@@ -8632,7 +8638,9 @@ function Sorties({sharedSorties=[],setSharedSorties,customCatSorties=[],setCusto
   const {slice:filteredPageS,Pagination:PagSort,reset:resetPagSort}=usePagination(filtered,8);
   useEffect(()=>resetPagSort(),[search]);
   const save = () => {
-    if(!form.titre) return;
+    if(!form.titre){alert("Le titre de la sortie est obligatoire.");return;}
+    if(!form.dept){alert("Le département est obligatoire.");return;}
+    if(!(form.categorie||"").trim()){alert("Le type de sortie est obligatoire.");return;}
     // Si le type est personnalisé (pas dans les types prédéfinis), l'ajouter aux catégories
     const typeVal=(form.categorie||"").trim();
     if(typeVal&&typeVal!==" "&&![...TYPES_SORTIE,...(customCatSorties||[]).map(c=>c.label)].includes(typeVal)){
@@ -8813,9 +8821,13 @@ function Evenements({sharedEvenements=[],setSharedEvenements,customCatEvenements
   const [modal,setModal] = useState(null);
   const [form,setForm] = useState({titre:"",desc:"",type:"",ville:"",dept:"",date:"",fin:"",horaires:"",prix:"",adresse:"",organisateur:"",statut:"draft",programmation:{date:"",heure:""},etiquettes:[],acc_poussette:false,acc_bebe:false,acc_allaitement:false,acc_langer:false,acc_aire03:false,acc_peubruyant:false,pmr_fauteuil:false,pmr_escaliers:false,pmr_parking:false,pmr_toilettes:false,pmr_personnel:false,pmr_chemin:false,tsa_foule:false,tsa_calme:false,tsa_lumiere:false,tsa_retrait:false,tsa_bruit:false,tsa_personnel:false,tdah_espace:false,tdah_physique:false,tdah_attente:false,tdah_stimulation:false,dys_visuels:false,dys_nonecrite:false,dys_rythme:false,dys_personnel:false});
   const save = () => {
-    if(!form.titre) return;
+    if(!form.titre){alert("Le nom de l'événement est obligatoire.");return;}
+    if(!form.ville){alert("La ville est obligatoire.");return;}
+    if(!form.dept){alert("Le département est obligatoire.");return;}
+    if(!form.date){alert("La date de début est obligatoire.");return;}
     // Si le type est personnalisé, l'ajouter aux catégories événements
     const typeVal=(form.type||"").trim();
+    if(!typeVal){alert("Le type d'événement est obligatoire.");return;}
     const existingTypes=[...EVT_CATEGORIES,...(customCatEvenements||[])].map(c=>c.k||c.label);
     if(typeVal&&!existingTypes.includes(typeVal)){
       const k=typeVal.toLowerCase().replace(/\s+/g,"_").replace(/[^a-z0-9_]/g,"");

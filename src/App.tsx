@@ -8337,13 +8337,13 @@ function Activites({sharedActivites,setSharedActivites,customCatActivites=[],pen
     if(!window.confirm(`Retirer définitivement "${item.titre||item.nom}" de la bibliothèque ?`))return;
     if(setPendingContribs)setPendingContribs(prev=>prev.filter(c=>c.id!==item.id));
     const nomItem=item.nom||item.titre;
-    supabase.from("activites").delete().eq("nom",nomItem).then(()=>{},()=>{});
+    supabase.from("activites").delete().eq("nom",nomItem).eq("communaute",true).then(()=>{},()=>{});
   };
   const syncItems=(newItems)=>{
     const supprime=items.find(old=>!newItems.some(n=>n.id===old.id));
     if(supprime&&!MOCK_IDS.has(supprime.id)){
       const nomItem=supprime.nom||supprime.titre;
-      supabase.from("activites").delete().eq("nom",nomItem).then(()=>{},()=>{});
+      supabase.from("activites").delete().eq("nom",nomItem).eq("communaute",false).then(()=>{},()=>{});
     }
     setItems(newItems);
     if(setSharedActivites){
@@ -8371,8 +8371,24 @@ function Activites({sharedActivites,setSharedActivites,customCatActivites=[],pen
       materiel:form.materielStr?form.materielStr.split(",").map(m=>m.trim()):[],
       tnd:null,
     };
-    if(modal?.mode==="edit") syncItems(items.map(a=>a.id===modal.item.id?{...a,...normalized}:a));
-    else syncItems([...items,{id:Date.now().toString(),...normalized,auteur:"Admin",date:new Date().toLocaleDateString()}]);
+    const payloadSupabase={
+      nom:normalized.nom,categorie:normalized.categorie,lieu:normalized.lieu,energie:normalized.energie,
+      age:normalized.age,duree:normalized.duree,difficulte:normalized.difficulte,materiel:normalized.materiel,
+      etapes:normalized.etapes?String(normalized.etapes).split("\n").map(s=>s.trim()).filter(Boolean):[],
+      description:normalized.desc||"",photo:normalized.photo||null,
+      statut:normalized.statut||"published",communaute:false,
+    };
+    if(modal?.mode==="edit"){
+      syncItems(items.map(a=>a.id===modal.item.id?{...a,...normalized}:a));
+      const ancienNom=modal.item.nom||modal.item.titre;
+      supabase.from("activites").update(payloadSupabase).eq("nom",ancienNom).eq("communaute",false)
+        .then(({error})=>{if(error)console.error("Erreur mise à jour activité Supabase:",error.message);});
+    }else{
+      const nouvelItem={id:Date.now().toString(),...normalized,auteur:"Admin",date:new Date().toLocaleDateString()};
+      syncItems([...items,nouvelItem]);
+      supabase.from("activites").insert(payloadSupabase)
+        .then(({error})=>{if(error)console.error("Erreur création activité Supabase:",error.message);});
+    }
     setModal(null);
   };
   const chkStyle = (active) => ({display:"flex",alignItems:"center",gap:7,padding:"6px 10px",borderRadius:8,border:`1px solid ${active?"rgba(124,58,237,0.4)":C.border}`,background:active?"rgba(124,58,237,0.1)":"transparent",color:active?"#a78bfa":C.muted,fontSize:12,cursor:"pointer",userSelect:"none",marginBottom:4,flexShrink:0});
@@ -8596,13 +8612,13 @@ function Sorties({sharedSorties=[],setSharedSorties,customCatSorties=[],setCusto
     if(!window.confirm(`Retirer définitivement "${item.titre||item.nom}" de la bibliothèque ?`))return;
     if(setPendingContribs)setPendingContribs(prev=>prev.filter(c=>c.id!==item.id));
     const nomItem=item.nom||item.titre;
-    supabase.from("sorties").delete().eq("nom",nomItem).then(()=>{},()=>{});
+    supabase.from("sorties").delete().eq("nom",nomItem).eq("communaute",true).then(()=>{},()=>{});
   };
   const syncItems=(newItems)=>{
     const supprime=items.find(old=>!newItems.some(n=>n.id===old.id));
     if(supprime&&!MOCK_IDS.has(supprime.id)){
       const nomItem=supprime.nom||supprime.titre;
-      supabase.from("sorties").delete().eq("nom",nomItem).then(()=>{},()=>{});
+      supabase.from("sorties").delete().eq("nom",nomItem).eq("communaute",false).then(()=>{},()=>{});
     }
     setItems(newItems);if(setSharedSorties)setSharedSorties(newItems.filter(o=>!MOCK_IDS.has(o.id)));
   };
@@ -8623,8 +8639,21 @@ function Sorties({sharedSorties=[],setSharedSorties,customCatSorties=[],setCusto
       const k=typeVal.toLowerCase().replace(/\s+/g,"_").replace(/[^a-z0-9_]/g,"");
       setCustomCatSorties&&setCustomCatSorties(prev=>[...prev,{k,label:typeVal,emoji:"🗺️"}]);
     }
-    if(modal?.mode==="edit") syncItems(items.map(a=>a.id===modal.item.id?{...a,...form,categorie:typeVal||form.categorie}:a));
-    else syncItems([...items,{id:Date.now().toString(),...form,categorie:typeVal||form.categorie}]);
+    const categorieFinale=typeVal||form.categorie;
+    const payloadSupabase={
+      nom:form.titre,type:categorieFinale,dept:form.dept,horaires:form.horaires,prix:form.prix,
+      accessibilite:form.accessibilite||null,statut:form.statut||"published",communaute:false,
+    };
+    if(modal?.mode==="edit"){
+      syncItems(items.map(a=>a.id===modal.item.id?{...a,...form,categorie:categorieFinale}:a));
+      const ancienNom=modal.item.nom||modal.item.titre;
+      supabase.from("sorties").update(payloadSupabase).eq("nom",ancienNom).eq("communaute",false)
+        .then(({error})=>{if(error)console.error("Erreur mise à jour sortie Supabase:",error.message);});
+    }else{
+      syncItems([...items,{id:Date.now().toString(),...form,categorie:categorieFinale}]);
+      supabase.from("sorties").insert(payloadSupabase)
+        .then(({error})=>{if(error)console.error("Erreur création sortie Supabase:",error.message);});
+    }
     setModal(null);
   };
   return (
@@ -8735,7 +8764,7 @@ function useAutoExpireEvenements(items,setItems,MOCK_IDS){
         if(expires.length===0)return prev;
         expires.forEach(item=>{
           const nomItem=item.nom||item.titre;
-          supabase.from("evenements").delete().eq("nom",nomItem).then(()=>{},()=>{});
+          supabase.from("evenements").delete().eq("nom",nomItem).eq("communaute",false).then(()=>{},()=>{});
         });
         return prev.filter(item=>!expires.some(e=>e.id===item.id));
       });
@@ -8757,7 +8786,7 @@ function Evenements({sharedEvenements=[],setSharedEvenements,customCatEvenements
       if(expirees.length===0)return;
       expirees.forEach(item=>{
         const nomItem=item.nom||item.titre;
-        supabase.from("evenements").delete().eq("nom",nomItem).then(()=>{},()=>{});
+        supabase.from("evenements").delete().eq("nom",nomItem).eq("communaute",true).then(()=>{},()=>{});
       });
       if(setPendingContribs)setPendingContribs(prev=>prev.filter(c=>!expirees.some(e=>e.id===c.id)));
     };
@@ -8769,13 +8798,13 @@ function Evenements({sharedEvenements=[],setSharedEvenements,customCatEvenements
     if(!window.confirm(`Retirer définitivement "${item.titre||item.nom}" de la bibliothèque ?`))return;
     if(setPendingContribs)setPendingContribs(prev=>prev.filter(c=>c.id!==item.id));
     const nomItem=item.nom||item.titre;
-    supabase.from("evenements").delete().eq("nom",nomItem).then(()=>{},()=>{});
+    supabase.from("evenements").delete().eq("nom",nomItem).eq("communaute",true).then(()=>{},()=>{});
   };
   const syncItems=(newItems)=>{
     const supprime=items.find(old=>!newItems.some(n=>n.id===old.id));
     if(supprime&&!MOCK_IDS.has(supprime.id)){
       const nomItem=supprime.nom||supprime.titre;
-      supabase.from("evenements").delete().eq("nom",nomItem).then(()=>{},()=>{});
+      supabase.from("evenements").delete().eq("nom",nomItem).eq("communaute",false).then(()=>{},()=>{});
     }
     setItems(newItems);if(setSharedEvenements)setSharedEvenements(newItems.filter(o=>!MOCK_IDS.has(o.id)));
   };
@@ -8792,8 +8821,22 @@ function Evenements({sharedEvenements=[],setSharedEvenements,customCatEvenements
       const k=typeVal.toLowerCase().replace(/\s+/g,"_").replace(/[^a-z0-9_]/g,"");
       setCustomCatEvenements&&setCustomCatEvenements(prev=>[...prev,{k,label:typeVal,emoji:"🎪"}]);
     }
-    if(modal?.mode==="edit") syncItems(items.map(a=>a.id===modal.item.id?{...a,...form,type:typeVal||form.type}:a));
-    else syncItems([...items,{id:Date.now().toString(),...form,type:typeVal||form.type}]);
+    const typeFinal=typeVal||form.type;
+    const payloadSupabase={
+      nom:form.titre,categorie:typeFinal,ville:form.ville,dept:form.dept,date:form.date||null,
+      date_fin:form.fin||null,prix:form.prix,adresse:form.adresse,photo:form.photo||null,
+      description:form.desc||"",tnd:form.tnd||null,statut:form.statut||"published",communaute:false,
+    };
+    if(modal?.mode==="edit"){
+      syncItems(items.map(a=>a.id===modal.item.id?{...a,...form,type:typeFinal}:a));
+      const ancienNom=modal.item.nom||modal.item.titre;
+      supabase.from("evenements").update(payloadSupabase).eq("nom",ancienNom).eq("communaute",false)
+        .then(({error})=>{if(error)console.error("Erreur mise à jour événement Supabase:",error.message);});
+    }else{
+      syncItems([...items,{id:Date.now().toString(),...form,type:typeFinal}]);
+      supabase.from("evenements").insert(payloadSupabase)
+        .then(({error})=>{if(error)console.error("Erreur création événement Supabase:",error.message);});
+    }
     setModal(null);
   };
   return (
@@ -12328,6 +12371,40 @@ export default function App(){
   useScheduler(setAdminActivites);
   useScheduler(setAdminSorties);
   useScheduler(setAdminEvenements);
+  // ── Chargement des activités/sorties/événements créés par l'admin depuis Supabase ──
+  // (auparavant ces listes ne vivaient que dans le stockage local du navigateur admin,
+  // jamais partagées avec les autres appareils/utilisateurs)
+  useEffect(()=>{
+    (async()=>{
+      try{
+        const [{data:actsAdminData},{data:sortsAdminData},{data:evtsAdminData}]=await Promise.all([
+          supabase.from("activites").select("*").eq("communaute",false),
+          supabase.from("sorties").select("*").eq("communaute",false),
+          supabase.from("evenements").select("*").eq("communaute",false),
+        ]);
+        const actsAdmin=(actsAdminData||[]).map(a=>({
+          id:a.id,nom:a.nom,titre:a.nom,categorie:a.categorie,lieu:a.lieu,energie:a.energie,age:a.age,duree:a.duree,
+          difficulte:a.difficulte,materiel:a.materiel||[],etapes:a.etapes||[],desc:a.description,photo:a.photo,
+          niveauxSensoriels:a.niveaux_sensoriels,profilsTND:a.profils_tnd,adaptations:a.adaptations||[],
+          caracteristiques:a.caracteristiques,commentaireTND:a.commentaire_tnd,pointsAnticiper:a.points_anticiper||[],
+          statut:a.statut||"published",communaute:false,
+        }));
+        const sortsAdmin=(sortsAdminData||[]).map(s=>({
+          id:s.id,nom:s.nom,titre:s.nom,categorie:s.type,dept:s.dept,ville:s.ville,prix:s.prix,horaires:s.horaires,
+          desc:s.description,photo:s.photo,tnd:s.tnd,accessibilite:s.accessibilite,commentaireTND:s.commentaire_tnd,
+          statut:s.statut||"published",communaute:false,
+        }));
+        const evtsAdmin=(evtsAdminData||[]).map(e=>({
+          id:e.id,nom:e.nom,titre:e.nom,type:e.categorie,categorie:e.categorie,ville:e.ville,dept:e.dept,date:e.date,
+          fin:e.date_fin,prix:e.prix,adresse:e.adresse,photo:e.photo,desc:e.description,commentaireTND:e.commentaire_tnd,
+          tnd:e.tnd,statut:e.statut||"published",communaute:false,
+        }));
+        if(actsAdmin.length>0)setAdminActivites(prev=>[...prev.filter(a=>!actsAdmin.some(x=>x.id===a.id)),...actsAdmin]);
+        if(sortsAdmin.length>0)setAdminSorties(prev=>[...prev.filter(a=>!sortsAdmin.some(x=>x.id===a.id)),...sortsAdmin]);
+        if(evtsAdmin.length>0)setAdminEvenements(prev=>[...prev.filter(a=>!evtsAdmin.some(x=>x.id===a.id)),...evtsAdmin]);
+      }catch(e){ /* erreur réseau — les éléments admin resteront limités à cette session */ }
+    })();
+  },[]);
   const [adminReports,setAdminReports]=useState([]);
   const [deletedTitles,setDeletedTitles]=useState(new Set());
   const [customEvents,setCustomEvents]=useState([]);

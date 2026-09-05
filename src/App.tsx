@@ -9907,11 +9907,7 @@ function Saisonnier({sharedCustomEvents=[],setSharedCustomEvents,evenementsSaiso
     setCustomEvents(prev=>[...prev,evt]);
     setCreerEvt(false);
     const payloadEnvoye=versSupabaseCustom(evt);
-    console.log("[DEBUG evt custom] Payload envoyé :",payloadEnvoye);
-    supabase.from("custom_events_config").insert(payloadEnvoye).then((res)=>{
-      if(res.error) console.log("[DEBUG evt custom] ERREUR :",res.error);
-      else console.log("[DEBUG evt custom] Succès :",res);
-    });
+    supabase.from("custom_events_config").insert(payloadEnvoye).then(()=>{},()=>{});
   };
   const handleUpdateEvt = (updated) => {
     setCustomEvents(prev=>prev.map(e=>e.id===updated.id?updated:e));

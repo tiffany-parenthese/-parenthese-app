@@ -12692,7 +12692,7 @@ export default function App(){
           const d=JSON.parse(shr.value);
           if(d.ideesMomentConfig)setIdeesMomentConfig(d.ideesMomentConfig);
           if(d.sosModeActif!==undefined)setSosModeActif(d.sosModeActif);
-          if(d.pendingContribs)setPendingContribs(d.pendingContribs);
+          // pendingContribs chargés depuis Supabase, plus depuis le stockage local
           if(d.deletedTitles)setDeletedTitles(new Set(d.deletedTitles));
           // adminReports chargés depuis Supabase, plus depuis le stockage local
           if(d.customCatActivites)setCustomCatActivites(d.customCatActivites);
@@ -12764,10 +12764,10 @@ export default function App(){
   useEffect(()=>{
     if(!dataLoaded)return;
     const timer=setTimeout(()=>{
-      sauvegarderPartagé({ideesMomentConfig,sosModeActif,pendingContribs,deletedTitles:[...deletedTitles],adminReports,customCatActivites,customCatSorties,customCatEvenements,sosLib,devisBoostDemandes,boosts,ressourcesSites,ressourcesContacts,ressourcesPdf});
+      sauvegarderPartagé({ideesMomentConfig,sosModeActif,deletedTitles:[...deletedTitles],adminReports,customCatActivites,customCatSorties,customCatEvenements,sosLib,devisBoostDemandes,boosts,ressourcesSites,ressourcesContacts,ressourcesPdf});
     },2000);
     return()=>clearTimeout(timer);
-  },[ideesMomentConfig,sosModeActif,pendingContribs,deletedTitles,adminReports,customCatActivites,customCatSorties,customCatEvenements,sosLib,devisBoostDemandes,boosts,ressourcesSites,ressourcesContacts,ressourcesPdf,dataLoaded]);
+  },[ideesMomentConfig,sosModeActif,deletedTitles,adminReports,customCatActivites,customCatSorties,customCatEvenements,sosLib,devisBoostDemandes,boosts,ressourcesSites,ressourcesContacts,ressourcesPdf,dataLoaded]);
 
   const leftTabs=[{k:"biblio",icon:"📖",label:"Biblio"},{k:"ressources",icon:"🧠",label:"Ressources"}];
   const rightTabs=[{k:"planning",icon:"📅",label:"Planning"},{k:"profil",icon:"👤",label:"Profil"}];

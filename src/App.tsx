@@ -9883,7 +9883,11 @@ function Saisonnier({sharedCustomEvents=[],setSharedCustomEvents,evenementsSaiso
     const payload={id:idReel,type:sec.type,nom:sec.nom,[field]:nouvelleValeur};
     supabase.from("evenements_saisonniers_config").upsert(payload).then(()=>{},()=>{});
   };
-  const toggleCustom = (id,field) => setCustomEvents(prev=>prev.map(e=>e.id===id?{...e,[field]:!e[field]}:e));
+  const toggleCustom = (id,field) => {
+    setCustomEvents(prev=>prev.map(e=>e.id===id?{...e,[field]:!e[field]}:e));
+    const item=customEvents.find(e=>e.id===id);
+    if(item)supabase.from("custom_events_config").update({[field]:!item[field]}).eq("id",id).then(()=>{},()=>{});
+  };
   const updateFreemium = (id,changes) => {
     setEvenementsSaisonniers&&setEvenementsSaisonniers(prev=>prev.map(e=>e.id===id?{...e,...changes}:e));
     const item=evenementsSaisonniers.find(e=>e.id===id)||{};
@@ -9892,11 +9896,37 @@ function Saisonnier({sharedCustomEvents=[],setSharedCustomEvents,evenementsSaiso
       apercu_gratuit_jours:merged.apercuGratuitJours,apercu_gratuit_type:merged.apercuGratuitType,apercu_gratuit_cartes_postales:merged.apercuGratuitCartesPostales};
     supabase.from("evenements_saisonniers_config").upsert(payload).then(()=>{},()=>{});
   };
-  const handleSaveCustom = (evt) => { setCustomEvents(prev=>[...prev,evt]); setCreerEvt(false); };
-  const handleUpdateEvt = (updated) => { setCustomEvents(prev=>prev.map(e=>e.id===updated.id?updated:e)); setSelectedEvt(null); };
-  const handleDeleteEvt = (id) => { setCustomEvents(prev=>prev.filter(e=>e.id!==id)); setSelectedEvt(null); };
-  const handleArchiveEvt = (id) => { setCustomEvents(prev=>prev.map(e=>e.id===id?{...e,actif:false,archive:true}:e)); setSelectedEvt(null); };
-  const handleRestoreEvt = (id) => { setCustomEvents(prev=>prev.map(e=>e.id===id?{...e,archive:false}:e)); };
+  const versSupabaseCustom = (e) => ({
+    id:e.id,nom:e.nom,emoji:e.emoji,couleur:e.couleur,date_debut:e.dateDebut,date_fin:e.dateFin,
+    banner:e.banner,banner_texte:e.bannerTexte,popup:e.popup,popup_texte:e.popupTexte,
+    bibliotheque:e.bibliotheque,generateur:e.generateur,generateur_actif:e.generateurActif,
+    premium:e.premium,essai_actif:e.essaiActif,apercu_gratuit_jours:e.apercuGratuitJours,
+    actif:e.actif,archive:e.archive||false,type:e.type||"custom",bibliotheque_activ:e.bibliothequeActiv||[],
+  });
+  const handleSaveCustom = (evt) => {
+    setCustomEvents(prev=>[...prev,evt]);
+    setCreerEvt(false);
+    supabase.from("custom_events_config").insert(versSupabaseCustom(evt)).then(()=>{},()=>{});
+  };
+  const handleUpdateEvt = (updated) => {
+    setCustomEvents(prev=>prev.map(e=>e.id===updated.id?updated:e));
+    setSelectedEvt(null);
+    supabase.from("custom_events_config").update(versSupabaseCustom(updated)).eq("id",updated.id).then(()=>{},()=>{});
+  };
+  const handleDeleteEvt = (id) => {
+    setCustomEvents(prev=>prev.filter(e=>e.id!==id));
+    setSelectedEvt(null);
+    supabase.from("custom_events_config").delete().eq("id",id).then(()=>{},()=>{});
+  };
+  const handleArchiveEvt = (id) => {
+    setCustomEvents(prev=>prev.map(e=>e.id===id?{...e,actif:false,archive:true}:e));
+    setSelectedEvt(null);
+    supabase.from("custom_events_config").update({actif:false,archive:true}).eq("id",id).then(()=>{},()=>{});
+  };
+  const handleRestoreEvt = (id) => {
+    setCustomEvents(prev=>prev.map(e=>e.id===id?{...e,archive:false}:e));
+    supabase.from("custom_events_config").update({archive:false}).eq("id",id).then(()=>{},()=>{});
+  };
   if(biblioNoel) return <BiblioNoel onBack={()=>setBiblioNoel(false)} sharedActivites={sharedActivites} setSharedActivites={setSharedActivites}/>;
   if(betisesLutinAdmin) return <AdminBetisesLutin onBack={()=>setBetisesLutinAdmin(false)} betisesLutin={betisesLutin} setBetisesLutin={setBetisesLutin}/>;
   if(voyageLutinAdmin) return <AdminCartesVoyageLutin onBack={()=>setVoyageLutinAdmin(false)} cartesVoyageLutin={cartesVoyageLutin} setCartesVoyageLutin={setCartesVoyageLutin}/>;
@@ -12305,6 +12335,20 @@ export default function App(){
   const [adminReports,setAdminReports]=useState([]);
   const [deletedTitles,setDeletedTitles]=useState(new Set());
   const [customEvents,setCustomEvents]=useState([]);
+  useEffect(()=>{
+    (async()=>{
+      try{
+        const {data}=await supabase.from("custom_events_config").select("*");
+        if(data)setCustomEvents(data.map(e=>({
+          id:e.id,nom:e.nom,emoji:e.emoji,couleur:e.couleur,dateDebut:e.date_debut,dateFin:e.date_fin,
+          banner:e.banner,bannerTexte:e.banner_texte,popup:e.popup,popupTexte:e.popup_texte,
+          bibliotheque:e.bibliotheque,generateur:e.generateur,generateurActif:e.generateur_actif,
+          premium:e.premium,essaiActif:e.essai_actif,apercuGratuitJours:e.apercu_gratuit_jours,
+          actif:e.actif,archive:e.archive,type:e.type||"custom",bibliothequeActiv:e.bibliotheque_activ||[],
+        })));
+      }catch(err){ /* erreur réseau — reste vide */ }
+    })();
+  },[]);
   const [adminComms,setAdminComms]=useState(MOCK_COMMS);
   const [ressourcesSites,setRessourcesSites]=useState(MOCK_RESSOURCES_SITES);
   const [ressourcesContacts,setRessourcesContacts]=useState(MOCK_RESSOURCES_CONTACTS);
@@ -12561,7 +12605,6 @@ export default function App(){
         const shr=await window.storage.get("app_v1_shared",true);
         if(shr&&shr.value){
           const d=JSON.parse(shr.value);
-          if(d.customEvents)setCustomEvents(d.customEvents);
           if(d.ideesMomentConfig)setIdeesMomentConfig(d.ideesMomentConfig);
           if(d.sosModeActif!==undefined)setSosModeActif(d.sosModeActif);
           if(d.pendingContribs)setPendingContribs(d.pendingContribs);
@@ -12638,10 +12681,10 @@ export default function App(){
   useEffect(()=>{
     if(!dataLoaded)return;
     const timer=setTimeout(()=>{
-      sauvegarderPartagé({customEvents,ideesMomentConfig,sosModeActif,pendingContribs,deletedTitles:[...deletedTitles],adminReports,customCatActivites,customCatSorties,customCatEvenements,adminActivites,adminSorties,adminEvenements,sosLib,devisBoostDemandes,boosts,ressourcesSites,ressourcesContacts,ressourcesPdf});
+      sauvegarderPartagé({ideesMomentConfig,sosModeActif,pendingContribs,deletedTitles:[...deletedTitles],adminReports,customCatActivites,customCatSorties,customCatEvenements,adminActivites,adminSorties,adminEvenements,sosLib,devisBoostDemandes,boosts,ressourcesSites,ressourcesContacts,ressourcesPdf});
     },2000);
     return()=>clearTimeout(timer);
-  },[customEvents,ideesMomentConfig,sosModeActif,pendingContribs,deletedTitles,adminReports,customCatActivites,customCatSorties,customCatEvenements,adminActivites,adminSorties,adminEvenements,sosLib,devisBoostDemandes,boosts,ressourcesSites,ressourcesContacts,ressourcesPdf,dataLoaded]);
+  },[ideesMomentConfig,sosModeActif,pendingContribs,deletedTitles,adminReports,customCatActivites,customCatSorties,customCatEvenements,adminActivites,adminSorties,adminEvenements,sosLib,devisBoostDemandes,boosts,ressourcesSites,ressourcesContacts,ressourcesPdf,dataLoaded]);
 
   const leftTabs=[{k:"biblio",icon:"📖",label:"Biblio"},{k:"ressources",icon:"🧠",label:"Ressources"}];
   const rightTabs=[{k:"planning",icon:"📅",label:"Planning"},{k:"profil",icon:"👤",label:"Profil"}];

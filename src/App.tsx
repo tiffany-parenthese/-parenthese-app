@@ -11942,9 +11942,21 @@ function PageAuth({ onAuthSuccess, onCancel, onAdminSuccess }) {
   };
 
   // Validation du 2ème facteur admin
-  const handleAdminCode2 = () => {
+  const handleAdminCode2 = async () => {
     const SECRET_2FA="875010"; // Peut être changé indépendamment du mot de passe
     if(adminCode2.trim()===SECRET_2FA){
+      setLoading(true);
+      // Ouvre une vraie session Supabase pour l'admin, indispensable pour que les écritures
+      // (créer/modifier une activité, sortie, événement...) passent les règles de sécurité (RLS).
+      const {error:sessionError}=await supabase.auth.signInWithPassword({
+        email: email.trim().toLowerCase(),
+        password,
+      });
+      setLoading(false);
+      if(sessionError){
+        setError("Code correct, mais impossible d'ouvrir la session Supabase de l'admin : "+sessionError.message+". Vérifie qu'un compte existe pour "+ADMIN_EMAIL+" dans Supabase (Authentication > Users), avec le même mot de passe.");
+        return;
+      }
       setAdminStep(false);
       setAdminCode2("");
       setFailedAttempts(0);
@@ -12772,7 +12784,7 @@ export default function App(){
     setTimeout(()=>setGlobalToast(null),3000);
     setTimeout(()=>setShowConfetti(false),4500);
   };
-  if(isAdmin) return <PageAdmin onLogout={()=>{ setIsAdmin(false); setPage("profil"); sauvegarderPrivé({onboarding_done:onboardingDone,popup_shown:[...popupShown],dark_mode:darkMode,filtres_memo_activ:filtresMemoActiv,filtres_memo_sortie:filtresMemoSortie,is_admin:false}); }} pendingContribs={pendingContribs} setPendingContribs={setPendingContribs} updateContrib={updateContrib} supprimerContrib={supprimerContrib} adminActivites={adminActivites} setAdminActivites={setAdminActivites} adminSorties={adminSorties} setAdminSorties={setAdminSorties} adminEvenements={adminEvenements} setAdminEvenements={setAdminEvenements} adminReports={adminReports} setAdminReports={setAdminReports} addDeletedTitle={addDeletedTitle} adminCustomEvents={customEvents} setAdminCustomEvents={setCustomEvents} sosLib={sosLib} setSosLib={setSosLib} sosModeActif={sosModeActif} setSosModeActif={setSosModeActif} ideesMomentConfig={ideesMomentConfig} setIdeesMomentConfig={setIdeesMomentConfig} evenementsSaisonniers={evenementsSaisonniers} setEvenementsSaisonniers={setEvenementsSaisonniers} betisesLutin={betisesLutin} setBetisesLutin={setBetisesLutin} cartesVoyageLutin={cartesVoyageLutin} setCartesVoyageLutin={setCartesVoyageLutin} customCatActivites={customCatActivites} setCustomCatActivites={setCustomCatActivites} customCatSorties={customCatSorties} setCustomCatSorties={setCustomCatSorties} customCatEvenements={customCatEvenements} setCustomCatEvenements={setCustomCatEvenements} adminComms={adminComms} setAdminComms={setAdminComms} ressourcesSites={ressourcesSites} setRessourcesSites={setRessourcesSites} ressourcesContacts={ressourcesContacts} setRessourcesContacts={setRessourcesContacts} ressourcesPdf={ressourcesPdf} setRessourcesPdf={setRessourcesPdf} devisBoostDemandes={devisBoostDemandes} setDevisBoostDemandes={setDevisBoostDemandes} boosts={boosts} setBoosts={setBoosts} activerBoost={activerBoost} retirerBoostSupabase={retirerBoostSupabase} demoMode={demoMode} setDemoMode={setDemoMode} premiumPourTous={premiumPourTous} togglePremiumPourTous={togglePremiumPourTous}/>;
+  if(isAdmin) return <PageAdmin onLogout={()=>{ setIsAdmin(false); setPage("profil"); supabase.auth.signOut().then(()=>{},()=>{}); sauvegarderPrivé({onboarding_done:onboardingDone,popup_shown:[...popupShown],dark_mode:darkMode,filtres_memo_activ:filtresMemoActiv,filtres_memo_sortie:filtresMemoSortie,is_admin:false}); }} pendingContribs={pendingContribs} setPendingContribs={setPendingContribs} updateContrib={updateContrib} supprimerContrib={supprimerContrib} adminActivites={adminActivites} setAdminActivites={setAdminActivites} adminSorties={adminSorties} setAdminSorties={setAdminSorties} adminEvenements={adminEvenements} setAdminEvenements={setAdminEvenements} adminReports={adminReports} setAdminReports={setAdminReports} addDeletedTitle={addDeletedTitle} adminCustomEvents={customEvents} setAdminCustomEvents={setCustomEvents} sosLib={sosLib} setSosLib={setSosLib} sosModeActif={sosModeActif} setSosModeActif={setSosModeActif} ideesMomentConfig={ideesMomentConfig} setIdeesMomentConfig={setIdeesMomentConfig} evenementsSaisonniers={evenementsSaisonniers} setEvenementsSaisonniers={setEvenementsSaisonniers} betisesLutin={betisesLutin} setBetisesLutin={setBetisesLutin} cartesVoyageLutin={cartesVoyageLutin} setCartesVoyageLutin={setCartesVoyageLutin} customCatActivites={customCatActivites} setCustomCatActivites={setCustomCatActivites} customCatSorties={customCatSorties} setCustomCatSorties={setCustomCatSorties} customCatEvenements={customCatEvenements} setCustomCatEvenements={setCustomCatEvenements} adminComms={adminComms} setAdminComms={setAdminComms} ressourcesSites={ressourcesSites} setRessourcesSites={setRessourcesSites} ressourcesContacts={ressourcesContacts} setRessourcesContacts={setRessourcesContacts} ressourcesPdf={ressourcesPdf} setRessourcesPdf={setRessourcesPdf} devisBoostDemandes={devisBoostDemandes} setDevisBoostDemandes={setDevisBoostDemandes} boosts={boosts} setBoosts={setBoosts} activerBoost={activerBoost} retirerBoostSupabase={retirerBoostSupabase} demoMode={demoMode} setDemoMode={setDemoMode} premiumPourTous={premiumPourTous} togglePremiumPourTous={togglePremiumPourTous}/>;
   return(
     <div style={{maxWidth:390,margin:"0 auto",background:BG,minHeight:"100vh",position:"relative",fontFamily:"system-ui,-apple-system,sans-serif",color:TX,transition:"background 0.3s,color 0.3s"}} className={darkMode?"dm":""}>
       <style>{`

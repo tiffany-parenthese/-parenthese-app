@@ -12686,9 +12686,7 @@ export default function App(){
           if(d.customCatActivites)setCustomCatActivites(d.customCatActivites);
           if(d.customCatSorties)setCustomCatSorties(d.customCatSorties);
           if(d.customCatEvenements)setCustomCatEvenements(d.customCatEvenements);
-          if(d.adminActivites)setAdminActivites(d.adminActivites);
-          if(d.adminSorties)setAdminSorties(d.adminSorties);
-          if(d.adminEvenements)setAdminEvenements(d.adminEvenements);
+          // adminActivites/adminSorties/adminEvenements chargés depuis Supabase, plus depuis le stockage local
           // sosLib chargé depuis Supabase, plus depuis le stockage local
           if(d.devisBoostDemandes)setDevisBoostDemandes(d.devisBoostDemandes);
           if(d.boosts)setBoosts(d.boosts);
@@ -12754,10 +12752,10 @@ export default function App(){
   useEffect(()=>{
     if(!dataLoaded)return;
     const timer=setTimeout(()=>{
-      sauvegarderPartagé({ideesMomentConfig,sosModeActif,pendingContribs,deletedTitles:[...deletedTitles],adminReports,customCatActivites,customCatSorties,customCatEvenements,adminActivites,adminSorties,adminEvenements,sosLib,devisBoostDemandes,boosts,ressourcesSites,ressourcesContacts,ressourcesPdf});
+      sauvegarderPartagé({ideesMomentConfig,sosModeActif,pendingContribs,deletedTitles:[...deletedTitles],adminReports,customCatActivites,customCatSorties,customCatEvenements,sosLib,devisBoostDemandes,boosts,ressourcesSites,ressourcesContacts,ressourcesPdf});
     },2000);
     return()=>clearTimeout(timer);
-  },[ideesMomentConfig,sosModeActif,pendingContribs,deletedTitles,adminReports,customCatActivites,customCatSorties,customCatEvenements,adminActivites,adminSorties,adminEvenements,sosLib,devisBoostDemandes,boosts,ressourcesSites,ressourcesContacts,ressourcesPdf,dataLoaded]);
+  },[ideesMomentConfig,sosModeActif,pendingContribs,deletedTitles,adminReports,customCatActivites,customCatSorties,customCatEvenements,sosLib,devisBoostDemandes,boosts,ressourcesSites,ressourcesContacts,ressourcesPdf,dataLoaded]);
 
   const leftTabs=[{k:"biblio",icon:"📖",label:"Biblio"},{k:"ressources",icon:"🧠",label:"Ressources"}];
   const rightTabs=[{k:"planning",icon:"📅",label:"Planning"},{k:"profil",icon:"👤",label:"Profil"}];

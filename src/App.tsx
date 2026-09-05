@@ -9859,7 +9859,10 @@ function DetailEvenement({evt,onBack,onSave,onDelete,onArchive,toggleCustom}){
 }
 
 function Saisonnier({sharedCustomEvents=[],setSharedCustomEvents,evenementsSaisonniers=[],setEvenementsSaisonniers,sharedActivites=[],setSharedActivites,betisesLutin=[],setBetisesLutin,cartesVoyageLutin=[],setCartesVoyageLutin}) {
-  const [sections,setSections] = useState(MOCK_SEASONAL);
+  const sections = MOCK_SEASONAL.map(m=>{
+    const reel=evenementsSaisonniers.find(e=>e.type===m.type);
+    return reel?{...m,id:reel.id,actif:!!reel.actif,banner:!!reel.banner,popup:!!reel.popup}:m;
+  });
   const customEvents = sharedCustomEvents;
   const setCustomEvents = setSharedCustomEvents||((fn)=>{});
   const [biblioNoel,setBiblioNoel] = useState(false);
@@ -9867,7 +9870,19 @@ function Saisonnier({sharedCustomEvents=[],setSharedCustomEvents,evenementsSaiso
   const [voyageLutinAdmin,setVoyageLutinAdmin] = useState(false);
   const [creerEvt,setCreerEvt] = useState(false);
   const [selectedEvt,setSelectedEvt] = useState(null); // event being viewed/edited
-  const toggle = (id,field) => setSections(sections.map(s=>s.id===id?{...s,[field]:!s[field]}:s));
+  const toggle = (id,field) => {
+    const sec = sections.find(s=>s.id===id);
+    if(!sec) return;
+    const nouvelleValeur = !sec[field];
+    const idReel = sec.id&&sec.id.length>3?sec.id:sec.type;
+    setEvenementsSaisonniers&&setEvenementsSaisonniers(prev=>{
+      const existe = prev.find(e=>e.type===sec.type);
+      if(existe) return prev.map(e=>e.type===sec.type?{...e,[field]:nouvelleValeur}:e);
+      return [...prev,{id:idReel,type:sec.type,nom:sec.nom,actif:field==="actif"?nouvelleValeur:false,banner:field==="banner"?nouvelleValeur:false,popup:field==="popup"?nouvelleValeur:false}];
+    });
+    const payload={id:idReel,type:sec.type,nom:sec.nom,[field]:nouvelleValeur};
+    supabase.from("evenements_saisonniers_config").upsert(payload).then(()=>{},()=>{});
+  };
   const toggleCustom = (id,field) => setCustomEvents(prev=>prev.map(e=>e.id===id?{...e,[field]:!e[field]}:e));
   const updateFreemium = (id,changes) => {
     setEvenementsSaisonniers&&setEvenementsSaisonniers(prev=>prev.map(e=>e.id===id?{...e,...changes}:e));
@@ -9875,10 +9890,7 @@ function Saisonnier({sharedCustomEvents=[],setSharedCustomEvents,evenementsSaiso
     const merged={...item,...changes};
     const payload={id,type:merged.type,nom:merged.nom,actif:merged.actif,essai_actif:merged.essaiActif,
       apercu_gratuit_jours:merged.apercuGratuitJours,apercu_gratuit_type:merged.apercuGratuitType,apercu_gratuit_cartes_postales:merged.apercuGratuitCartesPostales};
-    console.log("[DEBUG saisonnier] Payload envoyé à Supabase :",payload);
-    supabase.from("evenements_saisonniers_config").upsert(payload).then(
-      (res)=>{ if(res.error) console.log("[DEBUG saisonnier] ERREUR upsert :",res.error); else console.log("[DEBUG saisonnier] Upsert réussi :",res); }
-    );
+    supabase.from("evenements_saisonniers_config").upsert(payload).then(()=>{},()=>{});
   };
   const handleSaveCustom = (evt) => { setCustomEvents(prev=>[...prev,evt]); setCreerEvt(false); };
   const handleUpdateEvt = (updated) => { setCustomEvents(prev=>prev.map(e=>e.id===updated.id?updated:e)); setSelectedEvt(null); };

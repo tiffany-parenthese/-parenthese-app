@@ -4055,12 +4055,7 @@ function PageAccueil({favoris,setFavoris,setPage,customEvents=[],popupShown=new 
             <p style={{margin:"0 0 16px",fontSize:13,color:TX,lineHeight:1.6}}>{evt.desc}</p>
             <div style={{marginBottom:16}}>
               <p style={{margin:"0 0 8px",fontSize:13,fontWeight:700,color:TX}}>🧩 Infos accessibilité TND</p>
-              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>
-                <div style={{background:"#D1FAE5",borderRadius:10,padding:"6px 10px",display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:14}}>🔈</span><div><div style={{fontSize:10,color:TM}}>Son</div><div style={{fontSize:12,fontWeight:600,color:"#065F46"}}>Calme</div></div></div>
-                <div style={{background:"#DBEAFE",borderRadius:10,padding:"6px 10px",display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:14}}>👥</span><div><div style={{fontSize:10,color:TM}}>Affluence</div><div style={{fontSize:12,fontWeight:600,color:"#1E3A5F"}}>Faible</div></div></div>
-                <div style={{background:"#D1FAE5",borderRadius:10,padding:"6px 10px",display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:14}}>🔮</span><div><div style={{fontSize:10,color:TM}}>Prévisibilité</div><div style={{fontSize:12,fontWeight:600,color:"#065F46"}}>Structurée</div></div></div>
-                <div style={{background:"#F0FDF4",borderRadius:10,padding:"6px 10px",display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:14}}>🌿</span><div><div style={{fontSize:10,color:TM}}>Zone calme</div><div style={{fontSize:12,fontWeight:600,color:"#374151"}}>Oui</div></div></div>
-              </div>
+              <TNDBadgesEvt tnd={evt.tnd}/>
             </div>
             <button onClick={()=>setShowEvtAdminSheet(false)} style={{width:"100%",padding:"12px 0",borderRadius:28,background:OR,border:"none",color:WH,fontWeight:700,fontSize:13,cursor:"pointer"}}>✅ Noté, on y va !</button>
           </div>

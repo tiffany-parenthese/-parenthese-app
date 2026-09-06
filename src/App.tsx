@@ -884,19 +884,7 @@ function BottomSheet({item,type,onClose,onFav,isFav,onDone,onMasquer}){
         <textarea value={note} onChange={e=>setNote(e.target.value)} placeholder="Un conseil ou une remarque en plus ? (optionnel)" rows={2} style={{width:"100%",padding:"10px 14px",borderRadius:12,border:BD,fontSize:13,resize:"none",boxSizing:"border-box",outline:"none",fontFamily:"inherit",marginBottom:12}}/>
         <div style={{display:"flex",gap:10}}>
           <button onClick={()=>setShowNote(false)} style={{flex:1,padding:12,borderRadius:28,background:BG,border:"none",color:TM,fontWeight:600,cursor:"pointer"}}>Annuler</button>
-          <button onClick={async()=>{
-            const selection=isActivite?ptsSel:accessSel;
-            if(selection.length>0&&item.id){
-              try{
-                const key=`avis_${isActivite?"activite":"sortie"}_${item.id}`;
-                const res=await window.storage.get(key,true).catch(()=>null);
-                const existants=res&&res.value?JSON.parse(res.value):[];
-                const contrib=isActivite
-                  ?{stars:0,pseudo:"Toi",temps:"A l'instant",texte:"",pointsAnticiper:selection,pointsOnly:true}
-                  :{stars:0,pseudo:"Toi",temps:"A l'instant",texte:"",accessibiliteSignalee:selection,pointsOnly:true};
-                await window.storage.set(key,JSON.stringify([contrib,...existants]),true);
-              }catch(e){ /* la contribution reste enregistrée localement dans l'historique même si le partage échoue */ }
-            }
+          <button onClick={()=>{
             onDone({...item,_note:note,_pointsAnticiper:isActivite?ptsSel:undefined,_accessibiliteSignalee:!isActivite?accessSel:undefined,_date:new Date().toISOString()});onClose();
           }} style={{flex:2,padding:12,borderRadius:28,background:"#10B981",border:"none",color:WH,fontWeight:700,fontSize:14,cursor:"pointer"}}>✓ Enregistrer !</button>
         </div>

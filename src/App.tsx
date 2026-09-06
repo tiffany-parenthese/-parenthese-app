@@ -6871,17 +6871,27 @@ function PageProfil({setPage,enfants=[],setEnfants,enfantActif,setEnfantActif,sh
   const progressPct=Math.round((tropheesDebloques/trophees.length)*100);
   const tropheesProg=trophees.slice(0,5);
   const tropheesSpec=trophees.slice(5);
-  const contributionsTotalPrecedent=useRef(null);
+  const [notifiedTrophies,setNotifiedTrophies]=useState(null); // null = pas encore chargé depuis Supabase
   useEffect(()=>{
-    if(contributionsTotalPrecedent.current===null){
-      contributionsTotalPrecedent.current=contributions;
-      return;
+    if(!currentUser?.id){setNotifiedTrophies([]);return;}
+    (async()=>{
+      try{
+        const {data}=await supabase.from("profiles").select("trophees_notifies").eq("id",currentUser.id).single();
+        setNotifiedTrophies(Array.isArray(data?.trophees_notifies)?data.trophees_notifies:[]);
+      }catch(e){ setNotifiedTrophies([]); }
+    })();
+  },[currentUser?.id]);
+  useEffect(()=>{
+    if(notifiedTrophies===null)return; // pas encore chargé — on ne décide rien tant qu'on n'a pas l'historique réel
+    const nouveauxDebloques=trophees.filter(t=>isDebloque(t)&&!notifiedTrophies.includes(t.id));
+    if(nouveauxDebloques.length>0){
+      const t=nouveauxDebloques[0];
+      setPopupTrophee(t);
+      const maj=[...notifiedTrophies,t.id];
+      setNotifiedTrophies(maj);
+      if(currentUser?.id)supabase.from("profiles").update({trophees_notifies:maj}).eq("id",currentUser.id).then(()=>{},()=>{});
     }
-    const prev=contributionsTotalPrecedent.current;
-    const nouveauxDebloques=trophees.filter(t=>contributions[t.type]>=t.requis&&(prev[t.type]||0)<t.requis);
-    if(nouveauxDebloques.length>0)setPopupTrophee(nouveauxDebloques[0]);
-    contributionsTotalPrecedent.current=contributions;
-  },[contributions.total,contributions.activites,contributions.sorties,contributions.evenements,contributions.tnd]);
+  },[notifiedTrophies,contributions.total,contributions.activites,contributions.sorties,contributions.evenements,contributions.tnd]);
   if(subPage==="notifications") return <PageNotifications onBack={()=>setSubPage(null)}/>;
   if(subPage==="confidentialite") return <PageConfidentialite onBack={()=>setSubPage(null)} onDeleteAccount={onDeleteAccount}/>;
   if(subPage==="aide") return <PageAide onBack={()=>setSubPage(null)} onGoConfidentialite={()=>setSubPage("confidentialite")} isPremium={isPremium} setPremium={setPremium} onOpenPremium={onOpenPremium}/>;

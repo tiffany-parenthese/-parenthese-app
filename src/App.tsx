@@ -2949,7 +2949,7 @@ function Confetti({active}){
 function Onboarding({onDone,onDemo}){
   const [step,setStep]=useState(0);
   const steps=[
-    {emoji:"🧩",titre:"Bienvenue sur Parent'Hèse",desc:"L'app pensée pour les familles avec des enfants TND — TSA, TDAH, DYS. Trouvez des activités et sorties adaptées en quelques secondes.",bg:"linear-gradient(135deg,#6C5CE7,#a78bfa)"},
+    {emoji:"🧩",titre:"Bienvenue sur Parent'Hèse",desc:"L'app pensée pour tous les parents — et particulièrement pour ceux d'enfants à besoins particuliers (TSA, TDAH, DYS...). Trouvez des activités et sorties adaptées en quelques secondes.",bg:"linear-gradient(135deg,#6C5CE7,#a78bfa)"},
     {emoji:"🪄",titre:"Générez des idées adaptées",desc:"Décrivez l'énergie et l'humeur du moment, l'app propose des activités personnalisées selon les besoins sensoriels de votre enfant.",bg:"linear-gradient(135deg,#10B981,#34d399)"},
     {emoji:"🗺️",titre:"Découvrez les sorties près de chez vous",desc:"Parcs, musées, fermes pédagogiques… filtrés par accessibilité et adaptabilité TND. Avec les avis d'autres parents.",bg:"linear-gradient(135deg,#F59E0B,#fcd34d)"},
     {emoji:"📅",titre:"Planifiez la semaine",desc:"Générez un planning d'activités sur mesure pour 3 ou 7 jours. L'emploi du temps en pictogrammes aide votre enfant à se préparer.",bg:"linear-gradient(135deg,#EC4899,#f9a8d4)"},

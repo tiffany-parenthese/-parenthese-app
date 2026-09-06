@@ -228,8 +228,8 @@ const SORTIES=[
 // CONFIGURATION ADMINISTRATEUR
 // Code secret administrateur — à changer avant mise en production
 // Fonction de hash simple (FNV-1a 32bit) pour comparer les credentials sans les exposer en clair
-const simpleHash=(s)=>{let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=(h*16777619)>>>0;}return h.toString(16).padStart(8,"0").repeat(8);};
-const ADMIN_EMAIL = "admin@parenthese.fr"; // conservé pour l'affichage du "mot de passe oublié"
+// L'email et le mot de passe de l'admin ne sont plus stockés dans le code :
+// ils vivent uniquement dans Supabase (table admin_users + Authentication).
 // Idees du moment — mettre à false pour masquer chaque vignette
 const SHOW_IDEE_ACTIVITES_CREATIVES = true;
 const SHOW_IDEE_SORTIES_NATURE      = true;

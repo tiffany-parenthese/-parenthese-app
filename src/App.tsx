@@ -12482,7 +12482,7 @@ export default function App(){
       }catch(err){ /* erreur réseau — reste vide */ }
     })();
   },[]);
-  const [adminComms,setAdminComms]=useState(MOCK_COMMS);
+  const [adminComms,setAdminComms]=useState([]);
   const [ressourcesSites,setRessourcesSites]=useState(MOCK_RESSOURCES_SITES);
   const [ressourcesContacts,setRessourcesContacts]=useState(MOCK_RESSOURCES_CONTACTS);
   const [ressourcesPdf,setRessourcesPdf]=useState(MOCK_RESSOURCES_PDF);

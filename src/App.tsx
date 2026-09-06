@@ -12753,8 +12753,8 @@ export default function App(){
     })();
   },[]);
   // ── Sauvegarde globale — toutes les données privées en 1 clé ─────────────
-  const sauvegarderPrivé=async(données)=>{
-    try{ await window.storage.set("app_v1_private",JSON.stringify(données),false); }catch(e){}
+  const sauvegarderPrivé=(données)=>{
+    try{ localStorage.setItem("app_v1_private",JSON.stringify(données)); }catch(e){}
   };
   const sauvegarderPartagé=async(données)=>{
     try{ await window.storage.set("app_v1_shared",JSON.stringify(données),true); }catch(e){}
@@ -12762,18 +12762,18 @@ export default function App(){
 
   useEffect(()=>{
     (async()=>{
-      // 2 lectures au lieu de 24 → évite totalement le rate limit
+      // Préférences propres à cet appareil (onboarding, popups vus, mode sombre, filtres mémorisés)
       try{
-        const prv=await window.storage.get("app_v1_private",false);
-        if(prv&&prv.value){
-          const d=JSON.parse(prv.value);
+        const prvRaw=localStorage.getItem("app_v1_private");
+        if(prvRaw){
+          const d=JSON.parse(prvRaw);
           // favoris chargés depuis Supabase, plus depuis le stockage local
           // masquees chargés depuis Supabase, plus depuis le stockage local
           // enfants chargés depuis Supabase, plus depuis le stockage local
           if(d.onboarding_done)setOnboardingDone(d.onboarding_done);
           if(d.popup_shown)setPopupShown(new Set(Array.isArray(d.popup_shown)?d.popup_shown:[]));
           if(d.dark_mode!==undefined)setDarkMode(d.dark_mode);
-          if(d.is_admin)setIsAdmin(true);
+          // is_admin volontairement non restauré : l'accès admin redemande toujours le mot de passe + le code
           // historique chargé depuis Supabase, plus depuis le stockage local
           if(d.premium_trial_used)setPremiumTrialUsed(d.premium_trial_used);
           if(d.trial_end_date)setTrialEndDate(d.trial_end_date);
@@ -12846,7 +12846,7 @@ export default function App(){
   useEffect(()=>{
     if(!dataLoaded)return;
     const timer=setTimeout(()=>{
-      sauvegarderPrivé({onboarding_done:onboardingDone,popup_shown:[...popupShown],dark_mode:darkMode,filtres_memo_activ:filtresMemoActiv,filtres_memo_sortie:filtresMemoSortie,is_admin:isAdmin});
+      sauvegarderPrivé({onboarding_done:onboardingDone,popup_shown:[...popupShown],dark_mode:darkMode,filtres_memo_activ:filtresMemoActiv,filtres_memo_sortie:filtresMemoSortie});
     },1500);
     return()=>clearTimeout(timer);
   },[popupShown,onboardingDone,historiqueActivites,darkMode,filtresMemoActiv,filtresMemoSortie,dataLoaded,isAdmin]);
@@ -12875,7 +12875,7 @@ export default function App(){
     setTimeout(()=>setGlobalToast(null),3000);
     setTimeout(()=>setShowConfetti(false),4500);
   };
-  if(isAdmin) return <PageAdmin onLogout={()=>{ setIsAdmin(false); setPage("profil"); supabase.auth.signOut().then(()=>{},()=>{}); sauvegarderPrivé({onboarding_done:onboardingDone,popup_shown:[...popupShown],dark_mode:darkMode,filtres_memo_activ:filtresMemoActiv,filtres_memo_sortie:filtresMemoSortie,is_admin:false}); }} pendingContribs={pendingContribs} setPendingContribs={setPendingContribs} updateContrib={updateContrib} supprimerContrib={supprimerContrib} adminActivites={adminActivites} setAdminActivites={setAdminActivites} adminSorties={adminSorties} setAdminSorties={setAdminSorties} adminEvenements={adminEvenements} setAdminEvenements={setAdminEvenements} adminReports={adminReports} setAdminReports={setAdminReports} addDeletedTitle={addDeletedTitle} adminCustomEvents={customEvents} setAdminCustomEvents={setCustomEvents} sosLib={sosLib} setSosLib={setSosLib} sosModeActif={sosModeActif} setSosModeActif={setSosModeActif} ideesMomentConfig={ideesMomentConfig} setIdeesMomentConfig={setIdeesMomentConfig} evenementsSaisonniers={evenementsSaisonniers} setEvenementsSaisonniers={setEvenementsSaisonniers} betisesLutin={betisesLutin} setBetisesLutin={setBetisesLutin} cartesVoyageLutin={cartesVoyageLutin} setCartesVoyageLutin={setCartesVoyageLutin} customCatActivites={customCatActivites} setCustomCatActivites={setCustomCatActivites} customCatSorties={customCatSorties} setCustomCatSorties={setCustomCatSorties} customCatEvenements={customCatEvenements} setCustomCatEvenements={setCustomCatEvenements} adminComms={adminComms} setAdminComms={setAdminComms} ressourcesSites={ressourcesSites} setRessourcesSites={setRessourcesSites} ressourcesContacts={ressourcesContacts} setRessourcesContacts={setRessourcesContacts} ressourcesPdf={ressourcesPdf} setRessourcesPdf={setRessourcesPdf} devisBoostDemandes={devisBoostDemandes} setDevisBoostDemandes={setDevisBoostDemandes} boosts={boosts} setBoosts={setBoosts} activerBoost={activerBoost} retirerBoostSupabase={retirerBoostSupabase} demoMode={demoMode} setDemoMode={setDemoMode} premiumPourTous={premiumPourTous} togglePremiumPourTous={togglePremiumPourTous} appLogo={appLogo} setAppLogo={setAppLogo}/>;
+  if(isAdmin) return <PageAdmin onLogout={()=>{ setIsAdmin(false); setPage("profil"); supabase.auth.signOut().then(()=>{},()=>{}); sauvegarderPrivé({onboarding_done:onboardingDone,popup_shown:[...popupShown],dark_mode:darkMode,filtres_memo_activ:filtresMemoActiv,filtres_memo_sortie:filtresMemoSortie}); }} pendingContribs={pendingContribs} setPendingContribs={setPendingContribs} updateContrib={updateContrib} supprimerContrib={supprimerContrib} adminActivites={adminActivites} setAdminActivites={setAdminActivites} adminSorties={adminSorties} setAdminSorties={setAdminSorties} adminEvenements={adminEvenements} setAdminEvenements={setAdminEvenements} adminReports={adminReports} setAdminReports={setAdminReports} addDeletedTitle={addDeletedTitle} adminCustomEvents={customEvents} setAdminCustomEvents={setCustomEvents} sosLib={sosLib} setSosLib={setSosLib} sosModeActif={sosModeActif} setSosModeActif={setSosModeActif} ideesMomentConfig={ideesMomentConfig} setIdeesMomentConfig={setIdeesMomentConfig} evenementsSaisonniers={evenementsSaisonniers} setEvenementsSaisonniers={setEvenementsSaisonniers} betisesLutin={betisesLutin} setBetisesLutin={setBetisesLutin} cartesVoyageLutin={cartesVoyageLutin} setCartesVoyageLutin={setCartesVoyageLutin} customCatActivites={customCatActivites} setCustomCatActivites={setCustomCatActivites} customCatSorties={customCatSorties} setCustomCatSorties={setCustomCatSorties} customCatEvenements={customCatEvenements} setCustomCatEvenements={setCustomCatEvenements} adminComms={adminComms} setAdminComms={setAdminComms} ressourcesSites={ressourcesSites} setRessourcesSites={setRessourcesSites} ressourcesContacts={ressourcesContacts} setRessourcesContacts={setRessourcesContacts} ressourcesPdf={ressourcesPdf} setRessourcesPdf={setRessourcesPdf} devisBoostDemandes={devisBoostDemandes} setDevisBoostDemandes={setDevisBoostDemandes} boosts={boosts} setBoosts={setBoosts} activerBoost={activerBoost} retirerBoostSupabase={retirerBoostSupabase} demoMode={demoMode} setDemoMode={setDemoMode} premiumPourTous={premiumPourTous} togglePremiumPourTous={togglePremiumPourTous} appLogo={appLogo} setAppLogo={setAppLogo}/>;
   return(
     <div style={{maxWidth:390,margin:"0 auto",background:BG,minHeight:"100vh",position:"relative",fontFamily:"system-ui,-apple-system,sans-serif",color:TX,transition:"background 0.3s,color 0.3s"}} className={darkMode?"dm":""}>
       <style>{`

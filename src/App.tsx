@@ -12215,7 +12215,7 @@ export default function App(){
     (async()=>{
       try{
         const {data:{session}}=await supabase.auth.getSession();
-        if(session?.user&&actif){
+        if(session?.user&&actif&&session.user.email?.toLowerCase()!==ADMIN_EMAIL.toLowerCase()){
           const profil=await chargerOuReparerProfil(session.user);
           setCurrentUser({id:session.user.id,nom:profil?.nom||"",email:session.user.email,premium:!!profil?.premium});
           setPremiumTrialUsed(!!profil?.premium_trial_used);
@@ -12232,7 +12232,7 @@ export default function App(){
     })();
     const {data:listener}=supabase.auth.onAuthStateChange(async(event,session)=>{
       if(event==="SIGNED_OUT"){setCurrentUser(null);setPremiumTrialUsed(false);setTrialEndDate(null);setEnfants([]);setEnfantActif("");setFavoris([]);favorisChargesDepuisServeur.current=false;setMasquees([]);masqueesChargeesDepuisServeur.current=false;return;}
-      if(session?.user){
+      if(session?.user&&session.user.email?.toLowerCase()!==ADMIN_EMAIL.toLowerCase()){
         const profil=await chargerOuReparerProfil(session.user);
         setCurrentUser({id:session.user.id,nom:profil?.nom||"",email:session.user.email,premium:!!profil?.premium});
         setPremiumTrialUsed(!!profil?.premium_trial_used);

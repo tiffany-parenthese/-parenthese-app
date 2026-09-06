@@ -11558,29 +11558,29 @@ function Admins() {
   const [chargement,setChargement] = useState(true);
   const [search,setSearch] = useState("");
   const [modal,setModal] = useState(null);
-  const [form,setForm] = useState({prenom:"",nom:"",email:"",role:"moderateur"});
-  useEffect(()=>{
-    (async()=>{
-      try{
-        const {data}=await supabase.from("admin_users").select("*").order("created_at",{ascending:false});
-        setAdmins(data||[]);
-      }catch(e){ /* erreur réseau — liste reste vide */ }
-      finally{ setChargement(false); }
-    })();
-  },[]);
+  const [form,setForm] = useState({prenom:"",nom:"",email:"",role:"moderateur",code2fa:""});
+  const chargerAdmins=async()=>{
+    try{
+      const {data}=await supabase.rpc("list_admin_users");
+      setAdmins(data||[]);
+    }catch(e){ /* erreur réseau — liste reste vide */ }
+    finally{ setChargement(false); }
+  };
+  useEffect(()=>{ chargerAdmins(); },[]);
   const save = async () => {
     if(!form.prenom||!form.nom||!form.email) return;
+    if(modal?.mode!=="edit"&&!/^\d{4,8}$/.test(form.code2fa.trim())){alert("Le code d'accès doit faire entre 4 et 8 chiffres.");return;}
     const payload={prenom:form.prenom.trim(),nom:form.nom.trim(),email:form.email.trim().toLowerCase(),role:form.role};
+    if(form.code2fa.trim())payload.code_2fa=form.code2fa.trim();
     if(modal?.mode==="edit"){
       const {error}=await supabase.from("admin_users").update(payload).eq("id",modal.item.id);
       if(error){alert("Erreur : "+error.message);return;}
-      setAdmins(admins.map(a=>a.id===modal.item.id?{...a,...payload}:a));
     }else{
-      const {data:inserted,error}=await supabase.from("admin_users").insert({...payload,statut:"active"}).select().single();
+      const {error}=await supabase.from("admin_users").insert({...payload,statut:"active"});
       if(error){alert("Erreur : "+error.message+" (l'email existe peut-être déjà)");return;}
-      if(inserted)setAdmins([inserted,...admins]);
     }
     setModal(null);
+    chargerAdmins();
   };
   const toggleStatut = async (admin) => {
     const nouveauStatut=admin.statut==="active"?"suspended":"active";
@@ -11597,10 +11597,10 @@ function Admins() {
     <div>
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:20}}>
         <div><h1 style={{fontSize:22,fontWeight:800,color:C.text,margin:0}}>Administrateurs</h1><p style={{fontSize:13,color:C.muted,margin:"4px 0 0"}}>Gérez les accès à l'interface admin</p></div>
-        <button style={s.btn(C.accent)} onClick={()=>{setForm({prenom:"",nom:"",email:"",role:"moderateur"});setModal({mode:"add"});}}>+ Nouvel admin</button>
+        <button style={s.btn(C.accent)} onClick={()=>{setForm({prenom:"",nom:"",email:"",role:"moderateur",code2fa:""});setModal({mode:"add"});}}>+ Nouvel admin</button>
       </div>
       <div style={{background:"rgba(124,58,237,0.08)",borderRadius:12,padding:"12px 16px",marginBottom:16,fontSize:12,color:C.muted,lineHeight:1.5}}>
-        ℹ️ Ajouter quelqu'un ici lui donne un <strong>rôle</strong>, mais ne crée pas son mot de passe. Pour qu'il puisse vraiment se connecter, crée aussi son compte dans Supabase → Authentication → Users, avec le même email, puis transmets-lui le mot de passe à la main.
+        ℹ️ Ajouter quelqu'un ici lui donne un <strong>rôle</strong> et un <strong>code d'accès personnel</strong>, mais ne crée pas son mot de passe. Pour qu'il puisse vraiment se connecter, crée aussi son compte dans Supabase → Authentication → Users, avec le même email, puis transmets-lui le mot de passe <strong>et</strong> son code à la main. Par sécurité, ces codes ne sont jamais réaffichés ensuite, même à toi.
       </div>
       {chargement&&<p style={{fontSize:13,color:C.muted,marginBottom:16}}>Chargement...</p>}
       <SearchBar value={search} onChange={setSearch} placeholder="Rechercher un administrateur..."/>
@@ -11618,7 +11618,7 @@ function Admins() {
             </div>
             {statutBadge(admin.statut)}
             <div style={{display:"flex",gap:6,marginTop:12,paddingTop:12,borderTop:`1px solid ${C.border}`}}>
-              <button style={{...s.btnOutline(C.accent),flex:1}} onClick={()=>{setForm({prenom:admin.prenom,nom:admin.nom,email:admin.email,role:admin.role});setModal({mode:"edit",item:admin});}}>✏️</button>
+              <button style={{...s.btnOutline(C.accent),flex:1}} onClick={()=>{setForm({prenom:admin.prenom,nom:admin.nom,email:admin.email,role:admin.role,code2fa:""});setModal({mode:"edit",item:admin});}}>✏️</button>
               {admin.role!=="super_admin"&&<>
                 <button style={s.btnOutline(admin.statut==="active"?C.yellow:C.green)} onClick={()=>toggleStatut(admin)}>{admin.statut==="active"?"⏸":"▶"}</button>
                 <button style={s.btnOutline(C.red)} onClick={()=>supprimer(admin.id)}>🗑️</button>
@@ -11635,13 +11635,16 @@ function Admins() {
         </div>
         <AdminField label="Email"><input style={s.input} type="email" value={form.email||""} onChange={e=>setForm({...form,email:e.target.value})} disabled={modal.mode==="edit"}/></AdminField>
         <AdminField label="Rôle"><select style={s.input} value={form.role||"moderateur"} onChange={e=>setForm({...form,role:e.target.value})}><option value="moderateur">👁️ Modérateur</option><option value="admin">🛡️ Admin</option><option value="super_admin">👑 Super Admin</option></select></AdminField>
+        <AdminField label={modal.mode==="edit"?"Nouveau code d'accès (laisser vide pour ne pas le changer)":"Code d'accès (4 à 8 chiffres) *"}>
+          <input style={{...s.input,fontFamily:"monospace",letterSpacing:2}} value={form.code2fa||""} onChange={e=>setForm({...form,code2fa:e.target.value.replace(/\D/g,"")})} placeholder="Ex : 481920" maxLength={8}/>
+        </AdminField>
         <div style={{background:"rgba(124,58,237,0.08)",borderRadius:10,padding:12,marginBottom:14,fontSize:12,color:C.muted}}>
           {form.role==="super_admin"&&"• Accès complet + gestion des administrateurs"}
           {form.role==="admin"&&"• Tout, sauf la gestion des administrateurs"}
           {form.role==="moderateur"&&"• Modération des contributions et signalements uniquement"}
         </div>
         {modal.mode!=="edit"&&<div style={{background:"rgba(245,158,11,0.1)",borderRadius:10,padding:12,marginBottom:14,fontSize:12,color:"#92400e"}}>
-          ⚠️ N'oublie pas de créer aussi le compte de connexion pour <strong>{form.email||"cet email"}</strong> dans Supabase → Authentication → Users, avec un mot de passe que tu lui transmettras.
+          ⚠️ N'oublie pas de créer aussi le compte de connexion pour <strong>{form.email||"cet email"}</strong> dans Supabase → Authentication → Users, avec un mot de passe que tu lui transmettras, en plus de ce code.
         </div>}
         <div style={{display:"flex",justifyContent:"flex-end",gap:8}}>
           <button style={s.btnOutline(C.muted)} onClick={()=>setModal(null)}>Annuler</button>
@@ -12081,8 +12084,11 @@ function PageAuth({ onAuthSuccess, onCancel, onAdminSuccess, logo }) {
 
   // Validation du 2ème facteur admin
   const handleAdminCode2 = async () => {
-    const SECRET_2FA="875010"; // Peut être changé indépendamment du mot de passe
-    if(adminCode2.trim()===SECRET_2FA){
+    if(!pendingAdmin?.code_2fa){
+      setError("Aucun code d'accès n'est configuré pour ce compte. Demande à un super admin de t'en attribuer un depuis la page Administrateurs.");
+      return;
+    }
+    if(adminCode2.trim()===pendingAdmin.code_2fa){
       setLoading(true);
       // Ouvre une vraie session Supabase pour l'admin, indispensable pour que les écritures
       // (créer/modifier une activité, sortie, événement...) passent les règles de sécurité (RLS).

@@ -4440,16 +4440,12 @@ function PageSOS({sosLib=[],isPremium=false,onOpenPremium,onBack}){
   );
 }
 
-function PagePlanning({sosLib=[],enfants=[],enfantActif,setEnfantActif,isPremium=false,onOpenPremium,sosModeActif=true,adminActivites=[],pendingContribs=[],deletedTitles=new Set(),masquees=[],adminReports=[],currentUser=null}){
-  const [count,setCount]=useState(3);
-  const [energieP,setEnergieP]=useState(null);
-  const [lieuP,setLieuP]=useState(null);
-  const [semaineType,setSemaineType]=useState(null); // null | "semaine" | "weekend"
-  const [planning,setPlanning]=useState([]);
+function PagePlanning({sosLib=[],enfants=[],enfantActif,setEnfantActif,isPremium=false,onOpenPremium,sosModeActif=true,adminActivites=[],pendingContribs=[],deletedTitles=new Set(),masquees=[],adminReports=[],currentUser=null,count=3,setCount,energieP=null,setEnergieP,lieuP=null,setLieuP,semaineType=null,setSemaineType,planning=[],setPlanning,materielDispo=[],setMaterielDispo,sansMateriel=false,setSansMateriel,enfantsSelectionnes=[],setEnfantsSelectionnes,checkedMat={},setCheckedMat}){
   const [detailActivitePlanning,setDetailActivitePlanning]=useState(null);
   const [showFiltresMat,setShowFiltresMat]=useState(false);
-  const [materielDispo,setMaterielDispo]=useState([]);
-  const [enfantsSelectionnes,setEnfantsSelectionnes]=useState(enfantActif?[enfantActif]:[]);
+  useEffect(()=>{
+    if(enfantsSelectionnes.length===0&&enfantActif)setEnfantsSelectionnes([enfantActif]);
+  },[enfantActif]);
   const joursBase=["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"];
   const joursSemaine=["Lundi","Mardi","Mercredi","Jeudi","Vendredi"];
   const joursWeekend=["Samedi","Dimanche"];
@@ -4462,7 +4458,6 @@ function PagePlanning({sosLib=[],enfants=[],enfantActif,setEnfantActif,isPremium
   const toutesActivitesP=[...ACTIVITES,...adminPubP,...approvedActsP].filter(a=>!blockedTitlesP.has(a.nom)&&!blockedTitlesP.has(a.titre)).filter(a=>!masqueesActKeysP.has(String(a.id))&&!masqueesActKeysP.has(String(a.nom))&&!masqueesActKeysP.has(String(a.titre)));
   const enfantCourantP=enfants.find(e=>e.id===enfantActif);
   const ALL_MATERIEL=[...new Set(toutesActivitesP.flatMap(a=>a.materiel||[]))].sort();
-  const [sansMateriel,setSansMateriel]=useState(false);
   const toggleMat=(m)=>setMaterielDispo(prev=>prev.includes(m)?prev.filter(x=>x!==m):[...prev,m]);
   const actMatOk=(a)=>{
     if(sansMateriel&&(a.materiel||[]).length>0)return false;
@@ -4495,7 +4490,6 @@ function PagePlanning({sosLib=[],enfants=[],enfantActif,setEnfantActif,isPremium
     setPlanning(prev=>prev.map((p,idx)=>idx===i?{...p,activite:shortlist[Math.floor(Math.random()*shortlist.length)]}:p));
   };
   const allMateriel=[...new Set(planning.flatMap(p=>p.activite?.materiel||[]))];
-  const [checkedMat,setCheckedMat]=useState({});
   const toggleChecked=(m)=>setCheckedMat(prev=>({...prev,[m]:!prev[m]}));
 
   // Sauvegarde / restauration du planning + liste de courses (stockage personnel persistant)
@@ -12258,6 +12252,17 @@ export default function App(){
     setPage("accueil");
   };
   const [demoMode,setDemoMode]=useState(false);
+  // Planning hebdo — état remonté ici (au lieu d'être local à PagePlanning) pour
+  // qu'il ne se réinitialise pas quand on navigue vers un autre onglet puis qu'on revient.
+  const [planningCount,setPlanningCount]=useState(3);
+  const [planningEnergie,setPlanningEnergie]=useState(null);
+  const [planningLieu,setPlanningLieu]=useState(null);
+  const [planningSemaineType,setPlanningSemaineType]=useState(null);
+  const [planning,setPlanning]=useState([]);
+  const [planningMaterielDispo,setPlanningMaterielDispo]=useState([]);
+  const [planningSansMateriel,setPlanningSansMateriel]=useState(false);
+  const [planningEnfantsSelectionnes,setPlanningEnfantsSelectionnes]=useState([]);
+  const [planningCheckedMat,setPlanningCheckedMat]=useState({});
   const [premiumPourTous,setPremiumPourTous]=useState(false);
   const [appLogo,setAppLogoState]=useState(null);
   useEffect(()=>{
@@ -12919,7 +12924,7 @@ export default function App(){
         {page==="accueil"&&<PageAccueil favoris={favoris} setFavoris={setFavoris} setPage={setPage} customEvents={customEvents} popupShown={popupShown} setPopupShown={setPopupShown} ideesMomentConfig={ideesMomentConfig} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} evenementsSaisonniers={evenementsSaisonniers} isPremium={isPremiumUser} onOpenPremium={openPremium} customCatActivites={customCatActivites} customCatSorties={customCatSorties} customCatEvenements={customCatEvenements} adminActivites={adminActivites} adminSorties={adminSorties} pendingContribs={pendingContribs} setPendingContribs={setPendingContribs} deletedTitles={deletedTitles} currentUser={currentUser} sosModeActif={sosModeActif} enfants={enfants} enfantActif={enfantActif} setEnfantActif={setEnfantActif} onMarquerFait={marquerActiviteFaite} historiqueActivites={historiqueActivites} filtresMemoActiv={filtresMemoActiv} setFiltresMemoActiv={setFiltresMemoActiv} filtresMemoSortie={filtresMemoSortie} setFiltresMemoSortie={setFiltresMemoSortie} adminComms={adminComms} masquees={masquees} toggleMasquer={toggleMasquer} estMasque={estMasque} ajouterDemandeDevisBoost={ajouterDemandeDevisBoost} trialEndDate={trialEndDate} betisesLutin={betisesLutin} cartesVoyageLutin={cartesVoyageLutin}/>}
         {page==="biblio"&&<PageBiblio pendingContribs={pendingContribs} setPendingContribs={setPendingContribs} adminActivites={adminActivites} adminSorties={adminSorties} adminEvenements={adminEvenements} addReport={addReport} adminReports={adminReports} deletedTitles={deletedTitles} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} favoris={favoris} setFavoris={setFavoris} isPremium={isPremiumUser} onOpenPremium={openPremium} customCatActivites={customCatActivites} customCatSorties={customCatSorties} customCatEvenements={customCatEvenements} currentUser={currentUser} enfants={enfants} enfantActif={enfantActif} masquees={masquees} toggleMasquer={toggleMasquer} estMasque={estMasque} boosts={boosts} ajouterDemandeDevisBoost={ajouterDemandeDevisBoost}/>}
         {page==="generer"&&<PageAccueil favoris={favoris} setFavoris={setFavoris} setPage={setPage} customEvents={customEvents} popupShown={popupShown} setPopupShown={setPopupShown} ideesMomentConfig={ideesMomentConfig} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} evenementsSaisonniers={evenementsSaisonniers} isPremium={isPremiumUser} onOpenPremium={openPremium} customCatActivites={customCatActivites} customCatSorties={customCatSorties} customCatEvenements={customCatEvenements} adminActivites={adminActivites} adminSorties={adminSorties} pendingContribs={pendingContribs} setPendingContribs={setPendingContribs} deletedTitles={deletedTitles} currentUser={currentUser} sosModeActif={sosModeActif} enfants={enfants} enfantActif={enfantActif} setEnfantActif={setEnfantActif} onMarquerFait={marquerActiviteFaite} historiqueActivites={historiqueActivites} filtresMemoActiv={filtresMemoActiv} setFiltresMemoActiv={setFiltresMemoActiv} filtresMemoSortie={filtresMemoSortie} setFiltresMemoSortie={setFiltresMemoSortie} adminComms={adminComms} masquees={masquees} toggleMasquer={toggleMasquer} estMasque={estMasque} ajouterDemandeDevisBoost={ajouterDemandeDevisBoost} trialEndDate={trialEndDate} betisesLutin={betisesLutin} cartesVoyageLutin={cartesVoyageLutin}/>}
-        {page==="planning"&&<PagePlanning sosLib={sosLib} enfants={enfants} enfantActif={enfantActif} setEnfantActif={setEnfantActif} isPremium={isPremiumUser} onOpenPremium={openPremium} sosModeActif={sosModeActif} adminActivites={adminActivites} pendingContribs={pendingContribs} deletedTitles={deletedTitles} masquees={masquees} adminReports={adminReports} currentUser={currentUser}/>}
+        {page==="planning"&&<PagePlanning sosLib={sosLib} enfants={enfants} enfantActif={enfantActif} setEnfantActif={setEnfantActif} isPremium={isPremiumUser} onOpenPremium={openPremium} sosModeActif={sosModeActif} adminActivites={adminActivites} pendingContribs={pendingContribs} deletedTitles={deletedTitles} masquees={masquees} adminReports={adminReports} currentUser={currentUser} count={planningCount} setCount={setPlanningCount} energieP={planningEnergie} setEnergieP={setPlanningEnergie} lieuP={planningLieu} setLieuP={setPlanningLieu} semaineType={planningSemaineType} setSemaineType={setPlanningSemaineType} planning={planning} setPlanning={setPlanning} materielDispo={planningMaterielDispo} setMaterielDispo={setPlanningMaterielDispo} sansMateriel={planningSansMateriel} setSansMateriel={setPlanningSansMateriel} enfantsSelectionnes={planningEnfantsSelectionnes} setEnfantsSelectionnes={setPlanningEnfantsSelectionnes} checkedMat={planningCheckedMat} setCheckedMat={setPlanningCheckedMat}/>}
         {page==="sos"&&<PageSOS sosLib={sosLib} isPremium={isPremiumUser} onOpenPremium={openPremium} onBack={()=>setPage("accueil")}/>}
         {page==="ressources"&&<PageRessources sites={ressourcesSites} contacts={ressourcesContacts} pdfs={ressourcesPdf} setPdfs={setRessourcesPdf} isPremium={isPremiumUser} onOpenPremium={openPremium}/>}
         {page==="profil"&&<PageProfil setPage={setPage} enfants={enfants} setEnfants={setEnfants} enfantActif={enfantActif} setEnfantActif={setEnfantActif} showGestionEnfants={showGestionEnfants} setShowGestionEnfants={setShowGestionEnfants} currentUser={currentUser} onLogout={handleLogout} onRequireAuth={requireAuth} isPremium={isPremiumUser} setPremium={setPremiumDemo} evenementsSaisonniers={evenementsSaisonniers} onOpenPremium={openPremium} onDeleteAccount={handleDeleteAccount} favoris={favoris} adminEvenements={adminEvenements} pendingContribs={pendingContribs} darkMode={darkMode} setDarkMode={setDarkMode} historiqueActivites={historiqueActivites} setHistoriqueActivites={setHistoriqueActivites} estBooste={estBooste} activerBoost={activerBoost} ajouterDemandeDevisBoost={ajouterDemandeDevisBoost} betisesLutin={betisesLutin} cartesVoyageLutin={cartesVoyageLutin} mesAvisCount={mesAvisCount} aSauvegardePlanning={aSauvegardePlanning}/>}

@@ -11919,6 +11919,53 @@ function PageAdmin({onLogout,pendingContribs=[],setPendingContribs,updateContrib
 // AUTHENTIFICATION — Compte local protégé par mot de passe
 // (pas de serveur : les identifiants restent stockés sur cet appareil)
 // ============================================================
+function PageSetNewPassword({onDone}){
+  const [password1,setPassword1]=useState("");
+  const [password2,setPassword2]=useState("");
+  const [showPw,setShowPw]=useState(false);
+  const [error,setError]=useState("");
+  const [loading,setLoading]=useState(false);
+  const valider=async()=>{
+    setError("");
+    if(password1.length<6){setError("Le mot de passe doit faire au moins 6 caractères.");return;}
+    if(password1!==password2){setError("Les deux mots de passe ne correspondent pas.");return;}
+    setLoading(true);
+    try{
+      const {error:updateError}=await supabase.auth.updateUser({password:password1});
+      if(updateError){setError("Erreur : "+updateError.message);setLoading(false);return;}
+      setLoading(false);
+      onDone&&onDone();
+    }catch(e){
+      setError("Erreur réseau, réessaie.");
+      setLoading(false);
+    }
+  };
+  return(
+    <div style={{ maxWidth: 390, margin: "0 auto", minHeight: "100vh", background: BG, display: "flex", flexDirection: "column", justifyContent: "center", padding: "32px 24px", fontFamily: "system-ui,-apple-system,sans-serif", boxSizing: "border-box" }}>
+      <div style={{ textAlign: "center", marginBottom: 28 }}>
+        <div style={{ fontSize: 48, marginBottom: 10 }}>🔑</div>
+        <h1 style={{ margin: "0 0 4px", fontSize: 21, fontWeight: 800, color: TX }}>Nouveau mot de passe</h1>
+        <p style={{ margin: 0, fontSize: 13, color: TM }}>Choisis un nouveau mot de passe pour ton compte</p>
+      </div>
+      <div style={{ background: WH, borderRadius: 20, padding: 20, border: BD }}>
+        <div style={{ marginBottom: 12 }}>
+          <label style={{ fontSize: 12, color: TM, display: "block", marginBottom: 6 }}>Nouveau mot de passe</label>
+          <div style={{ position: "relative" }}>
+            <input type={showPw?"text":"password"} value={password1} onChange={e=>setPassword1(e.target.value)} placeholder="••••••" style={{...FS, paddingRight: 40}}/>
+            <button type="button" onClick={()=>setShowPw(p=>!p)} style={{ position: "absolute", right: 4, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", fontSize: 17, padding: 8, lineHeight: 1 }}>{showPw?"🙈":"👁️"}</button>
+          </div>
+        </div>
+        <div style={{ marginBottom: 6 }}>
+          <label style={{ fontSize: 12, color: TM, display: "block", marginBottom: 6 }}>Confirme le mot de passe</label>
+          <input type={showPw?"text":"password"} value={password2} onChange={e=>setPassword2(e.target.value)} onKeyDown={e=>e.key==="Enter"&&valider()} placeholder="••••••" style={FS}/>
+        </div>
+        {error&&<p style={{ margin: "10px 0 0", fontSize: 12, color: RD, fontWeight: 600 }}>{error}</p>}
+        <button onClick={valider} disabled={loading} style={{ width: "100%", marginTop: 16, padding: 13, borderRadius: 28, background: V, border: "none", color: WH, fontWeight: 700, fontSize: 14, cursor: loading?"default":"pointer", opacity: loading?0.7:1 }}>{loading?"...":"Valider le nouveau mot de passe"}</button>
+      </div>
+    </div>
+  );
+}
+
 function PageAuth({ onAuthSuccess, onCancel, onAdminSuccess, logo }) {
   const [mode, setMode] = useState('signup'); // 'signup' | 'login'
   const [failedAttempts,setFailedAttempts]=useState(0);
@@ -12028,17 +12075,23 @@ function PageAuth({ onAuthSuccess, onCancel, onAdminSuccess, logo }) {
     }
   };
 
-  const handleReset = () => {
+  const handleReset = async () => {
+    if (!email.trim()) { setShowReset(false); setError("Indique ton email d'abord, puis réessaie."); return; }
     setShowReset(false);
-    setShowResetSent(true);
-    setTimeout(() => setShowResetSent(false), 4000);
+    try {
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(email.trim());
+      if (resetError) { setError("Impossible d'envoyer l'email : " + resetError.message); return; }
+      setShowResetSent(true);
+      setTimeout(() => setShowResetSent(false), 4000);
+    } catch (e) {
+      setError("Erreur réseau, réessaie dans un instant.");
+    }
   };
 
   const handleResetCompte = async () => {
     try {
-      await window.storage.delete('auth_account');
-      await window.storage.delete('auth_session');
-    } catch (e) { /* rien à supprimer */ }
+      await supabase.auth.signOut();
+    } catch (e) { /* déjà déconnecté ou erreur réseau */ }
     finally {
       setShowResetCompte(false);
       setHasAccount(false);
@@ -12131,7 +12184,7 @@ function PageAuth({ onAuthSuccess, onCancel, onAdminSuccess, logo }) {
         )}
       </div>
 
-      <p style={{ textAlign: "center", fontSize: 11, color: TM, marginTop: 16, lineHeight: 1.5 }}>🔒 Tes informations restent privées : elles sont stockées uniquement sur cet appareil, sans serveur externe.</p>
+      <p style={{ textAlign: "center", fontSize: 11, color: TM, marginTop: 16, lineHeight: 1.5 }}>🔒 Tes informations sont stockées de façon sécurisée et ne sont jamais partagées avec des tiers.</p>
 
       {showReset && (
         <div onClick={() => setShowReset(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", zIndex: 800, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
@@ -12156,10 +12209,10 @@ function PageAuth({ onAuthSuccess, onCancel, onAdminSuccess, logo }) {
           <div onClick={e => e.stopPropagation()} style={{ background: WH, borderRadius: 20, padding: 24, maxWidth: 320, width: "100%" }}>
             <div style={{ fontSize: 36, textAlign: "center", marginBottom: 10 }}>⚠️</div>
             <p style={{ margin: "0 0 8px", fontSize: 15, fontWeight: 700, color: TX, textAlign: "center" }}>Plus du tout accès à ton compte ?</p>
-            <p style={{ margin: "0 0 20px", fontSize: 13, color: TM, textAlign: "center", lineHeight: 1.5 }}>En dernier recours, tu peux réinitialiser l'application : le compte actuel sera supprimé et tu pourras en créer un nouveau. <strong>Cette action est irréversible.</strong></p>
+            <p style={{ margin: "0 0 20px", fontSize: 13, color: TM, textAlign: "center", lineHeight: 1.5 }}>Essaie d'abord "Mot de passe oublié" pour recevoir un email de réinitialisation. En tout dernier recours, tu peux déconnecter cet appareil pour te reconnecter avec un autre compte — <strong>tes données existantes ne seront pas supprimées</strong>, juste cet appareil sera déconnecté.</p>
             <div style={{ display: "flex", gap: 10 }}>
               <button onClick={() => setShowResetCompte(false)} style={{ flex: 1, padding: 12, borderRadius: 28, background: BG, border: BD, color: TM, fontWeight: 600, cursor: "pointer" }}>Annuler</button>
-              <button onClick={handleResetCompte} style={{ flex: 1, padding: 12, borderRadius: 28, background: "#EF4444", border: "none", color: WH, fontWeight: 700, cursor: "pointer" }}>Réinitialiser</button>
+              <button onClick={handleResetCompte} style={{ flex: 1, padding: 12, borderRadius: 28, background: "#EF4444", border: "none", color: WH, fontWeight: 700, cursor: "pointer" }}>Déconnecter cet appareil</button>
             </div>
           </div>
         </div>
@@ -12231,6 +12284,7 @@ export default function App(){
       }
     })();
     const {data:listener}=supabase.auth.onAuthStateChange(async(event,session)=>{
+      if(event==="PASSWORD_RECOVERY"){setShowSetNewPassword(true);return;}
       if(event==="SIGNED_OUT"){setCurrentUser(null);setPremiumTrialUsed(false);setTrialEndDate(null);setEnfants([]);setEnfantActif("");setFavoris([]);favorisChargesDepuisServeur.current=false;setMasquees([]);masqueesChargeesDepuisServeur.current=false;return;}
       if(session?.user&&session.user.email?.toLowerCase()!==ADMIN_EMAIL.toLowerCase()){
         const profil=await chargerOuReparerProfil(session.user);
@@ -12420,6 +12474,7 @@ export default function App(){
   const [enfantActif,setEnfantActif]=useState("1");
   const [showGestionEnfants,setShowGestionEnfants]=useState(false);
   const [isAdmin,setIsAdmin]=useState(false);
+  const [showSetNewPassword,setShowSetNewPassword]=useState(false);
   const adminSessionRef=useRef(null);
   useEffect(()=>{
     if(!isAdmin){if(adminSessionRef.current)clearTimeout(adminSessionRef.current);return;}
@@ -12875,6 +12930,7 @@ export default function App(){
     setTimeout(()=>setGlobalToast(null),3000);
     setTimeout(()=>setShowConfetti(false),4500);
   };
+  if(showSetNewPassword) return <PageSetNewPassword onDone={()=>setShowSetNewPassword(false)}/>;
   if(isAdmin) return <PageAdmin onLogout={()=>{ setIsAdmin(false); setPage("profil"); supabase.auth.signOut().then(()=>{},()=>{}); sauvegarderPrivé({onboarding_done:onboardingDone,popup_shown:[...popupShown],dark_mode:darkMode,filtres_memo_activ:filtresMemoActiv,filtres_memo_sortie:filtresMemoSortie}); }} pendingContribs={pendingContribs} setPendingContribs={setPendingContribs} updateContrib={updateContrib} supprimerContrib={supprimerContrib} adminActivites={adminActivites} setAdminActivites={setAdminActivites} adminSorties={adminSorties} setAdminSorties={setAdminSorties} adminEvenements={adminEvenements} setAdminEvenements={setAdminEvenements} adminReports={adminReports} setAdminReports={setAdminReports} addDeletedTitle={addDeletedTitle} adminCustomEvents={customEvents} setAdminCustomEvents={setCustomEvents} sosLib={sosLib} setSosLib={setSosLib} sosModeActif={sosModeActif} setSosModeActif={setSosModeActif} ideesMomentConfig={ideesMomentConfig} setIdeesMomentConfig={setIdeesMomentConfig} evenementsSaisonniers={evenementsSaisonniers} setEvenementsSaisonniers={setEvenementsSaisonniers} betisesLutin={betisesLutin} setBetisesLutin={setBetisesLutin} cartesVoyageLutin={cartesVoyageLutin} setCartesVoyageLutin={setCartesVoyageLutin} customCatActivites={customCatActivites} setCustomCatActivites={setCustomCatActivites} customCatSorties={customCatSorties} setCustomCatSorties={setCustomCatSorties} customCatEvenements={customCatEvenements} setCustomCatEvenements={setCustomCatEvenements} adminComms={adminComms} setAdminComms={setAdminComms} ressourcesSites={ressourcesSites} setRessourcesSites={setRessourcesSites} ressourcesContacts={ressourcesContacts} setRessourcesContacts={setRessourcesContacts} ressourcesPdf={ressourcesPdf} setRessourcesPdf={setRessourcesPdf} devisBoostDemandes={devisBoostDemandes} setDevisBoostDemandes={setDevisBoostDemandes} boosts={boosts} setBoosts={setBoosts} activerBoost={activerBoost} retirerBoostSupabase={retirerBoostSupabase} demoMode={demoMode} setDemoMode={setDemoMode} premiumPourTous={premiumPourTous} togglePremiumPourTous={togglePremiumPourTous} appLogo={appLogo} setAppLogo={setAppLogo}/>;
   return(
     <div style={{maxWidth:390,margin:"0 auto",background:BG,minHeight:"100vh",position:"relative",fontFamily:"system-ui,-apple-system,sans-serif",color:TX,transition:"background 0.3s,color 0.3s"}} className={darkMode?"dm":""}>

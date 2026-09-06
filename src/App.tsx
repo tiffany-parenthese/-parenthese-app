@@ -11639,8 +11639,8 @@ function Admins() {
           <input style={{...s.input,fontFamily:"monospace",letterSpacing:2}} value={form.code2fa||""} onChange={e=>setForm({...form,code2fa:e.target.value.replace(/\D/g,"")})} placeholder="Ex : 481920" maxLength={8}/>
         </AdminField>
         <div style={{background:"rgba(124,58,237,0.08)",borderRadius:10,padding:12,marginBottom:14,fontSize:12,color:C.muted}}>
-          {form.role==="super_admin"&&"• Accès complet + gestion des administrateurs"}
-          {form.role==="admin"&&"• Tout, sauf la gestion des administrateurs"}
+          {form.role==="super_admin"&&"• Accès complet : Dashboard, Utilisateurs, Abonnements, Communication, Boost, gestion des administrateurs, et tout le reste"}
+          {form.role==="admin"&&"• Contenu (activités, sorties, événements, saisonnier, catégories, ressources), contributions et signalements — pas d'accès à Dashboard, Utilisateurs, Abonnements, Communication ni Boost"}
           {form.role==="moderateur"&&"• Modération des contributions et signalements uniquement"}
         </div>
         {modal.mode!=="edit"&&<div style={{background:"rgba(245,158,11,0.1)",borderRadius:10,padding:12,marginBottom:14,fontSize:12,color:"#92400e"}}>
@@ -11889,9 +11889,10 @@ function AdminSOS({sosLib=[],setSosLib,sosModeActif=true,setSosModeActif}){
 }
 
 function PageAdmin({onLogout,adminRole="super_admin",adminInfo=null,pendingContribs=[],setPendingContribs,updateContrib,supprimerContrib,adminActivites=[],setAdminActivites,adminSorties=[],setAdminSorties,adminEvenements=[],setAdminEvenements,adminReports=[],setAdminReports,addDeletedTitle,adminCustomEvents=[],setAdminCustomEvents,sosLib=[],setSosLib,sosModeActif=true,setSosModeActif,ideesMomentConfig=[],setIdeesMomentConfig,evenementsSaisonniers=[],setEvenementsSaisonniers,betisesLutin=[],setBetisesLutin,cartesVoyageLutin=[],setCartesVoyageLutin,customCatActivites=[],setCustomCatActivites,customCatSorties=[],setCustomCatSorties,customCatEvenements=[],setCustomCatEvenements,adminComms=[],setAdminComms,ressourcesSites=[],setRessourcesSites,ressourcesContacts=[],setRessourcesContacts,ressourcesPdf=[],setRessourcesPdf,devisBoostDemandes=[],setDevisBoostDemandes,boosts=[],setBoosts,activerBoost,retirerBoostSupabase,demoMode=false,setDemoMode,premiumPourTous=false,togglePremiumPourTous,appLogo=null,setAppLogo}) {
+  const RESERVE_SUPER_ADMIN=["dashboard","utilisateurs","abonnements","communication","boost","admins"];
   const PAGES_AUTORISEES={
     moderateur:["contributions","signalements"],
-    admin:MENU.map(m=>m.k).filter(k=>k!=="admins"),
+    admin:MENU.map(m=>m.k).filter(k=>!RESERVE_SUPER_ADMIN.includes(k)),
     super_admin:MENU.map(m=>m.k),
   };
   const pagesOk=PAGES_AUTORISEES[adminRole]||PAGES_AUTORISEES.moderateur;

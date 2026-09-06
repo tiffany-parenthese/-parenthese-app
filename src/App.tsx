@@ -11554,15 +11554,43 @@ function BoostRow({item,booste,boostActuel,onActiverBoost,onRetirerBoost}){
 }
 
 function Admins() {
-  const [admins,setAdmins] = useState(MOCK_ADMINS);
+  const [admins,setAdmins] = useState([]);
+  const [chargement,setChargement] = useState(true);
   const [search,setSearch] = useState("");
   const [modal,setModal] = useState(null);
   const [form,setForm] = useState({prenom:"",nom:"",email:"",role:"moderateur"});
-  const save = () => {
+  useEffect(()=>{
+    (async()=>{
+      try{
+        const {data}=await supabase.from("admin_users").select("*").order("created_at",{ascending:false});
+        setAdmins(data||[]);
+      }catch(e){ /* erreur réseau — liste reste vide */ }
+      finally{ setChargement(false); }
+    })();
+  },[]);
+  const save = async () => {
     if(!form.prenom||!form.nom||!form.email) return;
-    if(modal?.mode==="edit") setAdmins(admins.map(a=>a.id===modal.item.id?{...a,...form}:a));
-    else setAdmins([...admins,{id:Date.now().toString(),...form,statut:"active",cree:new Date().toLocaleDateString(),connexion:"jamais"}]);
+    const payload={prenom:form.prenom.trim(),nom:form.nom.trim(),email:form.email.trim().toLowerCase(),role:form.role};
+    if(modal?.mode==="edit"){
+      const {error}=await supabase.from("admin_users").update(payload).eq("id",modal.item.id);
+      if(error){alert("Erreur : "+error.message);return;}
+      setAdmins(admins.map(a=>a.id===modal.item.id?{...a,...payload}:a));
+    }else{
+      const {data:inserted,error}=await supabase.from("admin_users").insert({...payload,statut:"active"}).select().single();
+      if(error){alert("Erreur : "+error.message+" (l'email existe peut-être déjà)");return;}
+      if(inserted)setAdmins([inserted,...admins]);
+    }
     setModal(null);
+  };
+  const toggleStatut = async (admin) => {
+    const nouveauStatut=admin.statut==="active"?"suspended":"active";
+    const {error}=await supabase.from("admin_users").update({statut:nouveauStatut}).eq("id",admin.id);
+    if(!error)setAdmins(admins.map(a=>a.id===admin.id?{...a,statut:nouveauStatut}:a));
+  };
+  const supprimer = async (id) => {
+    if(!window.confirm("Retirer cet administrateur ? Il perdra l'accès à l'admin (le compte de connexion Supabase, lui, doit être supprimé séparément si besoin)."))return;
+    const {error}=await supabase.from("admin_users").delete().eq("id",id);
+    if(!error)setAdmins(admins.filter(a=>a.id!==id));
   };
   const filtered = admins.filter(a=>!search||`${a.prenom||""} ${a.nom||""} ${a.email||""}`.toLowerCase().includes(search.toLowerCase()));
   return (
@@ -11571,6 +11599,10 @@ function Admins() {
         <div><h1 style={{fontSize:22,fontWeight:800,color:C.text,margin:0}}>Administrateurs</h1><p style={{fontSize:13,color:C.muted,margin:"4px 0 0"}}>Gérez les accès à l'interface admin</p></div>
         <button style={s.btn(C.accent)} onClick={()=>{setForm({prenom:"",nom:"",email:"",role:"moderateur"});setModal({mode:"add"});}}>+ Nouvel admin</button>
       </div>
+      <div style={{background:"rgba(124,58,237,0.08)",borderRadius:12,padding:"12px 16px",marginBottom:16,fontSize:12,color:C.muted,lineHeight:1.5}}>
+        ℹ️ Ajouter quelqu'un ici lui donne un <strong>rôle</strong>, mais ne crée pas son mot de passe. Pour qu'il puisse vraiment se connecter, crée aussi son compte dans Supabase → Authentication → Users, avec le même email, puis transmets-lui le mot de passe à la main.
+      </div>
+      {chargement&&<p style={{fontSize:13,color:C.muted,marginBottom:16}}>Chargement...</p>}
       <SearchBar value={search} onChange={setSearch} placeholder="Rechercher un administrateur..."/>
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))",gap:14}}>
         {filtered.map(admin=>(
@@ -11582,32 +11614,35 @@ function Admins() {
             <p style={{margin:"0 0 2px",fontSize:15,fontWeight:700,color:C.text}}>{admin.prenom} {admin.nom}</p>
             <p style={{margin:"0 0 10px",fontSize:12,color:C.muted}}>{admin.email}</p>
             <div style={{fontSize:11,color:C.muted,marginBottom:12}}>
-              <div>Créé le {admin.cree}</div>
-              <div>Dernière connexion : {admin.connexion}</div>
+              <div>Ajouté le {admin.created_at?new Date(admin.created_at).toLocaleDateString("fr-FR"):"—"}</div>
             </div>
             {statutBadge(admin.statut)}
             <div style={{display:"flex",gap:6,marginTop:12,paddingTop:12,borderTop:`1px solid ${C.border}`}}>
               <button style={{...s.btnOutline(C.accent),flex:1}} onClick={()=>{setForm({prenom:admin.prenom,nom:admin.nom,email:admin.email,role:admin.role});setModal({mode:"edit",item:admin});}}>✏️</button>
               {admin.role!=="super_admin"&&<>
-                <button style={s.btnOutline(admin.statut==="active"?C.yellow:C.green)} onClick={()=>setAdmins(admins.map(a=>a.id===admin.id?{...a,statut:a.statut==="active"?"suspended":"active"}:a))}>{admin.statut==="active"?"⏸":"▶"}</button>
-                <button style={s.btnOutline(C.red)} onClick={()=>setAdmins(admins.filter(a=>a.id!==admin.id))}>🗑️</button>
+                <button style={s.btnOutline(admin.statut==="active"?C.yellow:C.green)} onClick={()=>toggleStatut(admin)}>{admin.statut==="active"?"⏸":"▶"}</button>
+                <button style={s.btnOutline(C.red)} onClick={()=>supprimer(admin.id)}>🗑️</button>
               </>}
             </div>
           </div>
         ))}
+        {!chargement&&filtered.length===0&&<p style={{fontSize:13,color:C.muted,fontStyle:"italic"}}>Aucun administrateur pour le moment.</p>}
       </div>
       {modal&&<Modal title={modal.mode==="edit"?"Modifier l'administrateur":"Nouvel administrateur"} onClose={()=>setModal(null)}>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
           <AdminField label="Prénom"><input style={s.input} value={form.prenom||""} onChange={e=>setForm({...form,prenom:e.target.value})}/></AdminField>
           <AdminField label="Nom"><input style={s.input} value={form.nom||""} onChange={e=>setForm({...form,nom:e.target.value})}/></AdminField>
         </div>
-        <AdminField label="Email"><input style={s.input} type="email" value={form.email||""} onChange={e=>setForm({...form,email:e.target.value})}/></AdminField>
+        <AdminField label="Email"><input style={s.input} type="email" value={form.email||""} onChange={e=>setForm({...form,email:e.target.value})} disabled={modal.mode==="edit"}/></AdminField>
         <AdminField label="Rôle"><select style={s.input} value={form.role||"moderateur"} onChange={e=>setForm({...form,role:e.target.value})}><option value="moderateur">👁️ Modérateur</option><option value="admin">🛡️ Admin</option><option value="super_admin">👑 Super Admin</option></select></AdminField>
         <div style={{background:"rgba(124,58,237,0.08)",borderRadius:10,padding:12,marginBottom:14,fontSize:12,color:C.muted}}>
           {form.role==="super_admin"&&"• Accès complet + gestion des administrateurs"}
-          {form.role==="admin"&&"• Gestion du contenu, des utilisateurs et des signalements"}
-          {form.role==="moderateur"&&"• Modération des signalements uniquement"}
+          {form.role==="admin"&&"• Tout, sauf la gestion des administrateurs"}
+          {form.role==="moderateur"&&"• Modération des contributions et signalements uniquement"}
         </div>
+        {modal.mode!=="edit"&&<div style={{background:"rgba(245,158,11,0.1)",borderRadius:10,padding:12,marginBottom:14,fontSize:12,color:"#92400e"}}>
+          ⚠️ N'oublie pas de créer aussi le compte de connexion pour <strong>{form.email||"cet email"}</strong> dans Supabase → Authentication → Users, avec un mot de passe que tu lui transmettras.
+        </div>}
         <div style={{display:"flex",justifyContent:"flex-end",gap:8}}>
           <button style={s.btnOutline(C.muted)} onClick={()=>setModal(null)}>Annuler</button>
           <button style={s.btn(C.accent)} onClick={save}>{modal.mode==="edit"?"Modifier":"Créer"}</button>
@@ -11850,8 +11885,16 @@ function AdminSOS({sosLib=[],setSosLib,sosModeActif=true,setSosModeActif}){
   );
 }
 
-function PageAdmin({onLogout,pendingContribs=[],setPendingContribs,updateContrib,supprimerContrib,adminActivites=[],setAdminActivites,adminSorties=[],setAdminSorties,adminEvenements=[],setAdminEvenements,adminReports=[],setAdminReports,addDeletedTitle,adminCustomEvents=[],setAdminCustomEvents,sosLib=[],setSosLib,sosModeActif=true,setSosModeActif,ideesMomentConfig=[],setIdeesMomentConfig,evenementsSaisonniers=[],setEvenementsSaisonniers,betisesLutin=[],setBetisesLutin,cartesVoyageLutin=[],setCartesVoyageLutin,customCatActivites=[],setCustomCatActivites,customCatSorties=[],setCustomCatSorties,customCatEvenements=[],setCustomCatEvenements,adminComms=[],setAdminComms,ressourcesSites=[],setRessourcesSites,ressourcesContacts=[],setRessourcesContacts,ressourcesPdf=[],setRessourcesPdf,devisBoostDemandes=[],setDevisBoostDemandes,boosts=[],setBoosts,activerBoost,retirerBoostSupabase,demoMode=false,setDemoMode,premiumPourTous=false,togglePremiumPourTous,appLogo=null,setAppLogo}) {
-  const [page,setPage] = useState("dashboard");
+function PageAdmin({onLogout,adminRole="super_admin",adminInfo=null,pendingContribs=[],setPendingContribs,updateContrib,supprimerContrib,adminActivites=[],setAdminActivites,adminSorties=[],setAdminSorties,adminEvenements=[],setAdminEvenements,adminReports=[],setAdminReports,addDeletedTitle,adminCustomEvents=[],setAdminCustomEvents,sosLib=[],setSosLib,sosModeActif=true,setSosModeActif,ideesMomentConfig=[],setIdeesMomentConfig,evenementsSaisonniers=[],setEvenementsSaisonniers,betisesLutin=[],setBetisesLutin,cartesVoyageLutin=[],setCartesVoyageLutin,customCatActivites=[],setCustomCatActivites,customCatSorties=[],setCustomCatSorties,customCatEvenements=[],setCustomCatEvenements,adminComms=[],setAdminComms,ressourcesSites=[],setRessourcesSites,ressourcesContacts=[],setRessourcesContacts,ressourcesPdf=[],setRessourcesPdf,devisBoostDemandes=[],setDevisBoostDemandes,boosts=[],setBoosts,activerBoost,retirerBoostSupabase,demoMode=false,setDemoMode,premiumPourTous=false,togglePremiumPourTous,appLogo=null,setAppLogo}) {
+  const PAGES_AUTORISEES={
+    moderateur:["contributions","signalements"],
+    admin:MENU.map(m=>m.k).filter(k=>k!=="admins"),
+    super_admin:MENU.map(m=>m.k),
+  };
+  const pagesOk=PAGES_AUTORISEES[adminRole]||PAGES_AUTORISEES.moderateur;
+  const menuVisible=MENU.filter(item=>pagesOk.includes(item.k));
+  const [page,setPage] = useState(pagesOk[0]||"contributions");
+  useEffect(()=>{ if(!pagesOk.includes(page))setPage(pagesOk[0]||"contributions"); },[adminRole]);
   const [collapsed,setCollapsed] = useState(false);
   const pendingReports = adminReports.filter(r=>r.statut==="pending").length;
   return (
@@ -11863,7 +11906,7 @@ function PageAdmin({onLogout,pendingContribs=[],setPendingContribs,updateContrib
           {!collapsed&&<div><p style={{margin:0,fontSize:13,fontWeight:800,color:C.text}}>Parent'Hèse</p><p style={{margin:0,fontSize:10,color:C.muted}}>Admin</p></div>}
         </div>
         <nav style={{flex:1,padding:"12px 8px",overflowY:"auto"}}>
-          {MENU.map(item=>(
+          {menuVisible.map(item=>(
             <button key={item.k} onClick={()=>setPage(item.k)} style={{width:"100%",display:"flex",alignItems:"center",gap:10,padding:"9px 10px",borderRadius:10,border:"none",background:page===item.k?"rgba(124,58,237,0.15)":"transparent",color:page===item.k?"#a78bfa":C.muted,cursor:"pointer",marginBottom:2,textAlign:"left",position:"relative",overflow:"hidden"}}>
               <span style={{fontSize:17,flexShrink:0}}>{item.emoji}</span>
               {!collapsed&&<span style={{fontSize:13,fontWeight:page===item.k?600:400,whiteSpace:"nowrap"}}>{item.label}</span>}
@@ -11890,8 +11933,8 @@ function PageAdmin({onLogout,pendingContribs=[],setPendingContribs,updateContrib
               <span style={{fontSize:14}}>📱</span> Mode utilisateur
             </button>
             <div style={{width:1,height:20,background:C.border}}/>
-            <div style={{fontSize:11,color:C.muted}}>👑 Super Admin</div>
-            <Avatar nom="Alexandre Fontaine" size={30}/>
+            <div style={{fontSize:11,color:C.muted}}>{adminRole==="super_admin"?"👑 Super Admin":adminRole==="admin"?"🛡️ Admin":"👁️ Modérateur"}</div>
+            <Avatar nom={adminInfo?`${adminInfo.prenom||""} ${adminInfo.nom||""}`.trim()||adminInfo.email:"Admin"} size={30}/>
           </div>
         </header>
         <main style={{flex:1,overflowY:"auto",padding:24}}>
@@ -11960,6 +12003,7 @@ function PageAuth({ onAuthSuccess, onCancel, onAdminSuccess, logo }) {
   const [lockedUntil,setLockedUntil]=useState(null); // timestamp
   const [lockCountdown,setLockCountdown]=useState(0);
   const [adminStep,setAdminStep]=useState(false); // 2FA admin : email+mdp validés, attend le code admin
+  const [pendingAdmin,setPendingAdmin]=useState(null); // fiche admin (rôle, nom...) trouvée avant validation du 2FA
   const [adminCode2,setAdminCode2]=useState(""); // second facteur admin
   const [nom, setNom] = useState('');
   const [email, setEmail] = useState('');
@@ -12006,11 +12050,6 @@ function PageAuth({ onAuthSuccess, onCancel, onAdminSuccess, logo }) {
     setError('');
     if(lockedUntil&&Date.now()<lockedUntil){setError(`Trop de tentatives. Réessayez dans ${lockCountdown}s.`);return;}
     if (!email.trim() || !password.trim()) { setError('Merci de remplir tous les champs.'); return; }
-    // Vérification admin
-    const ADMIN_PW_H="a7576524a7576524a7576524a7576524a7576524a7576524a7576524a7576524";
-    if (simpleHash(email.trim().toLowerCase())===simpleHash(ADMIN_EMAIL) && simpleHash(password)===ADMIN_PW_H) {
-      setAdminStep(true); setAdminCode2(""); return;
-    }
     setLoading(true);
     const { data, error: loginError } = await supabase.auth.signInWithPassword({
       email: email.trim().toLowerCase(),
@@ -12022,6 +12061,16 @@ function PageAuth({ onAuthSuccess, onCancel, onAdminSuccess, logo }) {
       if(newAttempts>=3){const d=newAttempts>=5?120:30;setLockedUntil(Date.now()+d*1000);setError(`Identifiants incorrects. Compte verrouillé ${d}s.`);}
       else setError(`Identifiants incorrects. ${3-newAttempts} tentative${3-newAttempts>1?"s":""} restante${3-newAttempts>1?"s":""}.`);
       setLoading(false);
+      return;
+    }
+    // Le mot de passe est correct — vérifie si cet email correspond à un administrateur
+    const {data:adminRow}=await supabase.from("admin_users").select("*").ilike("email",email.trim()).eq("statut","active").maybeSingle();
+    if(adminRow){
+      // Ferme la session tout de suite : on ne l'ouvre pour de vrai qu'une fois le code à 2FA validé
+      await supabase.auth.signOut();
+      setPendingAdmin(adminRow);
+      setLoading(false);
+      setAdminStep(true); setAdminCode2("");
       return;
     }
     setFailedAttempts(0);
@@ -12043,13 +12092,13 @@ function PageAuth({ onAuthSuccess, onCancel, onAdminSuccess, logo }) {
       });
       setLoading(false);
       if(sessionError){
-        setError("Code correct, mais impossible d'ouvrir la session Supabase de l'admin : "+sessionError.message+". Vérifie qu'un compte existe pour "+ADMIN_EMAIL+" dans Supabase (Authentication > Users), avec le même mot de passe.");
+        setError("Code correct, mais impossible d'ouvrir la session Supabase : "+sessionError.message);
         return;
       }
       setAdminStep(false);
       setAdminCode2("");
       setFailedAttempts(0);
-      onAdminSuccess && onAdminSuccess();
+      onAdminSuccess && onAdminSuccess(pendingAdmin);
     }else{
       const newAttempts=failedAttempts+1;
       setFailedAttempts(newAttempts);
@@ -12256,14 +12305,17 @@ export default function App(){
     (async()=>{
       try{
         const {data:{session}}=await supabase.auth.getSession();
-        if(session?.user&&actif&&session.user.email?.toLowerCase()!==ADMIN_EMAIL.toLowerCase()){
-          const profil=await chargerOuReparerProfil(session.user);
-          setCurrentUser({id:session.user.id,nom:profil?.nom||"",email:session.user.email,premium:!!profil?.premium});
-          setPremiumTrialUsed(!!profil?.premium_trial_used);
-          if(profil?.trial_end_date)setTrialEndDate(profil.trial_end_date);
-          chargerEnfantsSupabase(session.user.id);
-          chargerFavorisSupabase(session.user.id);
-          chargerMasqueesSupabase(session.user.id);
+        if(session?.user&&actif){
+          const {data:estAdmin}=await supabase.from("admin_users").select("id").ilike("email",session.user.email).eq("statut","active").maybeSingle();
+          if(!estAdmin&&actif){
+            const profil=await chargerOuReparerProfil(session.user);
+            setCurrentUser({id:session.user.id,nom:profil?.nom||"",email:session.user.email,premium:!!profil?.premium});
+            setPremiumTrialUsed(!!profil?.premium_trial_used);
+            if(profil?.trial_end_date)setTrialEndDate(profil.trial_end_date);
+            chargerEnfantsSupabase(session.user.id);
+            chargerFavorisSupabase(session.user.id);
+            chargerMasqueesSupabase(session.user.id);
+          }
         }
       }catch(e){
         // Pas de session active
@@ -12274,7 +12326,9 @@ export default function App(){
     const {data:listener}=supabase.auth.onAuthStateChange(async(event,session)=>{
       if(event==="PASSWORD_RECOVERY"){setShowSetNewPassword(true);return;}
       if(event==="SIGNED_OUT"){setCurrentUser(null);setPremiumTrialUsed(false);setTrialEndDate(null);setEnfants([]);setEnfantActif("");setFavoris([]);favorisChargesDepuisServeur.current=false;setMasquees([]);masqueesChargeesDepuisServeur.current=false;return;}
-      if(session?.user&&session.user.email?.toLowerCase()!==ADMIN_EMAIL.toLowerCase()){
+      if(session?.user){
+        const {data:estAdmin}=await supabase.from("admin_users").select("id").ilike("email",session.user.email).eq("statut","active").maybeSingle();
+        if(estAdmin)return; // Session admin — ne pas la traiter comme un utilisateur normal
         const profil=await chargerOuReparerProfil(session.user);
         setCurrentUser({id:session.user.id,nom:profil?.nom||"",email:session.user.email,premium:!!profil?.premium});
         setPremiumTrialUsed(!!profil?.premium_trial_used);
@@ -12462,6 +12516,8 @@ export default function App(){
   const [enfantActif,setEnfantActif]=useState("1");
   const [showGestionEnfants,setShowGestionEnfants]=useState(false);
   const [isAdmin,setIsAdmin]=useState(false);
+  const [adminRole,setAdminRole]=useState("super_admin");
+  const [adminInfo,setAdminInfo]=useState(null);
   const [showSetNewPassword,setShowSetNewPassword]=useState(false);
   const adminSessionRef=useRef(null);
   useEffect(()=>{
@@ -12919,7 +12975,7 @@ export default function App(){
     setTimeout(()=>setShowConfetti(false),4500);
   };
   if(showSetNewPassword) return <PageSetNewPassword onDone={()=>setShowSetNewPassword(false)}/>;
-  if(isAdmin) return <PageAdmin onLogout={()=>{ setIsAdmin(false); setPage("profil"); supabase.auth.signOut().then(()=>{},()=>{}); sauvegarderPrivé({onboarding_done:onboardingDone,popup_shown:[...popupShown],dark_mode:darkMode,filtres_memo_activ:filtresMemoActiv,filtres_memo_sortie:filtresMemoSortie}); }} pendingContribs={pendingContribs} setPendingContribs={setPendingContribs} updateContrib={updateContrib} supprimerContrib={supprimerContrib} adminActivites={adminActivites} setAdminActivites={setAdminActivites} adminSorties={adminSorties} setAdminSorties={setAdminSorties} adminEvenements={adminEvenements} setAdminEvenements={setAdminEvenements} adminReports={adminReports} setAdminReports={setAdminReports} addDeletedTitle={addDeletedTitle} adminCustomEvents={customEvents} setAdminCustomEvents={setCustomEvents} sosLib={sosLib} setSosLib={setSosLib} sosModeActif={sosModeActif} setSosModeActif={setSosModeActif} ideesMomentConfig={ideesMomentConfig} setIdeesMomentConfig={setIdeesMomentConfig} evenementsSaisonniers={evenementsSaisonniers} setEvenementsSaisonniers={setEvenementsSaisonniers} betisesLutin={betisesLutin} setBetisesLutin={setBetisesLutin} cartesVoyageLutin={cartesVoyageLutin} setCartesVoyageLutin={setCartesVoyageLutin} customCatActivites={customCatActivites} setCustomCatActivites={setCustomCatActivites} customCatSorties={customCatSorties} setCustomCatSorties={setCustomCatSorties} customCatEvenements={customCatEvenements} setCustomCatEvenements={setCustomCatEvenements} adminComms={adminComms} setAdminComms={setAdminComms} ressourcesSites={ressourcesSites} setRessourcesSites={setRessourcesSites} ressourcesContacts={ressourcesContacts} setRessourcesContacts={setRessourcesContacts} ressourcesPdf={ressourcesPdf} setRessourcesPdf={setRessourcesPdf} devisBoostDemandes={devisBoostDemandes} setDevisBoostDemandes={setDevisBoostDemandes} boosts={boosts} setBoosts={setBoosts} activerBoost={activerBoost} retirerBoostSupabase={retirerBoostSupabase} demoMode={demoMode} setDemoMode={setDemoMode} premiumPourTous={premiumPourTous} togglePremiumPourTous={togglePremiumPourTous} appLogo={appLogo} setAppLogo={setAppLogo}/>;
+  if(isAdmin) return <PageAdmin adminRole={adminRole} adminInfo={adminInfo} onLogout={()=>{ setIsAdmin(false); setAdminRole("super_admin"); setAdminInfo(null); setPage("profil"); supabase.auth.signOut().then(()=>{},()=>{}); sauvegarderPrivé({onboarding_done:onboardingDone,popup_shown:[...popupShown],dark_mode:darkMode,filtres_memo_activ:filtresMemoActiv,filtres_memo_sortie:filtresMemoSortie}); }} pendingContribs={pendingContribs} setPendingContribs={setPendingContribs} updateContrib={updateContrib} supprimerContrib={supprimerContrib} adminActivites={adminActivites} setAdminActivites={setAdminActivites} adminSorties={adminSorties} setAdminSorties={setAdminSorties} adminEvenements={adminEvenements} setAdminEvenements={setAdminEvenements} adminReports={adminReports} setAdminReports={setAdminReports} addDeletedTitle={addDeletedTitle} adminCustomEvents={customEvents} setAdminCustomEvents={setCustomEvents} sosLib={sosLib} setSosLib={setSosLib} sosModeActif={sosModeActif} setSosModeActif={setSosModeActif} ideesMomentConfig={ideesMomentConfig} setIdeesMomentConfig={setIdeesMomentConfig} evenementsSaisonniers={evenementsSaisonniers} setEvenementsSaisonniers={setEvenementsSaisonniers} betisesLutin={betisesLutin} setBetisesLutin={setBetisesLutin} cartesVoyageLutin={cartesVoyageLutin} setCartesVoyageLutin={setCartesVoyageLutin} customCatActivites={customCatActivites} setCustomCatActivites={setCustomCatActivites} customCatSorties={customCatSorties} setCustomCatSorties={setCustomCatSorties} customCatEvenements={customCatEvenements} setCustomCatEvenements={setCustomCatEvenements} adminComms={adminComms} setAdminComms={setAdminComms} ressourcesSites={ressourcesSites} setRessourcesSites={setRessourcesSites} ressourcesContacts={ressourcesContacts} setRessourcesContacts={setRessourcesContacts} ressourcesPdf={ressourcesPdf} setRessourcesPdf={setRessourcesPdf} devisBoostDemandes={devisBoostDemandes} setDevisBoostDemandes={setDevisBoostDemandes} boosts={boosts} setBoosts={setBoosts} activerBoost={activerBoost} retirerBoostSupabase={retirerBoostSupabase} demoMode={demoMode} setDemoMode={setDemoMode} premiumPourTous={premiumPourTous} togglePremiumPourTous={togglePremiumPourTous} appLogo={appLogo} setAppLogo={setAppLogo}/>;
   return(
     <div style={{maxWidth:390,margin:"0 auto",background:BG,minHeight:"100vh",position:"relative",fontFamily:"system-ui,-apple-system,sans-serif",color:TX,transition:"background 0.3s,color 0.3s"}} className={darkMode?"dm":""}>
       <style>{`
@@ -12955,7 +13011,7 @@ export default function App(){
 
       {showAuthGate&&(
         <div style={{position:"fixed",inset:0,background:BG,zIndex:920,overflowY:"auto"}}>
-          <PageAuth logo={appLogo} onCancel={()=>{setShowAuthGate(false);}} onAuthSuccess={(u)=>{setCurrentUser(u);setShowAuthGate(false);}} onAdminSuccess={()=>{setIsAdmin(true);setShowAuthGate(false);}}/>
+          <PageAuth logo={appLogo} onCancel={()=>{setShowAuthGate(false);}} onAuthSuccess={(u)=>{setCurrentUser(u);setShowAuthGate(false);}} onAdminSuccess={(adminRow)=>{setIsAdmin(true);setAdminRole(adminRow?.role||"super_admin");setAdminInfo(adminRow);setShowAuthGate(false);}}/>
         </div>
       )}
       {showPremiumPage&&(

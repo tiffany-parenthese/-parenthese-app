@@ -8355,7 +8355,7 @@ function Activites({sharedActivites,setSharedActivites,customCatActivites=[],pen
   const [search,setSearch] = useState("");
   const [filterStatut,setFilterStatut] = useState("");
   const [modal,setModal] = useState(null);
-  const emptyForm = {titre:"",desc:"",duree:"",difficulte:"",lieu:"",energie:"",categorie:"",ageMin:"",ageMax:"",materielStr:"",etapes:"",premium:false,statut:"published",programmation:{date:"",heure:""},etiquettes:[],acc_poussette:false,acc_bebe:false,acc_allaitement:false,acc_langer:false,acc_aire03:false,acc_peubruyant:false,pmr_fauteuil:false,pmr_escaliers:false,pmr_parking:false,pmr_toilettes:false,pmr_personnel:false,pmr_chemin:false,tsa_foule:false,tsa_calme:false,tsa_lumiere:false,tsa_retrait:false,tsa_bruit:false,tsa_personnel:false,tdah_espace:false,tdah_physique:false,tdah_attente:false,tdah_stimulation:false,dys_visuels:false,dys_nonecrite:false,dys_rythme:false,dys_personnel:false};
+  const emptyForm = {titre:"",desc:"",duree:"",difficulte:"",lieu:"",energie:"",categorie:"",ageMin:"",ageMax:"",materielStr:"",etapes:"",premium:false,statut:"published",programmation:{date:"",heure:""},etiquettes:[],acc_poussette:false,acc_bebe:false,acc_allaitement:false,acc_langer:false,acc_aire03:false,acc_peubruyant:false,pmr_fauteuil:false,pmr_escaliers:false,pmr_parking:false,pmr_toilettes:false,pmr_personnel:false,pmr_chemin:false};
   const [form,setForm] = useState(emptyForm);
   const tf = (key) => setForm(prev=>({...prev,[key]:!prev[key]}));
   const filtered = itemsAffiches.filter(a=>(filterStatut===""||a.statut===filterStatut)&&(!search||((a.titre||a.nom||"").toLowerCase()).includes(search.toLowerCase())));
@@ -8369,19 +8369,23 @@ function Activites({sharedActivites,setSharedActivites,customCatActivites=[],pen
     if(!form.lieu){alert("Le lieu (intérieur/extérieur) est obligatoire.");return;}
     if(!form.energie){alert("La motivation (fatigue/motiv) est obligatoire.");return;}
     if(!form.categorie){alert("La catégorie est obligatoire.");return;}
+    const niveauxSensoriels={
+      bruit:form.niveauBruit||0,visuel:form.niveauVisuel||0,physique:form.niveauPhysique||0,attention:form.niveauAttention||0,
+    };
     const normalized={
       ...form,
       nom:form.titre,
       age:(form.ageMin&&form.ageMax)?form.ageMin.replace(" an","").replace(" ans","")+" - "+form.ageMax.replace(" an","").replace(" ans","")+" ans":form.ageMin||form.ageMax||"Tous ages",
       energie:form.energie||"motiv",
       materiel:form.materielStr?form.materielStr.split(",").map(m=>m.trim()):[],
-      tnd:null,
+      tnd:null,niveauxSensoriels,
     };
     const payloadSupabase={
       nom:normalized.nom,categorie:normalized.categorie,lieu:normalized.lieu,energie:normalized.energie,
       age:normalized.age,duree:normalized.duree,difficulte:normalized.difficulte,materiel:normalized.materiel,
       etapes:normalized.etapes?String(normalized.etapes).split("\n").map(s=>s.trim()).filter(Boolean):[],
       description:normalized.desc||"",photo:normalized.photo||null,
+      niveaux_sensoriels:niveauxSensoriels,adaptations:normalized.adaptations||[],
       statut:normalized.statut||"published",communaute:false,
     };
     if(modal?.mode==="edit"){
@@ -8611,7 +8615,7 @@ function Activites({sharedActivites,setSharedActivites,customCatActivites=[],pen
 
 function Sorties({sharedSorties=[],setSharedSorties,customCatSorties=[],setCustomCatSorties,pendingContribs=[],setPendingContribs,updateContrib}) {
   const DEPTS_ALL=[["01","Ain"],["02","Aisne"],["03","Allier"],["04","Alpes-de-Haute-Provence"],["05","Hautes-Alpes"],["06","Alpes-Maritimes"],["07","Ardeche"],["08","Ardennes"],["09","Ariege"],["10","Aube"],["11","Aude"],["12","Aveyron"],["13","Bouches-du-Rhone"],["14","Calvados"],["15","Cantal"],["16","Charente"],["17","Charente-Maritime"],["18","Cher"],["19","Correze"],["20","Corse"],["21","Cote-d-Or"],["22","Cotes-d-Armor"],["23","Creuse"],["24","Dordogne"],["25","Doubs"],["26","Drome"],["27","Eure"],["28","Eure-et-Loir"],["29","Finistere"],["30","Gard"],["31","Haute-Garonne"],["32","Gers"],["33","Gironde"],["34","Herault"],["35","Ille-et-Vilaine"],["36","Indre"],["37","Indre-et-Loire"],["38","Isere"],["39","Jura"],["40","Landes"],["41","Loir-et-Cher"],["42","Loire"],["43","Haute-Loire"],["44","Loire-Atlantique"],["45","Loiret"],["46","Lot"],["47","Lot-et-Garonne"],["48","Lozere"],["49","Maine-et-Loire"],["50","Manche"],["51","Marne"],["52","Haute-Marne"],["53","Mayenne"],["54","Meurthe-et-Moselle"],["55","Meuse"],["56","Morbihan"],["57","Moselle"],["58","Nievre"],["59","Nord"],["60","Oise"],["61","Orne"],["62","Pas-de-Calais"],["63","Puy-de-Dome"],["64","Pyrenees-Atlantiques"],["65","Hautes-Pyrenees"],["66","Pyrenees-Orientales"],["67","Bas-Rhin"],["68","Haut-Rhin"],["69","Rhone"],["70","Haute-Saone"],["71","Saone-et-Loire"],["72","Sarthe"],["73","Savoie"],["74","Haute-Savoie"],["75","Paris"],["76","Seine-Maritime"],["77","Seine-et-Marne"],["78","Yvelines"],["79","Deux-Sevres"],["80","Somme"],["81","Tarn"],["82","Tarn-et-Garonne"],["83","Var"],["84","Vaucluse"],["85","Vendee"],["86","Vienne"],["87","Haute-Vienne"],["88","Vosges"],["89","Yonne"],["90","Territoire de Belfort"],["91","Essonne"],["92","Hauts-de-Seine"],["93","Seine-Saint-Denis"],["94","Val-de-Marne"],["95","Val-d-Oise"],["971","Guadeloupe"],["972","Martinique"],["973","Guyane"],["974","La Reunion"]];
-  const emptyForm={titre:"",dept:"",adresse:"",horaires:"",prix:"",categorie:"",statut:"published",programmation:{date:"",heure:""},etiquettes:[],acc_poussette:false,acc_bebe:false,acc_allaitement:false,acc_langer:false,acc_aire03:false,acc_peubruyant:false,pmr_fauteuil:false,pmr_escaliers:false,pmr_parking:false,pmr_toilettes:false,pmr_personnel:false,pmr_chemin:false,tsa_foule:false,tsa_calme:false,tsa_lumiere:false,tsa_retrait:false,tsa_bruit:false,tsa_personnel:false,tdah_espace:false,tdah_physique:false,tdah_attente:false,tdah_stimulation:false,dys_visuels:false,dys_nonecrite:false,dys_rythme:false,dys_personnel:false};
+  const emptyForm={titre:"",dept:"",adresse:"",horaires:"",prix:"",categorie:"",statut:"published",programmation:{date:"",heure:""},etiquettes:[],acc_poussette:false,acc_bebe:false,acc_allaitement:false,acc_langer:false,acc_aire03:false,acc_peubruyant:false,pmr_fauteuil:false,pmr_escaliers:false,pmr_parking:false,pmr_toilettes:false,pmr_personnel:false,pmr_chemin:false};
   const MOCK_IDS=new Set(MOCK_SORTIES.map(o=>o.id));
   const [items,setItems] = useState(()=>[...MOCK_SORTIES,...(sharedSorties||[]).filter(o=>!MOCK_IDS.has(o.id))]);
   const supprimerContribItem=(item)=>{
@@ -8819,7 +8823,7 @@ function Evenements({sharedEvenements=[],setSharedEvenements,customCatEvenements
   useScheduler(setItems,syncItems);
   const [search,setSearch] = useState("");
   const [modal,setModal] = useState(null);
-  const [form,setForm] = useState({titre:"",desc:"",type:"",ville:"",dept:"",date:"",fin:"",horaires:"",prix:"",adresse:"",organisateur:"",statut:"draft",programmation:{date:"",heure:""},etiquettes:[],acc_poussette:false,acc_bebe:false,acc_allaitement:false,acc_langer:false,acc_aire03:false,acc_peubruyant:false,pmr_fauteuil:false,pmr_escaliers:false,pmr_parking:false,pmr_toilettes:false,pmr_personnel:false,pmr_chemin:false,tsa_foule:false,tsa_calme:false,tsa_lumiere:false,tsa_retrait:false,tsa_bruit:false,tsa_personnel:false,tdah_espace:false,tdah_physique:false,tdah_attente:false,tdah_stimulation:false,dys_visuels:false,dys_nonecrite:false,dys_rythme:false,dys_personnel:false});
+  const [form,setForm] = useState({titre:"",desc:"",type:"",ville:"",dept:"",date:"",fin:"",horaires:"",prix:"",adresse:"",organisateur:"",statut:"draft",programmation:{date:"",heure:""},etiquettes:[],acc_poussette:false,acc_bebe:false,acc_allaitement:false,acc_langer:false,acc_aire03:false,acc_peubruyant:false,pmr_fauteuil:false,pmr_escaliers:false,pmr_parking:false,pmr_toilettes:false,pmr_personnel:false,pmr_chemin:false});
   const save = () => {
     if(!form.titre){alert("Le nom de l'événement est obligatoire.");return;}
     if(!form.ville){alert("La ville est obligatoire.");return;}
@@ -8947,20 +8951,6 @@ function Evenements({sharedEvenements=[],setSharedEvenements,customCatEvenements
             <p style={{margin:"0 0 8px",fontSize:13,fontWeight:700,color:"#3b82f6"}}>♿ Mobilité réduite PMR</p>
             <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:14}}>
               {[["pmr_fauteuil","Accès fauteuil"],["pmr_escaliers","Sans escaliers"],["pmr_parking","Parking PMR"],["pmr_toilettes","Toilettes adaptées"],["pmr_personnel","Personnel formé"],["pmr_chemin","Chemin accessible"]].map(([k,l])=>(<div key={k} onClick={()=>tf(k)} style={chkStyle(!!form[k])}><span style={{fontSize:14}}>{form[k]?"☑":"☐"}</span>{l}</div>))}
-            </div>
-            <p style={{margin:"0 0 4px",fontSize:13,fontWeight:700,color:"#a78bfa"}}>🧩 TND</p>
-            <p style={{margin:"0 0 10px",fontSize:11,color:C.muted}}>Ces infos aident les familles TND</p>
-            <p style={{margin:"0 0 6px",fontSize:12,fontWeight:600,color:"#8b5cf6"}}>TSA Autisme</p>
-            <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:10}}>
-              {[["tsa_foule","Peu de foule"],["tsa_calme","Env calme"],["tsa_lumiere","Lumière douce"],["tsa_retrait","Espace retrait"],["tsa_bruit","Peu de bruit"],["tsa_personnel","Personnel TSA"]].map(([k,l])=>(<div key={k} onClick={()=>tf(k)} style={chkStyle(!!form[k])}><span style={{fontSize:14}}>{form[k]?"☑":"☐"}</span>{l}</div>))}
-            </div>
-            <p style={{margin:"0 0 6px",fontSize:12,fontWeight:600,color:"#ec4899"}}>TDAH</p>
-            <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:10}}>
-              {[["tdah_espace","Grand espace"],["tdah_physique","Activité physique"],["tdah_attente","Peu attente"],["tdah_stimulation","Stimulation variée"]].map(([k,l])=>(<div key={k} onClick={()=>tf(k)} style={chkStyle(!!form[k])}><span style={{fontSize:14}}>{form[k]?"☑":"☐"}</span>{l}</div>))}
-            </div>
-            <p style={{margin:"0 0 6px",fontSize:12,fontWeight:600,color:"#06b6d4"}}>DYS</p>
-            <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:14}}>
-              {[["dys_visuels","Supports visuels"],["dys_nonecrite","Non écrite"],["dys_rythme","Rythme libre"],["dys_personnel","Personnel DYS"]].map(([k,l])=>(<div key={k} onClick={()=>tf(k)} style={chkStyle(!!form[k])}><span style={{fontSize:14}}>{form[k]?"☑":"☐"}</span>{l}</div>))}
             </div>
           </div>
 
@@ -12366,6 +12356,7 @@ export default function App(){
           id:a.id,nom:a.nom,titre:a.nom,categorie:a.categorie,lieu:a.lieu,energie:a.energie,age:a.age,duree:a.duree,
           difficulte:a.difficulte,materiel:a.materiel||[],etapes:a.etapes||[],desc:a.description,photo:a.photo,
           niveauxSensoriels:a.niveaux_sensoriels,profilsTND:a.profils_tnd,adaptations:a.adaptations||[],
+          tnd:a.profils_tnd?.score||null,
           caracteristiques:a.caracteristiques,commentaireTND:a.commentaire_tnd,pointsAnticiper:a.points_anticiper||[],
           _type:"activite",_statut:a.statut||"published",_createdAt:a.created_at,_auteur:a.auteur_nom||"Anonyme",communaute:true,
         }));
@@ -12410,6 +12401,7 @@ export default function App(){
           id:a.id,nom:a.nom,titre:a.nom,categorie:a.categorie,lieu:a.lieu,energie:a.energie,age:a.age,duree:a.duree,
           difficulte:a.difficulte,materiel:a.materiel||[],etapes:a.etapes||[],desc:a.description,photo:a.photo,
           niveauxSensoriels:a.niveaux_sensoriels,profilsTND:a.profils_tnd,adaptations:a.adaptations||[],
+          tnd:a.profils_tnd?.score||null,
           caracteristiques:a.caracteristiques,commentaireTND:a.commentaire_tnd,pointsAnticiper:a.points_anticiper||[],
           statut:a.statut||"published",communaute:false,
         }));
@@ -12707,16 +12699,12 @@ export default function App(){
           // pendingContribs chargés depuis Supabase, plus depuis le stockage local
           if(d.deletedTitles)setDeletedTitles(new Set(d.deletedTitles));
           // adminReports chargés depuis Supabase, plus depuis le stockage local
-          if(d.customCatActivites)setCustomCatActivites(d.customCatActivites);
-          if(d.customCatSorties)setCustomCatSorties(d.customCatSorties);
-          if(d.customCatEvenements)setCustomCatEvenements(d.customCatEvenements);
+          // customCatActivites/customCatSorties/customCatEvenements chargés depuis Supabase, plus depuis le stockage local
           // adminActivites/adminSorties/adminEvenements chargés depuis Supabase, plus depuis le stockage local
           // sosLib chargé depuis Supabase, plus depuis le stockage local
-          if(d.devisBoostDemandes)setDevisBoostDemandes(d.devisBoostDemandes);
-          if(d.boosts)setBoosts(d.boosts);
-          if(d.ressourcesSites)setRessourcesSites(d.ressourcesSites);
-          if(d.ressourcesContacts)setRessourcesContacts(d.ressourcesContacts);
-          if(d.ressourcesPdf)setRessourcesPdf(d.ressourcesPdf);
+          // devisBoostDemandes chargées depuis Supabase, plus depuis le stockage local
+          // boosts chargés depuis Supabase, plus depuis le stockage local
+          // ressourcesSites/ressourcesContacts/ressourcesPdf chargées depuis Supabase, plus depuis le stockage local
         }
       }catch(e){}
       // Note : la session utilisateur est désormais entièrement gérée par Supabase Auth (voir plus bas)
@@ -12776,10 +12764,10 @@ export default function App(){
   useEffect(()=>{
     if(!dataLoaded)return;
     const timer=setTimeout(()=>{
-      sauvegarderPartagé({ideesMomentConfig,sosModeActif,deletedTitles:[...deletedTitles],adminReports,customCatActivites,customCatSorties,customCatEvenements,sosLib,devisBoostDemandes,boosts,ressourcesSites,ressourcesContacts,ressourcesPdf});
+      sauvegarderPartagé({ideesMomentConfig,sosModeActif,deletedTitles:[...deletedTitles]});
     },2000);
     return()=>clearTimeout(timer);
-  },[ideesMomentConfig,sosModeActif,deletedTitles,adminReports,customCatActivites,customCatSorties,customCatEvenements,sosLib,devisBoostDemandes,boosts,ressourcesSites,ressourcesContacts,ressourcesPdf,dataLoaded]);
+  },[ideesMomentConfig,sosModeActif,deletedTitles,dataLoaded]);
 
   const leftTabs=[{k:"biblio",icon:"📖",label:"Biblio"},{k:"ressources",icon:"🧠",label:"Ressources"}];
   const rightTabs=[{k:"planning",icon:"📅",label:"Planning"},{k:"profil",icon:"👤",label:"Profil"}];

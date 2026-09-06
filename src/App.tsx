@@ -4654,6 +4654,26 @@ function PagePlanning({sosLib=[],enfants=[],enfantActif,setEnfantActif,isPremium
                   <div style={{width:pct+"%",height:"100%",background:"#fff",borderRadius:4,transition:"width 0.4s"}}/>
                 </div>
                 {checkedCount>0&&<p style={{margin:"6px 0 0",fontSize:11,color:"rgba(255,255,255,0.75)"}}>{checkedCount}/{totalItems} cochés — {totalItems-checkedCount} restant{totalItems-checkedCount>1?"s":""}</p>}
+                {/* Actions dédiées à la liste de courses */}
+                <div style={{display:"flex",gap:8,marginTop:10}}>
+                  <button onClick={()=>{
+                    const texteListe="🛒 Ma liste de courses\n\n"+Object.values(grouped).map(r=>`${r.label}\n`+r.items.map(m=>`☐ ${m}`).join("\n")).join("\n\n")+"\n\nGénéré avec Parent'Hèse 🧩";
+                    if(navigator.share){navigator.share({title:"Ma liste de courses",text:texteListe}).catch(()=>{});}
+                    else if(navigator.clipboard){navigator.clipboard.writeText(texteListe).then(()=>setSaveToast("📋 Liste copiée !")).catch(()=>{});}
+                  }} style={{flex:1,padding:"8px 0",borderRadius:20,background:"rgba(255,255,255,0.18)",border:"1px solid rgba(255,255,255,0.35)",color:"#fff",fontSize:12,fontWeight:700,cursor:"pointer"}}>
+                    📤 Partager / Notes
+                  </button>
+                  <button onClick={()=>{
+                    const win=window.open("","_blank");
+                    if(!win){setSaveToast("⚠️ Bloqué par le navigateur — autorisez les pop-ups pour ce site puis réessayez.");setTimeout(()=>setSaveToast(null),4000);return;}
+                    const html=`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Liste de courses Parent'Hèse</title><style>body{font-family:system-ui,sans-serif;max-width:500px;margin:0 auto;padding:24px;color:#2C2A3E}h1{color:#6C5CE7;font-size:22px;margin-bottom:4px}.subtitle{color:#7A7690;font-size:13px;margin-bottom:20px}.rayon{margin-top:18px}.rayon h2{font-size:14px;color:#6C5CE7;margin:0 0 8px}.item{padding:6px 0;font-size:14px;border-bottom:1px solid #EDE9FF}@media print{body{margin:0}}</style></head><body><h1>🛒 Ma liste de courses</h1><p class="subtitle">Générée le ${new Date().toLocaleDateString("fr-FR")}</p>${Object.values(grouped).map(r=>`<div class="rayon"><h2>${r.label}</h2>${r.items.map(m=>`<div class="item">☐ ${m}</div>`).join("")}</div>`).join("")}</body></html>`;
+                    win.document.write(html);
+                    win.document.close();
+                    win.print();
+                  }} style={{flex:1,padding:"8px 0",borderRadius:20,background:"rgba(255,255,255,0.18)",border:"1px solid rgba(255,255,255,0.35)",color:"#fff",fontSize:12,fontWeight:700,cursor:"pointer"}}>
+                    🖨️ Imprimer
+                  </button>
+                </div>
               </div>
 
               {/* Rayons */}

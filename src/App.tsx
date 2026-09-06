@@ -10134,7 +10134,7 @@ function Saisonnier({sharedCustomEvents=[],setSharedCustomEvents,evenementsSaiso
   );
 }
 
-function Utilisateurs({premiumPourTous=false,togglePremiumPourTous}) {
+function Utilisateurs({premiumPourTous=false,togglePremiumPourTous,appLogo=null,setAppLogo}) {
   const [users,setUsers] = useState([]);
   const [chargement,setChargement] = useState(true);
   const [search,setSearch] = useState("");
@@ -10221,6 +10221,29 @@ function Utilisateurs({premiumPourTous=false,togglePremiumPourTous}) {
               togglePremiumPourTous&&togglePremiumPourTous();
             }
           }} style={{padding:"10px 20px",borderRadius:20,border:"none",fontWeight:700,fontSize:13,cursor:"pointer",flexShrink:0,background:premiumPourTous?"#f59e0b":"rgba(245,158,11,0.15)",color:premiumPourTous?"#1a1a1a":"#f59e0b"}}>{premiumPourTous?"✅ Activé — Désactiver":"Activer pour tous"}</button>
+        </div>
+      </div>
+
+      {/* 🖼️ Logo de l'application */}
+      <div style={{...s.card,marginBottom:20,padding:"16px 20px"}}>
+        <p style={{margin:"0 0 2px",fontSize:14,fontWeight:700,color:C.text}}>🖼️ Logo de l'application</p>
+        <p style={{margin:"0 0 14px",fontSize:12,color:C.muted}}>Affiché sur l'écran de connexion et sur le bouton Accueil de la barre de navigation.</p>
+        <div style={{display:"flex",alignItems:"center",gap:16}}>
+          <div style={{width:64,height:64,borderRadius:16,overflow:"hidden",flexShrink:0,background:"rgba(255,255,255,0.05)",display:"flex",alignItems:"center",justifyContent:"center",border:`1px solid ${C.border}`}}>
+            {appLogo?<img src={appLogo} alt="Logo actuel" style={{width:"100%",height:"100%",objectFit:"cover"}}/>:<span style={{fontSize:28}}>🧩</span>}
+          </div>
+          <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+            <input id="admin-app-logo" type="file" accept="image/jpeg,image/png,image/webp" style={{display:"none"}} onChange={async e=>{
+              const file=e.target.files[0];if(!file)return;
+              try{
+                const compressed=await compresserImage(file,256,0.85);
+                setAppLogo&&setAppLogo(compressed);
+              }catch(err){alert("Impossible de lire cette image.");}
+              e.target.value="";
+            }}/>
+            <button onClick={()=>document.getElementById("admin-app-logo").click()} style={{padding:"9px 16px",borderRadius:14,border:"none",fontWeight:700,fontSize:13,cursor:"pointer",background:"rgba(124,58,237,0.15)",color:C.accent}}>{appLogo?"Changer le logo":"Ajouter un logo"}</button>
+            {appLogo&&<button onClick={()=>{if(window.confirm("Retirer le logo actuel et revenir à l'icône par défaut ?"))setAppLogo&&setAppLogo(null);}} style={{padding:"9px 16px",borderRadius:14,border:"1px solid rgba(239,68,68,0.3)",fontWeight:700,fontSize:13,cursor:"pointer",background:"transparent",color:C.red}}>Retirer</button>}
+          </div>
         </div>
       </div>
 
@@ -11811,7 +11834,7 @@ function AdminSOS({sosLib=[],setSosLib,sosModeActif=true,setSosModeActif}){
   );
 }
 
-function PageAdmin({onLogout,pendingContribs=[],setPendingContribs,updateContrib,supprimerContrib,adminActivites=[],setAdminActivites,adminSorties=[],setAdminSorties,adminEvenements=[],setAdminEvenements,adminReports=[],setAdminReports,addDeletedTitle,adminCustomEvents=[],setAdminCustomEvents,sosLib=[],setSosLib,sosModeActif=true,setSosModeActif,ideesMomentConfig=[],setIdeesMomentConfig,evenementsSaisonniers=[],setEvenementsSaisonniers,betisesLutin=[],setBetisesLutin,cartesVoyageLutin=[],setCartesVoyageLutin,customCatActivites=[],setCustomCatActivites,customCatSorties=[],setCustomCatSorties,customCatEvenements=[],setCustomCatEvenements,adminComms=[],setAdminComms,ressourcesSites=[],setRessourcesSites,ressourcesContacts=[],setRessourcesContacts,ressourcesPdf=[],setRessourcesPdf,devisBoostDemandes=[],setDevisBoostDemandes,boosts=[],setBoosts,activerBoost,retirerBoostSupabase,demoMode=false,setDemoMode,premiumPourTous=false,togglePremiumPourTous}) {
+function PageAdmin({onLogout,pendingContribs=[],setPendingContribs,updateContrib,supprimerContrib,adminActivites=[],setAdminActivites,adminSorties=[],setAdminSorties,adminEvenements=[],setAdminEvenements,adminReports=[],setAdminReports,addDeletedTitle,adminCustomEvents=[],setAdminCustomEvents,sosLib=[],setSosLib,sosModeActif=true,setSosModeActif,ideesMomentConfig=[],setIdeesMomentConfig,evenementsSaisonniers=[],setEvenementsSaisonniers,betisesLutin=[],setBetisesLutin,cartesVoyageLutin=[],setCartesVoyageLutin,customCatActivites=[],setCustomCatActivites,customCatSorties=[],setCustomCatSorties,customCatEvenements=[],setCustomCatEvenements,adminComms=[],setAdminComms,ressourcesSites=[],setRessourcesSites,ressourcesContacts=[],setRessourcesContacts,ressourcesPdf=[],setRessourcesPdf,devisBoostDemandes=[],setDevisBoostDemandes,boosts=[],setBoosts,activerBoost,retirerBoostSupabase,demoMode=false,setDemoMode,premiumPourTous=false,togglePremiumPourTous,appLogo=null,setAppLogo}) {
   const [page,setPage] = useState("dashboard");
   const [collapsed,setCollapsed] = useState(false);
   const pendingReports = adminReports.filter(r=>r.statut==="pending").length;
@@ -11856,7 +11879,7 @@ function PageAdmin({onLogout,pendingContribs=[],setPendingContribs,updateContrib
           </div>
         </header>
         <main style={{flex:1,overflowY:"auto",padding:24}}>
-          {page==="contributions"?<Contributions items={pendingContribs} updateContrib={updateContrib} setPendingContribs={setPendingContribs} supprimerContrib={supprimerContrib} customCatActivites={customCatActivites} customCatSorties={customCatSorties} customCatEvenements={customCatEvenements}/>:PAGES_FN[page]?PAGES_FN[page]({sharedActivites:adminActivites,setSharedActivites:setAdminActivites,sharedSorties:adminSorties,setSharedSorties:setAdminSorties,sharedEvenements:adminEvenements,setSharedEvenements:setAdminEvenements,userReports:adminReports,setUserReports:setAdminReports,onDeleteTitle:addDeletedTitle,sharedCustomEvents:adminCustomEvents,setSharedCustomEvents:setAdminCustomEvents,pendingContribs,setPendingContribs,updateContrib,dashUserReports:adminReports,sosLib,setSosLib,sosModeActif,setSosModeActif,ideesMomentConfig,setIdeesMomentConfig,evenementsSaisonniers,setEvenementsSaisonniers,betisesLutin,setBetisesLutin,cartesVoyageLutin,setCartesVoyageLutin,customCatActivites,setCustomCatActivites,customCatSorties,setCustomCatSorties,customCatEvenements,setCustomCatEvenements,adminComms,setAdminComms,ressourcesSites,setRessourcesSites,ressourcesContacts,setRessourcesContacts,ressourcesPdf,setRessourcesPdf,devisBoostDemandes,setDevisBoostDemandes,boosts,onActiverBoost:activerBoost,onRetirerBoost:retirerBoostSupabase,demoMode,setDemoMode,premiumPourTous,togglePremiumPourTous}):null}
+          {page==="contributions"?<Contributions items={pendingContribs} updateContrib={updateContrib} setPendingContribs={setPendingContribs} supprimerContrib={supprimerContrib} customCatActivites={customCatActivites} customCatSorties={customCatSorties} customCatEvenements={customCatEvenements}/>:PAGES_FN[page]?PAGES_FN[page]({sharedActivites:adminActivites,setSharedActivites:setAdminActivites,sharedSorties:adminSorties,setSharedSorties:setAdminSorties,sharedEvenements:adminEvenements,setSharedEvenements:setAdminEvenements,userReports:adminReports,setUserReports:setAdminReports,onDeleteTitle:addDeletedTitle,sharedCustomEvents:adminCustomEvents,setSharedCustomEvents:setAdminCustomEvents,pendingContribs,setPendingContribs,updateContrib,dashUserReports:adminReports,sosLib,setSosLib,sosModeActif,setSosModeActif,ideesMomentConfig,setIdeesMomentConfig,evenementsSaisonniers,setEvenementsSaisonniers,betisesLutin,setBetisesLutin,cartesVoyageLutin,setCartesVoyageLutin,customCatActivites,setCustomCatActivites,customCatSorties,setCustomCatSorties,customCatEvenements,setCustomCatEvenements,adminComms,setAdminComms,ressourcesSites,setRessourcesSites,ressourcesContacts,setRessourcesContacts,ressourcesPdf,setRessourcesPdf,devisBoostDemandes,setDevisBoostDemandes,boosts,onActiverBoost:activerBoost,onRetirerBoost:retirerBoostSupabase,demoMode,setDemoMode,premiumPourTous,togglePremiumPourTous,appLogo,setAppLogo}):null}
         </main>
       </div>
     </div>
@@ -11868,7 +11891,7 @@ function PageAdmin({onLogout,pendingContribs=[],setPendingContribs,updateContrib
 // AUTHENTIFICATION — Compte local protégé par mot de passe
 // (pas de serveur : les identifiants restent stockés sur cet appareil)
 // ============================================================
-function PageAuth({ onAuthSuccess, onCancel, onAdminSuccess }) {
+function PageAuth({ onAuthSuccess, onCancel, onAdminSuccess, logo }) {
   const [mode, setMode] = useState('signup'); // 'signup' | 'login'
   const [failedAttempts,setFailedAttempts]=useState(0);
   const [lockedUntil,setLockedUntil]=useState(null); // timestamp
@@ -12027,7 +12050,11 @@ function PageAuth({ onAuthSuccess, onCancel, onAdminSuccess }) {
         <button onClick={onCancel} style={{ position: "absolute", top: 16, right: 16, width: 34, height: 34, borderRadius: "50%", background: WH, border: BD, fontSize: 16, color: TM, cursor: "pointer" }}>✕</button>
       )}
       <div style={{ textAlign: "center", marginBottom: 28 }}>
-        <div style={{ width: 64, height: 64, borderRadius: 18, background: "linear-gradient(135deg," + V + ",#a78bfa)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 30, margin: "0 auto 14px", boxShadow: "0 4px 16px rgba(108,92,231,0.3)" }}>🧩</div>
+        {logo?(
+          <img src={logo} alt="Logo" style={{ width: 64, height: 64, borderRadius: 18, objectFit: "cover", margin: "0 auto 14px", boxShadow: "0 4px 16px rgba(108,92,231,0.3)", display:"block" }}/>
+        ):(
+          <div style={{ width: 64, height: 64, borderRadius: 18, background: "linear-gradient(135deg," + V + ",#a78bfa)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 30, margin: "0 auto 14px", boxShadow: "0 4px 16px rgba(108,92,231,0.3)" }}>🧩</div>
+        )}
         <h1 style={{ margin: "0 0 4px", fontSize: 21, fontWeight: 800, color: TX }}>Parent'Hèse</h1>
         <p style={{ margin: 0, fontSize: 13, color: TM }}>{mode === 'signup' ? "Crée ton compte pour commencer" : "Connecte-toi pour continuer"}</p>
       </div>
@@ -12208,12 +12235,16 @@ export default function App(){
   };
   const [demoMode,setDemoMode]=useState(false);
   const [premiumPourTous,setPremiumPourTous]=useState(false);
+  const [appLogo,setAppLogoState]=useState(null);
   useEffect(()=>{
     (async()=>{
       try{
-        const {data}=await supabase.from("app_config").select("premium_pour_tous").eq("id",1).single();
-        if(data)setPremiumPourTous(!!data.premium_pour_tous);
-      }catch(e){ /* erreur réseau — reste false */ }
+        const {data}=await supabase.from("app_config").select("premium_pour_tous,logo").eq("id",1).single();
+        if(data){
+          setPremiumPourTous(!!data.premium_pour_tous);
+          if(data.logo)setAppLogoState(data.logo);
+        }
+      }catch(e){ /* erreur réseau — reste false/null */ }
     })();
   },[]);
   const isPremiumUser=!!currentUser?.premium||demoMode||premiumPourTous;
@@ -12222,6 +12253,12 @@ export default function App(){
     setPremiumPourTous(nouvelleValeur);
     try{
       await supabase.from("app_config").upsert({id:1,premium_pour_tous:nouvelleValeur});
+    }catch(e){ /* échec réseau — reste correct localement pour cette session */ }
+  };
+  const setAppLogo=async(base64OuNull)=>{
+    setAppLogoState(base64OuNull);
+    try{
+      await supabase.from("app_config").upsert({id:1,logo:base64OuNull});
     }catch(e){ /* échec réseau — reste correct localement pour cette session */ }
   };
 
@@ -12784,7 +12821,7 @@ export default function App(){
     setTimeout(()=>setGlobalToast(null),3000);
     setTimeout(()=>setShowConfetti(false),4500);
   };
-  if(isAdmin) return <PageAdmin onLogout={()=>{ setIsAdmin(false); setPage("profil"); supabase.auth.signOut().then(()=>{},()=>{}); sauvegarderPrivé({onboarding_done:onboardingDone,popup_shown:[...popupShown],dark_mode:darkMode,filtres_memo_activ:filtresMemoActiv,filtres_memo_sortie:filtresMemoSortie,is_admin:false}); }} pendingContribs={pendingContribs} setPendingContribs={setPendingContribs} updateContrib={updateContrib} supprimerContrib={supprimerContrib} adminActivites={adminActivites} setAdminActivites={setAdminActivites} adminSorties={adminSorties} setAdminSorties={setAdminSorties} adminEvenements={adminEvenements} setAdminEvenements={setAdminEvenements} adminReports={adminReports} setAdminReports={setAdminReports} addDeletedTitle={addDeletedTitle} adminCustomEvents={customEvents} setAdminCustomEvents={setCustomEvents} sosLib={sosLib} setSosLib={setSosLib} sosModeActif={sosModeActif} setSosModeActif={setSosModeActif} ideesMomentConfig={ideesMomentConfig} setIdeesMomentConfig={setIdeesMomentConfig} evenementsSaisonniers={evenementsSaisonniers} setEvenementsSaisonniers={setEvenementsSaisonniers} betisesLutin={betisesLutin} setBetisesLutin={setBetisesLutin} cartesVoyageLutin={cartesVoyageLutin} setCartesVoyageLutin={setCartesVoyageLutin} customCatActivites={customCatActivites} setCustomCatActivites={setCustomCatActivites} customCatSorties={customCatSorties} setCustomCatSorties={setCustomCatSorties} customCatEvenements={customCatEvenements} setCustomCatEvenements={setCustomCatEvenements} adminComms={adminComms} setAdminComms={setAdminComms} ressourcesSites={ressourcesSites} setRessourcesSites={setRessourcesSites} ressourcesContacts={ressourcesContacts} setRessourcesContacts={setRessourcesContacts} ressourcesPdf={ressourcesPdf} setRessourcesPdf={setRessourcesPdf} devisBoostDemandes={devisBoostDemandes} setDevisBoostDemandes={setDevisBoostDemandes} boosts={boosts} setBoosts={setBoosts} activerBoost={activerBoost} retirerBoostSupabase={retirerBoostSupabase} demoMode={demoMode} setDemoMode={setDemoMode} premiumPourTous={premiumPourTous} togglePremiumPourTous={togglePremiumPourTous}/>;
+  if(isAdmin) return <PageAdmin onLogout={()=>{ setIsAdmin(false); setPage("profil"); supabase.auth.signOut().then(()=>{},()=>{}); sauvegarderPrivé({onboarding_done:onboardingDone,popup_shown:[...popupShown],dark_mode:darkMode,filtres_memo_activ:filtresMemoActiv,filtres_memo_sortie:filtresMemoSortie,is_admin:false}); }} pendingContribs={pendingContribs} setPendingContribs={setPendingContribs} updateContrib={updateContrib} supprimerContrib={supprimerContrib} adminActivites={adminActivites} setAdminActivites={setAdminActivites} adminSorties={adminSorties} setAdminSorties={setAdminSorties} adminEvenements={adminEvenements} setAdminEvenements={setAdminEvenements} adminReports={adminReports} setAdminReports={setAdminReports} addDeletedTitle={addDeletedTitle} adminCustomEvents={customEvents} setAdminCustomEvents={setCustomEvents} sosLib={sosLib} setSosLib={setSosLib} sosModeActif={sosModeActif} setSosModeActif={setSosModeActif} ideesMomentConfig={ideesMomentConfig} setIdeesMomentConfig={setIdeesMomentConfig} evenementsSaisonniers={evenementsSaisonniers} setEvenementsSaisonniers={setEvenementsSaisonniers} betisesLutin={betisesLutin} setBetisesLutin={setBetisesLutin} cartesVoyageLutin={cartesVoyageLutin} setCartesVoyageLutin={setCartesVoyageLutin} customCatActivites={customCatActivites} setCustomCatActivites={setCustomCatActivites} customCatSorties={customCatSorties} setCustomCatSorties={setCustomCatSorties} customCatEvenements={customCatEvenements} setCustomCatEvenements={setCustomCatEvenements} adminComms={adminComms} setAdminComms={setAdminComms} ressourcesSites={ressourcesSites} setRessourcesSites={setRessourcesSites} ressourcesContacts={ressourcesContacts} setRessourcesContacts={setRessourcesContacts} ressourcesPdf={ressourcesPdf} setRessourcesPdf={setRessourcesPdf} devisBoostDemandes={devisBoostDemandes} setDevisBoostDemandes={setDevisBoostDemandes} boosts={boosts} setBoosts={setBoosts} activerBoost={activerBoost} retirerBoostSupabase={retirerBoostSupabase} demoMode={demoMode} setDemoMode={setDemoMode} premiumPourTous={premiumPourTous} togglePremiumPourTous={togglePremiumPourTous} appLogo={appLogo} setAppLogo={setAppLogo}/>;
   return(
     <div style={{maxWidth:390,margin:"0 auto",background:BG,minHeight:"100vh",position:"relative",fontFamily:"system-ui,-apple-system,sans-serif",color:TX,transition:"background 0.3s,color 0.3s"}} className={darkMode?"dm":""}>
       <style>{`
@@ -12820,7 +12857,7 @@ export default function App(){
 
       {showAuthGate&&(
         <div style={{position:"fixed",inset:0,background:BG,zIndex:920,overflowY:"auto"}}>
-          <PageAuth onCancel={()=>{setShowAuthGate(false);}} onAuthSuccess={(u)=>{setCurrentUser(u);setShowAuthGate(false);}} onAdminSuccess={()=>{setIsAdmin(true);setShowAuthGate(false);}}/>
+          <PageAuth logo={appLogo} onCancel={()=>{setShowAuthGate(false);}} onAuthSuccess={(u)=>{setCurrentUser(u);setShowAuthGate(false);}} onAdminSuccess={()=>{setIsAdmin(true);setShowAuthGate(false);}}/>
         </div>
       )}
       {showPremiumPage&&(
@@ -12878,8 +12915,8 @@ export default function App(){
           const actif=page==="accueil";
           return(
             <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",position:"relative"}}>
-              <button onClick={()=>setPage("accueil")} style={{position:"absolute",top:-26,width:58,height:58,borderRadius:"50%",background:actif?`linear-gradient(135deg,${V},#8B7FF0)`:`linear-gradient(135deg,${V},#8B7FF0)`,border:"4px solid "+WH,boxShadow:actif?"0 6px 18px rgba(108,92,231,0.5)":"0 4px 14px rgba(108,92,231,0.35)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",transition:"transform 0.15s"}}>
-                <span style={{fontSize:26}}>🏠</span>
+              <button onClick={()=>setPage("accueil")} style={{position:"absolute",top:-26,width:58,height:58,borderRadius:"50%",background:actif?`linear-gradient(135deg,${V},#8B7FF0)`:`linear-gradient(135deg,${V},#8B7FF0)`,border:"4px solid "+WH,boxShadow:actif?"0 6px 18px rgba(108,92,231,0.5)":"0 4px 14px rgba(108,92,231,0.35)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",transition:"transform 0.15s",overflow:"hidden"}}>
+                {appLogo?<img src={appLogo} alt="Accueil" style={{width:"100%",height:"100%",objectFit:"cover",borderRadius:"50%"}}/>:<span style={{fontSize:26}}>🏠</span>}
                 {badge&&<span style={{position:"absolute",top:-6,right:-6,background:"#F97316",color:"#fff",borderRadius:10,padding:"1px 5px",fontSize:9,fontWeight:800,border:"2px solid "+WH}}>{badge}</span>}
               </button>
               <span style={{fontSize:10,color:actif?V:TM,fontWeight:actif?700:400,marginTop:34}}>Accueil</span>

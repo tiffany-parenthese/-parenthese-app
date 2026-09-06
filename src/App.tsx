@@ -12252,16 +12252,21 @@ export default function App(){
     setPage("accueil");
   };
   const handleDeleteAccount=async()=>{
+    const uid=currentUser?.id;
     try{
-      await Promise.all([
-        window.storage.delete("auth_account"),
-        window.storage.delete("auth_session"),
-        window.storage.delete("favoris"),
-        window.storage.delete("enfants"),
-        window.storage.delete("planning_hebdo"),
-        window.storage.delete("popup_shown"),
-      ]);
-    }catch(e){ /* certaines cles peuvent deja etre absentes */ }
+      if(uid){
+        await Promise.all([
+          supabase.from("favoris").delete().eq("user_id",uid),
+          supabase.from("enfants").delete().eq("user_id",uid),
+          supabase.from("historique_activites").delete().eq("user_id",uid),
+          supabase.from("masquees").delete().eq("user_id",uid),
+          supabase.from("profiles").delete().eq("id",uid),
+        ]);
+      }
+    }catch(e){
+      console.error("Erreur lors de la suppression des données du compte:",e.message);
+    }
+    try{ await supabase.auth.signOut(); }catch(e){}
     setCurrentUser(null);
     setFavoris([]);
     setEnfants([]);

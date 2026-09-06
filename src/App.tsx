@@ -11919,6 +11919,7 @@ function PageAuth({ onAuthSuccess, onCancel, onAdminSuccess, logo }) {
   const [nom, setNom] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showReset, setShowReset] = useState(false);
@@ -12048,7 +12049,10 @@ function PageAuth({ onAuthSuccess, onCancel, onAdminSuccess, logo }) {
         </div>
         <div style={{marginBottom:16}}>
           <label style={{fontSize:12,color:TM,display:"block",marginBottom:6}}>Code d'accès admin</label>
-          <input type="password" value={adminCode2} onChange={e=>setAdminCode2(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleAdminCode2()} placeholder="••••••••" autoFocus style={{...FS,letterSpacing:4,textAlign:"center",fontSize:18}} autoComplete="off"/>
+          <div style={{ position: "relative" }}>
+            <input type={showPassword?"text":"password"} value={adminCode2} onChange={e=>setAdminCode2(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleAdminCode2()} placeholder="••••••••" autoFocus style={{...FS,letterSpacing:4,textAlign:"center",fontSize:18,paddingRight:40}} autoComplete="off"/>
+            <button type="button" onClick={()=>setShowPassword(p=>!p)} style={{ position: "absolute", right: 4, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", fontSize: 17, padding: 8, lineHeight: 1 }} aria-label={showPassword?"Masquer le code":"Afficher le code"}>{showPassword?"🙈":"👁️"}</button>
+          </div>
         </div>
         {error&&<p style={{margin:"0 0 12px",fontSize:12,color:RD,fontWeight:600,textAlign:"center"}}>{error}</p>}
         {lockedUntil&&<p style={{margin:"0 0 12px",fontSize:12,color:OR,fontWeight:600,textAlign:"center"}}>🔒 Verrouillé encore {lockCountdown}s</p>}
@@ -12090,7 +12094,10 @@ function PageAuth({ onAuthSuccess, onCancel, onAdminSuccess, logo }) {
         </div>
         <div style={{ marginBottom: 6 }}>
           <label style={{ fontSize: 12, color: TM, display: "block", marginBottom: 6 }}>Mot de passe</label>
-          <input type="password" value={password} onChange={e => setPassword(e.target.value)} onKeyDown={e => e.key === "Enter" && (mode === 'signup' ? handleSignup() : handleLogin())} placeholder="••••••" style={FS} />
+          <div style={{ position: "relative" }}>
+            <input type={showPassword?"text":"password"} value={password} onChange={e => setPassword(e.target.value)} onKeyDown={e => e.key === "Enter" && (mode === 'signup' ? handleSignup() : handleLogin())} placeholder="••••••" style={{...FS, paddingRight: 40}} />
+            <button type="button" onClick={()=>setShowPassword(p=>!p)} style={{ position: "absolute", right: 4, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", fontSize: 17, padding: 8, lineHeight: 1 }} aria-label={showPassword?"Masquer le mot de passe":"Afficher le mot de passe"}>{showPassword?"🙈":"👁️"}</button>
+          </div>
         </div>
 
         {error && <p style={{ margin: "10px 0 0", fontSize: 12, color: RD, fontWeight: 600 }}>{error}</p>}

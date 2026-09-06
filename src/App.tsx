@@ -10773,7 +10773,7 @@ function Communication({ideesMomentConfig=[],setIdeesMomentConfig,adminComms=[],
   const [selectedIdee,setSelectedIdee] = useState(null); // index of selected idee
   const [codesPromo,setCodesPromo] = useState([]);
   const [modalCode,setModalCode] = useState(null);
-  const [formCode,setFormCode] = useState({code:"",description:"",max_utilisations:"",actif:true,type:"gratuit",pourcentage:"",creerBandeau:false});
+  const [formCode,setFormCode] = useState({code:"",description:"",max_utilisations:"",actif:true,type:"gratuit",pourcentage:"",debut:"",fin:"",creerBandeau:false});
   useEffect(()=>{
     (async()=>{
       try{
@@ -10786,7 +10786,7 @@ function Communication({ideesMomentConfig=[],setIdeesMomentConfig,adminComms=[],
     const code=formCode.code.trim().toUpperCase();
     if(!code)return;
     if(formCode.type==="reduction"&&!formCode.pourcentage){alert("Indique un pourcentage de réduction.");return;}
-    const payload={code,description:formCode.description.trim(),max_utilisations:formCode.max_utilisations?parseInt(formCode.max_utilisations):null,actif:!!formCode.actif,type:formCode.type,pourcentage:formCode.type==="reduction"?parseInt(formCode.pourcentage):null};
+    const payload={code,description:formCode.description.trim(),max_utilisations:formCode.max_utilisations?parseInt(formCode.max_utilisations):null,actif:!!formCode.actif,type:formCode.type,pourcentage:formCode.type==="reduction"?parseInt(formCode.pourcentage):null,debut:formCode.debut||null,fin:formCode.fin||null};
     if(modalCode?.mode==="edit"){
       setCodesPromo(prev=>prev.map(c=>c.id===modalCode.item.id?{...c,...payload}:c));
       try{ await supabase.from("promo_codes").update(payload).eq("id",modalCode.item.id); }catch(e){}
@@ -10799,10 +10799,10 @@ function Communication({ideesMomentConfig=[],setIdeesMomentConfig,adminComms=[],
       if(formCode.creerBandeau){
         const titreB=formCode.type==="reduction"?`🎁 -${formCode.pourcentage}% sur l'abonnement Premium !`:"🎁 Une surprise vous attend !";
         const messageB=formCode.type==="reduction"?`Utilisez le code ${code} pour profiter de ${formCode.pourcentage}% de réduction sur votre abonnement Premium.`:`Utilisez le code ${code} pour débloquer Premium gratuitement !`;
-        const nouveauBandeau={id:Date.now().toString(),type:"banner",titre:titreB,message:messageB,debut:"",fin:"",actif:true,codePromo:code};
+        const nouveauBandeau={id:Date.now().toString(),type:"banner",titre:titreB,message:messageB,debut:formCode.debut||"",fin:formCode.fin||"",actif:true,codePromo:code};
         setComms(prev=>[...prev,nouveauBandeau]);
         try{
-          const {data:insertedB}=await supabase.from("communications").insert({type:"banner",titre:titreB,message:messageB,actif:true,code_promo:code}).select().single();
+          const {data:insertedB}=await supabase.from("communications").insert({type:"banner",titre:titreB,message:messageB,debut:formCode.debut||null,fin:formCode.fin||null,actif:true,code_promo:code}).select().single();
           if(insertedB)setComms(prev=>prev.map(c=>c===nouveauBandeau?{...c,id:insertedB.id}:c));
         }catch(e){ /* le bandeau reste visible localement même si la sauvegarde échoue */ }
       }
@@ -10886,7 +10886,7 @@ function Communication({ideesMomentConfig=[],setIdeesMomentConfig,adminComms=[],
       <div style={{...s.card,marginBottom:20}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
           <p style={{fontSize:14,fontWeight:700,color:C.text,margin:0}}>🎁 Codes promo</p>
-          <button style={s.btn(C.accent)} onClick={()=>{setFormCode({code:"",description:"",max_utilisations:"",actif:true,type:"gratuit",pourcentage:"",creerBandeau:true});setModalCode({mode:"add"});}}>+ Créer un code</button>
+          <button style={s.btn(C.accent)} onClick={()=>{setFormCode({code:"",description:"",max_utilisations:"",actif:true,type:"gratuit",pourcentage:"",debut:"",fin:"",creerBandeau:true});setModalCode({mode:"add"});}}>+ Créer un code</button>
         </div>
         <p style={{fontSize:12,color:C.muted,margin:"0 0 14px"}}>Débloque Premium gratuitement pour l'utilisateur qui saisit ce code — pratique pour une promo annoncée dans un bandeau ou une pub.</p>
         {codesPromo.length===0&&<p style={{fontSize:13,color:C.muted,fontStyle:"italic"}}>Aucun code promo pour le moment.</p>}
@@ -10899,10 +10899,10 @@ function Communication({ideesMomentConfig=[],setIdeesMomentConfig,adminComms=[],
                   <span style={{fontSize:10,fontWeight:700,padding:"2px 8px",borderRadius:10,background:c.type==="reduction"?"rgba(59,130,246,0.15)":"rgba(124,58,237,0.15)",color:c.type==="reduction"?"#3b82f6":"#a78bfa"}}>{c.type==="reduction"?`💸 -${c.pourcentage}%`:"🎁 Gratuit"}</span>
                 </div>
                 {c.description&&<p style={{margin:"2px 0 0",fontSize:12,color:C.muted}}>{c.description}</p>}
-                <p style={{margin:"2px 0 0",fontSize:11,color:C.muted}}>{c.utilisations_actuelles||0} utilisation{(c.utilisations_actuelles||0)>1?"s":""}{c.max_utilisations!=null?` / ${c.max_utilisations} max`:" · illimité"}</p>
+                <p style={{margin:"2px 0 0",fontSize:11,color:C.muted}}>{c.utilisations_actuelles||0} utilisation{(c.utilisations_actuelles||0)>1?"s":""}{c.max_utilisations!=null?` / ${c.max_utilisations} max`:" · illimité"}{(c.debut||c.fin)?` · ${c.debut||"…"} → ${c.fin||"…"}`:""}</p>
               </div>
               <button onClick={()=>toggleActifCode(c)} style={{fontSize:11,fontWeight:700,padding:"5px 12px",borderRadius:20,border:"none",cursor:"pointer",background:c.actif?"rgba(16,185,129,0.15)":"rgba(255,255,255,0.06)",color:c.actif?"#10b981":C.muted}}>{c.actif?"✓ Actif":"Inactif"}</button>
-              <button onClick={()=>{setFormCode({code:c.code,description:c.description||"",max_utilisations:c.max_utilisations!=null?String(c.max_utilisations):"",actif:c.actif,type:c.type||"gratuit",pourcentage:c.pourcentage!=null?String(c.pourcentage):""});setModalCode({mode:"edit",item:c});}} style={{background:"none",border:"none",fontSize:14,cursor:"pointer"}}>✏️</button>
+              <button onClick={()=>{setFormCode({code:c.code,description:c.description||"",max_utilisations:c.max_utilisations!=null?String(c.max_utilisations):"",actif:c.actif,type:c.type||"gratuit",pourcentage:c.pourcentage!=null?String(c.pourcentage):"",debut:c.debut||"",fin:c.fin||""});setModalCode({mode:"edit",item:c});}} style={{background:"none",border:"none",fontSize:14,cursor:"pointer"}}>✏️</button>
               <button onClick={()=>{if(window.confirm("Supprimer ce code promo ?"))supprimerCode(c.id);}} style={{background:"none",border:"none",fontSize:14,cursor:"pointer"}}>🗑️</button>
             </div>
           ))}
@@ -10921,6 +10921,10 @@ function Communication({ideesMomentConfig=[],setIdeesMomentConfig,adminComms=[],
           {formCode.type==="reduction"&&(
             <AdminField label="Pourcentage de réduction *"><input type="number" min={1} max={99} style={s.input} value={formCode.pourcentage} onChange={e=>setFormCode({...formCode,pourcentage:e.target.value})} placeholder="Ex : 30"/></AdminField>
           )}
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+            <AdminField label="Date de début (optionnel)"><input type="date" style={s.input} value={formCode.debut} onChange={e=>setFormCode({...formCode,debut:e.target.value})}/></AdminField>
+            <AdminField label="Date de fin (optionnel)"><input type="date" style={s.input} value={formCode.fin} onChange={e=>setFormCode({...formCode,fin:e.target.value})}/></AdminField>
+          </div>
           <AdminField label="Nombre d'utilisations max (laisser vide = illimité)"><input type="number" min={1} style={s.input} value={formCode.max_utilisations} onChange={e=>setFormCode({...formCode,max_utilisations:e.target.value})} placeholder="Illimité"/></AdminField>
           {modalCode.mode!=="edit"&&(
             <div onClick={()=>setFormCode({...formCode,creerBandeau:!formCode.creerBandeau})} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",borderRadius:10,border:`1.5px solid ${formCode.creerBandeau?C.accent:C.border}`,background:formCode.creerBandeau?"rgba(124,58,237,0.08)":"transparent",cursor:"pointer",marginBottom:8}}>
@@ -12289,6 +12293,9 @@ export default function App(){
       const {data:codeData,error}=await supabase.from("promo_codes").select("*").ilike("code",codeTape).maybeSingle();
       if(error||!codeData)return{ok:false,message:"Ce code n'existe pas."};
       if(!codeData.actif)return{ok:false,message:"Ce code n'est plus valide."};
+      const aujourdhui=new Date().toISOString().slice(0,10);
+      if(codeData.debut&&codeData.debut>aujourdhui)return{ok:false,message:"Ce code n'est pas encore actif."};
+      if(codeData.fin&&codeData.fin<aujourdhui)return{ok:false,message:"Ce code a expiré."};
       if(codeData.max_utilisations!=null&&codeData.utilisations_actuelles>=codeData.max_utilisations)return{ok:false,message:"Ce code a atteint sa limite d'utilisation."};
       await supabase.from("promo_codes").update({utilisations_actuelles:(codeData.utilisations_actuelles||0)+1}).eq("id",codeData.id);
       if(codeData.type==="reduction"){

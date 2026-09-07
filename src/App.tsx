@@ -5108,7 +5108,7 @@ function PagePremium({onBack,onSubscribe,isLoggedIn=true,onRequireAuth,premiumTr
       valeur:"Gain de temps",
       detail:"Génère en 1 clic un planning d'activités sur 7 jours, adapté à l'énergie et aux envies de votre enfant. Inclut automatiquement la liste de courses pour préparer les activités.",
       exemple:"Lundi : peinture 🎨 · Mardi : cuisine 🍳 · Mercredi : nature 🌳...",
-      gratuit:"3 jours seulement",
+      gratuit:"Pas de gratuité",
     },
     {
       emoji:"👶",titre:"Profils enfants illimités",desc:"Jusqu'à 6 enfants au lieu de 2",
@@ -5116,7 +5116,7 @@ function PagePremium({onBack,onSubscribe,isLoggedIn=true,onRequireAuth,premiumTr
       valeur:"Famille nombreuse",
       detail:"Créez un profil personnalisé pour chacun de vos enfants avec son propre carnet sensoriel, ses profils TND (TSA, TDAH, DYS) et ses préférences. Les suggestions s'adaptent à l'enfant sélectionné.",
       exemple:"Chaque enfant a ses propres suggestions adaptées à son profil.",
-      gratuit:"2 profils maximum",
+      gratuit:"Pas de gratuité",
     },
     {
       emoji:"🆘",titre:"Mode SOS",desc:"Activités d'urgence pour les moments difficiles",
@@ -5156,7 +5156,7 @@ function PagePremium({onBack,onSubscribe,isLoggedIn=true,onRequireAuth,premiumTr
       valeur:"Suggestions pertinentes",
       detail:"Toujours 3 propositions comme en gratuit, mais triées et scorées selon le profil sensoriel et les besoins de votre enfant. Un badge de compatibilité indique en un coup d'œil les activités les mieux adaptées.",
       exemple:"🟢 Très adapté · 🟡 Adapté · ⚪ À tester — pour chaque proposition.",
-      gratuit:"3 propositions non triées",
+      gratuit:"3 propositions non triées par besoin des enfants",
     },
   ];
 

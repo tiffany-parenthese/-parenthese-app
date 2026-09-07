@@ -2180,7 +2180,7 @@ function FilterSectionTitle({icon,label}){
   );
 }
 
-function CalendrierMensuel({evtFiltered=[],setEvtDetail,addReport,customCatEvenements=[],currentUser=null}){
+function CalendrierMensuel({evtFiltered=[],setEvtDetail,addReport,customCatEvenements=[],currentUser=null,isFavBiblio=()=>false,toggleFavBiblio=()=>{},toggleMasquer,estMasque=()=>false,estBoosteItem=()=>false}){
   const now=new Date();
   const [moisView,setMoisView]=useState(now.getMonth());
   const [anneeView,setAnneeView]=useState(now.getFullYear());
@@ -2772,7 +2772,7 @@ function PageBiblio({pendingContribs=[],setPendingContribs,adminActivites=[],adm
                 <PropBtn/>
               </div>
             )}
-            {evtView==="mensuel"&&<CalendrierMensuel evtFiltered={evtFiltered} setEvtDetail={setEvtDetail} addReport={addReport} customCatEvenements={customCatEvenements} currentUser={currentUser}/>}
+            {evtView==="mensuel"&&<CalendrierMensuel evtFiltered={evtFiltered} setEvtDetail={setEvtDetail} addReport={addReport} customCatEvenements={customCatEvenements} currentUser={currentUser} isFavBiblio={isFavBiblio} toggleFavBiblio={toggleFavBiblio} toggleMasquer={toggleMasquer} estMasque={estMasque} estBoosteItem={estBoosteItem}/>}
 
             {evtView==="generateur"&&(
               <div>

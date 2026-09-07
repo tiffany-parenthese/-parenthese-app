@@ -5286,9 +5286,9 @@ function PagePremium({onBack,onSubscribe,isLoggedIn=true,onRequireAuth,premiumTr
           </div>
           {[
             ["Générateur d'activités","3 choix","3 choix triés"],
-            ["Profils enfants","2 max","6 max"],
+            ["Profils enfants","✗","6 max"],
             ["Favoris","10 max","Illimités"],
-            ["Planning hebdomadaire","3 jours","7 jours"],
+            ["Planning hebdomadaire","✗","7 jours"],
             ["Mode SOS","✗","✓"],
             ["Carnet sensoriel","✗","✓"],
             ["Pictogrammes","✗","✓"],

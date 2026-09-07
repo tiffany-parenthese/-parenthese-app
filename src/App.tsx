@@ -464,7 +464,7 @@ function SectionAccessibilite({values={},onChange,commentaire="",onCommentaireCh
   );
 }
 
-function SignalCardBtn({id,titre,type,onReport}){
+function SignalCardBtn({id,titre,type,onReport,currentUser=null}){
   const [step,setStep]=useState("idle");
   const [raison,setRaison]=useState("");
   const [detail,setDetail]=useState("");
@@ -491,7 +491,7 @@ function SignalCardBtn({id,titre,type,onReport}){
             <div style={{textAlign:"center",marginBottom:14}}><p style={{margin:0,fontSize:15,fontWeight:700,color:TX}}>{RAISONS.find(r=>r.k===raison)?.l}</p></div>
             <textarea value={detail} onChange={e=>setDetail(e.target.value.slice(0,300))} placeholder="Ajoute des details" rows={3} style={{width:"100%",borderRadius:12,border:"1px solid #E5E7EB",padding:"12px 14px",fontSize:13,fontFamily:"inherit",resize:"none",boxSizing:"border-box",outline:"none",color:TX,marginBottom:4}}/>
             <div style={{textAlign:"right",fontSize:11,color:TM,marginBottom:14}}>{detail.length}/300</div>
-            <button onClick={()=>{const raisonLabel=RAISONS.find(r=>r.k===raison)?.l||raison;setDone(true);setStep("idle");if(onReport)onReport({type:type||"activite",titre:titre||id,raison:raisonLabel,signalePar:"utilisateur@parentales.fr",detail,date:new Date().toLocaleDateString("fr-FR")});}} style={{width:"100%",padding:13,borderRadius:28,background:RD,border:"none",color:WH,fontWeight:700,fontSize:14,cursor:"pointer",marginBottom:8}}>Envoyer</button>
+            <button onClick={()=>{const raisonLabel=RAISONS.find(r=>r.k===raison)?.l||raison;setDone(true);setStep("idle");if(onReport)onReport({type:type||"activite",titre:titre||id,raison:raisonLabel,signalePar:currentUser?.email||"non connecté",detail,date:new Date().toLocaleDateString("fr-FR")});}} style={{width:"100%",padding:13,borderRadius:28,background:RD,border:"none",color:WH,fontWeight:700,fontSize:14,cursor:"pointer",marginBottom:8}}>Envoyer</button>
             <div style={{display:"flex",gap:8}}>
               <button onClick={()=>setStep("choix")} style={{flex:1,padding:"10px 0",borderRadius:28,background:BG2,border:"none",color:TM,fontSize:13,cursor:"pointer"}}>Retour</button>
               <button onClick={()=>setStep("idle")} style={{flex:1,padding:"10px 0",borderRadius:28,background:BG2,border:"none",color:TM,fontSize:13,cursor:"pointer"}}>Annuler</button>
@@ -1698,7 +1698,7 @@ function AccessibiliteSortieSection({accessibilite,tousLesAvis=[]}){
   );
 }
 
-function SortieDetailPage({sortie,isFavorite,onToggleFavorite,onBack,onReport,isLoggedIn=true,onRequireAuth,onMasquer,estMasque=false}){
+function SortieDetailPage({sortie,isFavorite,onToggleFavorite,onBack,onReport,isLoggedIn=true,onRequireAuth,onMasquer,estMasque=false,currentUser=null}){
   const card={background:WH,borderRadius:16,padding:14,marginBottom:12,boxShadow:"0 1px 3px rgba(0,0,0,0.06)"};
   const sec=(t)=>(<div style={{fontSize:12,fontWeight:600,color:V,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:10}}>{t}</div>);
   const emo=sortie.type==="Zoo"?"🦁":sortie.type==="Musee"?"🏛️":sortie.type==="Parc d attraction"?"🎢":sortie.type==="Plage"?"🏖️":sortie.type==="Bowling"?"🎳":sortie.type==="Escape game"?"🔐":sortie.type==="Ferme pedagogique"?"🐄":sortie.type==="Piscine"?"🏊":"🗺️";
@@ -1732,7 +1732,7 @@ function SortieDetailPage({sortie,isFavorite,onToggleFavorite,onBack,onReport,is
         <button onClick={onToggleFavorite} style={{width:"100%",background:isFavorite?"#FCEBEB":V,color:isFavorite?"#A32D2D":WH,border:"none",borderRadius:28,padding:14,fontSize:14,fontWeight:600,cursor:"pointer",marginBottom:8}}>{isFavorite?"Retirer des favoris":"Ajouter aux favoris"}</button>
         {onMasquer&&<button onClick={onMasquer} style={{width:"100%",background:estMasque?VL:WH,color:estMasque?V:TM,border:BD,borderRadius:28,padding:12,fontSize:13,fontWeight:600,cursor:"pointer",marginBottom:8}}>{estMasque?"↩️ Reproposer cette sortie":"🚫 Ne plus proposer cette sortie"}</button>}
         <button onClick={()=>setShowPartageMenu(true)} style={{width:"100%",background:WH,color:V,border:"1.5px solid "+V,borderRadius:28,padding:12,fontSize:14,cursor:"pointer"}}>Partager</button>
-        <SignalementButton type="sortie" onSignaler={(raison,detail)=>{if(onReport)onReport({type:"sortie",titre:sortie.nom,raison,detail:detail||"",signalePar:"utilisateur@parentales.fr",dept:sortie.dept,prix:sortie.prix,ville:sortie.ville,categorie:sortie.type});}}/>
+        <SignalementButton type="sortie" onSignaler={(raison,detail)=>{if(onReport)onReport({type:"sortie",titre:sortie.nom,raison,detail:detail||"",signalePar:currentUser?.email||"non connecté",dept:sortie.dept,prix:sortie.prix,ville:sortie.ville,categorie:sortie.type});}}/>
       </div>
       <PartageMenu show={showPartageMenu} titre={sortie.nom} texte={partageTexte} onClose={()=>setShowPartageMenu(false)}/>
     </div>
@@ -1789,7 +1789,7 @@ function AAnticiperVide(){
   );
 }
 
-function ActivityDetailPage({activity,isFavorite,onToggleFavorite,onBack,onReport,isLoggedIn=true,onRequireAuth,matchEnfant=null,onMasquer,estMasque=false}){
+function ActivityDetailPage({activity,isFavorite,onToggleFavorite,onBack,onReport,isLoggedIn=true,onRequireAuth,matchEnfant=null,onMasquer,estMasque=false,currentUser=null}){
   const titre=activity.titre||activity.title||activity.nom||"";
   const emoji=activity.emoji||"🎨";
   const categorie=activity.categorie||activity.category||"";
@@ -1967,14 +1967,14 @@ function ActivityDetailPage({activity,isFavorite,onToggleFavorite,onBack,onRepor
         <button onClick={onToggleFavorite} style={{width:"100%",background:isFavorite?"#FCEBEB":V,color:isFavorite?"#A32D2D":WH,border:"none",borderRadius:28,padding:14,fontSize:14,fontWeight:600,cursor:"pointer",marginBottom:8}}>{isFavorite?"Retirer des favoris":"Ajouter aux favoris"}</button>
         {onMasquer&&<button onClick={onMasquer} style={{width:"100%",background:estMasque?VL:WH,color:estMasque?V:TM,border:BD,borderRadius:28,padding:12,fontSize:13,fontWeight:600,cursor:"pointer",marginBottom:8}}>{estMasque?"↩️ Reproposer cette activité":"🚫 Ne plus proposer cette activité"}</button>}
         <button onClick={()=>setShowPartageMenu(true)} style={{width:"100%",background:WH,color:V,border:"1.5px solid "+V,borderRadius:28,padding:12,fontSize:14,cursor:"pointer"}}>Partager</button>
-        <SignalementButton type="activite" onSignaler={(raison,detail)=>{if(onReport)onReport({type:"activite",titre:activity.nom||activity.titre||activity.title,raison,detail:detail||"",signalePar:"utilisateur@parentales.fr",categorie:activity.categorie,lieu:activity.lieu,age:activity.age});}}/>
+        <SignalementButton type="activite" onSignaler={(raison,detail)=>{if(onReport)onReport({type:"activite",titre:activity.nom||activity.titre||activity.title,raison,detail:detail||"",signalePar:currentUser?.email||"non connecté",categorie:activity.categorie,lieu:activity.lieu,age:activity.age});}}/>
       </div>
       <PartageMenu show={showPartageMenu} titre={activity.nom} texte={partageTexte} onClose={()=>setShowPartageMenu(false)}/>
     </div>
   );
 }
 
-function EvenementDetail({evt,onBack,onReport,isFavorite,onToggleFavorite,isLoggedIn=true,onRequireAuth,customCatEvenements=[],onMasquer,estMasque=false}){
+function EvenementDetail({evt,onBack,onReport,isFavorite,onToggleFavorite,isLoggedIn=true,onRequireAuth,customCatEvenements=[],onMasquer,estMasque=false,currentUser=null}){
   const cat=EVT_CATEGORIES.find(c=>c.k===evt.categorie)||customCatEvenements.find(c=>c.k===evt.categorie)||{emoji:"🎉",label:""};
   const card={background:WH,borderRadius:16,padding:14,marginBottom:12,boxShadow:"0 1px 3px rgba(0,0,0,0.06)"};
   const sec=(t)=>(<div style={{fontSize:12,fontWeight:600,color:V,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:10}}>{t}</div>);
@@ -2007,14 +2007,14 @@ function EvenementDetail({evt,onBack,onReport,isFavorite,onToggleFavorite,isLogg
         <button onClick={onToggleFavorite} style={{width:"100%",background:isFavorite?"#FCEBEB":V,color:isFavorite?"#A32D2D":WH,border:"none",borderRadius:28,padding:14,fontSize:14,fontWeight:600,cursor:"pointer",marginBottom:8}}>{isFavorite?"Retirer des favoris":"Ajouter aux favoris"}</button>
         {onMasquer&&<button onClick={onMasquer} style={{width:"100%",background:estMasque?VL:WH,color:estMasque?V:TM,border:BD,borderRadius:28,padding:12,fontSize:13,fontWeight:600,cursor:"pointer",marginBottom:8}}>{estMasque?"↩️ Reproposer cet événement":"🚫 Ne plus proposer cet événement"}</button>}
         <button onClick={()=>setShowPartageMenu(true)} style={{width:"100%",background:WH,color:V,border:"1.5px solid "+V,borderRadius:28,padding:12,fontSize:14,cursor:"pointer",marginBottom:8}}>Partager</button>
-        <SignalCardBtn id={"evtdetail_"+(evt.id||evt.nom)} titre={evt.titre||evt.nom} type="evenement" onReport={onReport}/>
+        <SignalCardBtn id={"evtdetail_"+(evt.id||evt.nom)} titre={evt.titre||evt.nom} type="evenement" onReport={onReport} currentUser={currentUser}/>
       </div>
       <PartageMenu show={showPartageMenu} titre={evt.nom} texte={partageTexte} onClose={()=>setShowPartageMenu(false)}/>
     </div>
   );
 }
 
-function EvtCard({e,onClick,onReport,customCatEvenements=[],isFav,onToggleFav,onMasquer,estMasque=false,estBoostee=false}){
+function EvtCard({e,onClick,onReport,customCatEvenements=[],isFav,onToggleFav,onMasquer,estMasque=false,estBoostee=false,currentUser=null}){
   const cat=EVT_CATEGORIES.find(c=>c.k===e.categorie)||customCatEvenements.find(c=>c.k===e.categorie);
   const catEmoji=cat?cat.emoji:"🎉";
   const tooMany=(e.signalements||0)>=3;
@@ -2043,13 +2043,13 @@ function EvtCard({e,onClick,onReport,customCatEvenements=[],isFav,onToggleFav,on
       </div>
       <div style={{borderTop:"1px solid #F3F4F6",padding:"8px 14px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
         {onMasquer?<button onClick={()=>onMasquer()} style={{background:"none",border:"none",color:estMasque?V:TM,fontSize:11,cursor:"pointer",display:"flex",alignItems:"center",gap:4,padding:0}}>{estMasque?"↩️ Reproposer":"🚫 Ne plus proposer"}</button>:<span/>}
-        <SignalCardBtn id={"evt_"+e.id} titre={e.nom||e.titre} type="evenement" onReport={onReport}/>
+        <SignalCardBtn id={"evt_"+e.id} titre={e.nom||e.titre} type="evenement" onReport={onReport} currentUser={currentUser}/>
       </div>
     </div>
   );
 }
 
-function ActiviteCard({a,onClick,onReport,isFav,onToggleFav,verrouille=false,customCatActivites=[],matchScore,onMasquer,estMasque=false,estBoostee=false}){
+function ActiviteCard({a,onClick,onReport,isFav,onToggleFav,verrouille=false,customCatActivites=[],matchScore,onMasquer,estMasque=false,estBoostee=false,currentUser=null}){
   const tile=iconTileAct(a.categorie,customCatActivites);
   const isNew=a._createdAt&&(Date.now()-new Date(a._createdAt).getTime())<7*24*60*60*1000;
   const isCommunity=!!a._auteur||!!a.communaute;
@@ -2090,13 +2090,13 @@ function ActiviteCard({a,onClick,onReport,isFav,onToggleFav,verrouille=false,cus
       </div>
       <div style={{borderTop:"1px solid #F3F4F6",padding:"8px 14px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
         {onMasquer&&<button onClick={e=>{e.stopPropagation();onMasquer();}} style={{background:"none",border:"none",color:estMasque?V:TM,fontSize:11,cursor:"pointer",display:"flex",alignItems:"center",gap:4,padding:0}}>{estMasque?"↩️ Reproposer":"🚫 Ne plus proposer"}</button>}
-        <SignalCardBtn id={"act_"+a.id} titre={a.nom} type="activite" onReport={onReport}/>
+        <SignalCardBtn id={"act_"+a.id} titre={a.nom} type="activite" onReport={onReport} currentUser={currentUser}/>
       </div>
     </div>
   );
 }
 
-function SortieCard({s,onClick,onReport,isFav,onToggleFav,customCatSorties=[],onMasquer,estMasque=false,estBoostee=false}){
+function SortieCard({s,onClick,onReport,isFav,onToggleFav,customCatSorties=[],onMasquer,estMasque=false,estBoostee=false,currentUser=null}){
   const tile=iconTileSortie(s.type,customCatSorties);
   const {tousLesAvis,chargement,noteGlobale}=useAvis("sortie",s.id);
   const isNew=s._createdAt&&(Date.now()-new Date(s._createdAt).getTime())<7*24*60*60*1000;
@@ -2133,7 +2133,7 @@ function SortieCard({s,onClick,onReport,isFav,onToggleFav,customCatSorties=[],on
       </div>
       <div style={{borderTop:"1px solid #F3F4F6",padding:"8px 14px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
         {onMasquer&&<button onClick={e=>{e.stopPropagation();onMasquer();}} style={{background:"none",border:"none",color:estMasque?V:TM,fontSize:11,cursor:"pointer",display:"flex",alignItems:"center",gap:4,padding:0}}>{estMasque?"↩️ Reproposer":"🚫 Ne plus proposer"}</button>}
-        <SignalCardBtn id={"sort_"+s.id} titre={s.nom} type="sortie" onReport={onReport}/>
+        <SignalCardBtn id={"sort_"+s.id} titre={s.nom} type="sortie" onReport={onReport} currentUser={currentUser}/>
       </div>
     </div>
   );
@@ -2180,7 +2180,7 @@ function FilterSectionTitle({icon,label}){
   );
 }
 
-function CalendrierMensuel({evtFiltered=[],setEvtDetail,addReport,customCatEvenements=[]}){
+function CalendrierMensuel({evtFiltered=[],setEvtDetail,addReport,customCatEvenements=[],currentUser=null}){
   const now=new Date();
   const [moisView,setMoisView]=useState(now.getMonth());
   const [anneeView,setAnneeView]=useState(now.getFullYear());
@@ -2222,7 +2222,7 @@ function CalendrierMensuel({evtFiltered=[],setEvtDetail,addReport,customCatEvene
       ):(
         <div style={{display:"flex",flexDirection:"column",gap:8}}>
           <p style={{margin:"0 0 6px",fontSize:12,fontWeight:700,color:TM}}>{evtsDuMois.length} événement{evtsDuMois.length>1?"s":""} ce mois</p>
-          {evtsDuMois.map(e=><EvtCard key={e.id||e.nom} e={e} onClick={()=>setEvtDetail(e)} onReport={addReport} customCatEvenements={customCatEvenements} isFav={isFavBiblio(e,"evenement")} onToggleFav={()=>toggleFavBiblio(e,"evenement")} onMasquer={toggleMasquer?()=>toggleMasquer(e,"evenement"):undefined} estMasque={estMasque?estMasque(e,"evenement"):false} estBoostee={estBoosteItem(e,"evenement")}/>)}
+          {evtsDuMois.map(e=><EvtCard key={e.id||e.nom} e={e} onClick={()=>setEvtDetail(e)} onReport={addReport} customCatEvenements={customCatEvenements} isFav={isFavBiblio(e,"evenement")} onToggleFav={()=>toggleFavBiblio(e,"evenement")} onMasquer={toggleMasquer?()=>toggleMasquer(e,"evenement"):undefined} estMasque={estMasque?estMasque(e,"evenement"):false} estBoostee={estBoosteItem(e,"evenement")} currentUser={currentUser}/>)}
         </div>
       )}
     </div>
@@ -2660,7 +2660,7 @@ function PageBiblio({pendingContribs=[],setPendingContribs,adminActivites=[],adm
                 </div>
               )}
               {actFiltered.map(a=>(
-                <ActiviteCard key={a.id} a={a} onClick={()=>{if(a.premium&&!isPremium){onOpenPremium&&onOpenPremium();return;}setDetail({item:a,type:"activite"});}} onReport={addReport} isFav={isFavBiblio(a,"activite")} onToggleFav={()=>toggleFavBiblio(a,"activite")} verrouille={!!a.premium&&!isPremium} customCatActivites={customCatActivites} matchScore={matchActif?calculerScoreMatch(a,enfantCourantBiblio):undefined} onMasquer={toggleMasquer?()=>toggleMasquer(a,"activite"):undefined} estMasque={estMasque?estMasque(a,"activite"):false} estBoostee={estBoosteItem(a,"activite")}/>
+                <ActiviteCard key={a.id} a={a} onClick={()=>{if(a.premium&&!isPremium){onOpenPremium&&onOpenPremium();return;}setDetail({item:a,type:"activite"});}} onReport={addReport} isFav={isFavBiblio(a,"activite")} onToggleFav={()=>toggleFavBiblio(a,"activite")} verrouille={!!a.premium&&!isPremium} customCatActivites={customCatActivites} matchScore={matchActif?calculerScoreMatch(a,enfantCourantBiblio):undefined} onMasquer={toggleMasquer?()=>toggleMasquer(a,"activite"):undefined} estMasque={estMasque?estMasque(a,"activite"):false} estBoostee={estBoosteItem(a,"activite")} currentUser={currentUser}/>
               ))}
             </div>
             <div style={{background:"#FFFBEB",borderRadius:12,padding:"10px 14px",marginTop:14,border:"1px solid #FDE68A",display:"flex",gap:10,alignItems:"flex-start"}}><span style={{fontSize:16,flexShrink:0}}>👶</span><p style={{margin:0,fontSize:12,color:"#92400E",lineHeight:1.5}}>Les activites proposees doivent etre destinees aux enfants.</p></div>
@@ -2724,7 +2724,7 @@ function PageBiblio({pendingContribs=[],setPendingContribs,adminActivites=[],adm
                 </div>
               )}
               {sortFiltered.filter(s=>(sigSort[s.id]||0)<3).map(s=>(
-                <SortieCard key={s.id} s={s} onClick={()=>setDetail({item:s,type:"sortie"})} onReport={addReport} isFav={isFavBiblio(s,"sortie")} onToggleFav={()=>toggleFavBiblio(s,"sortie")} customCatSorties={customCatSorties} onMasquer={toggleMasquer?()=>toggleMasquer(s,"sortie"):undefined} estMasque={estMasque?estMasque(s,"sortie"):false} estBoostee={estBoosteItem(s,"sortie")}/>
+                <SortieCard key={s.id} s={s} onClick={()=>setDetail({item:s,type:"sortie"})} onReport={addReport} isFav={isFavBiblio(s,"sortie")} onToggleFav={()=>toggleFavBiblio(s,"sortie")} customCatSorties={customCatSorties} onMasquer={toggleMasquer?()=>toggleMasquer(s,"sortie"):undefined} estMasque={estMasque?estMasque(s,"sortie"):false} estBoostee={estBoosteItem(s,"sortie")} currentUser={currentUser}/>
               ))}
             </div>
             <div style={{background:"#FFFBEB",borderRadius:12,padding:"10px 14px",marginTop:14,border:"1px solid #FDE68A",display:"flex",gap:10,alignItems:"flex-start"}}><span style={{fontSize:16,flexShrink:0}}>👶</span><p style={{margin:0,fontSize:12,color:"#92400E",lineHeight:1.5}}>Les sorties proposees doivent etre adaptees aux enfants.</p></div>
@@ -2766,13 +2766,13 @@ function PageBiblio({pendingContribs=[],setPendingContribs,adminActivites=[],adm
                     return true;
                   });
                   if(evtsDate.length===0)return null;
-                  return(<div key={date} style={{marginBottom:12}}><div style={{background:V,borderRadius:10,padding:"6px 14px",marginBottom:10,display:"inline-flex"}}><span style={{fontSize:12,fontWeight:700,color:WH}}>{jourLabel(date)} {formatDate(date)}</span></div>{evtsDate.map(e=><EvtCard key={e.id} e={e} onClick={()=>setEvtDetail(e)} onReport={addReport} customCatEvenements={customCatEvenements} isFav={isFavBiblio(e,"evenement")} onToggleFav={()=>toggleFavBiblio(e,"evenement")} onMasquer={toggleMasquer?()=>toggleMasquer(e,"evenement"):undefined} estMasque={estMasque?estMasque(e,"evenement"):false} estBoostee={estBoosteItem(e,"evenement")}/>)}</div>);
+                  return(<div key={date} style={{marginBottom:12}}><div style={{background:V,borderRadius:10,padding:"6px 14px",marginBottom:10,display:"inline-flex"}}><span style={{fontSize:12,fontWeight:700,color:WH}}>{jourLabel(date)} {formatDate(date)}</span></div>{evtsDate.map(e=><EvtCard key={e.id} e={e} onClick={()=>setEvtDetail(e)} onReport={addReport} customCatEvenements={customCatEvenements} isFav={isFavBiblio(e,"evenement")} onToggleFav={()=>toggleFavBiblio(e,"evenement")} onMasquer={toggleMasquer?()=>toggleMasquer(e,"evenement"):undefined} estMasque={estMasque?estMasque(e,"evenement"):false} estBoostee={estBoosteItem(e,"evenement")} currentUser={currentUser}/>)}</div>);
                 })}
                 {Object.keys(byDate).length===0&&<div style={{textAlign:"center",padding:"40px 0",color:TM}}><p style={{fontSize:32}}>📭</p><p style={{fontSize:14}}>Aucun evenement trouve.</p></div>}
                 <PropBtn/>
               </div>
             )}
-            {evtView==="mensuel"&&<CalendrierMensuel evtFiltered={evtFiltered} setEvtDetail={setEvtDetail} addReport={addReport} customCatEvenements={customCatEvenements}/>}
+            {evtView==="mensuel"&&<CalendrierMensuel evtFiltered={evtFiltered} setEvtDetail={setEvtDetail} addReport={addReport} customCatEvenements={customCatEvenements} currentUser={currentUser}/>}
 
             {evtView==="generateur"&&(
               <div>
@@ -2781,8 +2781,8 @@ function PageBiblio({pendingContribs=[],setPendingContribs,adminActivites=[],adm
                   <button onClick={genEvt} style={{width:"100%",padding:13,borderRadius:12,background:V,border:"none",color:WH,fontWeight:600,fontSize:14,cursor:"pointer"}}>Generer des evenements</button>
                 </div>
                 {evtResult&&(<>
-                  {evtResult.free.length>0&&(<div style={{marginBottom:12}}><p style={{fontSize:12,fontWeight:600,color:GR,margin:"0 0 8px"}}>Gratuit ({evtResult.free.length})</p>{evtResult.free.map(e=><EvtCard key={e.id} e={e} onClick={()=>setEvtDetail(e)} onReport={addReport} customCatEvenements={customCatEvenements} isFav={isFavBiblio(e,"evenement")} onToggleFav={()=>toggleFavBiblio(e,"evenement")} onMasquer={toggleMasquer?()=>toggleMasquer(e,"evenement"):undefined} estMasque={estMasque?estMasque(e,"evenement"):false} estBoostee={estBoosteItem(e,"evenement")}/>)}</div>)}
-                  {evtResult.premium.length>0&&(<div><p style={{fontSize:12,fontWeight:600,color:OR,margin:"0 0 8px"}}>Premium</p>{evtResult.premium.map(e=>isPremium?(<EvtCard key={e.id} e={e} onClick={()=>setEvtDetail(e)} onReport={addReport} customCatEvenements={customCatEvenements} isFav={isFavBiblio(e,"evenement")} onToggleFav={()=>toggleFavBiblio(e,"evenement")} onMasquer={toggleMasquer?()=>toggleMasquer(e,"evenement"):undefined} estMasque={estMasque?estMasque(e,"evenement"):false} estBoostee={estBoosteItem(e,"evenement")}/>):(<div key={e.id} style={{opacity:0.6,pointerEvents:"none"}}><EvtCard e={e} onClick={()=>{}} customCatEvenements={customCatEvenements}/></div>))}{!isPremium&&<button onClick={()=>onOpenPremium&&onOpenPremium()} style={{width:"100%",padding:11,borderRadius:12,background:V,border:"none",color:WH,fontWeight:600,fontSize:13,cursor:"pointer",marginTop:4}}>Passer Premium</button>}</div>)}
+                  {evtResult.free.length>0&&(<div style={{marginBottom:12}}><p style={{fontSize:12,fontWeight:600,color:GR,margin:"0 0 8px"}}>Gratuit ({evtResult.free.length})</p>{evtResult.free.map(e=><EvtCard key={e.id} e={e} onClick={()=>setEvtDetail(e)} onReport={addReport} customCatEvenements={customCatEvenements} isFav={isFavBiblio(e,"evenement")} onToggleFav={()=>toggleFavBiblio(e,"evenement")} onMasquer={toggleMasquer?()=>toggleMasquer(e,"evenement"):undefined} estMasque={estMasque?estMasque(e,"evenement"):false} estBoostee={estBoosteItem(e,"evenement")} currentUser={currentUser}/>)}</div>)}
+                  {evtResult.premium.length>0&&(<div><p style={{fontSize:12,fontWeight:600,color:OR,margin:"0 0 8px"}}>Premium</p>{evtResult.premium.map(e=>isPremium?(<EvtCard key={e.id} e={e} onClick={()=>setEvtDetail(e)} onReport={addReport} customCatEvenements={customCatEvenements} isFav={isFavBiblio(e,"evenement")} onToggleFav={()=>toggleFavBiblio(e,"evenement")} onMasquer={toggleMasquer?()=>toggleMasquer(e,"evenement"):undefined} estMasque={estMasque?estMasque(e,"evenement"):false} estBoostee={estBoosteItem(e,"evenement")} currentUser={currentUser}/>):(<div key={e.id} style={{opacity:0.6,pointerEvents:"none"}}><EvtCard e={e} onClick={()=>{}} customCatEvenements={customCatEvenements}/></div>))}{!isPremium&&<button onClick={()=>onOpenPremium&&onOpenPremium()} style={{width:"100%",padding:11,borderRadius:12,background:V,border:"none",color:WH,fontWeight:600,fontSize:13,cursor:"pointer",marginTop:4}}>Passer Premium</button>}</div>)}
                   {evtResult.free.length===0&&evtResult.premium.length===0&&<div style={{textAlign:"center",padding:"30px 0",color:TM}}><p style={{fontSize:32}}>📭</p><p>Aucun evenement.</p></div>}
                 </>)}
                 <PropBtn/>
@@ -2793,8 +2793,8 @@ function PageBiblio({pendingContribs=[],setPendingContribs,adminActivites=[],adm
       </div>
       {showCarte==="sortie"&&<CarteInteractive items={sortFiltered} type="sortie" onClose={()=>setShowCarte(null)} onOpenItem={(item)=>{setShowCarte(null);setDetail({item,type:"sortie"});}}/>}
       {showCarte==="evenement"&&<CarteInteractive items={evtFiltered} type="evenement" onClose={()=>setShowCarte(null)} onOpenItem={(item)=>{setShowCarte(null);setEvtDetail(item);}}/>}
-      {detail&&detail.type==="activite"&&<ActivityDetailPage activity={detail.item} isFavorite={isFavBiblio(detail.item,"activite")} onToggleFavorite={()=>toggleFavBiblio(detail.item,"activite")} onBack={()=>setDetail(null)} onReport={addReport} isLoggedIn={isLoggedIn} onRequireAuth={onRequireAuth} matchEnfant={matchActif?enfantCourantBiblio:null} onMasquer={toggleMasquer?()=>toggleMasquer(detail.item,"activite"):undefined} estMasque={estMasque?estMasque(detail.item,"activite"):false}/>}
-      {detail&&detail.type==="sortie"&&<SortieDetailPage sortie={detail.item} isFavorite={isFavBiblio(detail.item,"sortie")} onToggleFavorite={()=>toggleFavBiblio(detail.item,"sortie")} onBack={()=>setDetail(null)} onReport={addReport} isLoggedIn={isLoggedIn} onRequireAuth={onRequireAuth} onMasquer={toggleMasquer?()=>toggleMasquer(detail.item,"sortie"):undefined} estMasque={estMasque?estMasque(detail.item,"sortie"):false}/>}
+      {detail&&detail.type==="activite"&&<ActivityDetailPage activity={detail.item} isFavorite={isFavBiblio(detail.item,"activite")} onToggleFavorite={()=>toggleFavBiblio(detail.item,"activite")} onBack={()=>setDetail(null)} onReport={addReport} isLoggedIn={isLoggedIn} onRequireAuth={onRequireAuth} matchEnfant={matchActif?enfantCourantBiblio:null} onMasquer={toggleMasquer?()=>toggleMasquer(detail.item,"activite"):undefined} estMasque={estMasque?estMasque(detail.item,"activite"):false} currentUser={currentUser}/>}
+      {detail&&detail.type==="sortie"&&<SortieDetailPage sortie={detail.item} isFavorite={isFavBiblio(detail.item,"sortie")} onToggleFavorite={()=>toggleFavBiblio(detail.item,"sortie")} onBack={()=>setDetail(null)} onReport={addReport} isLoggedIn={isLoggedIn} onRequireAuth={onRequireAuth} onMasquer={toggleMasquer?()=>toggleMasquer(detail.item,"sortie"):undefined} estMasque={estMasque?estMasque(detail.item,"sortie"):false} currentUser={currentUser}/>}
       {detail&&detail.type==="form_activite"&&<FormActivite customCatActivites={customCatActivites} onClose={()=>setDetail(null)} onSubmit={(item)=>{
         const newItem={...item,id:Date.now(),_type:"activite",_createdAt:new Date().toISOString(),_statut:"published",_signalements:0,_raisonSignalement:"",_auteur:currentUser?.nom||"Anonyme",_auteurEmail:currentUser?.email||"non connecté"};
         setPendingContribs(prev=>[newItem,...prev]);
@@ -2842,7 +2842,7 @@ function PageBiblio({pendingContribs=[],setPendingContribs,adminActivites=[],adm
           </div>
         </div>
       )}
-      {evtDetail&&<EvenementDetail evt={evtDetail} onBack={()=>setEvtDetail(null)} onReport={addReport} isFavorite={isFavBiblio(evtDetail,"evenement")} onToggleFavorite={()=>toggleFavBiblio(evtDetail,"evenement")} isLoggedIn={isLoggedIn} onRequireAuth={onRequireAuth} customCatEvenements={customCatEvenements} onMasquer={toggleMasquer?()=>toggleMasquer(evtDetail,"evenement"):undefined} estMasque={estMasque?estMasque(evtDetail,"evenement"):false}/>}
+      {evtDetail&&<EvenementDetail evt={evtDetail} onBack={()=>setEvtDetail(null)} onReport={addReport} isFavorite={isFavBiblio(evtDetail,"evenement")} onToggleFavorite={()=>toggleFavBiblio(evtDetail,"evenement")} isLoggedIn={isLoggedIn} onRequireAuth={onRequireAuth} customCatEvenements={customCatEvenements} onMasquer={toggleMasquer?()=>toggleMasquer(evtDetail,"evenement"):undefined} estMasque={estMasque?estMasque(evtDetail,"evenement"):false} currentUser={currentUser}/>}
       {showFormEvt&&(<FormEvenement customCatEvenements={customCatEvenements} onClose={()=>{setShowFormEvt(false);setTypeEvtForm("");setTypeAutreForm("");}} onSubmit={handleSubmitEvt} onOpenAutrePopup={()=>{setTypeAutreTemp(typeAutreForm);setShowAutrePopup(true);}} typeAutre={typeAutreForm} typeEvt={typeEvtForm} setTypeEvt={setTypeEvtForm}/>)}
       {showAutrePopup&&(<div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.6)",zIndex:9999,display:"flex",alignItems:"center",justifyContent:"center",padding:"0 24px"}}><div style={{background:WH,borderRadius:20,padding:24,width:"100%",maxWidth:320,boxShadow:"0 8px 40px rgba(0,0,0,0.25)"}}><p style={{margin:"0 0 4px",fontSize:16,fontWeight:700,color:TX,textAlign:"center"}}>Autre type</p><input value={typeAutreTemp} onChange={e=>setTypeAutreTemp(e.target.value)} placeholder="Ex : Festival, Portes ouvertes..." style={{padding:"12px 14px",borderRadius:12,border:"1.5px solid "+V,fontSize:14,width:"100%",boxSizing:"border-box",fontFamily:"inherit",outline:"none",marginBottom:16}}/><div style={{display:"flex",gap:10}}><button onClick={()=>setShowAutrePopup(false)} style={{flex:1,padding:"11px 0",borderRadius:28,background:BG,border:"1px solid #E5E7EB",color:TX,fontSize:14,cursor:"pointer"}}>Annuler</button><button onClick={()=>{if(typeAutreTemp.trim()){setTypeAutreForm(typeAutreTemp.trim());setTypeEvtForm("autre");}setShowAutrePopup(false);}} style={{flex:1,padding:"11px 0",borderRadius:28,background:V,border:"none",color:WH,fontWeight:600,fontSize:14,cursor:"pointer"}}>Confirmer</button></div></div></div>)}
       {showFavorisLimitMsg&&(
@@ -4144,7 +4144,7 @@ function PageAccueil({favoris,setFavoris,setPage,customEvents=[],popupShown=new 
       {showFichier&&<FichierViewer fichier={showFichier} couleur={showFichier.couleur||V} onClose={()=>setShowFichier(null)}/>}
       {detailActiviteEvt&&(
         <div style={{position:"fixed",inset:0,zIndex:600,background:"#fff",overflowY:"auto"}}>
-          <ActivityDetailPage activity={detailActiviteEvt} isFavorite={favoris.some(f=>f.id===detailActiviteEvt.id&&f._type==="activite")} onToggleFavorite={()=>setFavorisGuarded(prev=>{const exists=prev.find(f=>f.id===detailActiviteEvt.id&&f._type==="activite");if(exists)return prev.filter(f=>!(f.id===detailActiviteEvt.id&&f._type==="activite"));return[...prev,{...detailActiviteEvt,nom:detailActiviteEvt.titre,_type:"activite"}];})} onBack={()=>setDetailActiviteEvt(null)} isLoggedIn={isLoggedIn} onRequireAuth={onRequireAuth} onMasquer={toggleMasquer?()=>toggleMasquer(detailActiviteEvt,"activite"):undefined} estMasque={estMasque?estMasque(detailActiviteEvt,"activite"):false}/>
+          <ActivityDetailPage activity={detailActiviteEvt} isFavorite={favoris.some(f=>f.id===detailActiviteEvt.id&&f._type==="activite")} onToggleFavorite={()=>setFavorisGuarded(prev=>{const exists=prev.find(f=>f.id===detailActiviteEvt.id&&f._type==="activite");if(exists)return prev.filter(f=>!(f.id===detailActiviteEvt.id&&f._type==="activite"));return[...prev,{...detailActiviteEvt,nom:detailActiviteEvt.titre,_type:"activite"}];})} onBack={()=>setDetailActiviteEvt(null)} isLoggedIn={isLoggedIn} onRequireAuth={onRequireAuth} onMasquer={toggleMasquer?()=>toggleMasquer(detailActiviteEvt,"activite"):undefined} estMasque={estMasque?estMasque(detailActiviteEvt,"activite"):false} currentUser={currentUser}/>
         </div>
       )}
 

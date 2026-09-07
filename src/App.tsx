@@ -5549,7 +5549,7 @@ function PageAide({onBack,onGoConfidentialite,isPremium=false,setPremium,onOpenP
     {categorie:"👤 Mon compte",couleur:BG,couleurTexte:"#444441",questions:[
       {id:"m1",question:"Comment modifier mon profil ?",reponse:"Dans l onglet Profil, clique sur ton avatar ou ton nom pour modifier tes informations personnelles (prenom, photo, nombre et age de tes enfants)."},
       {id:"m2",question:"Comment supprimer mon compte ?",reponse:"Dans Profil → Confidentialite → Supprimer mon compte. Cette action est irreversible et supprime toutes tes donnees. Tu devras taper SUPPRIMER pour confirmer."},
-      {id:"m3",question:"Comment recuperer mes donnees personnelles ?",reponse:"Dans Profil → Confidentialite → Telecharger mes donnees. Tu recevras un email avec l ensemble de tes donnees sous 48h, conformement au RGPD."},
+      {id:"m3",question:"Comment recuperer mes donnees personnelles ?",reponse:"Dans Profil → Confidentialite → Telecharger mes donnees. Un fichier avec l ensemble de tes donnees se telecharge immediatement, conformement au RGPD."},
       {id:"m4",question:"Comment annuler mon abonnement Premium ?",reponse:"Dans Profil → Aide & FAQ, descends jusqu a la section Mon abonnement et clique sur Annuler mon abonnement Premium. Tu repasses immediatement en version gratuite, sans engagement."},
     ]},
   ];
@@ -5773,7 +5773,7 @@ function PageAmelioration({onBack}){
   );
 }
 
-function PageConfidentialite({onBack,onDeleteAccount}){
+function PageConfidentialite({onBack,onDeleteAccount,currentUser=null,enfants=[],favoris=[],historiqueActivites=[],pendingContribs=[]}){
   const [dataPrefs,setDataPrefs]=useState({statistiques:true,personnalisation:true});
   const [showDeleteModal,setShowDeleteModal]=useState(false);
   const [showDownloadToast,setShowDownloadToast]=useState(false);
@@ -5787,7 +5787,27 @@ function PageConfidentialite({onBack,onDeleteAccount}){
   };
   const [legalModal,setLegalModal]=useState(null);
   const togglePref=(k)=>setDataPrefs(prev=>({...prev,[k]:!prev[k]}));
-  const handleDownload=()=>{setShowDownloadToast(true);setTimeout(()=>setShowDownloadToast(false),3000);};
+  const handleDownload=()=>{
+    const mesContribs=(pendingContribs||[]).filter(c=>currentUser&&((currentUser.email&&c._auteurEmail===currentUser.email)||(currentUser.nom&&c._auteur===currentUser.nom)));
+    const donnees={
+      export_genere_le:new Date().toISOString(),
+      profil:{nom:currentUser?.nom||null,email:currentUser?.email||null,premium:!!currentUser?.premium},
+      enfants:(enfants||[]).map(e=>({prenom:e.prenom,age:e.age,besoins:e.besoins,besoinsMatching:e.besoinsMatching,niveauxSensoriels:e.niveauxSensoriels})),
+      favoris:(favoris||[]).map(f=>({nom:f.nom||f.titre,type:f._type})),
+      historique_activites:(historiqueActivites||[]).map(h=>({nom:h.nom||h.titre,date:h._date})),
+      mes_contributions:mesContribs.map(c=>({type:c._type,titre:c.titre||c.nom,statut:c._statut,date:c._createdAt})),
+    };
+    const blob=new Blob([JSON.stringify(donnees,null,2)],{type:"application/json"});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement("a");
+    a.href=url;
+    a.download=`mes-donnees-parenthese-${new Date().toISOString().slice(0,10)}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    setShowDownloadToast(true);setTimeout(()=>setShowDownloadToast(false),3000);
+  };
   const LEGAL={
     politique:{titre:"Politique de confidentialite",txt:"Parent'Hèse collecte uniquement les donnees necessaires au fonctionnement de l application (email, preferences, contributions). Vos donnees ne sont jamais vendues a des tiers. Conformement au RGPD, vous pouvez demander l acces, la modification ou la suppression de vos donnees a tout moment via support@parentales.fr"},
     conditions:{titre:"Conditions d utilisation",txt:"En utilisant Parent'Hèse, vous acceptez de ne pas publier de contenus inappropries, faux ou trompeurs. Les contenus soumis par les utilisateurs sont moderes avant publication. Parent'Hèse se reserve le droit de supprimer tout contenu ne respectant pas ces conditions."},
@@ -5826,7 +5846,7 @@ function PageConfidentialite({onBack,onDeleteAccount}){
         </div>
         <p style={{fontSize:13,fontWeight:800,color:TX,margin:"0 0 8px"}}>👤 Mes donnees</p>
         <div style={{background:WH,borderRadius:16,border:BD,overflow:"hidden",marginBottom:14}}>
-          <LinkRow icon="📋" iconBg="#EEEDFE" title="Telecharger mes donnees" sub="Recevoir une copie de toutes vos donnees" onClick={handleDownload}/>
+          <LinkRow icon="📋" iconBg="#EEEDFE" title="Telecharger mes donnees" sub="Téléchargement immédiat d'un fichier avec toutes vos données" onClick={handleDownload}/>
           <LinkRow icon="🗑️" iconBg="#FCEBEB" title="Supprimer mon compte" sub="Supprime definitivement votre compte et vos donnees" onClick={()=>setShowDeleteModal(true)} danger last/>
         </div>
         <p style={{fontSize:13,fontWeight:800,color:TX,margin:"0 0 8px"}}>🍪 Preferences de donnees</p>
@@ -5844,7 +5864,7 @@ function PageConfidentialite({onBack,onDeleteAccount}){
       </div>
       {showDownloadToast&&(
         <div style={{position:"fixed",bottom:80,left:"50%",transform:"translateX(-50%)",background:"#065F46",color:WH,borderRadius:20,padding:"10px 20px",fontSize:13,fontWeight:600,zIndex:700,whiteSpace:"nowrap",boxShadow:"0 4px 16px rgba(0,0,0,0.2)"}}>
-          📧 Un email vous sera envoye avec vos donnees sous 48h.
+          ✅ Téléchargement lancé — vérifiez vos fichiers téléchargés.
         </div>
       )}
       {showDeletedToast&&(
@@ -6881,7 +6901,7 @@ function PageProfil({setPage,enfants=[],setEnfants,enfantActif,setEnfantActif,sh
     }
   },[notifiedTrophies,contributions.total,contributions.activites,contributions.sorties,contributions.evenements,contributions.tnd]);
   if(subPage==="notifications") return <PageNotifications onBack={()=>setSubPage(null)}/>;
-  if(subPage==="confidentialite") return <PageConfidentialite onBack={()=>setSubPage(null)} onDeleteAccount={onDeleteAccount}/>;
+  if(subPage==="confidentialite") return <PageConfidentialite onBack={()=>setSubPage(null)} onDeleteAccount={onDeleteAccount} currentUser={currentUser} enfants={enfants} favoris={favoris} historiqueActivites={historiqueActivites} pendingContribs={pendingContribs}/>;
   if(subPage==="aide") return <PageAide onBack={()=>setSubPage(null)} onGoConfidentialite={()=>setSubPage("confidentialite")} isPremium={isPremium} setPremium={setPremium} onOpenPremium={onOpenPremium}/>;
   if(subPage==="amelioration") return <PageAmelioration onBack={()=>setSubPage(null)}/>;
   if(subPage==="pictogrammes") return <PictogrammeView onBack={()=>setSubPage(null)} isPremium={isPremium} onOpenPremium={onOpenPremium} adminEvenements={adminEvenements} pendingContribs={pendingContribs}/>;

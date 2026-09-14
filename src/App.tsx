@@ -966,9 +966,7 @@ function FormActivite({onClose,onSubmit,customCatActivites=[],initialData=null})
   });
   const [localErrors,setLocalErrors]=useState({});
   const [profilsTND,setProfilsTND]=useState({tsa:false,tdah:false,dys:false,tous:false});
-  const [niveauxSensoriels,setNiveauxSensoriels]=useState({bruit:0,visuel:0,physique:0,attention:0});
   const [adaptations,setAdaptations]=useState([]);
-  const [pointsAnticiperSel,setPointsAnticiperSel]=useState([]);
   const [envoiEnCours,setEnvoiEnCours]=useState(false);
   const handlePhoto=async(e)=>{const file=e.target.files[0];if(!file)return;if(file.size>8*1024*1024){alert("Photo trop lourde (max 8MB)");return;}try{const compressed=await compresserImage(file);setPhotoPreview(compressed);}catch(err){alert("Impossible de lire cette image, réessaie avec une autre.");}};
   const validate=()=>{const e={};if(!titre.trim())e.titre="Champ obligatoire";if(!desc.trim())e.desc="Champ obligatoire";if(!duree)e.duree="Champ obligatoire";if(!difficulte)e.difficulte="Champ obligatoire";if(!lieu)e.lieu="Champ obligatoire";if(!motivation)e.motivation="Champ obligatoire";if(!categorie)e.categorie="Champ obligatoire";if(!Object.values(caracteristiques).some(Boolean))e.caracteristiques="Coche au moins un critère";setLocalErrors(e);return Object.keys(e).length===0;};
@@ -979,7 +977,7 @@ function FormActivite({onClose,onSubmit,customCatActivites=[],initialData=null})
     const categorieFinale=categorie==="Autre"?(autreCategorie.trim()||"Autre"):categorie;
     const age=(ageMin&&ageMax)?`${ageMin.replace(" an","").replace(" ans","")} - ${ageMax}`:(ageMin||ageMax||"Tous ages");
     const tndData={tsa:profilsTND.tsa||profilsTND.tous?5:0,tdah:profilsTND.tdah||profilsTND.tous?5:0,dys:profilsTND.dys||profilsTND.tous?5:0};
-    if(onSubmit)onSubmit({id:initialData?.id,nom:titre.trim(),categorie:categorieFinale,lieu,energie:motivation,age,duree,difficulte,materiel:materiel?materiel.split(",").map(m=>m.trim()).filter(Boolean):[],etapes:etapes?etapes.split("\n").map(s=>s.trim()).filter(Boolean):[],desc:desc.trim(),photo:photoPreview,tnd:tndData,profilsTND,niveauxSensoriels,adaptations,commentaireTND:commentaireTND.trim(),pointsAnticiper:pointsAnticiperSel,caracteristiques,...accValues,_type:"activite"});
+    if(onSubmit)onSubmit({id:initialData?.id,nom:titre.trim(),categorie:categorieFinale,lieu,energie:motivation,age,duree,difficulte,materiel:materiel?materiel.split(",").map(m=>m.trim()).filter(Boolean):[],etapes:etapes?etapes.split("\n").map(s=>s.trim()).filter(Boolean):[],desc:desc.trim(),photo:photoPreview,tnd:tndData,profilsTND,adaptations,commentaireTND:commentaireTND.trim(),caracteristiques,...accValues,_type:"activite"});
   };
   const se=(err)=>({padding:"12px 14px",borderRadius:12,border:"1px solid "+(err?"#EF4444":"rgba(108,92,231,0.15)"),fontSize:14,width:"100%",boxSizing:"border-box",background:WH,fontFamily:"inherit"});
   const Err=({k})=>localErrors[k]?<p style={{margin:"3px 0 0",fontSize:11,color:"#EF4444"}}>{localErrors[k]}</p>:null;
@@ -1047,79 +1045,13 @@ function FormActivite({onClose,onSubmit,customCatActivites=[],initialData=null})
           {/* ─── SECTION TND COMPLÈTE ─── */}
           <div style={{background:"#F5F0EB",borderRadius:16,padding:"18px 16px",display:"flex",flexDirection:"column",gap:18}}>
 
-            {/* Partie 2 — Niveaux sensoriels */}
-            <div>
-              <p style={{margin:"0 0 4px",fontSize:14,fontWeight:800,color:"#1a1a1a"}}>🎚️ Niveaux sensoriels</p>
-              <p style={{margin:"0 0 14px",fontSize:12,color:TM}}>Ces infos aident les parents TND à choisir les activités adaptées à leur enfant</p>
-              {[
-                {label:"🔊 Niveau sonore",k:"bruit",left:"Silencieux",right:"Bruyant"},
-                {label:"💡 Stimulation visuelle",k:"visuel",left:"Calme",right:"Intense"},
-                {label:"🤸 Activité physique",k:"physique",left:"Aucune",right:"Intense"},
-                {label:"⏱️ Durée d'attention",k:"attention",left:"Courte",right:"Longue"},
-              ].map(({label,k,left,right})=>{
-                const val=niveauxSensoriels[k]||0;
-                const col=val<=33?"#10B981":val<=66?"#F59E0B":"#EF4444";
-                const badge=val<=33?"Faible":val<=66?"Moyen":"Élevé";
-                return(
-                  <div key={k} style={{marginBottom:14}}>
-                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
-                      <span style={{fontSize:13,fontWeight:600,color:"#1a1a1a"}}>{label}</span>
-                      <span style={{fontSize:11,fontWeight:700,color:col,background:col+"18",padding:"2px 10px",borderRadius:20}}>{badge}</span>
-                    </div>
-                    <div style={{display:"flex",alignItems:"center",gap:8}}>
-                      <span style={{fontSize:10,color:TM,width:52,flexShrink:0,textAlign:"right"}}>{left}</span>
-                      <div style={{flex:1,position:"relative",height:6,background:"#E5E7EB",borderRadius:6,overflow:"hidden"}}>
-                        <div style={{position:"absolute",left:0,top:0,height:"100%",width:val+"%",background:col,borderRadius:6,transition:"width 0.2s"}}/>
-                      </div>
-                      <span style={{fontSize:10,color:TM,width:52,flexShrink:0}}>{right}</span>
-                    </div>
-                    <input type="range" min={0} max={100} value={val} onChange={e=>setNiveauxSensoriels(p=>({...p,[k]:Number(e.target.value)}))} style={{width:"100%",marginTop:4,accentColor:col,cursor:"pointer"}}/>
-                  </div>
-                );
-              })}
-            </div>
-
             {/* Commentaire libre */}
             <div>
+              <p style={{margin:"0 0 4px",fontSize:14,fontWeight:800,color:"#1a1a1a"}}>🧩 Conseil TND</p>
               <label style={{fontSize:12,color:TM,display:"block",marginBottom:6}}>Conseil TND (optionnel)</label>
               <textarea value={commentaireTND} onChange={e=>setCommentaireTND(e.target.value.slice(0,200))} placeholder="Ex : Idéal pour les enfants TSA, activité calme sans surprise..." rows={2} style={FST}/>
               <p style={{margin:"4px 0 0",fontSize:11,color:TM,textAlign:"right"}}>{commentaireTND.length}/200</p>
             </div>
-          </div>
-
-          {/* ─── Points à anticiper ─── */}
-          <div style={{background:"#FFF7ED",borderRadius:16,padding:"16px",display:"flex",flexDirection:"column",gap:16}}>
-            <div>
-              <p style={{margin:"0 0 2px",fontSize:14,fontWeight:800,color:"#1a1a1a"}}>⚠️ Points à anticiper</p>
-              <p style={{margin:0,fontSize:12,color:TM}}>Aide les parents à préparer l'activité selon les besoins de leur enfant</p>
-            </div>
-            {[
-              {titre:"🎨 Sensoriel",ids:["pa1","pa2","pa3","pa4"]},
-              {titre:"🧠 Attention",ids:["pa5","pa6"]},
-              {titre:"💪 Moteur",ids:["pa8","pa9","pa10"]},
-              {titre:"🗓️ Structure & Émotion",ids:["pa7","pa11","pa12","pa13","pa14","pa15"]},
-            ].map(({titre,ids})=>(
-              <div key={titre}>
-                <p style={{margin:"0 0 8px",fontSize:12,fontWeight:700,color:"#9A3412"}}>{titre}</p>
-                <div style={{display:"flex",flexDirection:"column",gap:6}}>
-                  {ids.map(id=>{
-                    const pt=POINTS_ANTICIPER.find(p=>p.id===id);
-                    if(!pt)return null;
-                    const actif=pointsAnticiperSel.includes(id);
-                    return(
-                      <button key={id} onClick={()=>setPointsAnticiperSel(p=>actif?p.filter(x=>x!==id):[...p,id])} style={{padding:"10px 12px",borderRadius:10,border:`1.5px solid ${actif?"#F59E0B":"#E5E7EB"}`,background:actif?"#FFF7ED":WH,cursor:"pointer",textAlign:"left",display:"flex",alignItems:"flex-start",gap:10,width:"100%"}}>
-                        <span style={{fontSize:18,flexShrink:0}}>{pt.emoji}</span>
-                        <div style={{flex:1}}>
-                          <p style={{margin:"0 0 2px",fontSize:13,fontWeight:600,color:"#1a1a1a"}}>{pt.label}</p>
-                          <p style={{margin:0,fontSize:11,color:TM,lineHeight:1.4}}>{pt.desc}</p>
-                        </div>
-                        <span style={{fontSize:14,flexShrink:0,color:actif?"#F59E0B":"#D1D5DB"}}>{actif?"☑":"☐"}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            ))}
           </div>
 
           <button onClick={handleSubmit} disabled={envoiEnCours} style={{padding:14,borderRadius:14,background:envoiEnCours?"#C4B8F8":V,border:"none",color:WH,fontWeight:700,fontSize:15,cursor:envoiEnCours?"default":"pointer",width:"100%"}}>{envoiEnCours?"Envoi en cours...":initialData?"Enregistrer les modifications":"Envoyer ma suggestion"}</button>
@@ -1855,60 +1787,6 @@ function ActivityDetailPage({activity,isFavorite,onToggleFavorite,onBack,onRepor
         <div style={card}>{sec("Materiel")}{materiel?<div>{materiel.map((m,i)=>(<span key={i} style={{display:"inline-flex",alignItems:"center",gap:4,background:BG,borderRadius:20,padding:"4px 10px",fontSize:12,color:"#374151",margin:3}}>{m}</span>))}</div>:<span style={{fontSize:13,color:TM}}>Aucun materiel necessaire !</span>}</div>
         <div style={card}>{sec("Etapes")}{etapes?etapes.map((e,i)=>(<div key={i} style={{display:"flex",gap:10,padding:"6px 0"}}><div style={{width:22,height:22,borderRadius:"50%",background:V,color:WH,fontSize:11,fontWeight:600,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginTop:1}}>{i+1}</div><div style={{fontSize:13,color:"#374151",lineHeight:1.5}}>{e}</div></div>)):<span style={{fontSize:13,color:TM}}>Laissez parler votre creativite !</span>}</div>
 
-        {/* Points à anticiper */}
-        {(()=>{
-          const ptsCreateur=activity.pointsAnticiper||POINTS_ANTICIPER_MAP[titre]||[];
-          // Agrégation des points signalés par la communauté via les avis
-          const compteComm={};
-          tousLesAvis.forEach(a=>{(a.pointsAnticiper||[]).forEach(id=>{compteComm[id]=(compteComm[id]||0)+1;});});
-          const ptsCommunaute=Object.keys(compteComm).filter(id=>!ptsCreateur.includes(id));
-          if(ptsCreateur.length===0&&ptsCommunaute.length===0) return <AAnticiperVide/>;
-          const pts=ptsCreateur.map(id=>POINTS_ANTICIPER.find(p=>p.id===id)).filter(Boolean);
-          const groupes={sensoriel:{titre:"🎨 Sensoriel",items:[]},attention:{titre:"🧠 Attention",items:[]},moteur:{titre:"💪 Moteur",items:[]},structure:{titre:"🗓️ Structure",items:[]},emotion:{titre:"💛 Émotion",items:[]}};
-          pts.forEach(p=>{if(groupes[p.categorie])groupes[p.categorie].items.push(p);});
-          const ptsCommList=ptsCommunaute.map(id=>({...POINTS_ANTICIPER.find(p=>p.id===id),nb:compteComm[id]})).filter(p=>p.id);
-          return(
-            <div style={card}>
-              {sec("⚠️ À anticiper")}
-              {Object.values(groupes).filter(g=>g.items.length>0).map(g=>(
-                <div key={g.titre} style={{marginBottom:12}}>
-                  <p style={{margin:"0 0 8px",fontSize:11,fontWeight:700,color:"#9A3412",textTransform:"uppercase",letterSpacing:"0.04em"}}>{g.titre}</p>
-                  <div style={{display:"flex",flexDirection:"column",gap:8}}>
-                    {g.items.map(p=>(
-                      <div key={p.id} style={{background:"#FFF7ED",borderRadius:10,borderLeft:"3px solid #F59E0B",padding:"10px 12px",display:"flex",gap:10,alignItems:"flex-start"}}>
-                        <span style={{fontSize:24,flexShrink:0,lineHeight:1}}>{p.emoji}</span>
-                        <div style={{flex:1}}>
-                          <p style={{margin:"0 0 2px",fontSize:13,fontWeight:700,color:"#1a1a1a"}}>{p.label}</p>
-                          <p style={{margin:0,fontSize:12,color:"#78716C",lineHeight:1.5}}>{p.desc}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))}
-              {ptsCommList.length>0&&(
-                <div>
-                  <p style={{margin:"0 0 8px",fontSize:11,fontWeight:700,color:"#9A3412",textTransform:"uppercase",letterSpacing:"0.04em"}}>👥 Signalé par la communauté</p>
-                  <div style={{display:"flex",flexDirection:"column",gap:8}}>
-                    {ptsCommList.map(p=>(
-                      <div key={p.id} style={{background:"#FFF7ED",borderRadius:10,borderLeft:"3px solid #F59E0B",padding:"10px 12px",display:"flex",gap:10,alignItems:"flex-start"}}>
-                        <span style={{fontSize:24,flexShrink:0,lineHeight:1}}>{p.emoji}</span>
-                        <div style={{flex:1}}>
-                          <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:2}}>
-                            <p style={{margin:0,fontSize:13,fontWeight:700,color:"#1a1a1a"}}>{p.label}</p>
-                            <span style={{fontSize:10,fontWeight:700,color:"#9A3412",background:"#FDE7C8",padding:"1px 7px",borderRadius:10}}>{p.nb} famille{p.nb>1?"s":""}</span>
-                          </div>
-                          <p style={{margin:0,fontSize:12,color:"#78716C",lineHeight:1.5}}>{p.desc}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          );
-        })()}
-
         {/* Section TND */}
         {(()=>{
           const p=activity.profilsTND||{};
@@ -1930,27 +1808,6 @@ function ActivityDetailPage({activity,isFavorite,onToggleFavorite,onBack,onRepor
           return(
             <div style={card}>
               {sec("🧩 Infos TND")}
-              {/* Niveaux sensoriels */}
-              {Object.values(n).some(v=>v>0)&&(
-                <div style={{marginBottom:14}}>
-                  {[{k:"bruit",l:"🔊 Niveau sonore"},{k:"visuel",l:"💡 Stimulation visuelle"},{k:"physique",l:"🤸 Activité physique"},{k:"attention",l:"⏱️ Durée d'attention"}].map(({k,l})=>{
-                    const val=n[k]||0;
-                    const col=val<=33?"#10B981":val<=66?"#F59E0B":"#EF4444";
-                    const badge=val<=33?"Faible":val<=66?"Moyen":"Élevé";
-                    return(
-                      <div key={k} style={{marginBottom:10}}>
-                        <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
-                          <span style={{fontSize:12,color:"#374151"}}>{l}</span>
-                          <span style={{fontSize:11,fontWeight:700,color:col}}>{badge}</span>
-                        </div>
-                        <div style={{height:6,background:"#E5E7EB",borderRadius:6,overflow:"hidden"}}>
-                          <div style={{height:"100%",width:val+"%",background:col,borderRadius:6}}/>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
               {/* Adaptations */}
               {adaps.length>0&&(
                 <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:12}}>
@@ -1963,7 +1820,7 @@ function ActivityDetailPage({activity,isFavorite,onToggleFavorite,onBack,onRepor
           );
         })()}
         <div style={card}>{sec("Notes")}<div style={{display:"flex",alignItems:"center",gap:10}}><span style={{fontSize:28,fontWeight:700,color:"#1a1a1a"}}>{chargement?"...":noteGlobale.toFixed(1)}</span><div><Stars count={Math.round(noteGlobale)} size={14}/><div style={{fontSize:11,color:"#9CA3AF"}}>{tousLesAvis.length} avis</div></div></div></div>
-        <AvisForm isLoggedIn={isLoggedIn} onRequireAuth={onRequireAuth} tousLesAvis={tousLesAvis} chargement={chargement} onAjouterAvis={ajouterAvis} onSupprimerAvis={supprimerAvis} currentUserId={currentUserId} showPointsAnticiper={true}/>
+        <AvisForm isLoggedIn={isLoggedIn} onRequireAuth={onRequireAuth} tousLesAvis={tousLesAvis} chargement={chargement} onAjouterAvis={ajouterAvis} onSupprimerAvis={supprimerAvis} currentUserId={currentUserId}/>
         <button onClick={onToggleFavorite} style={{width:"100%",background:isFavorite?"#FCEBEB":V,color:isFavorite?"#A32D2D":WH,border:"none",borderRadius:28,padding:14,fontSize:14,fontWeight:600,cursor:"pointer",marginBottom:8}}>{isFavorite?"Retirer des favoris":"Ajouter aux favoris"}</button>
         {onMasquer&&<button onClick={onMasquer} style={{width:"100%",background:estMasque?VL:WH,color:estMasque?V:TM,border:BD,borderRadius:28,padding:12,fontSize:13,fontWeight:600,cursor:"pointer",marginBottom:8}}>{estMasque?"↩️ Reproposer cette activité":"🚫 Ne plus proposer cette activité"}</button>}
         <button onClick={()=>setShowPartageMenu(true)} style={{width:"100%",background:WH,color:V,border:"1.5px solid "+V,borderRadius:28,padding:12,fontSize:14,cursor:"pointer"}}>Partager</button>
@@ -2054,7 +1911,6 @@ function ActiviteCard({a,onClick,onReport,isFav,onToggleFav,verrouille=false,cus
   const isNew=a._createdAt&&(Date.now()-new Date(a._createdAt).getTime())<7*24*60*60*1000;
   const isCommunity=!!a._auteur||!!a.communaute;
   const matchBadge=matchScore!==undefined?getBadgeScoreMatch(matchScore):null;
-  const nbPointsAnticiper=(a.pointsAnticiper||POINTS_ANTICIPER_MAP[a.nom||a.titre]||[]).length;
   return(
     <div style={{background:WH,borderRadius:16,overflow:"hidden",border:estBoostee?"2px solid #F59E0B":BD,marginBottom:12,boxShadow:estBoostee?"0 4px 14px rgba(245,158,11,0.2)":"0 2px 8px rgba(0,0,0,0.06)",opacity:verrouille?0.75:1}}>
       <div style={{position:"relative",height:160,background:a.photo&&!verrouille?"#000":`linear-gradient(135deg,${tile.bg},${tile.bg})`,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",overflow:"hidden"}} onClick={onClick}>
@@ -2068,11 +1924,6 @@ function ActiviteCard({a,onClick,onReport,isFav,onToggleFav,verrouille=false,cus
           {isNew&&<span style={{background:"#10B981",borderRadius:20,padding:"3px 10px",fontSize:10,fontWeight:700,color:"#fff"}}>🆕 Nouveau</span>}
           {isCommunity&&<span style={{background:"#8B5CF6",borderRadius:20,padding:"3px 10px",fontSize:10,fontWeight:700,color:"#fff"}}>👥 Communauté</span>}
         </div>
-        {nbPointsAnticiper>0&&(
-          <span style={{position:"absolute",bottom:10,left:10,background:"#FFF7ED",border:"1px solid #F59E0B",borderRadius:20,padding:"3px 10px",fontSize:10,fontWeight:700,color:"#9A3412",display:"flex",alignItems:"center",gap:3}}>
-            ⚠️ {nbPointsAnticiper} à anticiper
-          </span>
-        )}
       </div>
       <div style={{padding:"12px 14px"}} onClick={onClick}>
         <h3 style={{fontSize:16,fontWeight:700,color:TX,margin:"0 0 4px"}}>{a.nom}</h3>
@@ -8526,35 +8377,6 @@ function Activites({sharedActivites,setSharedActivites,customCatActivites=[],pen
             <p style={{margin:"0 0 4px",fontSize:14,fontWeight:800,color:"#1a1a1a"}}>🧩 Compatibilité TND</p>
             <p style={{margin:"0 0 14px",fontSize:11,color:C.muted}}>Ces informations aident les familles à trouver les activités adaptées à leur enfant.</p>
 
-            {/* Niveaux sensoriels sliders */}
-            <p style={{margin:"0 0 10px",fontSize:12,fontWeight:700,color:C.text}}>Niveaux sensoriels :</p>
-            {[
-              {k:"niveauBruit",l:"🔊 Niveau sonore",left:"Silencieux",right:"Bruyant"},
-              {k:"niveauVisuel",l:"💡 Stimulation visuelle",left:"Calme",right:"Intense"},
-              {k:"niveauPhysique",l:"🤸 Activité physique",left:"Aucune",right:"Intense"},
-              {k:"niveauAttention",l:"⏱️ Durée d'attention",left:"Courte",right:"Longue"},
-            ].map(({k,l,left,right})=>{
-              const val=form[k]||0;
-              const col=val<=33?"#10B981":val<=66?"#F59E0B":"#EF4444";
-              const badge=val<=33?"Faible":val<=66?"Moyen":"Élevé";
-              return(
-                <div key={k} style={{marginBottom:14}}>
-                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
-                    <span style={{fontSize:12,color:C.text}}>{l}</span>
-                    <span style={{fontSize:11,fontWeight:700,color:col,background:col+"18",padding:"2px 10px",borderRadius:20}}>{badge}</span>
-                  </div>
-                  <div style={{display:"flex",alignItems:"center",gap:8}}>
-                    <span style={{fontSize:10,color:C.muted,width:52,textAlign:"right",flexShrink:0}}>{left}</span>
-                    <div style={{flex:1,height:5,background:"#E5E7EB",borderRadius:6,overflow:"hidden"}}>
-                      <div style={{height:"100%",width:val+"%",background:col,borderRadius:6}}/>
-                    </div>
-                    <span style={{fontSize:10,color:C.muted,width:52,flexShrink:0}}>{right}</span>
-                  </div>
-                  <input type="range" min={0} max={100} value={val} onChange={e=>setForm(p=>({...p,[k]:Number(e.target.value)}))} style={{width:"100%",marginTop:4,accentColor:col,cursor:"pointer"}}/>
-                </div>
-              );
-            })}
-
             {/* Adaptations */}
             <p style={{margin:"0 0 8px",fontSize:12,fontWeight:700,color:C.text}}>Adaptations possibles :</p>
             <div style={{display:"flex",flexDirection:"column",gap:6,marginBottom:14}}>
@@ -8589,39 +8411,6 @@ function Activites({sharedActivites,setSharedActivites,customCatActivites=[],pen
               <textarea style={{...s.input,minHeight:60,resize:"vertical"}} value={form.commentaireTND||""} onChange={e=>setForm({...form,commentaireTND:e.target.value.slice(0,200)})} placeholder="Ex : Idéal pour les enfants TSA, activité calme sans surprise..."/>
               <p style={{margin:"4px 0 0",fontSize:10,color:C.muted,textAlign:"right"}}>{(form.commentaireTND||"").length}/200</p>
             </AdminField>
-          </div>
-
-          {/* Points à anticiper */}
-          <div style={{borderTop:`1px solid ${C.border}`,paddingTop:16,marginBottom:14}}>
-            <p style={{margin:"0 0 4px",fontSize:14,fontWeight:800,color:"#1a1a1a"}}>⚠️ Points à anticiper</p>
-            <p style={{margin:"0 0 14px",fontSize:11,color:C.muted}}>Aide les parents à préparer l'activité selon les besoins de leur enfant</p>
-            {[
-              {titre:"🎨 Sensoriel",ids:["pa1","pa2","pa3","pa4"]},
-              {titre:"🧠 Attention",ids:["pa5","pa6"]},
-              {titre:"💪 Moteur",ids:["pa8","pa9","pa10"]},
-              {titre:"🗓️ Structure & Émotion",ids:["pa7","pa11","pa12","pa13","pa14","pa15"]},
-            ].map(({titre,ids})=>(
-              <div key={titre} style={{marginBottom:12}}>
-                <p style={{margin:"0 0 8px",fontSize:12,fontWeight:700,color:"#9A3412"}}>{titre}</p>
-                <div style={{display:"flex",flexDirection:"column",gap:6}}>
-                  {ids.map(id=>{
-                    const pt=POINTS_ANTICIPER.find(p=>p.id===id);
-                    if(!pt)return null;
-                    const actif=(form.pointsAnticiper||[]).includes(id);
-                    return(
-                      <div key={id} onClick={()=>setForm(p=>({...p,pointsAnticiper:actif?(p.pointsAnticiper||[]).filter(x=>x!==id):[...(p.pointsAnticiper||[]),id]}))} style={{padding:"10px 12px",borderRadius:8,border:`1.5px solid ${actif?"#F59E0B":"#E5E7EB"}`,background:actif?"#FFF7ED":WH,cursor:"pointer",display:"flex",alignItems:"flex-start",gap:10}}>
-                        <span style={{fontSize:18,flexShrink:0}}>{pt.emoji}</span>
-                        <div style={{flex:1}}>
-                          <p style={{margin:"0 0 2px",fontSize:13,fontWeight:600,color:"#1a1a1a"}}>{pt.label}</p>
-                          <p style={{margin:0,fontSize:11,color:C.muted,lineHeight:1.4}}>{pt.desc}</p>
-                        </div>
-                        <span style={{fontSize:14,flexShrink:0,color:actif?"#F59E0B":"#D1D5DB"}}>{actif?"☑":"☐"}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            ))}
           </div>
 
           <div style={{background:"#FFFBEB",borderRadius:10,padding:"10px 14px",marginBottom:14,display:"flex",gap:8,alignItems:"flex-start"}}><span style={{fontSize:16}}>👶</span><p style={{margin:0,fontSize:12,color:"#92400E",lineHeight:1.5}}>Les activites proposees doivent etre destinees aux enfants.</p></div>

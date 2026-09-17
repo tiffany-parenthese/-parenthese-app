@@ -1784,7 +1784,7 @@ function ActivityDetailPage({activity,isFavorite,onToggleFavorite,onBack,onRepor
           );
         })()}
         <div style={card}>{sec("Informations")}{[{label:"Motivation",val:motLabel},{label:"Age conseille",val:activity.age||"Tous ages"},{label:"Difficulte",val:difficulte||"-"}].map(({label,val},i)=>(<div key={label} style={{display:"flex",alignItems:"center",gap:10,padding:"6px 0",borderBottom:i<2?"0.5px solid #F3F4F6":"none"}}><span style={{fontSize:12,color:"#9CA3AF",width:80,flexShrink:0}}>{label}</span><span style={{fontSize:13,color:"#1a1a1a",fontWeight:500}}>{val}</span></div>))}</div>
-        <div style={card}>{sec("Materiel")}{materiel?<div>{materiel.map((m,i)=>(<a key={i} href={"https://www.amazon.fr/s?k="+encodeURIComponent(m)+(amazonTag?"&tag="+encodeURIComponent(amazonTag):"")} target="_blank" rel="noreferrer" style={{display:"inline-flex",alignItems:"center",gap:4,background:BG,borderRadius:20,padding:"4px 10px",fontSize:12,color:"#374151",margin:3,textDecoration:"none"}}>🛒 {m}</a>))}</div>:<span style={{fontSize:13,color:TM}}>Aucun materiel necessaire !</span>}</div>
+        <div style={card}>{sec("Materiel")}{materiel?<div>{materiel.map((m,i)=>(<a key={i} href={(activity.materielLiens&&activity.materielLiens[m])||("https://www.amazon.fr/s?k="+encodeURIComponent(m)+(amazonTag?"&tag="+encodeURIComponent(amazonTag):""))} target="_blank" rel="noreferrer" style={{display:"inline-flex",alignItems:"center",gap:4,background:BG,borderRadius:20,padding:"4px 10px",fontSize:12,color:"#374151",margin:3,textDecoration:"none"}}>🛒 {m}</a>))}</div>:<span style={{fontSize:13,color:TM}}>Aucun materiel necessaire !</span>}</div>
         <div style={card}>{sec("Etapes")}{etapes?etapes.map((e,i)=>(<div key={i} style={{display:"flex",gap:10,padding:"6px 0"}}><div style={{width:22,height:22,borderRadius:"50%",background:V,color:WH,fontSize:11,fontWeight:600,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginTop:1}}>{i+1}</div><div style={{fontSize:13,color:"#374151",lineHeight:1.5}}>{e}</div></div>)):<span style={{fontSize:13,color:TM}}>Laissez parler votre creativite !</span>}</div>
 
         {/* Section TND */}
@@ -8424,11 +8424,13 @@ function Activites({sharedActivites,setSharedActivites,customCatActivites=[],pen
       age:(form.ageMin&&form.ageMax)?form.ageMin.replace(" an","").replace(" ans","")+" - "+form.ageMax.replace(" an","").replace(" ans","")+" ans":form.ageMin||form.ageMax||"Tous ages",
       energie:form.energie||"motiv",
       materiel:form.materielStr?form.materielStr.split(",").map(m=>m.trim()):[],
+      materielLiens:form.materielLiens||{},
       tnd:null,niveauxSensoriels,
     };
     const payloadSupabase={
       nom:normalized.nom,categorie:normalized.categorie,lieu:normalized.lieu,energie:normalized.energie,
       age:normalized.age,duree:normalized.duree,difficulte:normalized.difficulte,materiel:normalized.materiel,
+      materiel_liens:normalized.materielLiens,
       etapes:normalized.etapes?String(normalized.etapes).split("\n").map(s=>s.trim()).filter(Boolean):[],
       description:normalized.desc||"",photo:normalized.photo||null,
       niveaux_sensoriels:niveauxSensoriels,adaptations:normalized.adaptations||[],
@@ -8479,7 +8481,7 @@ function Activites({sharedActivites,setSharedActivites,customCatActivites=[],pen
               <button style={{...s.btnOutline(C.red),width:"100%"}} onClick={()=>supprimerContribItem(a)}>🗑️ Retirer de la bibliothèque</button>
             ):(
               <div style={{display:"flex",gap:6}}>
-                <button style={{...s.btnOutline(C.accent),flex:1}} onClick={()=>{setForm({...emptyForm,...a});setModal({mode:"edit",item:a});}}>✏️ Modifier</button>
+                <button style={{...s.btnOutline(C.accent),flex:1}} onClick={()=>{setForm({...emptyForm,...a,materielStr:Array.isArray(a.materiel)?a.materiel.join(", "):(a.materielStr||a.materiel||""),materielLiens:a.materielLiens||{}});setModal({mode:"edit",item:a});}}>✏️ Modifier</button>
                 <button style={s.btnOutline(C.red)} onClick={()=>syncItems(items.filter(x=>x.id!==a.id))}>🗑️</button>
               </div>
             )}
@@ -8535,6 +8537,22 @@ function Activites({sharedActivites,setSharedActivites,customCatActivites=[],pen
             </div>
           </AdminField>
           <AdminField label="Materiel necessaire"><input style={s.input} value={form.materielStr||""} onChange={e=>setForm({...form,materielStr:e.target.value})} placeholder="Ex : peinture, papier, tablier"/></AdminField>
+          {(()=>{
+            const noms=(form.materielStr||"").split(",").map(m=>m.trim()).filter(Boolean);
+            if(noms.length===0)return null;
+            return(
+              <div style={{background:"rgba(245,158,11,0.06)",borderRadius:12,padding:"12px 14px",marginBottom:14}}>
+                <p style={{margin:"0 0 8px",fontSize:12,fontWeight:700,color:"#92400E"}}>🛒 Lien Amazon précis (optionnel)</p>
+                <p style={{margin:"0 0 10px",fontSize:11,color:C.muted}}>Laisse vide pour qu'une simple recherche Amazon par nom soit utilisée à la place.</p>
+                {noms.map(nom=>(
+                  <div key={nom} style={{marginBottom:8}}>
+                    <label style={{fontSize:11,color:C.muted,display:"block",marginBottom:3}}>{nom}</label>
+                    <input style={s.input} value={(form.materielLiens||{})[nom]||""} onChange={e=>setForm(p=>({...p,materielLiens:{...(p.materielLiens||{}),[nom]:e.target.value}}))} placeholder="https://www.amazon.fr/dp/..."/>
+                  </div>
+                ))}
+              </div>
+            );
+          })()}
           <AdminField label="Etapes"><textarea style={{...s.input,minHeight:80,resize:"vertical"}} value={form.etapes||""} onChange={e=>setForm({...form,etapes:e.target.value})} placeholder={"1. Preparer le materiel\n2. ..."}/></AdminField>
           <div style={{borderTop:`1px solid ${C.border}`,paddingTop:16,marginBottom:14}}>
             <p style={{margin:"0 0 4px",fontSize:14,fontWeight:800,color:"#1a1a1a"}}>🧩 Compatibilité TND</p>
@@ -12693,7 +12711,7 @@ export default function App(){
         ]);
         const acts=(actsData||[]).map(a=>({
           id:a.id,nom:a.nom,titre:a.nom,categorie:a.categorie,lieu:a.lieu,energie:a.energie,age:a.age,duree:a.duree,
-          difficulte:a.difficulte,materiel:a.materiel||[],etapes:a.etapes||[],desc:a.description,photo:a.photo,
+          difficulte:a.difficulte,materiel:a.materiel||[],materielLiens:a.materiel_liens||{},etapes:a.etapes||[],desc:a.description,photo:a.photo,
           niveauxSensoriels:a.niveaux_sensoriels,profilsTND:a.profils_tnd,adaptations:a.adaptations||[],
           tnd:a.profils_tnd?.score||null,
           caracteristiques:a.caracteristiques,commentaireTND:a.commentaire_tnd,pointsAnticiper:a.points_anticiper||[],
@@ -12738,7 +12756,7 @@ export default function App(){
         ]);
         const actsAdmin=(actsAdminData||[]).map(a=>({
           id:a.id,nom:a.nom,titre:a.nom,categorie:a.categorie,lieu:a.lieu,energie:a.energie,age:a.age,duree:a.duree,
-          difficulte:a.difficulte,materiel:a.materiel||[],etapes:a.etapes||[],desc:a.description,photo:a.photo,
+          difficulte:a.difficulte,materiel:a.materiel||[],materielLiens:a.materiel_liens||{},etapes:a.etapes||[],desc:a.description,photo:a.photo,
           niveauxSensoriels:a.niveaux_sensoriels,profilsTND:a.profils_tnd,adaptations:a.adaptations||[],
           tnd:a.profils_tnd?.score||null,
           caracteristiques:a.caracteristiques,commentaireTND:a.commentaire_tnd,pointsAnticiper:a.points_anticiper||[],

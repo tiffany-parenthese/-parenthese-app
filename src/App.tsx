@@ -4144,7 +4144,10 @@ function PageAccueil({favoris,setFavoris,setPage,customEvents=[],popupShown=new 
   );
 }
 
-function PageSOS({sosLib=[],isPremium=false,onOpenPremium,onBack}){
+function PageSOS({sosLib=[],sosSituations=[],isPremium=false,onOpenPremium,onBack}){
+  const [sosTab,setSosTab]=useState("crise"); // "crise" | "situation"
+  const [situationActive,setSituationActive]=useState(null);
+  const [checklistCochee,setChecklistCochee]=useState({});
   const [sosCrise,setSosCrise]=useState(null);
   const [sosResults,setSosResults]=useState(null);
   const [sosDetailActive,setSosDetailActive]=useState(null); // activité en cours de réalisation
@@ -4178,6 +4181,56 @@ function PageSOS({sosLib=[],isPremium=false,onOpenPremium,onBack}){
     <p style={{margin:"0 0 8px",fontSize:12,color:"rgba(255,255,255,0.65)",lineHeight:1.5}}>{act.desc}</p>
     {Array.isArray(act.materiel)&&act.materiel.length>0&&<p style={{margin:0,fontSize:11,color:"rgba(255,255,255,0.35)"}}>Matériel : {act.materiel.join(", ")}</p>}
   </div>);
+
+  if(situationActive){
+    const si=situationActive;
+    return(
+      <div style={{background:"#0f0505",minHeight:"100vh",display:"flex",flexDirection:"column",fontFamily:"system-ui,-apple-system,sans-serif"}}>
+        <div style={{background:"linear-gradient(135deg,#7f1d1d,#dc2626)",padding:"16px 16px 20px",position:"relative"}}>
+          <button onClick={()=>{setSituationActive(null);setChecklistCochee({});}} style={{position:"absolute",top:14,left:14,width:34,height:34,borderRadius:"50%",background:"rgba(255,255,255,0.15)",border:"none",color:"#fff",fontSize:18,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>←</button>
+          <div style={{textAlign:"center"}}>
+            <div style={{fontSize:36,marginBottom:4}}>{si.emoji||"🧩"}</div>
+            <p style={{margin:"0 0 2px",fontSize:18,fontWeight:800,color:"#fff"}}>{si.titre}</p>
+            {si.sousTitre&&<p style={{margin:0,fontSize:12,color:"rgba(255,255,255,0.7)"}}>{si.sousTitre}</p>}
+          </div>
+        </div>
+        <div style={{flex:1,padding:"20px 20px 24px",overflowY:"auto"}}>
+          {si.etapes&&si.etapes.length>0&&(
+            <div style={{marginBottom:24}}>
+              <p style={{fontSize:12,fontWeight:700,color:"#fca5a5",margin:"0 0 12px",textTransform:"uppercase",letterSpacing:"0.5px"}}>📝 Que faire, étape par étape</p>
+              <div style={{display:"flex",flexDirection:"column",gap:12}}>
+                {si.etapes.map((e,i)=>(
+                  <div key={i} style={{display:"flex",gap:12,alignItems:"flex-start"}}>
+                    <div style={{width:26,height:26,borderRadius:"50%",background:"rgba(239,68,68,0.2)",border:"1.5px solid #ef4444",color:"#fca5a5",fontSize:12,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginTop:1}}>{i+1}</div>
+                    <p style={{margin:0,fontSize:14,color:"rgba(255,255,255,0.85)",lineHeight:1.6}}>{e}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          {si.checklist&&si.checklist.length>0&&(
+            <div>
+              <p style={{fontSize:12,fontWeight:700,color:"#fca5a5",margin:"0 0 12px",textTransform:"uppercase",letterSpacing:"0.5px"}}>✅ Checklist rapide</p>
+              <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                {si.checklist.map((c,i)=>{
+                  const coche=!!checklistCochee[i];
+                  return(
+                    <button key={i} onClick={()=>setChecklistCochee(p=>({...p,[i]:!p[i]}))} style={{display:"flex",alignItems:"center",gap:10,padding:"12px 14px",borderRadius:14,background:coche?"rgba(34,197,94,0.1)":"rgba(255,255,255,0.04)",border:`1px solid ${coche?"rgba(34,197,94,0.35)":"rgba(255,255,255,0.08)"}`,cursor:"pointer",textAlign:"left"}}>
+                      <span style={{fontSize:18,flexShrink:0}}>{coche?"✅":"⬜"}</span>
+                      <span style={{fontSize:13,color:coche?"rgba(255,255,255,0.5)":"rgba(255,255,255,0.85)",textDecoration:coche?"line-through":"none"}}>{c}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+        <div style={{padding:"16px 20px 24px"}}>
+          <button onClick={()=>{setSituationActive(null);setChecklistCochee({});onBack&&onBack();}} style={{width:"100%",padding:"15px 0",borderRadius:28,background:"linear-gradient(135deg,#16a34a,#22c55e)",border:"none",color:"#fff",fontWeight:700,fontSize:15,cursor:"pointer"}}>😌 C'est fini, merci !</button>
+        </div>
+      </div>
+    );
+  }
 
   if(sosDetailActive){
     const act=sosDetailActive;
@@ -4236,6 +4289,33 @@ function PageSOS({sosLib=[],isPremium=false,onOpenPremium,onBack}){
         </div>
       </div>
       <div style={{flex:1,padding:"16px 16px 24px",overflowY:"auto"}}>
+        {/* Switcher d'approche */}
+        <div style={{display:"flex",gap:8,marginBottom:18,background:"rgba(255,255,255,0.04)",borderRadius:16,padding:4}}>
+          {[{k:"crise",l:"😰 Type de crise"},{k:"situation",l:"🧩 Situation concrète"}].map(t=>(
+            <button key={t.k} onClick={()=>{setSosTab(t.k);setSosResults(null);setSosCrise(null);}} style={{flex:1,padding:"9px 0",borderRadius:12,border:"none",background:sosTab===t.k?"rgba(239,68,68,0.9)":"transparent",color:"#fff",fontWeight:sosTab===t.k?700:500,fontSize:12,cursor:"pointer",transition:"all 0.15s"}}>{t.l}</button>
+          ))}
+        </div>
+
+        {sosTab==="situation"?(
+          <div>
+            <p style={{fontSize:12,fontWeight:700,color:"#fca5a5",margin:"0 0 12px",textTransform:"uppercase",letterSpacing:"0.5px"}}>🧩 Quelle situation rencontres-tu ?</p>
+            <div style={{display:"flex",flexDirection:"column",gap:10}}>
+              {sosSituations.filter(s=>s.statut==="published").sort((a,b)=>(a.ordre||0)-(b.ordre||0)).map(si=>(
+                <button key={si.id} onClick={()=>{setSituationActive(si);setChecklistCochee({});}} style={{display:"flex",alignItems:"center",gap:12,padding:"14px 16px",borderRadius:16,background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.1)",cursor:"pointer",textAlign:"left"}}>
+                  <span style={{fontSize:28,flexShrink:0}}>{si.emoji||"🧩"}</span>
+                  <div style={{flex:1}}>
+                    <p style={{margin:"0 0 2px",fontSize:14,fontWeight:700,color:"#fff"}}>{si.titre}</p>
+                    {si.sousTitre&&<p style={{margin:0,fontSize:11,color:"rgba(255,255,255,0.5)"}}>{si.sousTitre}</p>}
+                  </div>
+                  <span style={{fontSize:16,color:"rgba(255,255,255,0.3)"}}>→</span>
+                </button>
+              ))}
+              {sosSituations.filter(s=>s.statut==="published").length===0&&(
+                <p style={{fontSize:13,color:"rgba(255,255,255,0.5)",textAlign:"center",padding:"20px 0"}}>Aucune situation disponible pour le moment.</p>
+              )}
+            </div>
+          </div>
+        ):(<>
         {!sosResults?(
           <div>
             {/* Filtre 1 — Type de crise */}
@@ -4274,6 +4354,7 @@ function PageSOS({sosLib=[],isPremium=false,onOpenPremium,onBack}){
             </div>
           </div>
         )}
+        </>)}
       </div>
     </div>
   );
@@ -11564,9 +11645,42 @@ function Contributions({items,updateContrib,setPendingContribs,supprimerContrib,
 
 const PAGES_FN = {dashboard:(props)=><Dashboard {...props}/>,sos:(props)=><AdminSOS {...props}/>,activites:(props)=><Activites {...props}/>,sorties:(props)=><Sorties {...props}/>,evenements:(props)=><Evenements {...props}/>,saisonnier:(props)=><Saisonnier {...props}/>,categories:(props)=><Categories {...props}/>,ressources:(props)=><RessourcesAdmin {...props}/>,boost:(props)=><AdminBoost {...props}/>,utilisateurs:(props)=><Utilisateurs {...props}/>,abonnements:(props)=><Abonnements {...props}/>,signalements:(props)=><Signalements {...props}/>,communication:(props)=><Communication key="comm" {...props}/>,admins:()=><Admins/>};
 
-function AdminSOS({sosLib=[],setSosLib,sosModeActif=true,setSosModeActif}){
+function AdminSOS({sosLib=[],setSosLib,sosSituations=[],setSosSituations,sosModeActif=true,setSosModeActif}){
+  const [tab,setTab]=useState("activites");
   const [modal,setModal]=useState(null);
   const [form,setForm]=useState({titre:"",desc:"",duree:"",age:"",materiel:"",statut:"published"});
+  const [situModal,setSituModal]=useState(null);
+  const [situForm,setSituForm]=useState({titre:"",sousTitre:"",emoji:"🧩",etapesStr:"",checklistStr:"",statut:"published"});
+  const saveSituation=async()=>{
+    if(!situForm.titre)return;
+    const etapes=situForm.etapesStr?situForm.etapesStr.split("\n").map(s=>s.trim()).filter(Boolean):[];
+    const checklist=situForm.checklistStr?situForm.checklistStr.split("\n").map(s=>s.trim()).filter(Boolean):[];
+    const payload={titre:situForm.titre.trim(),sous_titre:situForm.sousTitre.trim(),emoji:situForm.emoji||"🧩",etapes,checklist,statut:situForm.statut,ordre:situForm.ordre||sosSituations.length+1};
+    if(situModal?.mode==="edit"){
+      setSosSituations(prev=>prev.map(s=>s.id===situModal.item.id?{...s,titre:payload.titre,sousTitre:payload.sous_titre,emoji:payload.emoji,etapes,checklist,statut:payload.statut}:s));
+      try{await supabase.from("sos_situations").update(payload).eq("id",situModal.item.id);}catch(e){/* échec réseau — reste correct localement */}
+    }else{
+      const tempId="situ"+Date.now();
+      setSosSituations(prev=>[...prev,{id:tempId,titre:payload.titre,sousTitre:payload.sous_titre,emoji:payload.emoji,etapes,checklist,statut:payload.statut,ordre:payload.ordre}]);
+      try{
+        const {data:inserted}=await supabase.from("sos_situations").insert(payload).select().single();
+        if(inserted)setSosSituations(prev=>prev.map(s=>s.id===tempId?{...s,id:inserted.id}:s));
+      }catch(e){ /* la situation reste visible localement même si la sauvegarde échoue */ }
+    }
+    setSituModal(null);
+  };
+  const toggleStatutSituation=async(item)=>{
+    const nouveauStatut=item.statut==="published"?"draft":"published";
+    setSosSituations(prev=>prev.map(x=>x.id===item.id?{...x,statut:nouveauStatut}:x));
+    try{ await supabase.from("sos_situations").update({statut:nouveauStatut}).eq("id",item.id); }
+    catch(e){ /* échec réseau — reste correct localement */ }
+  };
+  const supprimerSituation=async(item)=>{
+    if(!window.confirm(`Supprimer la situation "${item.titre}" ?`))return;
+    setSosSituations(prev=>prev.filter(x=>x.id!==item.id));
+    try{ await supabase.from("sos_situations").delete().eq("id",item.id); }
+    catch(e){ /* échec réseau — sera resynchronisé au prochain chargement */ }
+  };
   const save=async()=>{
     if(!form.titre)return;
     const {materiel,id,...rest}=form;
@@ -11613,8 +11727,18 @@ function AdminSOS({sosLib=[],setSosLib,sosModeActif=true,setSosModeActif}){
             <Tog on={sosModeActif} onChange={()=>setSosModeActif&&setSosModeActif(!sosModeActif)}/>
             <span style={{fontSize:12,color:sosModeActif?C.green:C.red,fontWeight:600}}>{sosModeActif?"Actif":"Inactif"}</span>
           </div>
-          <button style={s.btn("#ef4444")} onClick={()=>{setForm({titre:"",desc:"",duree:"",age:"",materiel:"",statut:"published"});setModal({mode:"add"});}}>+ Ajouter une activité</button>
+          <button style={s.btn("#ef4444")} onClick={()=>{
+            if(tab==="situations"){setSituForm({titre:"",sousTitre:"",emoji:"🧩",etapesStr:"",checklistStr:"",statut:"published"});setSituModal({mode:"add"});}
+            else{setForm({titre:"",desc:"",duree:"",age:"",materiel:"",statut:"published"});setModal({mode:"add"});}
+          }}>{tab==="situations"?"+ Ajouter une situation":"+ Ajouter une activité"}</button>
         </div>
+      </div>
+
+      {/* Onglets */}
+      <div style={{display:"flex",gap:8,marginBottom:20}}>
+        {[{k:"activites",l:"🆘 Activités SOS"},{k:"situations",l:"🧩 Situations concrètes"}].map(t=>(
+          <button key={t.k} onClick={()=>setTab(t.k)} style={{padding:"9px 16px",borderRadius:12,border:`1.5px solid ${tab===t.k?"#ef4444":C.border}`,background:tab===t.k?"rgba(239,68,68,0.12)":"transparent",color:tab===t.k?"#fca5a5":C.muted,fontWeight:tab===t.k?700:500,fontSize:13,cursor:"pointer"}}>{t.l}</button>
+        ))}
       </div>
       {!sosModeActif&&(
         <div style={{background:"rgba(239,68,68,0.12)",border:"1px solid rgba(239,68,68,0.3)",borderRadius:12,padding:"10px 16px",marginBottom:16}}>
@@ -11622,6 +11746,7 @@ function AdminSOS({sosLib=[],setSosLib,sosModeActif=true,setSosModeActif}){
         </div>
       )}
 
+      {tab==="activites"&&(<>
       {/* Stats */}
       <div style={{display:"flex",gap:12,marginBottom:20}}>
         {[{label:"Total activités",val:sosLib.length,emoji:"📋",color:C.blue},{label:"Publiées",val:sosLib.filter(a=>a.statut==="published").length,emoji:"✅",color:C.green},{label:"Brouillons",val:sosLib.filter(a=>a.statut==="draft").length,emoji:"📝",color:C.muted}].map((st,i)=>(
@@ -11709,11 +11834,64 @@ function AdminSOS({sosLib=[],setSosLib,sosModeActif=true,setSosModeActif}){
         </Modal>
         );
       })()}
+      </>)}
+
+      {tab==="situations"&&(<>
+      <div style={{background:"rgba(139,92,246,0.08)",borderRadius:12,padding:"12px 16px",marginBottom:20,display:"flex",gap:10,alignItems:"flex-start",border:"1px solid rgba(139,92,246,0.2)"}}>
+        <span style={{fontSize:20,flexShrink:0}}>🧩</span>
+        <div>
+          <p style={{margin:"0 0 2px",fontSize:13,fontWeight:700,color:"#c4b5fd"}}>Situations concrètes du quotidien</p>
+          <p style={{fontSize:12,color:C.muted}}>Contrairement aux activités SOS (diversion), ces fiches répondent directement à une situation précise (transitions, refus de partir...) avec des étapes concrètes et/ou une checklist.</p>
+        </div>
+      </div>
+      <div style={{...s.card,padding:0,overflow:"hidden"}}>
+        <table style={{width:"100%",borderCollapse:"collapse"}}>
+          <thead><tr style={{background:"#0d1117"}}>{["Situation","Étapes","Checklist","Statut","Actions"].map(h=><th key={h} style={{padding:"10px 16px",textAlign:"left",fontSize:11,color:C.muted,fontWeight:600,textTransform:"uppercase"}}>{h}</th>)}</tr></thead>
+          <tbody>{[...sosSituations].sort((a,b)=>(a.ordre||0)-(b.ordre||0)).map(si=>(
+            <tr key={si.id} style={{borderTop:`1px solid ${C.border}`,opacity:si.statut==="draft"?0.6:1}}>
+              <td style={{padding:"12px 16px"}}>
+                <p style={{margin:"0 0 3px",fontSize:13,fontWeight:600,color:C.text}}>{si.emoji} {si.titre}</p>
+                <p style={{margin:0,fontSize:11,color:C.muted,maxWidth:280,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{si.sousTitre}</p>
+              </td>
+              <td style={{padding:"12px 16px",fontSize:12,color:C.muted}}>{(si.etapes||[]).length} étape{(si.etapes||[]).length>1?"s":""}</td>
+              <td style={{padding:"12px 16px",fontSize:12,color:C.muted}}>{(si.checklist||[]).length} action{(si.checklist||[]).length>1?"s":""}</td>
+              <td style={{padding:"12px 16px"}}>{statutBadge(si.statut)}</td>
+              <td style={{padding:"12px 16px"}}>
+                <div style={{display:"flex",gap:6}}>
+                  <button style={s.btnOutline("#ef4444")} onClick={()=>{setSituForm({titre:si.titre,sousTitre:si.sousTitre||"",emoji:si.emoji||"🧩",etapesStr:(si.etapes||[]).join("\n"),checklistStr:(si.checklist||[]).join("\n"),statut:si.statut,ordre:si.ordre});setSituModal({mode:"edit",item:si});}}>✏️</button>
+                  <button style={s.btnOutline(si.statut==="published"?C.yellow:C.green)} onClick={()=>toggleStatutSituation(si)}>{si.statut==="published"?"📝":"✅"}</button>
+                  <button style={s.btnOutline(C.red)} onClick={()=>supprimerSituation(si)}>🗑️</button>
+                </div>
+              </td>
+            </tr>
+          ))}</tbody>
+        </table>
+        {sosSituations.length===0&&<div style={{padding:"40px 0",textAlign:"center",color:C.muted}}><p style={{fontSize:32,margin:"0 0 8px"}}>🧩</p><p>Aucune situation pour le moment</p></div>}
+      </div>
+
+      {situModal&&(
+        <Modal title={situModal.mode==="edit"?"Modifier la situation":"Nouvelle situation"} onClose={()=>setSituModal(null)} width={580}>
+          <div style={{background:"rgba(139,92,246,0.06)",borderRadius:10,padding:"10px 14px",marginBottom:16,display:"flex",gap:8}}><span>💡</span><p style={{margin:0,fontSize:12,color:"#c4b5fd"}}>Une étape par ligne pour le script, une action par ligne pour la checklist. Les deux sont optionnels, mais au moins un des deux est recommandé.</p></div>
+          <div style={{display:"grid",gridTemplateColumns:"60px 1fr",gap:12}}>
+            <AdminField label="Emoji"><input style={{...s.input,textAlign:"center",fontSize:20}} value={situForm.emoji} onChange={e=>setSituForm({...situForm,emoji:e.target.value})}/></AdminField>
+            <AdminField label="Titre de la situation *"><input style={s.input} value={situForm.titre} onChange={e=>setSituForm({...situForm,titre:e.target.value})} placeholder="Ex : Difficulté à quitter un lieu"/></AdminField>
+          </div>
+          <AdminField label="Sous-titre (description courte)"><input style={s.input} value={situForm.sousTitre} onChange={e=>setSituForm({...situForm,sousTitre:e.target.value})} placeholder="Ex : Il refuse de partir, crise au moment de partir"/></AdminField>
+          <AdminField label="Script étape par étape (une étape par ligne)"><textarea style={{...s.input,minHeight:120,resize:"vertical"}} value={situForm.etapesStr} onChange={e=>setSituForm({...situForm,etapesStr:e.target.value})} placeholder={"Annonce le départ à l'avance...\nUtilise un minuteur visuel...\nPropose un choix limité..."}/></AdminField>
+          <AdminField label="Checklist rapide (une action par ligne)"><textarea style={{...s.input,minHeight:90,resize:"vertical"}} value={situForm.checklistStr} onChange={e=>setSituForm({...situForm,checklistStr:e.target.value})} placeholder={"Prévenir 5-10 min avant\nUtiliser un minuteur visuel\n..."}/></AdminField>
+          <AdminField label="Statut"><select style={s.input} value={situForm.statut} onChange={e=>setSituForm({...situForm,statut:e.target.value})}><option value="published">Publié</option><option value="draft">Brouillon</option></select></AdminField>
+          <div style={{display:"flex",justifyContent:"flex-end",gap:8,marginTop:4}}>
+            <button style={s.btnOutline(C.muted)} onClick={()=>setSituModal(null)}>Annuler</button>
+            <button style={s.btn("#ef4444")} onClick={saveSituation}>{situModal.mode==="edit"?"Modifier":"Ajouter"}</button>
+          </div>
+        </Modal>
+      )}
+      </>)}
     </div>
   );
 }
 
-function PageAdmin({onLogout,adminRole="super_admin",adminInfo=null,pendingContribs=[],setPendingContribs,updateContrib,supprimerContrib,adminActivites=[],setAdminActivites,adminSorties=[],setAdminSorties,adminEvenements=[],setAdminEvenements,adminReports=[],setAdminReports,addDeletedTitle,adminCustomEvents=[],setAdminCustomEvents,sosLib=[],setSosLib,sosModeActif=true,setSosModeActif,ideesMomentConfig=[],setIdeesMomentConfig,evenementsSaisonniers=[],setEvenementsSaisonniers,betisesLutin=[],setBetisesLutin,cartesVoyageLutin=[],setCartesVoyageLutin,customCatActivites=[],setCustomCatActivites,customCatSorties=[],setCustomCatSorties,customCatEvenements=[],setCustomCatEvenements,adminComms=[],setAdminComms,ressourcesSites=[],setRessourcesSites,ressourcesContacts=[],setRessourcesContacts,ressourcesPdf=[],setRessourcesPdf,devisBoostDemandes=[],setDevisBoostDemandes,boosts=[],setBoosts,activerBoost,retirerBoostSupabase,demoMode=false,setDemoMode,premiumPourTous=false,togglePremiumPourTous,planningEtEnfantsGratuits=false,toggleAllPlanningEtEnfantsGratuits,appLogo=null,setAppLogo}) {
+function PageAdmin({onLogout,adminRole="super_admin",adminInfo=null,pendingContribs=[],setPendingContribs,updateContrib,supprimerContrib,adminActivites=[],setAdminActivites,adminSorties=[],setAdminSorties,adminEvenements=[],setAdminEvenements,adminReports=[],setAdminReports,addDeletedTitle,adminCustomEvents=[],setAdminCustomEvents,sosLib=[],setSosLib,sosSituations=[],setSosSituations,sosModeActif=true,setSosModeActif,ideesMomentConfig=[],setIdeesMomentConfig,evenementsSaisonniers=[],setEvenementsSaisonniers,betisesLutin=[],setBetisesLutin,cartesVoyageLutin=[],setCartesVoyageLutin,customCatActivites=[],setCustomCatActivites,customCatSorties=[],setCustomCatSorties,customCatEvenements=[],setCustomCatEvenements,adminComms=[],setAdminComms,ressourcesSites=[],setRessourcesSites,ressourcesContacts=[],setRessourcesContacts,ressourcesPdf=[],setRessourcesPdf,devisBoostDemandes=[],setDevisBoostDemandes,boosts=[],setBoosts,activerBoost,retirerBoostSupabase,demoMode=false,setDemoMode,premiumPourTous=false,togglePremiumPourTous,planningEtEnfantsGratuits=false,toggleAllPlanningEtEnfantsGratuits,appLogo=null,setAppLogo}) {
   const RESERVE_SUPER_ADMIN=["dashboard","utilisateurs","abonnements","communication","boost","admins"];
   const PAGES_AUTORISEES={
     moderateur:["contributions","signalements"],
@@ -11767,7 +11945,7 @@ function PageAdmin({onLogout,adminRole="super_admin",adminInfo=null,pendingContr
           </div>
         </header>
         <main style={{flex:1,overflowY:"auto",padding:24}}>
-          {page==="contributions"?<Contributions items={pendingContribs} updateContrib={updateContrib} setPendingContribs={setPendingContribs} supprimerContrib={supprimerContrib} customCatActivites={customCatActivites} customCatSorties={customCatSorties} customCatEvenements={customCatEvenements}/>:PAGES_FN[page]?PAGES_FN[page]({sharedActivites:adminActivites,setSharedActivites:setAdminActivites,sharedSorties:adminSorties,setSharedSorties:setAdminSorties,sharedEvenements:adminEvenements,setSharedEvenements:setAdminEvenements,userReports:adminReports,setUserReports:setAdminReports,onDeleteTitle:addDeletedTitle,sharedCustomEvents:adminCustomEvents,setSharedCustomEvents:setAdminCustomEvents,pendingContribs,setPendingContribs,updateContrib,dashUserReports:adminReports,sosLib,setSosLib,sosModeActif,setSosModeActif,ideesMomentConfig,setIdeesMomentConfig,evenementsSaisonniers,setEvenementsSaisonniers,betisesLutin,setBetisesLutin,cartesVoyageLutin,setCartesVoyageLutin,customCatActivites,setCustomCatActivites,customCatSorties,setCustomCatSorties,customCatEvenements,setCustomCatEvenements,adminComms,setAdminComms,ressourcesSites,setRessourcesSites,ressourcesContacts,setRessourcesContacts,ressourcesPdf,setRessourcesPdf,devisBoostDemandes,setDevisBoostDemandes,boosts,onActiverBoost:activerBoost,onRetirerBoost:retirerBoostSupabase,demoMode,setDemoMode,premiumPourTous,togglePremiumPourTous,planningEtEnfantsGratuits,toggleAllPlanningEtEnfantsGratuits,appLogo,setAppLogo}):null}
+          {page==="contributions"?<Contributions items={pendingContribs} updateContrib={updateContrib} setPendingContribs={setPendingContribs} supprimerContrib={supprimerContrib} customCatActivites={customCatActivites} customCatSorties={customCatSorties} customCatEvenements={customCatEvenements}/>:PAGES_FN[page]?PAGES_FN[page]({sharedActivites:adminActivites,setSharedActivites:setAdminActivites,sharedSorties:adminSorties,setSharedSorties:setAdminSorties,sharedEvenements:adminEvenements,setSharedEvenements:setAdminEvenements,userReports:adminReports,setUserReports:setAdminReports,onDeleteTitle:addDeletedTitle,sharedCustomEvents:adminCustomEvents,setSharedCustomEvents:setAdminCustomEvents,pendingContribs,setPendingContribs,updateContrib,dashUserReports:adminReports,sosLib,setSosLib,sosSituations,setSosSituations,sosModeActif,setSosModeActif,ideesMomentConfig,setIdeesMomentConfig,evenementsSaisonniers,setEvenementsSaisonniers,betisesLutin,setBetisesLutin,cartesVoyageLutin,setCartesVoyageLutin,customCatActivites,setCustomCatActivites,customCatSorties,setCustomCatSorties,customCatEvenements,setCustomCatEvenements,adminComms,setAdminComms,ressourcesSites,setRessourcesSites,ressourcesContacts,setRessourcesContacts,ressourcesPdf,setRessourcesPdf,devisBoostDemandes,setDevisBoostDemandes,boosts,onActiverBoost:activerBoost,onRetirerBoost:retirerBoostSupabase,demoMode,setDemoMode,premiumPourTous,togglePremiumPourTous,planningEtEnfantsGratuits,toggleAllPlanningEtEnfantsGratuits,appLogo,setAppLogo}):null}
         </main>
       </div>
     </div>
@@ -12495,6 +12673,17 @@ export default function App(){
     {id:"sos15",titre:"Livre audio ou podcast enfant",desc:"Mettre un livre audio ou podcast enfant connu et apprécié. Distrait sans demander d'effort visuel ou de lecture.",duree:"15-30 min",age:"4-12 ans",materiel:["enceinte ou écouteurs"],statut:"published",profil_dys:true,profil_ordinaire:true,profil_tsa:true,crise_concentration:true,crise_emotionnelle:true,lieu_maison:true,lieu_voiture:true},
   ]);
   const [sosModeActif,setSosModeActif]=useState(true);
+  const [sosSituations,setSosSituations]=useState([
+    {id:"situ1",titre:"Difficulté à quitter un lieu",sousTitre:"Il refuse de partir, crise au moment de partir",emoji:"🚪",statut:"published",ordre:1,
+      etapes:["Annonce le départ à l'avance (\"Dans 5 minutes on part\"), pas au dernier moment.","Utilise un minuteur visuel ou une chanson de transition pour rendre le compte à rebours concret.","Propose un choix limité plutôt qu'un ordre : \"Tu veux partir en marchant ou en sautant comme une grenouille ?\"","Reste calme et ferme, sans négocier indéfiniment — répète la même phrase courte si besoin.","Si la crise éclate, accompagne sans forcer physiquement sauf danger réel : attends que l'intensité redescende avant de reprendre le départ."],
+      checklist:["Prévenir 5-10 min avant","Utiliser un minuteur visuel","Proposer un choix, pas un ordre","Garder une phrase de transition fixe et répétée","Rester calme, ne pas négocier en boucle"]},
+    {id:"situ2",titre:"Difficulté avec les transitions",sousTitre:"Passer d'une activité à une autre est un vrai combat",emoji:"🔄",statut:"published",ordre:2,
+      etapes:["Annonce la transition à venir plusieurs minutes avant qu'elle n'arrive.","Utilise toujours le même signal (mot, chanson, minuteur) pour que l'enfant l'associe à \"changement à venir\".","Termine l'activité en cours par une étape claire et courte (\"encore 2 tours puis on range\") plutôt que brutalement.","Implique l'enfant dans la transition : lui faire ranger, compter à rebours avec toi.","Valide ce qu'il ressent (\"je vois que c'est dur d'arrêter\") avant de passer à la suite."],
+      checklist:["Prévenir plusieurs minutes avant","Toujours le même signal de transition","Terminer l'activité en cours proprement, pas brutalement","Impliquer l'enfant dans le changement","Nommer ce qu'il ressent"]},
+    {id:"situ3",titre:"Refus de s'habiller ou se laver",sousTitre:"Chaque matin/soir devient un conflit",emoji:"🧦",statut:"published",ordre:3,
+      etapes:["Réduis le nombre de choix pour éviter la surcharge décisionnelle : propose 2 tenues, pas toute l'armoire.","Vérifie l'inconfort sensoriel réel (étiquette qui gratte, matière, température de l'eau) avant de penser à un refus \"de principe\".","Transforme l'étape en jeu ou chrono ludique plutôt qu'en ordre direct.","Anticipe en préparant la tenue la veille avec l'enfant, pour réduire la charge mentale du matin.","Accepte de petites victoires imparfaites (habillé mais dépareillé) plutôt qu'un conflit total."],
+      checklist:["Limiter les choix à 2 options","Vérifier l'inconfort sensoriel (étiquettes, matière)","Préparer la tenue la veille","En faire un jeu/chrono","Accepter les petites victoires imparfaites"]},
+  ]);
   const [customCatActivites,setCustomCatActivites]=useState([]); // [{label,emoji}]
   const [customCatSorties,setCustomCatSorties]=useState([]); // [{label,emoji}]
   const [customCatEvenements,setCustomCatEvenements]=useState([]); // [{k,label,emoji}]
@@ -12647,6 +12836,18 @@ export default function App(){
           lieu_maison:s.lieu_maison,lieu_ecole:s.lieu_ecole,lieu_public:s.lieu_public,lieu_voiture:s.lieu_voiture,lieu_dehors:s.lieu_dehors,
         })));
       }catch(e){ /* erreur réseau — reste sur les techniques par défaut */ }
+    })();
+  },[]);
+  // ── Chargement des situations concrètes SOS depuis Supabase (données globales) ──
+  useEffect(()=>{
+    (async()=>{
+      try{
+        const {data}=await supabase.from("sos_situations").select("*").order("ordre",{ascending:true});
+        if(data&&data.length>0)setSosSituations(data.map(s=>({
+          id:s.id,titre:s.titre,sousTitre:s.sous_titre,emoji:s.emoji||"🧩",
+          etapes:s.etapes||[],checklist:s.checklist||[],statut:s.statut,ordre:s.ordre||0,
+        })));
+      }catch(e){ /* erreur réseau — reste sur les situations par défaut */ }
     })();
   },[]);
   // ── Chargement des signalements depuis Supabase (données globales) ──
@@ -12816,7 +13017,7 @@ export default function App(){
     setTimeout(()=>setShowConfetti(false),4500);
   };
   if(showSetNewPassword) return <PageSetNewPassword onDone={()=>setShowSetNewPassword(false)}/>;
-  if(isAdmin) return <PageAdmin adminRole={adminRole} adminInfo={adminInfo} onLogout={()=>{ setIsAdmin(false); setAdminRole("super_admin"); setAdminInfo(null); setPage("profil"); supabase.auth.signOut().then(()=>{},()=>{}); sauvegarderPrivé({onboarding_done:onboardingDone,popup_shown:[...popupShown],dark_mode:darkMode,filtres_memo_activ:filtresMemoActiv,filtres_memo_sortie:filtresMemoSortie}); }} pendingContribs={pendingContribs} setPendingContribs={setPendingContribs} updateContrib={updateContrib} supprimerContrib={supprimerContrib} adminActivites={adminActivites} setAdminActivites={setAdminActivites} adminSorties={adminSorties} setAdminSorties={setAdminSorties} adminEvenements={adminEvenements} setAdminEvenements={setAdminEvenements} adminReports={adminReports} setAdminReports={setAdminReports} addDeletedTitle={addDeletedTitle} adminCustomEvents={customEvents} setAdminCustomEvents={setCustomEvents} sosLib={sosLib} setSosLib={setSosLib} sosModeActif={sosModeActif} setSosModeActif={setSosModeActif} ideesMomentConfig={ideesMomentConfig} setIdeesMomentConfig={setIdeesMomentConfig} evenementsSaisonniers={evenementsSaisonniers} setEvenementsSaisonniers={setEvenementsSaisonniers} betisesLutin={betisesLutin} setBetisesLutin={setBetisesLutin} cartesVoyageLutin={cartesVoyageLutin} setCartesVoyageLutin={setCartesVoyageLutin} customCatActivites={customCatActivites} setCustomCatActivites={setCustomCatActivites} customCatSorties={customCatSorties} setCustomCatSorties={setCustomCatSorties} customCatEvenements={customCatEvenements} setCustomCatEvenements={setCustomCatEvenements} adminComms={adminComms} setAdminComms={setAdminComms} ressourcesSites={ressourcesSites} setRessourcesSites={setRessourcesSites} ressourcesContacts={ressourcesContacts} setRessourcesContacts={setRessourcesContacts} ressourcesPdf={ressourcesPdf} setRessourcesPdf={setRessourcesPdf} devisBoostDemandes={devisBoostDemandes} setDevisBoostDemandes={setDevisBoostDemandes} boosts={boosts} setBoosts={setBoosts} activerBoost={activerBoost} retirerBoostSupabase={retirerBoostSupabase} demoMode={demoMode} setDemoMode={setDemoMode} premiumPourTous={premiumPourTous} togglePremiumPourTous={togglePremiumPourTous} planningEtEnfantsGratuits={planningEtEnfantsGratuits} toggleAllPlanningEtEnfantsGratuits={toggleAllPlanningEtEnfantsGratuits} appLogo={appLogo} setAppLogo={setAppLogo}/>;
+  if(isAdmin) return <PageAdmin adminRole={adminRole} adminInfo={adminInfo} onLogout={()=>{ setIsAdmin(false); setAdminRole("super_admin"); setAdminInfo(null); setPage("profil"); supabase.auth.signOut().then(()=>{},()=>{}); sauvegarderPrivé({onboarding_done:onboardingDone,popup_shown:[...popupShown],dark_mode:darkMode,filtres_memo_activ:filtresMemoActiv,filtres_memo_sortie:filtresMemoSortie}); }} pendingContribs={pendingContribs} setPendingContribs={setPendingContribs} updateContrib={updateContrib} supprimerContrib={supprimerContrib} adminActivites={adminActivites} setAdminActivites={setAdminActivites} adminSorties={adminSorties} setAdminSorties={setAdminSorties} adminEvenements={adminEvenements} setAdminEvenements={setAdminEvenements} adminReports={adminReports} setAdminReports={setAdminReports} addDeletedTitle={addDeletedTitle} adminCustomEvents={customEvents} setAdminCustomEvents={setCustomEvents} sosLib={sosLib} setSosLib={setSosLib} sosSituations={sosSituations} setSosSituations={setSosSituations} sosModeActif={sosModeActif} setSosModeActif={setSosModeActif} ideesMomentConfig={ideesMomentConfig} setIdeesMomentConfig={setIdeesMomentConfig} evenementsSaisonniers={evenementsSaisonniers} setEvenementsSaisonniers={setEvenementsSaisonniers} betisesLutin={betisesLutin} setBetisesLutin={setBetisesLutin} cartesVoyageLutin={cartesVoyageLutin} setCartesVoyageLutin={setCartesVoyageLutin} customCatActivites={customCatActivites} setCustomCatActivites={setCustomCatActivites} customCatSorties={customCatSorties} setCustomCatSorties={setCustomCatSorties} customCatEvenements={customCatEvenements} setCustomCatEvenements={setCustomCatEvenements} adminComms={adminComms} setAdminComms={setAdminComms} ressourcesSites={ressourcesSites} setRessourcesSites={setRessourcesSites} ressourcesContacts={ressourcesContacts} setRessourcesContacts={setRessourcesContacts} ressourcesPdf={ressourcesPdf} setRessourcesPdf={setRessourcesPdf} devisBoostDemandes={devisBoostDemandes} setDevisBoostDemandes={setDevisBoostDemandes} boosts={boosts} setBoosts={setBoosts} activerBoost={activerBoost} retirerBoostSupabase={retirerBoostSupabase} demoMode={demoMode} setDemoMode={setDemoMode} premiumPourTous={premiumPourTous} togglePremiumPourTous={togglePremiumPourTous} planningEtEnfantsGratuits={planningEtEnfantsGratuits} toggleAllPlanningEtEnfantsGratuits={toggleAllPlanningEtEnfantsGratuits} appLogo={appLogo} setAppLogo={setAppLogo}/>;
   return(
     <div style={{maxWidth:390,margin:"0 auto",background:BG,minHeight:"100vh",position:"relative",fontFamily:"system-ui,-apple-system,sans-serif",color:TX,transition:"background 0.3s,color 0.3s"}} className={darkMode?"dm":""}>
       <style>{`
@@ -12888,7 +13089,7 @@ export default function App(){
         {page==="biblio"&&<PageBiblio pendingContribs={pendingContribs} setPendingContribs={setPendingContribs} adminActivites={adminActivites} adminSorties={adminSorties} adminEvenements={adminEvenements} addReport={addReport} adminReports={adminReports} deletedTitles={deletedTitles} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} favoris={favoris} setFavoris={setFavoris} isPremium={isPremiumUser} onOpenPremium={openPremium} customCatActivites={customCatActivites} customCatSorties={customCatSorties} customCatEvenements={customCatEvenements} currentUser={currentUser} enfants={enfants} enfantActif={enfantActif} masquees={masquees} toggleMasquer={toggleMasquer} estMasque={estMasque} boosts={boosts} ajouterDemandeDevisBoost={ajouterDemandeDevisBoost}/>}
         {page==="generer"&&<PageAccueil favoris={favoris} setFavoris={setFavoris} setPage={setPage} customEvents={customEvents} popupShown={popupShown} setPopupShown={setPopupShown} ideesMomentConfig={ideesMomentConfig} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} evenementsSaisonniers={evenementsSaisonniers} isPremium={isPremiumUser} onOpenPremium={openPremium} customCatActivites={customCatActivites} customCatSorties={customCatSorties} customCatEvenements={customCatEvenements} adminActivites={adminActivites} adminSorties={adminSorties} pendingContribs={pendingContribs} setPendingContribs={setPendingContribs} deletedTitles={deletedTitles} currentUser={currentUser} sosModeActif={sosModeActif} enfants={enfants} enfantActif={enfantActif} setEnfantActif={setEnfantActif} onMarquerFait={marquerActiviteFaite} historiqueActivites={historiqueActivites} filtresMemoActiv={filtresMemoActiv} setFiltresMemoActiv={setFiltresMemoActiv} filtresMemoSortie={filtresMemoSortie} setFiltresMemoSortie={setFiltresMemoSortie} adminComms={adminComms} masquees={masquees} toggleMasquer={toggleMasquer} estMasque={estMasque} ajouterDemandeDevisBoost={ajouterDemandeDevisBoost} trialEndDate={trialEndDate} betisesLutin={betisesLutin} cartesVoyageLutin={cartesVoyageLutin}/>}
         {page==="planning"&&<PagePlanning sosLib={sosLib} enfants={enfants} enfantActif={enfantActif} setEnfantActif={setEnfantActif} isPremium={isPremiumUser||planningEtEnfantsGratuits} onOpenPremium={openPremium} sosModeActif={sosModeActif} adminActivites={adminActivites} pendingContribs={pendingContribs} deletedTitles={deletedTitles} masquees={masquees} adminReports={adminReports} currentUser={currentUser} count={planningCount} setCount={setPlanningCount} energieP={planningEnergie} setEnergieP={setPlanningEnergie} lieuP={planningLieu} setLieuP={setPlanningLieu} semaineType={planningSemaineType} setSemaineType={setPlanningSemaineType} planning={planning} setPlanning={setPlanning} materielDispo={planningMaterielDispo} setMaterielDispo={setPlanningMaterielDispo} sansMateriel={planningSansMateriel} setSansMateriel={setPlanningSansMateriel} enfantsSelectionnes={planningEnfantsSelectionnes} setEnfantsSelectionnes={setPlanningEnfantsSelectionnes} checkedMat={planningCheckedMat} setCheckedMat={setPlanningCheckedMat}/>}
-        {page==="sos"&&<PageSOS sosLib={sosLib} isPremium={isPremiumUser} onOpenPremium={openPremium} onBack={()=>setPage("accueil")}/>}
+        {page==="sos"&&<PageSOS sosLib={sosLib} sosSituations={sosSituations} isPremium={isPremiumUser} onOpenPremium={openPremium} onBack={()=>setPage("accueil")}/>}
         {page==="ressources"&&<PageRessources sites={ressourcesSites} contacts={ressourcesContacts} pdfs={ressourcesPdf} setPdfs={setRessourcesPdf} isPremium={isPremiumUser} onOpenPremium={openPremium}/>}
         {page==="profil"&&<PageProfil setPage={setPage} enfants={enfants} setEnfants={setEnfants} enfantActif={enfantActif} setEnfantActif={setEnfantActif} showGestionEnfants={showGestionEnfants} setShowGestionEnfants={setShowGestionEnfants} currentUser={currentUser} onLogout={handleLogout} onRequireAuth={requireAuth} isPremium={isPremiumUser} setPremium={setPremiumDemo} evenementsSaisonniers={evenementsSaisonniers} onOpenPremium={openPremium} onDeleteAccount={handleDeleteAccount} favoris={favoris} adminEvenements={adminEvenements} pendingContribs={pendingContribs} darkMode={darkMode} setDarkMode={setDarkMode} historiqueActivites={historiqueActivites} setHistoriqueActivites={setHistoriqueActivites} estBooste={estBooste} activerBoost={activerBoost} ajouterDemandeDevisBoost={ajouterDemandeDevisBoost} betisesLutin={betisesLutin} cartesVoyageLutin={cartesVoyageLutin} mesAvisCount={mesAvisCount} aSauvegardePlanning={aSauvegardePlanning} planningEtEnfantsGratuits={planningEtEnfantsGratuits}/>}
         {page==="favoris"&&<PageFavoris favoris={favoris} setFavoris={setFavoris} isPremium={isPremiumUser} onBack={()=>setPage("profil")}/>}

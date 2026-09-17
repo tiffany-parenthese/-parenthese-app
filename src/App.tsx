@@ -4146,7 +4146,9 @@ function PageAccueil({favoris,setFavoris,setPage,customEvents=[],popupShown=new 
 
 function PageSOS({sosLib=[],sosSituations=[],isPremium=false,onOpenPremium,onBack}){
   const [sosTab,setSosTab]=useState("crise"); // "crise" | "situation"
+  const [themeActif,setThemeActif]=useState(null);
   const [situationActive,setSituationActive]=useState(null);
+  const [solutionActive,setSolutionActive]=useState(null);
   const [checklistCochee,setChecklistCochee]=useState({});
   const [sosCrise,setSosCrise]=useState(null);
   const [sosResults,setSosResults]=useState(null);
@@ -4182,12 +4184,24 @@ function PageSOS({sosLib=[],sosSituations=[],isPremium=false,onOpenPremium,onBac
     {Array.isArray(act.materiel)&&act.materiel.length>0&&<p style={{margin:0,fontSize:11,color:"rgba(255,255,255,0.35)"}}>Matériel : {act.materiel.join(", ")}</p>}
   </div>);
 
-  if(situationActive){
+  const selectionnerSituation=(si)=>{
+    setSituationActive(si);
+    setChecklistCochee({});
+    const sols=si.solutions||[];
+    setSolutionActive(sols.length<=1?(sols[0]||null):null);
+  };
+  const retourDepuisSolution=()=>{
+    setChecklistCochee({});
+    if((situationActive?.solutions||[]).length>1){setSolutionActive(null);}
+    else{setSituationActive(null);setSolutionActive(null);}
+  };
+
+  if(situationActive&&!solutionActive&&(situationActive.solutions||[]).length>1){
     const si=situationActive;
     return(
       <div style={{background:"#0f0505",minHeight:"100vh",display:"flex",flexDirection:"column",fontFamily:"system-ui,-apple-system,sans-serif"}}>
         <div style={{background:"linear-gradient(135deg,#7f1d1d,#dc2626)",padding:"16px 16px 20px",position:"relative"}}>
-          <button onClick={()=>{setSituationActive(null);setChecklistCochee({});}} style={{position:"absolute",top:14,left:14,width:34,height:34,borderRadius:"50%",background:"rgba(255,255,255,0.15)",border:"none",color:"#fff",fontSize:18,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>←</button>
+          <button onClick={()=>{setSituationActive(null);setSolutionActive(null);}} style={{position:"absolute",top:14,left:14,width:34,height:34,borderRadius:"50%",background:"rgba(255,255,255,0.15)",border:"none",color:"#fff",fontSize:18,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>←</button>
           <div style={{textAlign:"center"}}>
             <div style={{fontSize:36,marginBottom:4}}>{si.emoji||"🧩"}</div>
             <p style={{margin:"0 0 2px",fontSize:18,fontWeight:800,color:"#fff"}}>{si.titre}</p>
@@ -4195,11 +4209,41 @@ function PageSOS({sosLib=[],sosSituations=[],isPremium=false,onOpenPremium,onBac
           </div>
         </div>
         <div style={{flex:1,padding:"20px 20px 24px",overflowY:"auto"}}>
-          {si.etapes&&si.etapes.length>0&&(
+          <p style={{fontSize:12,fontWeight:700,color:"#fca5a5",margin:"0 0 14px",textTransform:"uppercase",letterSpacing:"0.5px"}}>Choisis une approche à essayer</p>
+          <div style={{display:"flex",flexDirection:"column",gap:10}}>
+            {si.solutions.map((sol,i)=>(
+              <button key={i} onClick={()=>setSolutionActive(sol)} style={{display:"flex",alignItems:"center",gap:12,padding:"16px",borderRadius:16,background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.12)",cursor:"pointer",textAlign:"left"}}>
+                <div style={{flex:1}}>
+                  <p style={{margin:0,fontSize:14,fontWeight:700,color:"#fff"}}>{sol.label}</p>
+                </div>
+                <span style={{fontSize:16,color:"rgba(255,255,255,0.3)"}}>→</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if(solutionActive){
+    const si=situationActive;
+    const sol=solutionActive;
+    return(
+      <div style={{background:"#0f0505",minHeight:"100vh",display:"flex",flexDirection:"column",fontFamily:"system-ui,-apple-system,sans-serif"}}>
+        <div style={{background:"linear-gradient(135deg,#7f1d1d,#dc2626)",padding:"16px 16px 20px",position:"relative"}}>
+          <button onClick={retourDepuisSolution} style={{position:"absolute",top:14,left:14,width:34,height:34,borderRadius:"50%",background:"rgba(255,255,255,0.15)",border:"none",color:"#fff",fontSize:18,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>←</button>
+          <div style={{textAlign:"center"}}>
+            <div style={{fontSize:36,marginBottom:4}}>{si?.emoji||"🧩"}</div>
+            <p style={{margin:"0 0 2px",fontSize:18,fontWeight:800,color:"#fff"}}>{si?.titre}</p>
+            {(si?.solutions||[]).length>1?<p style={{margin:0,fontSize:12,color:"rgba(255,255,255,0.7)"}}>{sol.label}</p>:si?.sousTitre&&<p style={{margin:0,fontSize:12,color:"rgba(255,255,255,0.7)"}}>{si.sousTitre}</p>}
+          </div>
+        </div>
+        <div style={{flex:1,padding:"20px 20px 24px",overflowY:"auto"}}>
+          {sol.etapes&&sol.etapes.length>0&&(
             <div style={{marginBottom:24}}>
               <p style={{fontSize:12,fontWeight:700,color:"#fca5a5",margin:"0 0 12px",textTransform:"uppercase",letterSpacing:"0.5px"}}>📝 Que faire, étape par étape</p>
               <div style={{display:"flex",flexDirection:"column",gap:12}}>
-                {si.etapes.map((e,i)=>(
+                {sol.etapes.map((e,i)=>(
                   <div key={i} style={{display:"flex",gap:12,alignItems:"flex-start"}}>
                     <div style={{width:26,height:26,borderRadius:"50%",background:"rgba(239,68,68,0.2)",border:"1.5px solid #ef4444",color:"#fca5a5",fontSize:12,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginTop:1}}>{i+1}</div>
                     <p style={{margin:0,fontSize:14,color:"rgba(255,255,255,0.85)",lineHeight:1.6}}>{e}</p>
@@ -4208,11 +4252,11 @@ function PageSOS({sosLib=[],sosSituations=[],isPremium=false,onOpenPremium,onBac
               </div>
             </div>
           )}
-          {si.checklist&&si.checklist.length>0&&(
+          {sol.checklist&&sol.checklist.length>0&&(
             <div>
               <p style={{fontSize:12,fontWeight:700,color:"#fca5a5",margin:"0 0 12px",textTransform:"uppercase",letterSpacing:"0.5px"}}>✅ Checklist rapide</p>
               <div style={{display:"flex",flexDirection:"column",gap:8}}>
-                {si.checklist.map((c,i)=>{
+                {sol.checklist.map((c,i)=>{
                   const coche=!!checklistCochee[i];
                   return(
                     <button key={i} onClick={()=>setChecklistCochee(p=>({...p,[i]:!p[i]}))} style={{display:"flex",alignItems:"center",gap:10,padding:"12px 14px",borderRadius:14,background:coche?"rgba(34,197,94,0.1)":"rgba(255,255,255,0.04)",border:`1px solid ${coche?"rgba(34,197,94,0.35)":"rgba(255,255,255,0.08)"}`,cursor:"pointer",textAlign:"left"}}>
@@ -4226,7 +4270,7 @@ function PageSOS({sosLib=[],sosSituations=[],isPremium=false,onOpenPremium,onBac
           )}
         </div>
         <div style={{padding:"16px 20px 24px"}}>
-          <button onClick={()=>{setSituationActive(null);setChecklistCochee({});onBack&&onBack();}} style={{width:"100%",padding:"15px 0",borderRadius:28,background:"linear-gradient(135deg,#16a34a,#22c55e)",border:"none",color:"#fff",fontWeight:700,fontSize:15,cursor:"pointer"}}>😌 C'est fini, merci !</button>
+          <button onClick={()=>{setSituationActive(null);setSolutionActive(null);setChecklistCochee({});onBack&&onBack();}} style={{width:"100%",padding:"15px 0",borderRadius:28,background:"linear-gradient(135deg,#16a34a,#22c55e)",border:"none",color:"#fff",fontWeight:700,fontSize:15,cursor:"pointer"}}>😌 C'est fini, merci !</button>
         </div>
       </div>
     );
@@ -4292,30 +4336,68 @@ function PageSOS({sosLib=[],sosSituations=[],isPremium=false,onOpenPremium,onBac
         {/* Switcher d'approche */}
         <div style={{display:"flex",gap:8,marginBottom:18,background:"rgba(255,255,255,0.04)",borderRadius:16,padding:4}}>
           {[{k:"crise",l:"😰 Type de crise"},{k:"situation",l:"🧩 Situation concrète"}].map(t=>(
-            <button key={t.k} onClick={()=>{setSosTab(t.k);setSosResults(null);setSosCrise(null);}} style={{flex:1,padding:"9px 0",borderRadius:12,border:"none",background:sosTab===t.k?"rgba(239,68,68,0.9)":"transparent",color:"#fff",fontWeight:sosTab===t.k?700:500,fontSize:12,cursor:"pointer",transition:"all 0.15s"}}>{t.l}</button>
+            <button key={t.k} onClick={()=>{setSosTab(t.k);setSosResults(null);setSosCrise(null);setThemeActif(null);setSituationActive(null);setSolutionActive(null);}} style={{flex:1,padding:"9px 0",borderRadius:12,border:"none",background:sosTab===t.k?"rgba(239,68,68,0.9)":"transparent",color:"#fff",fontWeight:sosTab===t.k?700:500,fontSize:12,cursor:"pointer",transition:"all 0.15s"}}>{t.l}</button>
           ))}
         </div>
 
-        {sosTab==="situation"?(
-          <div>
-            <p style={{fontSize:12,fontWeight:700,color:"#fca5a5",margin:"0 0 12px",textTransform:"uppercase",letterSpacing:"0.5px"}}>🧩 Quelle situation rencontres-tu ?</p>
-            <div style={{display:"flex",flexDirection:"column",gap:10}}>
-              {sosSituations.filter(s=>s.statut==="published").sort((a,b)=>(a.ordre||0)-(b.ordre||0)).map(si=>(
-                <button key={si.id} onClick={()=>{setSituationActive(si);setChecklistCochee({});}} style={{display:"flex",alignItems:"center",gap:12,padding:"14px 16px",borderRadius:16,background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.1)",cursor:"pointer",textAlign:"left"}}>
-                  <span style={{fontSize:28,flexShrink:0}}>{si.emoji||"🧩"}</span>
-                  <div style={{flex:1}}>
-                    <p style={{margin:"0 0 2px",fontSize:14,fontWeight:700,color:"#fff"}}>{si.titre}</p>
-                    {si.sousTitre&&<p style={{margin:0,fontSize:11,color:"rgba(255,255,255,0.5)"}}>{si.sousTitre}</p>}
-                  </div>
-                  <span style={{fontSize:16,color:"rgba(255,255,255,0.3)"}}>→</span>
-                </button>
-              ))}
-              {sosSituations.filter(s=>s.statut==="published").length===0&&(
-                <p style={{fontSize:13,color:"rgba(255,255,255,0.5)",textAlign:"center",padding:"20px 0"}}>Aucune situation disponible pour le moment.</p>
-              )}
+        {sosTab==="situation"?(()=>{
+          const publiees=sosSituations.filter(s=>s.statut==="published").sort((a,b)=>(a.ordre||0)-(b.ordre||0));
+          if(themeActif){
+            const dansTheme=publiees.filter(s=>s.theme===themeActif);
+            return(
+              <div>
+                <button onClick={()=>setThemeActif(null)} style={{background:"none",border:"none",color:"rgba(255,255,255,0.6)",fontSize:12,cursor:"pointer",padding:0,marginBottom:12,display:"flex",alignItems:"center",gap:4}}>← Thèmes</button>
+                <p style={{fontSize:12,fontWeight:700,color:"#fca5a5",margin:"0 0 12px",textTransform:"uppercase",letterSpacing:"0.5px"}}>{themeActif}</p>
+                <div style={{display:"flex",flexDirection:"column",gap:10}}>
+                  {dansTheme.map(si=>(
+                    <button key={si.id} onClick={()=>selectionnerSituation(si)} style={{display:"flex",alignItems:"center",gap:12,padding:"14px 16px",borderRadius:16,background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.1)",cursor:"pointer",textAlign:"left"}}>
+                      <span style={{fontSize:28,flexShrink:0}}>{si.emoji||"🧩"}</span>
+                      <div style={{flex:1}}>
+                        <p style={{margin:"0 0 2px",fontSize:14,fontWeight:700,color:"#fff"}}>{si.titre}</p>
+                        {si.sousTitre&&<p style={{margin:0,fontSize:11,color:"rgba(255,255,255,0.5)"}}>{si.sousTitre}</p>}
+                      </div>
+                      <span style={{fontSize:16,color:"rgba(255,255,255,0.3)"}}>→</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            );
+          }
+          const themes=[...new Set(publiees.filter(s=>s.theme).map(s=>s.theme))];
+          const sansTheme=publiees.filter(s=>!s.theme);
+          return(
+            <div>
+              <p style={{fontSize:12,fontWeight:700,color:"#fca5a5",margin:"0 0 12px",textTransform:"uppercase",letterSpacing:"0.5px"}}>🧩 Quelle situation rencontres-tu ?</p>
+              <div style={{display:"flex",flexDirection:"column",gap:10}}>
+                {themes.map(theme=>{
+                  const count=publiees.filter(s=>s.theme===theme).length;
+                  return(
+                    <button key={theme} onClick={()=>setThemeActif(theme)} style={{display:"flex",alignItems:"center",gap:12,padding:"14px 16px",borderRadius:16,background:"rgba(139,92,246,0.1)",border:"1px solid rgba(139,92,246,0.3)",cursor:"pointer",textAlign:"left"}}>
+                      <div style={{flex:1}}>
+                        <p style={{margin:0,fontSize:14,fontWeight:700,color:"#fff"}}>{theme}</p>
+                        <p style={{margin:0,fontSize:11,color:"rgba(255,255,255,0.5)"}}>{count} situation{count>1?"s":""}</p>
+                      </div>
+                      <span style={{fontSize:16,color:"rgba(255,255,255,0.3)"}}>→</span>
+                    </button>
+                  );
+                })}
+                {sansTheme.map(si=>(
+                  <button key={si.id} onClick={()=>selectionnerSituation(si)} style={{display:"flex",alignItems:"center",gap:12,padding:"14px 16px",borderRadius:16,background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.1)",cursor:"pointer",textAlign:"left"}}>
+                    <span style={{fontSize:28,flexShrink:0}}>{si.emoji||"🧩"}</span>
+                    <div style={{flex:1}}>
+                      <p style={{margin:"0 0 2px",fontSize:14,fontWeight:700,color:"#fff"}}>{si.titre}</p>
+                      {si.sousTitre&&<p style={{margin:0,fontSize:11,color:"rgba(255,255,255,0.5)"}}>{si.sousTitre}</p>}
+                    </div>
+                    <span style={{fontSize:16,color:"rgba(255,255,255,0.3)"}}>→</span>
+                  </button>
+                ))}
+                {publiees.length===0&&(
+                  <p style={{fontSize:13,color:"rgba(255,255,255,0.5)",textAlign:"center",padding:"20px 0"}}>Aucune situation disponible pour le moment.</p>
+                )}
+              </div>
             </div>
-          </div>
-        ):(<>
+          );
+        })():(<>
         {!sosResults?(
           <div>
             {/* Filtre 1 — Type de crise */}
@@ -11650,18 +11732,25 @@ function AdminSOS({sosLib=[],setSosLib,sosSituations=[],setSosSituations,sosMode
   const [modal,setModal]=useState(null);
   const [form,setForm]=useState({titre:"",desc:"",duree:"",age:"",materiel:"",statut:"published"});
   const [situModal,setSituModal]=useState(null);
-  const [situForm,setSituForm]=useState({titre:"",sousTitre:"",emoji:"🧩",etapesStr:"",checklistStr:"",statut:"published"});
+  const emptySolution=()=>({label:"",etapesStr:"",checklistStr:""});
+  const [situForm,setSituForm]=useState({titre:"",sousTitre:"",emoji:"🧩",theme:"",statut:"published",solutions:[emptySolution()]});
+  const themesExistants=[...new Set(sosSituations.map(s=>s.theme).filter(Boolean))];
   const saveSituation=async()=>{
     if(!situForm.titre)return;
-    const etapes=situForm.etapesStr?situForm.etapesStr.split("\n").map(s=>s.trim()).filter(Boolean):[];
-    const checklist=situForm.checklistStr?situForm.checklistStr.split("\n").map(s=>s.trim()).filter(Boolean):[];
-    const payload={titre:situForm.titre.trim(),sous_titre:situForm.sousTitre.trim(),emoji:situForm.emoji||"🧩",etapes,checklist,statut:situForm.statut,ordre:situForm.ordre||sosSituations.length+1};
+    const solutions=situForm.solutions
+      .filter(sol=>sol.label.trim()||sol.etapesStr.trim()||sol.checklistStr.trim())
+      .map(sol=>({
+        label:sol.label.trim()||"Solution",
+        etapes:sol.etapesStr?sol.etapesStr.split("\n").map(s=>s.trim()).filter(Boolean):[],
+        checklist:sol.checklistStr?sol.checklistStr.split("\n").map(s=>s.trim()).filter(Boolean):[],
+      }));
+    const payload={titre:situForm.titre.trim(),sous_titre:situForm.sousTitre.trim(),emoji:situForm.emoji||"🧩",theme:situForm.theme.trim()||null,solutions,statut:situForm.statut,ordre:situForm.ordre||sosSituations.length+1};
     if(situModal?.mode==="edit"){
-      setSosSituations(prev=>prev.map(s=>s.id===situModal.item.id?{...s,titre:payload.titre,sousTitre:payload.sous_titre,emoji:payload.emoji,etapes,checklist,statut:payload.statut}:s));
+      setSosSituations(prev=>prev.map(s=>s.id===situModal.item.id?{...s,titre:payload.titre,sousTitre:payload.sous_titre,emoji:payload.emoji,theme:payload.theme,solutions,statut:payload.statut}:s));
       try{await supabase.from("sos_situations").update(payload).eq("id",situModal.item.id);}catch(e){/* échec réseau — reste correct localement */}
     }else{
       const tempId="situ"+Date.now();
-      setSosSituations(prev=>[...prev,{id:tempId,titre:payload.titre,sousTitre:payload.sous_titre,emoji:payload.emoji,etapes,checklist,statut:payload.statut,ordre:payload.ordre}]);
+      setSosSituations(prev=>[...prev,{id:tempId,titre:payload.titre,sousTitre:payload.sous_titre,emoji:payload.emoji,theme:payload.theme,solutions,statut:payload.statut,ordre:payload.ordre}]);
       try{
         const {data:inserted}=await supabase.from("sos_situations").insert(payload).select().single();
         if(inserted)setSosSituations(prev=>prev.map(s=>s.id===tempId?{...s,id:inserted.id}:s));
@@ -11728,7 +11817,7 @@ function AdminSOS({sosLib=[],setSosLib,sosSituations=[],setSosSituations,sosMode
             <span style={{fontSize:12,color:sosModeActif?C.green:C.red,fontWeight:600}}>{sosModeActif?"Actif":"Inactif"}</span>
           </div>
           <button style={s.btn("#ef4444")} onClick={()=>{
-            if(tab==="situations"){setSituForm({titre:"",sousTitre:"",emoji:"🧩",etapesStr:"",checklistStr:"",statut:"published"});setSituModal({mode:"add"});}
+            if(tab==="situations"){setSituForm({titre:"",sousTitre:"",emoji:"🧩",theme:"",statut:"published",solutions:[emptySolution()]});setSituModal({mode:"add"});}
             else{setForm({titre:"",desc:"",duree:"",age:"",materiel:"",statut:"published"});setModal({mode:"add"});}
           }}>{tab==="situations"?"+ Ajouter une situation":"+ Ajouter une activité"}</button>
         </div>
@@ -11846,19 +11935,19 @@ function AdminSOS({sosLib=[],setSosLib,sosSituations=[],setSosSituations,sosMode
       </div>
       <div style={{...s.card,padding:0,overflow:"hidden"}}>
         <table style={{width:"100%",borderCollapse:"collapse"}}>
-          <thead><tr style={{background:"#0d1117"}}>{["Situation","Étapes","Checklist","Statut","Actions"].map(h=><th key={h} style={{padding:"10px 16px",textAlign:"left",fontSize:11,color:C.muted,fontWeight:600,textTransform:"uppercase"}}>{h}</th>)}</tr></thead>
+          <thead><tr style={{background:"#0d1117"}}>{["Situation","Thème","Solutions","Statut","Actions"].map(h=><th key={h} style={{padding:"10px 16px",textAlign:"left",fontSize:11,color:C.muted,fontWeight:600,textTransform:"uppercase"}}>{h}</th>)}</tr></thead>
           <tbody>{[...sosSituations].sort((a,b)=>(a.ordre||0)-(b.ordre||0)).map(si=>(
             <tr key={si.id} style={{borderTop:`1px solid ${C.border}`,opacity:si.statut==="draft"?0.6:1}}>
               <td style={{padding:"12px 16px"}}>
                 <p style={{margin:"0 0 3px",fontSize:13,fontWeight:600,color:C.text}}>{si.emoji} {si.titre}</p>
                 <p style={{margin:0,fontSize:11,color:C.muted,maxWidth:280,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{si.sousTitre}</p>
               </td>
-              <td style={{padding:"12px 16px",fontSize:12,color:C.muted}}>{(si.etapes||[]).length} étape{(si.etapes||[]).length>1?"s":""}</td>
-              <td style={{padding:"12px 16px",fontSize:12,color:C.muted}}>{(si.checklist||[]).length} action{(si.checklist||[]).length>1?"s":""}</td>
+              <td style={{padding:"12px 16px"}}>{si.theme?<span style={s.badge("rgba(139,92,246,0.15)","#c4b5fd")}>{si.theme}</span>:<span style={{fontSize:12,color:C.muted}}>—</span>}</td>
+              <td style={{padding:"12px 16px",fontSize:12,color:C.muted}}>{(si.solutions||[]).length} approche{(si.solutions||[]).length>1?"s":""}</td>
               <td style={{padding:"12px 16px"}}>{statutBadge(si.statut)}</td>
               <td style={{padding:"12px 16px"}}>
                 <div style={{display:"flex",gap:6}}>
-                  <button style={s.btnOutline("#ef4444")} onClick={()=>{setSituForm({titre:si.titre,sousTitre:si.sousTitre||"",emoji:si.emoji||"🧩",etapesStr:(si.etapes||[]).join("\n"),checklistStr:(si.checklist||[]).join("\n"),statut:si.statut,ordre:si.ordre});setSituModal({mode:"edit",item:si});}}>✏️</button>
+                  <button style={s.btnOutline("#ef4444")} onClick={()=>{setSituForm({titre:si.titre,sousTitre:si.sousTitre||"",emoji:si.emoji||"🧩",theme:si.theme||"",statut:si.statut,ordre:si.ordre,solutions:(si.solutions&&si.solutions.length>0)?si.solutions.map(sol=>({label:sol.label||"",etapesStr:(sol.etapes||[]).join("\n"),checklistStr:(sol.checklist||[]).join("\n")})):[emptySolution()]});setSituModal({mode:"edit",item:si});}}>✏️</button>
                   <button style={s.btnOutline(si.statut==="published"?C.yellow:C.green)} onClick={()=>toggleStatutSituation(si)}>{si.statut==="published"?"📝":"✅"}</button>
                   <button style={s.btnOutline(C.red)} onClick={()=>supprimerSituation(si)}>🗑️</button>
                 </div>
@@ -11870,15 +11959,35 @@ function AdminSOS({sosLib=[],setSosLib,sosSituations=[],setSosSituations,sosMode
       </div>
 
       {situModal&&(
-        <Modal title={situModal.mode==="edit"?"Modifier la situation":"Nouvelle situation"} onClose={()=>setSituModal(null)} width={580}>
-          <div style={{background:"rgba(139,92,246,0.06)",borderRadius:10,padding:"10px 14px",marginBottom:16,display:"flex",gap:8}}><span>💡</span><p style={{margin:0,fontSize:12,color:"#c4b5fd"}}>Une étape par ligne pour le script, une action par ligne pour la checklist. Les deux sont optionnels, mais au moins un des deux est recommandé.</p></div>
+        <Modal title={situModal.mode==="edit"?"Modifier la situation":"Nouvelle situation"} onClose={()=>setSituModal(null)} width={620}>
+          <div style={{background:"rgba(139,92,246,0.06)",borderRadius:10,padding:"10px 14px",marginBottom:16,display:"flex",gap:8}}><span>💡</span><p style={{margin:0,fontSize:12,color:"#c4b5fd"}}>Regroupe plusieurs situations proches sous un même thème (ex: "Sommeil"), et propose plusieurs approches différentes si tu en as — les familles choisiront celle qui leur parle le plus.</p></div>
           <div style={{display:"grid",gridTemplateColumns:"60px 1fr",gap:12}}>
             <AdminField label="Emoji"><input style={{...s.input,textAlign:"center",fontSize:20}} value={situForm.emoji} onChange={e=>setSituForm({...situForm,emoji:e.target.value})}/></AdminField>
-            <AdminField label="Titre de la situation *"><input style={s.input} value={situForm.titre} onChange={e=>setSituForm({...situForm,titre:e.target.value})} placeholder="Ex : Difficulté à quitter un lieu"/></AdminField>
+            <AdminField label="Titre de la situation *"><input style={s.input} value={situForm.titre} onChange={e=>setSituForm({...situForm,titre:e.target.value})} placeholder="Ex : Peur du noir"/></AdminField>
           </div>
-          <AdminField label="Sous-titre (description courte)"><input style={s.input} value={situForm.sousTitre} onChange={e=>setSituForm({...situForm,sousTitre:e.target.value})} placeholder="Ex : Il refuse de partir, crise au moment de partir"/></AdminField>
-          <AdminField label="Script étape par étape (une étape par ligne)"><textarea style={{...s.input,minHeight:120,resize:"vertical"}} value={situForm.etapesStr} onChange={e=>setSituForm({...situForm,etapesStr:e.target.value})} placeholder={"Annonce le départ à l'avance...\nUtilise un minuteur visuel...\nPropose un choix limité..."}/></AdminField>
-          <AdminField label="Checklist rapide (une action par ligne)"><textarea style={{...s.input,minHeight:90,resize:"vertical"}} value={situForm.checklistStr} onChange={e=>setSituForm({...situForm,checklistStr:e.target.value})} placeholder={"Prévenir 5-10 min avant\nUtiliser un minuteur visuel\n..."}/></AdminField>
+          <AdminField label="Sous-titre (description courte)"><input style={s.input} value={situForm.sousTitre} onChange={e=>setSituForm({...situForm,sousTitre:e.target.value})} placeholder="Ex : Refuse de dormir sans lumière, angoisse au coucher"/></AdminField>
+          <AdminField label="Thème (optionnel — regroupe plusieurs situations, ex: Sommeil)">
+            <input style={s.input} list="themes-existants" value={situForm.theme} onChange={e=>setSituForm({...situForm,theme:e.target.value})} placeholder="Ex : Sommeil, Alimentation, Émotions..."/>
+            <datalist id="themes-existants">{themesExistants.map(t=><option key={t} value={t}/>)}</datalist>
+          </AdminField>
+
+          <div style={{borderTop:`1px solid ${C.border}`,paddingTop:14,marginTop:6}}>
+            <p style={{margin:"0 0 4px",fontSize:13,fontWeight:800,color:C.text}}>Solutions / approches proposées</p>
+            <p style={{margin:"0 0 12px",fontSize:11,color:C.muted}}>Ajoute une ou plusieurs approches. S'il n'y en a qu'une, elle s'affiche directement. S'il y en a plusieurs, la famille choisit celle qu'elle veut essayer.</p>
+            {situForm.solutions.map((sol,i)=>(
+              <div key={i} style={{background:"rgba(255,255,255,0.03)",border:`1px solid ${C.border}`,borderRadius:12,padding:14,marginBottom:12}}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
+                  <p style={{margin:0,fontSize:12,fontWeight:700,color:"#c4b5fd"}}>Approche {i+1}</p>
+                  {situForm.solutions.length>1&&<button onClick={()=>setSituForm(p=>({...p,solutions:p.solutions.filter((_,j)=>j!==i)}))} style={{background:"none",border:"none",color:C.red,cursor:"pointer",fontSize:12}}>🗑️ Retirer</button>}
+                </div>
+                <AdminField label="Nom de l'approche (si plusieurs solutions)"><input style={s.input} value={sol.label} onChange={e=>setSituForm(p=>({...p,solutions:p.solutions.map((x,j)=>j===i?{...x,label:e.target.value}:x)}))} placeholder="Ex : Le gardien de la nuit"/></AdminField>
+                <AdminField label="Script étape par étape (une étape par ligne)"><textarea style={{...s.input,minHeight:90,resize:"vertical"}} value={sol.etapesStr} onChange={e=>setSituForm(p=>({...p,solutions:p.solutions.map((x,j)=>j===i?{...x,etapesStr:e.target.value}:x)}))} placeholder={"Choisissez ensemble un doudou gardien...\nInstaurez un rituel de ronde..."}/></AdminField>
+                <AdminField label="Checklist rapide (une action par ligne)"><textarea style={{...s.input,minHeight:70,resize:"vertical"}} value={sol.checklistStr} onChange={e=>setSituForm(p=>({...p,solutions:p.solutions.map((x,j)=>j===i?{...x,checklistStr:e.target.value}:x)}))} placeholder={"Choisir un objet gardien\nRituel avant coucher"}/></AdminField>
+              </div>
+            ))}
+            <button onClick={()=>setSituForm(p=>({...p,solutions:[...p.solutions,emptySolution()]}))} style={{...s.btnOutline("#c4b5fd"),width:"100%",marginBottom:16}}>+ Ajouter une autre approche</button>
+          </div>
+
           <AdminField label="Statut"><select style={s.input} value={situForm.statut} onChange={e=>setSituForm({...situForm,statut:e.target.value})}><option value="published">Publié</option><option value="draft">Brouillon</option></select></AdminField>
           <div style={{display:"flex",justifyContent:"flex-end",gap:8,marginTop:4}}>
             <button style={s.btnOutline(C.muted)} onClick={()=>setSituModal(null)}>Annuler</button>
@@ -12674,15 +12783,21 @@ export default function App(){
   ]);
   const [sosModeActif,setSosModeActif]=useState(true);
   const [sosSituations,setSosSituations]=useState([
-    {id:"situ1",titre:"Difficulté à quitter un lieu",sousTitre:"Il refuse de partir, crise au moment de partir",emoji:"🚪",statut:"published",ordre:1,
-      etapes:["Annonce le départ à l'avance (\"Dans 5 minutes on part\"), pas au dernier moment.","Utilise un minuteur visuel ou une chanson de transition pour rendre le compte à rebours concret.","Propose un choix limité plutôt qu'un ordre : \"Tu veux partir en marchant ou en sautant comme une grenouille ?\"","Reste calme et ferme, sans négocier indéfiniment — répète la même phrase courte si besoin.","Si la crise éclate, accompagne sans forcer physiquement sauf danger réel : attends que l'intensité redescende avant de reprendre le départ."],
-      checklist:["Prévenir 5-10 min avant","Utiliser un minuteur visuel","Proposer un choix, pas un ordre","Garder une phrase de transition fixe et répétée","Rester calme, ne pas négocier en boucle"]},
-    {id:"situ2",titre:"Difficulté avec les transitions",sousTitre:"Passer d'une activité à une autre est un vrai combat",emoji:"🔄",statut:"published",ordre:2,
-      etapes:["Annonce la transition à venir plusieurs minutes avant qu'elle n'arrive.","Utilise toujours le même signal (mot, chanson, minuteur) pour que l'enfant l'associe à \"changement à venir\".","Termine l'activité en cours par une étape claire et courte (\"encore 2 tours puis on range\") plutôt que brutalement.","Implique l'enfant dans la transition : lui faire ranger, compter à rebours avec toi.","Valide ce qu'il ressent (\"je vois que c'est dur d'arrêter\") avant de passer à la suite."],
-      checklist:["Prévenir plusieurs minutes avant","Toujours le même signal de transition","Terminer l'activité en cours proprement, pas brutalement","Impliquer l'enfant dans le changement","Nommer ce qu'il ressent"]},
-    {id:"situ3",titre:"Refus de s'habiller ou se laver",sousTitre:"Chaque matin/soir devient un conflit",emoji:"🧦",statut:"published",ordre:3,
-      etapes:["Réduis le nombre de choix pour éviter la surcharge décisionnelle : propose 2 tenues, pas toute l'armoire.","Vérifie l'inconfort sensoriel réel (étiquette qui gratte, matière, température de l'eau) avant de penser à un refus \"de principe\".","Transforme l'étape en jeu ou chrono ludique plutôt qu'en ordre direct.","Anticipe en préparant la tenue la veille avec l'enfant, pour réduire la charge mentale du matin.","Accepte de petites victoires imparfaites (habillé mais dépareillé) plutôt qu'un conflit total."],
-      checklist:["Limiter les choix à 2 options","Vérifier l'inconfort sensoriel (étiquettes, matière)","Préparer la tenue la veille","En faire un jeu/chrono","Accepter les petites victoires imparfaites"]},
+    {id:"situ1",titre:"Difficulté à quitter un lieu",sousTitre:"Il refuse de partir, crise au moment de partir",emoji:"🚪",theme:null,statut:"published",ordre:1,
+      solutions:[{label:"Solution",etapes:["Annonce le départ à l'avance (\"Dans 5 minutes on part\"), pas au dernier moment.","Utilise un minuteur visuel ou une chanson de transition pour rendre le compte à rebours concret.","Propose un choix limité plutôt qu'un ordre : \"Tu veux partir en marchant ou en sautant comme une grenouille ?\"","Reste calme et ferme, sans négocier indéfiniment — répète la même phrase courte si besoin.","Si la crise éclate, accompagne sans forcer physiquement sauf danger réel : attends que l'intensité redescende avant de reprendre le départ."],
+      checklist:["Prévenir 5-10 min avant","Utiliser un minuteur visuel","Proposer un choix, pas un ordre","Garder une phrase de transition fixe et répétée","Rester calme, ne pas négocier en boucle"]}]},
+    {id:"situ2",titre:"Difficulté avec les transitions",sousTitre:"Passer d'une activité à une autre est un vrai combat",emoji:"🔄",theme:null,statut:"published",ordre:2,
+      solutions:[{label:"Solution",etapes:["Annonce la transition à venir plusieurs minutes avant qu'elle n'arrive.","Utilise toujours le même signal (mot, chanson, minuteur) pour que l'enfant l'associe à \"changement à venir\".","Termine l'activité en cours par une étape claire et courte (\"encore 2 tours puis on range\") plutôt que brutalement.","Implique l'enfant dans la transition : lui faire ranger, compter à rebours avec toi.","Valide ce qu'il ressent (\"je vois que c'est dur d'arrêter\") avant de passer à la suite."],
+      checklist:["Prévenir plusieurs minutes avant","Toujours le même signal de transition","Terminer l'activité en cours proprement, pas brutalement","Impliquer l'enfant dans le changement","Nommer ce qu'il ressent"]}]},
+    {id:"situ3",titre:"Refus de s'habiller ou se laver",sousTitre:"Chaque matin/soir devient un conflit",emoji:"🧦",theme:null,statut:"published",ordre:3,
+      solutions:[{label:"Solution",etapes:["Réduis le nombre de choix pour éviter la surcharge décisionnelle : propose 2 tenues, pas toute l'armoire.","Vérifie l'inconfort sensoriel réel (étiquette qui gratte, matière, température de l'eau) avant de penser à un refus \"de principe\".","Transforme l'étape en jeu ou chrono ludique plutôt qu'en ordre direct.","Anticipe en préparant la tenue la veille avec l'enfant, pour réduire la charge mentale du matin.","Accepte de petites victoires imparfaites (habillé mais dépareillé) plutôt qu'un conflit total."],
+      checklist:["Limiter les choix à 2 options","Vérifier l'inconfort sensoriel (étiquettes, matière)","Préparer la tenue la veille","En faire un jeu/chrono","Accepter les petites victoires imparfaites"]}]},
+    {id:"situ4",titre:"Peur du noir",sousTitre:"Refuse de dormir sans lumière, angoisse au coucher",emoji:"😴",theme:"Sommeil",statut:"published",ordre:4,
+      solutions:[
+        {label:"🛡️ Le gardien de la nuit",etapes:["Choisissez ensemble un doudou ou objet \"gardien\" dont le rôle est de veiller pendant la nuit.","Instaurez un petit rituel : le gardien \"fait sa ronde\" dans la chambre avant le coucher.","Rassurez verbalement en nommant le rôle du gardien à chaque soir, toujours avec les mêmes mots.","Laissez l'enfant garder le gardien contre lui toute la nuit."],checklist:["Choisir un objet gardien dédié","Rituel de ronde avant le coucher","Phrase de réassurance fixe chaque soir"]},
+        {label:"💡 Lumière progressive", etapes:["Installez une veilleuse à intensité réglable dans la chambre.","Les premiers soirs, laissez-la à pleine intensité sans négocier.","Chaque semaine, baissez légèrement l'intensité avec l'accord de l'enfant.","Valorisez chaque palier franchi (\"Tu as réussi avec la lumière un peu moins forte !\")."],checklist:["Installer une veilleuse réglable","Baisser progressivement, jamais d'un coup","Valoriser chaque étape franchie"]},
+        {label:"📖 Histoire du noir apprivoisé",etapes:["Lisez ensemble une histoire où le noir devient un ami plutôt qu'une menace.","Après la lecture, demandez à l'enfant de dessiner \"son\" noir à lui.","Accrochez le dessin près du lit comme rappel rassurant.","Répétez ce rituel plusieurs soirs de suite pour l'ancrer."],checklist:["Lire une histoire positive sur le noir","Faire dessiner \"son\" noir","Accrocher le dessin près du lit"]},
+      ]},
   ]);
   const [customCatActivites,setCustomCatActivites]=useState([]); // [{label,emoji}]
   const [customCatSorties,setCustomCatSorties]=useState([]); // [{label,emoji}]
@@ -12844,8 +12959,9 @@ export default function App(){
       try{
         const {data}=await supabase.from("sos_situations").select("*").order("ordre",{ascending:true});
         if(data&&data.length>0)setSosSituations(data.map(s=>({
-          id:s.id,titre:s.titre,sousTitre:s.sous_titre,emoji:s.emoji||"🧩",
-          etapes:s.etapes||[],checklist:s.checklist||[],statut:s.statut,ordre:s.ordre||0,
+          id:s.id,titre:s.titre,sousTitre:s.sous_titre,emoji:s.emoji||"🧩",theme:s.theme||null,
+          solutions:(s.solutions&&s.solutions.length>0)?s.solutions:(((s.etapes&&s.etapes.length>0)||(s.checklist&&s.checklist.length>0))?[{label:"Solution",etapes:s.etapes||[],checklist:s.checklist||[]}]:[]),
+          statut:s.statut,ordre:s.ordre||0,
         })));
       }catch(e){ /* erreur réseau — reste sur les situations par défaut */ }
     })();

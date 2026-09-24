@@ -12377,6 +12377,48 @@ export default function App(){
   useScheduler(setAdminActivites);
   useScheduler(setAdminSorties);
   useScheduler(setAdminEvenements);
+  // ── Récupération des activités/sorties/événements admin déjà réellement enregistrées dans Supabase
+  // (communaute=false ou non renseigné) mais jamais rechargées jusqu'ici ──
+  useEffect(()=>{
+    (async()=>{
+      try{
+        const [{data:actsAdmin},{data:sortsAdmin},{data:evtsAdmin}]=await Promise.all([
+          supabase.from("activites").select("*").or("communaute.eq.false,communaute.is.null"),
+          supabase.from("sorties").select("*").or("communaute.eq.false,communaute.is.null"),
+          supabase.from("evenements").select("*").or("communaute.eq.false,communaute.is.null"),
+        ]);
+        if(actsAdmin&&actsAdmin.length>0)setAdminActivites(prev=>{
+          const dejaPresent=new Set(prev.map(a=>String(a.nom||a.titre||"").toLowerCase()));
+          const nouveaux=actsAdmin.filter(a=>!dejaPresent.has(String(a.nom||"").toLowerCase())).map(a=>({
+            id:a.id,nom:a.nom,titre:a.nom,categorie:a.categorie,lieu:a.lieu,energie:a.energie,age:a.age,duree:a.duree,
+            difficulte:a.difficulte,materiel:a.materiel||[],materielLiens:a.materiel_liens||{},etapes:a.etapes||[],
+            desc:a.description,photo:a.photo,niveauxSensoriels:a.niveaux_sensoriels,profilsTND:a.profils_tnd,
+            adaptations:a.adaptations||[],caracteristiques:a.caracteristiques,commentaireTND:a.commentaire_tnd,
+            pointsAnticiper:a.points_anticiper||[],statut:a.statut||"published",
+          }));
+          return nouveaux.length>0?[...prev,...nouveaux]:prev;
+        });
+        if(sortsAdmin&&sortsAdmin.length>0)setAdminSorties(prev=>{
+          const dejaPresent=new Set(prev.map(s=>String(s.nom||s.titre||"").toLowerCase()));
+          const nouveaux=sortsAdmin.filter(s=>!dejaPresent.has(String(s.nom||"").toLowerCase())).map(s=>({
+            id:s.id,nom:s.nom,titre:s.nom,type:s.type,dept:s.dept,ville:s.ville,prix:s.prix,horaires:s.horaires,
+            desc:s.description,photo:s.photo,tnd:s.tnd,accessibilite:s.accessibilite,commentaireTND:s.commentaire_tnd,
+            statut:s.statut||"published",
+          }));
+          return nouveaux.length>0?[...prev,...nouveaux]:prev;
+        });
+        if(evtsAdmin&&evtsAdmin.length>0)setAdminEvenements(prev=>{
+          const dejaPresent=new Set(prev.map(e=>String(e.nom||e.titre||"").toLowerCase()));
+          const nouveaux=evtsAdmin.filter(e=>!dejaPresent.has(String(e.nom||"").toLowerCase())).map(e=>({
+            id:e.id,nom:e.nom,titre:e.nom,categorie:e.categorie,ville:e.ville,dept:e.dept,date:e.date,prix:e.prix,
+            gratuit:e.gratuit,age:e.age,dates:e.dates,photo:e.photo,adresse:e.adresse,commentaireTND:e.commentaire_tnd,tnd:e.tnd,
+            statut:e.statut||"published",
+          }));
+          return nouveaux.length>0?[...prev,...nouveaux]:prev;
+        });
+      }catch(e){ /* erreur réseau — reste sur ce qui est déjà en mémoire/partagé */ }
+    })();
+  },[]);
   const [adminReports,setAdminReports]=useState([]);
   const [deletedTitles,setDeletedTitles]=useState(new Set());
   const [customEvents,setCustomEvents]=useState([]);

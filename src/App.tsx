@@ -8485,13 +8485,13 @@ function Activites({sharedActivites,setSharedActivites,customCatActivites=[],pen
     if(!window.confirm(`Retirer définitivement "${item.titre||item.nom}" de la bibliothèque ?`))return;
     if(setPendingContribs)setPendingContribs(prev=>prev.filter(c=>c.id!==item.id));
     const nomItem=item.nom||item.titre;
-    supabase.from("activites").delete().eq("nom",nomItem).then(()=>{},()=>{});
+    supabase.from("activites").delete().eq("nom",nomItem).then(({error})=>{if(error)alert("Erreur Supabase (suppression) : "+error.message);});
   };
   const syncItems=(newItems)=>{
     const supprime=items.find(old=>!newItems.some(n=>n.id===old.id));
     if(supprime&&!MOCK_IDS.has(supprime.id)){
       const nomItem=supprime.nom||supprime.titre;
-      supabase.from("activites").delete().eq("nom",nomItem).then(()=>{},()=>{});
+      supabase.from("activites").delete().eq("nom",nomItem).then(({error})=>{if(error)alert("Erreur Supabase (suppression) : "+error.message);});
     }
     setItems(newItems);
     if(setSharedActivites){

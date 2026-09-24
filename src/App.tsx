@@ -9017,11 +9017,20 @@ function BiblioNoel({onBack,sharedActivites=[],setSharedActivites,amazonTag=""})
   useScheduler(setActivites,syncActivites);
   const [modal,setModal] = useState(null);
   const [previewActivite,setPreviewActivite] = useState(null);
-  const [form,setForm] = useState({titre:"",categorie:"",lieu:"",energie:"",duree:"",difficulte:"",ageMin:"",ageMax:"",desc:"",materiel:"",etapes:"",premium:false,statut:"draft"});
+  const emptyFormNoel={titre:"",categorie:"",lieu:"",energie:"",duree:"",difficulte:"",ageMin:"",ageMax:"",desc:"",materielStr:"",materielLiens:{},etapes:"",premium:false,statut:"draft"};
+  const [form,setForm] = useState(emptyFormNoel);
   const save = () => {
     if(!form.titre) return;
-    if(modal?.mode==="edit") syncActivites(activites.map(a=>a.id===modal.item.id?{...a,...form}:a));
-    else syncActivites([...activites,{id:"n"+Date.now(),...form}]);
+    const age=(form.ageMin&&form.ageMax)?form.ageMin.replace(" an","").replace(" ans","")+" - "+form.ageMax.replace(" an","").replace(" ans","")+" ans":form.ageMin||form.ageMax||"Tous ages";
+    const normalized={
+      ...form,
+      age,
+      materiel:form.materielStr?form.materielStr.split(",").map(m=>m.trim()).filter(Boolean):[],
+      materielLiens:form.materielLiens||{},
+      etapes:form.etapes?String(form.etapes).split("\n").map(s=>s.trim()).filter(Boolean):[],
+    };
+    if(modal?.mode==="edit") syncActivites(activites.map(a=>a.id===modal.item.id?{...a,...normalized}:a));
+    else syncActivites([...activites,{id:"n"+Date.now(),...normalized}]);
     setModal(null);
   };
   return(
@@ -9032,7 +9041,7 @@ function BiblioNoel({onBack,sharedActivites=[],setSharedActivites,amazonTag=""})
           <h1 style={{fontSize:22,fontWeight:800,color:C.text,margin:0}}>🎄 Bibliothèque Noël</h1>
           <p style={{fontSize:13,color:C.muted,margin:"4px 0 0"}}>Activités dédiées à l'événement Noël</p>
         </div>
-        <button style={{...s.btn("#10b981"),marginLeft:"auto"}} onClick={()=>{setForm({titre:"",categorie:"",lieu:"",energie:"",duree:"",difficulte:"",ageMin:"",ageMax:"",desc:"",materiel:"",etapes:"",premium:false,statut:"draft"});setModal({mode:"add"});}}>+ Ajouter une activité</button>
+        <button style={{...s.btn("#10b981"),marginLeft:"auto"}} onClick={()=>{setForm(emptyFormNoel);setModal({mode:"add"});}}>+ Ajouter une activité</button>
       </div>
 
       {/* Stats */}
@@ -9062,7 +9071,7 @@ function BiblioNoel({onBack,sharedActivites=[],setSharedActivites,amazonTag=""})
               <td style={{padding:"12px 16px"}}>{statutBadge(a.statut)}</td>
               <td style={{padding:"12px 16px"}}>
                 <div style={{display:"flex",gap:6}}>
-                  <button style={s.btnOutline(C.accent)} onClick={()=>{setForm({...a});setModal({mode:"edit",item:a});}}>✏️</button>
+                  <button style={s.btnOutline(C.accent)} onClick={()=>{setForm({...a,materielStr:a.materielStr||(Array.isArray(a.materiel)?a.materiel.join(", "):(a.materiel||"")),etapes:Array.isArray(a.etapes)?a.etapes.join("\n"):(a.etapes||"")});setModal({mode:"edit",item:a});}}>✏️</button>
                   {a.statut==="draft"&&<button style={s.btnOutline(C.green)} onClick={()=>syncActivites(activites.map(x=>x.id===a.id?{...x,statut:"published"}:x))}>✅</button>}
                   {a.statut==="published"&&<button style={s.btnOutline(C.yellow)} onClick={()=>syncActivites(activites.map(x=>x.id===a.id?{...x,statut:"draft"}:x))}>📝</button>}
                   <button style={s.btnOutline(C.red)} onClick={()=>syncActivites(activites.filter(x=>x.id!==a.id))}>🗑️</button>
@@ -9113,30 +9122,24 @@ function BiblioNoel({onBack,sharedActivites=[],setSharedActivites,amazonTag=""})
               <select style={{...s.input,flex:1}} value={form.ageMax||""} onChange={e=>setForm({...form,ageMax:e.target.value})}><option value="">À...</option>{["1 an","2 ans","3 ans","4 ans","5 ans","6 ans","7 ans","8 ans","9 ans","10 ans","11 ans","12 ans","12 ans+"].map(v=><option key={v}>{v}</option>)}</select>
             </div>
           </AdminField>
-          <AdminField label="Matériel nécessaire"><input style={s.input} value={form.materiel||""} onChange={e=>setForm({...form,materiel:e.target.value})} placeholder="Ex : colle, paillettes, branches de sapin"/></AdminField>
+          <AdminField label="Matériel nécessaire"><input style={s.input} value={form.materielStr||""} onChange={e=>setForm({...form,materielStr:e.target.value})} placeholder="Ex : colle, paillettes, branches de sapin"/></AdminField>
+          {(()=>{
+            const noms=(form.materielStr||"").split(",").map(m=>m.trim()).filter(Boolean);
+            if(noms.length===0)return null;
+            return (
+              <AdminField label="🛒 Lien Amazon précis (optionnel)">
+                <p style={{margin:"0 0 8px",fontSize:11,color:C.muted}}>Laisse vide pour un lien de recherche automatique.</p>
+                {noms.map(nom=>(
+                  <div key={nom} style={{marginBottom:8}}>
+                    <label style={{display:"block",fontSize:11,color:C.muted,marginBottom:3}}>{nom}</label>
+                    <input style={s.input} value={(form.materielLiens||{})[nom]||""} onChange={e=>setForm(p=>({...p,materielLiens:{...(p.materielLiens||{}),[nom]:e.target.value}}))} placeholder="https://www.amazon.fr/dp/..."/>
+                  </div>
+                ))}
+              </AdminField>
+            );
+          })()}
           <AdminField label="Étapes"><textarea style={{...s.input,minHeight:80,resize:"vertical"}} value={form.etapes||""} onChange={e=>setForm({...form,etapes:e.target.value})} placeholder="1. Préparer le matériel&#10;2. ..."/></AdminField>
-
-          {/* Accessibilité */}
-          <div style={{borderTop:`1px solid ${C.border}`,paddingTop:16,marginTop:4}}>
-            <p style={{margin:"0 0 8px",fontSize:13,fontWeight:700,color:"#3b82f6"}}>♿ Mobilité réduite PMR</p>
-            <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:14}}>
-              {[["pmr_fauteuil","Accès fauteuil"],["pmr_escaliers","Sans escaliers"],["pmr_parking","Parking PMR"],["pmr_toilettes","Toilettes adaptées"],["pmr_personnel","Personnel formé"],["pmr_chemin","Chemin accessible"]].map(([k,l])=>(<div key={k} onClick={()=>tf(k)} style={chkStyle(!!form[k])}><span style={{fontSize:14}}>{form[k]?"☑":"☐"}</span>{l}</div>))}
-            </div>
-            <p style={{margin:"0 0 4px",fontSize:13,fontWeight:700,color:"#a78bfa"}}>🧩 Troubles du neurodéveloppement TND</p>
-            <p style={{margin:"0 0 10px",fontSize:11,color:C.muted}}>Ces infos aident les familles TND</p>
-            <p style={{margin:"0 0 6px",fontSize:12,fontWeight:600,color:"#8b5cf6"}}>TSA Autisme</p>
-            <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:10}}>
-              {[["tsa_foule","Peu de foule"],["tsa_calme","Env calme"],["tsa_lumiere","Lumière douce"],["tsa_retrait","Espace retrait"],["tsa_bruit","Peu de bruit"],["tsa_personnel","Personnel TSA"]].map(([k,l])=>(<div key={k} onClick={()=>tf(k)} style={chkStyle(!!form[k])}><span style={{fontSize:14}}>{form[k]?"☑":"☐"}</span>{l}</div>))}
-            </div>
-            <p style={{margin:"0 0 6px",fontSize:12,fontWeight:600,color:"#ec4899"}}>TDAH</p>
-            <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:10}}>
-              {[["tdah_espace","Grand espace"],["tdah_physique","Activité physique"],["tdah_attente","Peu attente"],["tdah_stimulation","Stimulation variée"]].map(([k,l])=>(<div key={k} onClick={()=>tf(k)} style={chkStyle(!!form[k])}><span style={{fontSize:14}}>{form[k]?"☑":"☐"}</span>{l}</div>))}
-            </div>
-            <p style={{margin:"0 0 6px",fontSize:12,fontWeight:600,color:"#06b6d4"}}>DYS</p>
-            <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:14}}>
-              {[["dys_visuels","Supports visuels"],["dys_nonecrite","Non écrite"],["dys_rythme","Rythme libre"],["dys_personnel","Personnel DYS"]].map(([k,l])=>(<div key={k} onClick={()=>tf(k)} style={chkStyle(!!form[k])}><span style={{fontSize:14}}>{form[k]?"☑":"☐"}</span>{l}</div>))}
-            </div>
-          </div>
+          <ChampsActiviteRiche form={form} setForm={setForm}/>
 
           {/* Note enfants */}
           <div style={{background:"rgba(245,158,11,0.08)",borderRadius:10,padding:"10px 14px",marginBottom:14,display:"flex",gap:8,alignItems:"center"}}>
@@ -12955,7 +12958,7 @@ export default function App(){
     if(!dataLoaded)return;
     const timer=setTimeout(()=>{
       sauvegarderPartagé({ideesMomentConfig,sosModeActif,pendingContribs,deletedTitles:[...deletedTitles],adminReports,customCatActivites,customCatSorties,customCatEvenements,adminActivites,adminSorties,adminEvenements,sosLib,devisBoostDemandes,boosts,ressourcesSites,ressourcesContacts,ressourcesPdf});
-    },2000);
+    },400);
     return()=>clearTimeout(timer);
   },[ideesMomentConfig,sosModeActif,pendingContribs,deletedTitles,adminReports,customCatActivites,customCatSorties,customCatEvenements,adminActivites,adminSorties,adminEvenements,sosLib,devisBoostDemandes,boosts,ressourcesSites,ressourcesContacts,ressourcesPdf,dataLoaded]);
 

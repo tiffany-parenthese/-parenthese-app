@@ -3373,7 +3373,7 @@ const materielListe=(a)=>Array.isArray(a.materiel)?a.materiel:(a.materiel?String
 
 // ── Génère plusieurs activités d'un coup depuis la bibliothèque d'un événement, + liste de courses ──
 // Utilisé côté admin (fiche événement) et côté familles (page de l'événement).
-function GenerateurPlusieursActivites({evt,activites=[],favoris=[],setFavoris,readOnly=false}){
+function GenerateurPlusieursActivites({evt,activites=[],favoris=[],setFavoris,readOnly=false,amazonTag=""}){
   const publiees=activites.filter(a=>a.statut==="published"||!a.statut);
   const [count,setCount]=useState(Math.min(3,publiees.length||3));
   const [selection,setSelection]=useState([]);
@@ -3385,6 +3385,12 @@ function GenerateurPlusieursActivites({evt,activites=[],favoris=[],setFavoris,re
   };
   const allMateriel=[...new Set(selection.flatMap(materielListe))];
   const grouped=regrouperMateriel(allMateriel);
+  const materielLiensCombines=selection.reduce((acc,a)=>({...acc,...(a.materielLiens||{})}),{});
+  const lienAmazon=(m)=>{
+    const precis=materielLiensCombines[m];
+    if(precis)return precis;
+    return"https://www.amazon.fr/s?k="+encodeURIComponent(m)+(amazonTag?"&tag="+encodeURIComponent(amazonTag):"");
+  };
   const totalItems=allMateriel.length;
   const checkedCount=Object.values(checkedMat).filter(Boolean).length;
   const pct=totalItems>0?Math.round(checkedCount/totalItems*100):0;
@@ -3435,9 +3441,10 @@ function GenerateurPlusieursActivites({evt,activites=[],favoris=[],setFavoris,re
               <div key={ri} style={{marginBottom:8}}>
                 <p style={{margin:"0 0 4px",fontSize:11,fontWeight:700,color:rayon.color}}>{rayon.label}</p>
                 {rayon.items.map(m=>(
-                  <div key={m} onClick={()=>toggleChecked(m)} style={{display:"flex",alignItems:"center",gap:8,padding:"5px 0",cursor:"pointer"}}>
-                    <span style={{fontSize:14}}>{checkedMat[m]?"☑":"☐"}</span>
-                    <span style={{fontSize:13,color:checkedMat[m]?TM:TX,textDecoration:checkedMat[m]?"line-through":"none"}}>{m}</span>
+                  <div key={m} style={{display:"flex",alignItems:"center",gap:8,padding:"5px 0"}}>
+                    <span onClick={()=>toggleChecked(m)} style={{fontSize:14,cursor:"pointer"}}>{checkedMat[m]?"☑":"☐"}</span>
+                    <span onClick={()=>toggleChecked(m)} style={{fontSize:13,color:checkedMat[m]?TM:TX,textDecoration:checkedMat[m]?"line-through":"none",cursor:"pointer",flex:1}}>{m}</span>
+                    {!checkedMat[m]&&<a href={lienAmazon(m)} target="_blank" rel="noreferrer" onClick={e=>e.stopPropagation()} style={{fontSize:11,color:couleur,textDecoration:"none",background:couleur+"18",padding:"3px 9px",borderRadius:9,flexShrink:0}}>Amazon</a>}
                   </div>
                 ))}
               </div>
@@ -4238,7 +4245,7 @@ function PageAccueil({favoris,setFavoris,setPage,customEvents=[],popupShown=new 
 
                 {/* Plusieurs activités + liste de courses */}
                 {activites.length>0&&(
-                  <GenerateurPlusieursActivites evt={showEvtBiblio} activites={activites} favoris={favoris} setFavoris={setFavorisGuarded}/>
+                  <GenerateurPlusieursActivites evt={showEvtBiblio} activites={activites} favoris={favoris} setFavoris={setFavorisGuarded} amazonTag={amazonTag}/>
                 )}
 
                 {/* Bibliothèque */}
@@ -10052,7 +10059,7 @@ function DetailEvenement({evt,onBack,onSave,onDelete,onArchive,toggleCustom,shar
         </div>
         <p style={{margin:"-8px 0 14px",fontSize:11,color:C.muted}}>Les activités choisies ou créées ici restent propres à cet événement — elles n'apparaissent pas dans la bibliothèque principale.</p>
         {(form.bibliothequeActiv||[]).filter(a=>a.statut==="published").length>0&&(
-          <GenerateurPlusieursActivites evt={form} activites={form.bibliothequeActiv||[]} readOnly/>
+          <GenerateurPlusieursActivites evt={form} activites={form.bibliothequeActiv||[]} readOnly amazonTag={amazonTag}/>
         )}
         {(form.bibliothequeActiv||[]).length===0?(
           <div style={{...s.card,textAlign:"center",padding:"32px 16px"}}><p style={{fontSize:32,margin:"0 0 8px"}}>📚</p><p style={{fontSize:13,color:C.muted}}>Aucune activité dans la bibliothèque</p></div>

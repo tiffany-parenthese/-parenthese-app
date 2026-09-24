@@ -9771,6 +9771,11 @@ function DetailEvenement({evt,onBack,onSave,onDelete,onArchive,toggleCustom,shar
   const [pickerOpen,setPickerOpen]=useState(false);
   const [pickerSearch,setPickerSearch]=useState("");
   const tf=key=>setForm(p=>({...p,[key]:!p[key]}));
+  // Enregistre immédiatement la bibliothèque de l'événement dans Supabase (pas besoin de cliquer "Enregistrer" séparément)
+  const persisterBiblio=(nouvelleListe)=>{
+    setForm(p=>({...p,bibliothequeActiv:nouvelleListe}));
+    if(form.id)supabase.from("custom_events_config").update({bibliotheque_activ:nouvelleListe}).eq("id",form.id).then(()=>{},()=>{});
+  };
   const saveActiv=()=>{
     if(!formActiv.titre)return;
     const biblio=form.bibliothequeActiv||[];
@@ -9783,14 +9788,14 @@ function DetailEvenement({evt,onBack,onSave,onDelete,onArchive,toggleCustom,shar
       materielLiens:formActiv.materielLiens||{},
       etapes:formActiv.etapes?String(formActiv.etapes).split("\n").map(s=>s.trim()).filter(Boolean):[],
     };
-    if(modalActiv?.mode==="edit") setForm(p=>({...p,bibliothequeActiv:biblio.map(a=>a.id===modalActiv.item.id?{...a,...normalized}:a)}));
-    else setForm(p=>({...p,bibliothequeActiv:[...biblio,{id:"a"+Date.now(),...normalized}]}));
+    if(modalActiv?.mode==="edit") persisterBiblio(biblio.map(a=>a.id===modalActiv.item.id?{...a,...normalized}:a));
+    else persisterBiblio([...biblio,{id:"a"+Date.now(),...normalized}]);
     setModalActiv(null);
   };
   const ajouterDepuisBiblio=(a)=>{
     const biblio=form.bibliothequeActiv||[];
     const copie={...a,id:"a"+Date.now()+"_"+Math.random().toString(36).slice(2,7),titre:a.titre||a.nom,statut:a.statut==="published"?"published":"draft",_depuisBiblio:true};
-    setForm(p=>({...p,bibliothequeActiv:[...biblio,copie]}));
+    persisterBiblio([...biblio,copie]);
   };
   const COLORS=["#7c3aed","#10b981","#f59e0b","#f97316","#ef4444","#3b82f6","#ec4899","#06b6d4","#8b5cf6"];
   const EMOJIS=["🎉","🎄","🐣","🎃","☀️","❄️","🌸","🏖️","🎆","🎊","🦃","🎁"];
@@ -9927,14 +9932,14 @@ function DetailEvenement({evt,onBack,onSave,onDelete,onArchive,toggleCustom,shar
             </div>
             <div style={{display:"flex",gap:6}}>
               <button style={s.btnOutline(C.accent)} onClick={()=>{setFormActiv({...a,materielStr:a.materielStr||(Array.isArray(a.materiel)?a.materiel.join(", "):""),etapes:Array.isArray(a.etapes)?a.etapes.join("\n"):(a.etapes||"")});setModalActiv({mode:"edit",item:a});}}>✏️</button>
-              <button style={s.btnOutline(a.statut==="published"?C.yellow:C.green)} onClick={()=>setForm(p=>({...p,bibliothequeActiv:(p.bibliothequeActiv||[]).map(x=>x.id===a.id?{...x,statut:x.statut==="published"?"draft":"published"}:x)}))}>
+              <button style={s.btnOutline(a.statut==="published"?C.yellow:C.green)} onClick={()=>persisterBiblio((form.bibliothequeActiv||[]).map(x=>x.id===a.id?{...x,statut:x.statut==="published"?"draft":"published"}:x))}>
                 {a.statut==="published"?"📝":"✅"}
               </button>
-              <button style={s.btnOutline(C.red)} onClick={()=>setForm(p=>({...p,bibliothequeActiv:(p.bibliothequeActiv||[]).filter(x=>x.id!==a.id)}))}>🗑️</button>
+              <button style={s.btnOutline(C.red)} onClick={()=>persisterBiblio((form.bibliothequeActiv||[]).filter(x=>x.id!==a.id))}>🗑️</button>
             </div>
           </div>
         ))}
-        {(form.bibliothequeActiv||[]).length>0&&<button style={{...s.btn(C.accent),width:"100%",justifyContent:"center",marginTop:8}} onClick={()=>onSave(form)}>✅ Enregistrer</button>}
+        <p style={{margin:"8px 0 0",fontSize:11,color:C.muted,textAlign:"center"}}>✓ Chaque ajout, modification ou suppression ici est enregistré immédiatement.</p>
         {modalActiv&&<Modal title={modalActiv.mode==="edit"?"Modifier l'activité":"Nouvelle activité dédiée"} onClose={()=>setModalActiv(null)} width={480}>
           <AdminField label="Titre *"><input style={s.input} value={formActiv.titre} onChange={e=>setFormActiv({...formActiv,titre:e.target.value})}/></AdminField>
           <AdminField label="Description"><textarea style={{...s.input,minHeight:60,resize:"vertical"}} value={formActiv.desc||""} onChange={e=>setFormActiv({...formActiv,desc:e.target.value})}/></AdminField>

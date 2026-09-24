@@ -12566,48 +12566,14 @@ export default function App(){
   useScheduler(setAdminActivites);
   useScheduler(setAdminSorties);
   useScheduler(setAdminEvenements);
-  // ── Récupération des activités/sorties/événements admin déjà réellement enregistrées dans Supabase
-  // (communaute=false ou non renseigné) mais jamais rechargées jusqu'ici ──
-  useEffect(()=>{
-    (async()=>{
-      try{
-        const [{data:actsAdmin},{data:sortsAdmin},{data:evtsAdmin}]=await Promise.all([
-          supabase.from("activites").select("*").or("communaute.eq.false,communaute.is.null"),
-          supabase.from("sorties").select("*").or("communaute.eq.false,communaute.is.null"),
-          supabase.from("evenements").select("*").or("communaute.eq.false,communaute.is.null"),
-        ]);
-        if(actsAdmin&&actsAdmin.length>0)setAdminActivites(prev=>{
-          const dejaPresent=new Set(prev.map(a=>String(a.nom||a.titre||"").toLowerCase()));
-          const nouveaux=actsAdmin.filter(a=>!dejaPresent.has(String(a.nom||"").toLowerCase())).map(a=>({
-            id:a.id,nom:a.nom,titre:a.nom,categorie:a.categorie,lieu:a.lieu,energie:a.energie,age:a.age,duree:a.duree,
-            difficulte:a.difficulte,materiel:a.materiel||[],materielLiens:a.materiel_liens||{},etapes:a.etapes||[],
-            desc:a.description,photo:a.photo,niveauxSensoriels:a.niveaux_sensoriels,profilsTND:a.profils_tnd,
-            adaptations:a.adaptations||[],caracteristiques:a.caracteristiques,commentaireTND:a.commentaire_tnd,
-            pointsAnticiper:a.points_anticiper||[],statut:a.statut||"published",
-          }));
-          return nouveaux.length>0?[...prev,...nouveaux]:prev;
-        });
-        if(sortsAdmin&&sortsAdmin.length>0)setAdminSorties(prev=>{
-          const dejaPresent=new Set(prev.map(s=>String(s.nom||s.titre||"").toLowerCase()));
-          const nouveaux=sortsAdmin.filter(s=>!dejaPresent.has(String(s.nom||"").toLowerCase())).map(s=>({
-            id:s.id,nom:s.nom,titre:s.nom,type:s.type,dept:s.dept,ville:s.ville,prix:s.prix,horaires:s.horaires,
-            desc:s.description,photo:s.photo,tnd:s.tnd,accessibilite:s.accessibilite,commentaireTND:s.commentaire_tnd,
-            statut:s.statut||"published",
-          }));
-          return nouveaux.length>0?[...prev,...nouveaux]:prev;
-        });
-        if(evtsAdmin&&evtsAdmin.length>0)setAdminEvenements(prev=>{
-          const dejaPresent=new Set(prev.map(e=>String(e.nom||e.titre||"").toLowerCase()));
-          const nouveaux=evtsAdmin.filter(e=>!dejaPresent.has(String(e.nom||"").toLowerCase())).map(e=>({
-            id:e.id,nom:e.nom,titre:e.nom,categorie:e.categorie,ville:e.ville,dept:e.dept,date:e.date,prix:e.prix,
-            gratuit:e.gratuit,age:e.age,dates:e.dates,photo:e.photo,adresse:e.adresse,commentaireTND:e.commentaire_tnd,tnd:e.tnd,
-            statut:e.statut||"published",
-          }));
-          return nouveaux.length>0?[...prev,...nouveaux]:prev;
-        });
-      }catch(e){ /* erreur réseau — reste sur ce qui est déjà en mémoire/partagé */ }
-    })();
-  },[]);
+  // Remarque : l'ancienne récupération automatique depuis les tables "activites"/"sorties"/"evenements"
+  // (communaute=false ou non renseigné) a été retirée : elle tournait à CHAQUE chargement de l'app en
+  // parallèle du chargement normal (app_config.shared_data), et le contrôle "déjà présent" pouvait rater
+  // une correspondance (accents/espaces/casse) — dans ce cas elle réinjoutait la même activité à nouveau
+  // à chaque rechargement, d'où les exemplaires en double que tu voyais s'accumuler. La récupération a
+  // déjà été faite une fois ; tes activités admin vivent maintenant uniquement dans app_config.shared_data
+  // (colonnes adminActivites / adminSorties / adminEvenements), qui est la seule source chargée ci-dessous.
+  // Un nettoyage automatique des doublons déjà enregistrés est fait au chargement (voir plus bas).
   const [adminReports,setAdminReports]=useState([]);
   const [deletedTitles,setDeletedTitles]=useState(new Set());
   const [customEvents,setCustomEvents]=useState([]);
@@ -12889,9 +12855,23 @@ export default function App(){
           if(d.customCatActivites)setCustomCatActivites(d.customCatActivites);
           if(d.customCatSorties)setCustomCatSorties(d.customCatSorties);
           if(d.customCatEvenements)setCustomCatEvenements(d.customCatEvenements);
-          if(d.adminActivites)setAdminActivites(d.adminActivites);
-          if(d.adminSorties)setAdminSorties(d.adminSorties);
-          if(d.adminEvenements)setAdminEvenements(d.adminEvenements);
+          // Nettoyage des doublons éventuellement déjà enregistrés (voir remarque plus haut) :
+          // on garde la dernière version de chaque activité/sortie/événement (même nom/titre, en
+          // ignorant accents/espaces/casse) et on sauvegarde la version nettoyée juste après.
+          const dedoublonne=(liste)=>{
+            const norm=(v)=>String(v||"").trim().toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"");
+            const parCle=new Map();
+            (liste||[]).forEach(item=>{
+              const cle=norm(item.nom||item.titre)||("__id_"+item.id);
+              parCle.set(cle,item); // la dernière occurrence l'emporte
+            });
+            return[...parCle.values()];
+          };
+          // (la version nettoyée est ensuite sauvegardée automatiquement par la sauvegarde
+          // partagée habituelle, ~0,4s après le chargement, sans appel Supabase supplémentaire ici)
+          if(d.adminActivites)setAdminActivites(dedoublonne(d.adminActivites));
+          if(d.adminSorties)setAdminSorties(dedoublonne(d.adminSorties));
+          if(d.adminEvenements)setAdminEvenements(dedoublonne(d.adminEvenements));
           // sosLib chargé depuis Supabase, plus depuis le stockage local
           if(d.devisBoostDemandes)setDevisBoostDemandes(d.devisBoostDemandes);
           if(d.boosts)setBoosts(d.boosts);

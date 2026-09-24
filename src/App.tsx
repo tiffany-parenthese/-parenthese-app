@@ -4517,9 +4517,9 @@ function PagePlanning({sosLib=[],enfants=[],enfantActif,setEnfantActif,isPremium
   useEffect(()=>{
     (async()=>{
       try{
-        const res=await window.storage.get("planning_hebdo");
-        if(res&&res.value){
-          const data=JSON.parse(res.value);
+        const raw=localStorage.getItem("planning_hebdo");
+        if(raw){
+          const data=JSON.parse(raw);
           if(Array.isArray(data.planning)&&data.planning.length>0)setPlanning(data.planning.filter(p=>p&&p.activite&&p.jour));
           if(data.checkedMat)setCheckedMat(data.checkedMat);
           if(Array.isArray(data.enfantsSelectionnes))setEnfantsSelectionnes(data.enfantsSelectionnes);
@@ -4532,7 +4532,7 @@ function PagePlanning({sosLib=[],enfants=[],enfantActif,setEnfantActif,isPremium
   const sauvegarderPlanning=async()=>{
     setIsSaving(true);
     try{
-      await window.storage.set("planning_hebdo",JSON.stringify({planning,checkedMat,enfantsSelectionnes}));
+      localStorage.setItem("planning_hebdo",JSON.stringify({planning,checkedMat,enfantsSelectionnes}));
       if(currentUser?.id){
         try{ await supabase.from("profiles").update({a_sauvegarde_planning:true}).eq("id",currentUser.id); }catch(e2){}
       }
@@ -12177,14 +12177,8 @@ export default function App(){
   };
   const handleDeleteAccount=async()=>{
     try{
-      await Promise.all([
-        window.storage.delete("auth_account"),
-        window.storage.delete("auth_session"),
-        window.storage.delete("favoris"),
-        window.storage.delete("enfants"),
-        window.storage.delete("planning_hebdo"),
-        window.storage.delete("popup_shown"),
-      ]);
+      localStorage.removeItem("app_v1_private");
+      localStorage.removeItem("planning_hebdo");
     }catch(e){ /* certaines cles peuvent deja etre absentes */ }
     setCurrentUser(null);
     setFavoris([]);
@@ -12624,19 +12618,19 @@ export default function App(){
   },[]);
   // ── Sauvegarde globale — toutes les données privées en 1 clé ─────────────
   const sauvegarderPrivé=async(données)=>{
-    try{ await window.storage.set("app_v1_private",JSON.stringify(données),false); }catch(e){}
+    try{ localStorage.setItem("app_v1_private",JSON.stringify(données)); }catch(e){}
   };
   const sauvegarderPartagé=async(données)=>{
-    try{ await window.storage.set("app_v1_shared",JSON.stringify(données),true); }catch(e){}
+    try{ await supabase.from("app_config").upsert({id:1,shared_data:données}); }catch(e){}
   };
 
   useEffect(()=>{
     (async()=>{
       // 2 lectures au lieu de 24 → évite totalement le rate limit
       try{
-        const prv=await window.storage.get("app_v1_private",false);
-        if(prv&&prv.value){
-          const d=JSON.parse(prv.value);
+        const rawPrv=localStorage.getItem("app_v1_private");
+        if(rawPrv){
+          const d=JSON.parse(rawPrv);
           // favoris chargés depuis Supabase, plus depuis le stockage local
           // masquees chargés depuis Supabase, plus depuis le stockage local
           // enfants chargés depuis Supabase, plus depuis le stockage local
@@ -12652,9 +12646,9 @@ export default function App(){
         }
       }catch(e){}
       try{
-        const shr=await window.storage.get("app_v1_shared",true);
-        if(shr&&shr.value){
-          const d=JSON.parse(shr.value);
+        const{data:shrRow}=await supabase.from("app_config").select("shared_data").eq("id",1).single();
+        const d=shrRow&&shrRow.shared_data;
+        if(d){
           if(d.ideesMomentConfig)setIdeesMomentConfig(d.ideesMomentConfig);
           if(d.sosModeActif!==undefined)setSosModeActif(d.sosModeActif);
           if(d.pendingContribs)setPendingContribs(d.pendingContribs);

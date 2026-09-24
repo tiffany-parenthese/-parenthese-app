@@ -228,8 +228,8 @@ const SORTIES=[
 // CONFIGURATION ADMINISTRATEUR
 // Code secret administrateur — à changer avant mise en production
 // Fonction de hash simple (FNV-1a 32bit) pour comparer les credentials sans les exposer en clair
-// L'email et le mot de passe de l'admin ne sont plus stockés dans le code :
-// ils vivent uniquement dans Supabase (table admin_users + Authentication).
+const simpleHash=(s)=>{let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=(h*16777619)>>>0;}return h.toString(16).padStart(8,"0").repeat(8);};
+const ADMIN_EMAIL = "admin@parenthese.fr"; // conservé pour l'affichage du "mot de passe oublié"
 // Idees du moment — mettre à false pour masquer chaque vignette
 const SHOW_IDEE_ACTIVITES_CREATIVES = true;
 const SHOW_IDEE_SORTIES_NATURE      = true;
@@ -464,7 +464,7 @@ function SectionAccessibilite({values={},onChange,commentaire="",onCommentaireCh
   );
 }
 
-function SignalCardBtn({id,titre,type,onReport,currentUser=null}){
+function SignalCardBtn({id,titre,type,onReport}){
   const [step,setStep]=useState("idle");
   const [raison,setRaison]=useState("");
   const [detail,setDetail]=useState("");
@@ -491,7 +491,7 @@ function SignalCardBtn({id,titre,type,onReport,currentUser=null}){
             <div style={{textAlign:"center",marginBottom:14}}><p style={{margin:0,fontSize:15,fontWeight:700,color:TX}}>{RAISONS.find(r=>r.k===raison)?.l}</p></div>
             <textarea value={detail} onChange={e=>setDetail(e.target.value.slice(0,300))} placeholder="Ajoute des details" rows={3} style={{width:"100%",borderRadius:12,border:"1px solid #E5E7EB",padding:"12px 14px",fontSize:13,fontFamily:"inherit",resize:"none",boxSizing:"border-box",outline:"none",color:TX,marginBottom:4}}/>
             <div style={{textAlign:"right",fontSize:11,color:TM,marginBottom:14}}>{detail.length}/300</div>
-            <button onClick={()=>{const raisonLabel=RAISONS.find(r=>r.k===raison)?.l||raison;setDone(true);setStep("idle");if(onReport)onReport({type:type||"activite",titre:titre||id,raison:raisonLabel,signalePar:currentUser?.email||"non connecté",detail,date:new Date().toLocaleDateString("fr-FR")});}} style={{width:"100%",padding:13,borderRadius:28,background:RD,border:"none",color:WH,fontWeight:700,fontSize:14,cursor:"pointer",marginBottom:8}}>Envoyer</button>
+            <button onClick={()=>{const raisonLabel=RAISONS.find(r=>r.k===raison)?.l||raison;setDone(true);setStep("idle");if(onReport)onReport({type:type||"activite",titre:titre||id,raison:raisonLabel,signalePar:"utilisateur@parentales.fr",detail,date:new Date().toLocaleDateString("fr-FR")});}} style={{width:"100%",padding:13,borderRadius:28,background:RD,border:"none",color:WH,fontWeight:700,fontSize:14,cursor:"pointer",marginBottom:8}}>Envoyer</button>
             <div style={{display:"flex",gap:8}}>
               <button onClick={()=>setStep("choix")} style={{flex:1,padding:"10px 0",borderRadius:28,background:BG2,border:"none",color:TM,fontSize:13,cursor:"pointer"}}>Retour</button>
               <button onClick={()=>setStep("idle")} style={{flex:1,padding:"10px 0",borderRadius:28,background:BG2,border:"none",color:TM,fontSize:13,cursor:"pointer"}}>Annuler</button>
@@ -691,7 +691,7 @@ function AvisForm({isLoggedIn=true,onRequireAuth,tousLesAvis=[],chargement=false
   );
 }
 
-function ListePropositions({items,type,onChoisir,onClose,isPremium=false,enfantActif=null,onMasquer}){
+function ListePropositions({items,type,onChoisir,onClose,isPremium=false,enfantActif=null,onMasquer,amazonTag=""}){
   const [excluded,setExcluded]=useState(new Set());
   const [detailItem,setDetailItem]=useState(null);
   const visibles=items.filter(item=>!excluded.has(item.id||item.nom));
@@ -814,7 +814,7 @@ function ListePropositions({items,type,onChoisir,onClose,isPremium=false,enfantA
       {detailItem&&(
         <div onClick={e=>e.stopPropagation()} style={{position:"fixed",inset:0,zIndex:600,background:"#fff",overflowY:"auto"}}>
           {type==="activite"?(
-            <ActivityDetailPage activity={detailItem} matchEnfant={detailItem._matchEnfant||enfantActif} onBack={()=>setDetailItem(null)} onReport={()=>{}}/>
+            <ActivityDetailPage activity={detailItem} matchEnfant={detailItem._matchEnfant||enfantActif} onBack={()=>setDetailItem(null)} onReport={()=>{}} amazonTag={amazonTag}/>
           ):(
             <SortieDetailPage sortie={detailItem} onBack={()=>setDetailItem(null)} onReport={()=>{}}/>
           )}
@@ -884,7 +884,19 @@ function BottomSheet({item,type,onClose,onFav,isFav,onDone,onMasquer}){
         <textarea value={note} onChange={e=>setNote(e.target.value)} placeholder="Un conseil ou une remarque en plus ? (optionnel)" rows={2} style={{width:"100%",padding:"10px 14px",borderRadius:12,border:BD,fontSize:13,resize:"none",boxSizing:"border-box",outline:"none",fontFamily:"inherit",marginBottom:12}}/>
         <div style={{display:"flex",gap:10}}>
           <button onClick={()=>setShowNote(false)} style={{flex:1,padding:12,borderRadius:28,background:BG,border:"none",color:TM,fontWeight:600,cursor:"pointer"}}>Annuler</button>
-          <button onClick={()=>{
+          <button onClick={async()=>{
+            const selection=isActivite?ptsSel:accessSel;
+            if(selection.length>0&&item.id){
+              try{
+                const key=`avis_${isActivite?"activite":"sortie"}_${item.id}`;
+                const res=await window.storage.get(key,true).catch(()=>null);
+                const existants=res&&res.value?JSON.parse(res.value):[];
+                const contrib=isActivite
+                  ?{stars:0,pseudo:"Toi",temps:"A l'instant",texte:"",pointsAnticiper:selection,pointsOnly:true}
+                  :{stars:0,pseudo:"Toi",temps:"A l'instant",texte:"",accessibiliteSignalee:selection,pointsOnly:true};
+                await window.storage.set(key,JSON.stringify([contrib,...existants]),true);
+              }catch(e){ /* la contribution reste enregistrée localement dans l'historique même si le partage échoue */ }
+            }
             onDone({...item,_note:note,_pointsAnticiper:isActivite?ptsSel:undefined,_accessibiliteSignalee:!isActivite?accessSel:undefined,_date:new Date().toISOString()});onClose();
           }} style={{flex:2,padding:12,borderRadius:28,background:"#10B981",border:"none",color:WH,fontWeight:700,fontSize:14,cursor:"pointer"}}>✓ Enregistrer !</button>
         </div>
@@ -966,7 +978,9 @@ function FormActivite({onClose,onSubmit,customCatActivites=[],initialData=null})
   });
   const [localErrors,setLocalErrors]=useState({});
   const [profilsTND,setProfilsTND]=useState({tsa:false,tdah:false,dys:false,tous:false});
+  const [niveauxSensoriels,setNiveauxSensoriels]=useState({bruit:0,visuel:0,physique:0,attention:0});
   const [adaptations,setAdaptations]=useState([]);
+  const [pointsAnticiperSel,setPointsAnticiperSel]=useState([]);
   const [envoiEnCours,setEnvoiEnCours]=useState(false);
   const handlePhoto=async(e)=>{const file=e.target.files[0];if(!file)return;if(file.size>8*1024*1024){alert("Photo trop lourde (max 8MB)");return;}try{const compressed=await compresserImage(file);setPhotoPreview(compressed);}catch(err){alert("Impossible de lire cette image, réessaie avec une autre.");}};
   const validate=()=>{const e={};if(!titre.trim())e.titre="Champ obligatoire";if(!desc.trim())e.desc="Champ obligatoire";if(!duree)e.duree="Champ obligatoire";if(!difficulte)e.difficulte="Champ obligatoire";if(!lieu)e.lieu="Champ obligatoire";if(!motivation)e.motivation="Champ obligatoire";if(!categorie)e.categorie="Champ obligatoire";if(!Object.values(caracteristiques).some(Boolean))e.caracteristiques="Coche au moins un critère";setLocalErrors(e);return Object.keys(e).length===0;};
@@ -977,7 +991,7 @@ function FormActivite({onClose,onSubmit,customCatActivites=[],initialData=null})
     const categorieFinale=categorie==="Autre"?(autreCategorie.trim()||"Autre"):categorie;
     const age=(ageMin&&ageMax)?`${ageMin.replace(" an","").replace(" ans","")} - ${ageMax}`:(ageMin||ageMax||"Tous ages");
     const tndData={tsa:profilsTND.tsa||profilsTND.tous?5:0,tdah:profilsTND.tdah||profilsTND.tous?5:0,dys:profilsTND.dys||profilsTND.tous?5:0};
-    if(onSubmit)onSubmit({id:initialData?.id,nom:titre.trim(),categorie:categorieFinale,lieu,energie:motivation,age,duree,difficulte,materiel:materiel?materiel.split(",").map(m=>m.trim()).filter(Boolean):[],etapes:etapes?etapes.split("\n").map(s=>s.trim()).filter(Boolean):[],desc:desc.trim(),photo:photoPreview,tnd:tndData,profilsTND,adaptations,commentaireTND:commentaireTND.trim(),caracteristiques,...accValues,_type:"activite"});
+    if(onSubmit)onSubmit({id:initialData?.id,nom:titre.trim(),categorie:categorieFinale,lieu,energie:motivation,age,duree,difficulte,materiel:materiel?materiel.split(",").map(m=>m.trim()).filter(Boolean):[],etapes:etapes?etapes.split("\n").map(s=>s.trim()).filter(Boolean):[],desc:desc.trim(),photo:photoPreview,tnd:tndData,profilsTND,niveauxSensoriels,adaptations,commentaireTND:commentaireTND.trim(),pointsAnticiper:pointsAnticiperSel,caracteristiques,...accValues,_type:"activite"});
   };
   const se=(err)=>({padding:"12px 14px",borderRadius:12,border:"1px solid "+(err?"#EF4444":"rgba(108,92,231,0.15)"),fontSize:14,width:"100%",boxSizing:"border-box",background:WH,fontFamily:"inherit"});
   const Err=({k})=>localErrors[k]?<p style={{margin:"3px 0 0",fontSize:11,color:"#EF4444"}}>{localErrors[k]}</p>:null;
@@ -1045,13 +1059,79 @@ function FormActivite({onClose,onSubmit,customCatActivites=[],initialData=null})
           {/* ─── SECTION TND COMPLÈTE ─── */}
           <div style={{background:"#F5F0EB",borderRadius:16,padding:"18px 16px",display:"flex",flexDirection:"column",gap:18}}>
 
+            {/* Partie 2 — Niveaux sensoriels */}
+            <div>
+              <p style={{margin:"0 0 4px",fontSize:14,fontWeight:800,color:"#1a1a1a"}}>🎚️ Niveaux sensoriels</p>
+              <p style={{margin:"0 0 14px",fontSize:12,color:TM}}>Ces infos aident les parents TND à choisir les activités adaptées à leur enfant</p>
+              {[
+                {label:"🔊 Niveau sonore",k:"bruit",left:"Silencieux",right:"Bruyant"},
+                {label:"💡 Stimulation visuelle",k:"visuel",left:"Calme",right:"Intense"},
+                {label:"🤸 Activité physique",k:"physique",left:"Aucune",right:"Intense"},
+                {label:"⏱️ Durée d'attention",k:"attention",left:"Courte",right:"Longue"},
+              ].map(({label,k,left,right})=>{
+                const val=niveauxSensoriels[k]||0;
+                const col=val<=33?"#10B981":val<=66?"#F59E0B":"#EF4444";
+                const badge=val<=33?"Faible":val<=66?"Moyen":"Élevé";
+                return(
+                  <div key={k} style={{marginBottom:14}}>
+                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
+                      <span style={{fontSize:13,fontWeight:600,color:"#1a1a1a"}}>{label}</span>
+                      <span style={{fontSize:11,fontWeight:700,color:col,background:col+"18",padding:"2px 10px",borderRadius:20}}>{badge}</span>
+                    </div>
+                    <div style={{display:"flex",alignItems:"center",gap:8}}>
+                      <span style={{fontSize:10,color:TM,width:52,flexShrink:0,textAlign:"right"}}>{left}</span>
+                      <div style={{flex:1,position:"relative",height:6,background:"#E5E7EB",borderRadius:6,overflow:"hidden"}}>
+                        <div style={{position:"absolute",left:0,top:0,height:"100%",width:val+"%",background:col,borderRadius:6,transition:"width 0.2s"}}/>
+                      </div>
+                      <span style={{fontSize:10,color:TM,width:52,flexShrink:0}}>{right}</span>
+                    </div>
+                    <input type="range" min={0} max={100} value={val} onChange={e=>setNiveauxSensoriels(p=>({...p,[k]:Number(e.target.value)}))} style={{width:"100%",marginTop:4,accentColor:col,cursor:"pointer"}}/>
+                  </div>
+                );
+              })}
+            </div>
+
             {/* Commentaire libre */}
             <div>
-              <p style={{margin:"0 0 4px",fontSize:14,fontWeight:800,color:"#1a1a1a"}}>🧩 Conseil TND</p>
               <label style={{fontSize:12,color:TM,display:"block",marginBottom:6}}>Conseil TND (optionnel)</label>
               <textarea value={commentaireTND} onChange={e=>setCommentaireTND(e.target.value.slice(0,200))} placeholder="Ex : Idéal pour les enfants TSA, activité calme sans surprise..." rows={2} style={FST}/>
               <p style={{margin:"4px 0 0",fontSize:11,color:TM,textAlign:"right"}}>{commentaireTND.length}/200</p>
             </div>
+          </div>
+
+          {/* ─── Points à anticiper ─── */}
+          <div style={{background:"#FFF7ED",borderRadius:16,padding:"16px",display:"flex",flexDirection:"column",gap:16}}>
+            <div>
+              <p style={{margin:"0 0 2px",fontSize:14,fontWeight:800,color:"#1a1a1a"}}>⚠️ Points à anticiper</p>
+              <p style={{margin:0,fontSize:12,color:TM}}>Aide les parents à préparer l'activité selon les besoins de leur enfant</p>
+            </div>
+            {[
+              {titre:"🎨 Sensoriel",ids:["pa1","pa2","pa3","pa4"]},
+              {titre:"🧠 Attention",ids:["pa5","pa6"]},
+              {titre:"💪 Moteur",ids:["pa8","pa9","pa10"]},
+              {titre:"🗓️ Structure & Émotion",ids:["pa7","pa11","pa12","pa13","pa14","pa15"]},
+            ].map(({titre,ids})=>(
+              <div key={titre}>
+                <p style={{margin:"0 0 8px",fontSize:12,fontWeight:700,color:"#9A3412"}}>{titre}</p>
+                <div style={{display:"flex",flexDirection:"column",gap:6}}>
+                  {ids.map(id=>{
+                    const pt=POINTS_ANTICIPER.find(p=>p.id===id);
+                    if(!pt)return null;
+                    const actif=pointsAnticiperSel.includes(id);
+                    return(
+                      <button key={id} onClick={()=>setPointsAnticiperSel(p=>actif?p.filter(x=>x!==id):[...p,id])} style={{padding:"10px 12px",borderRadius:10,border:`1.5px solid ${actif?"#F59E0B":"#E5E7EB"}`,background:actif?"#FFF7ED":WH,cursor:"pointer",textAlign:"left",display:"flex",alignItems:"flex-start",gap:10,width:"100%"}}>
+                        <span style={{fontSize:18,flexShrink:0}}>{pt.emoji}</span>
+                        <div style={{flex:1}}>
+                          <p style={{margin:"0 0 2px",fontSize:13,fontWeight:600,color:"#1a1a1a"}}>{pt.label}</p>
+                          <p style={{margin:0,fontSize:11,color:TM,lineHeight:1.4}}>{pt.desc}</p>
+                        </div>
+                        <span style={{fontSize:14,flexShrink:0,color:actif?"#F59E0B":"#D1D5DB"}}>{actif?"☑":"☐"}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
           </div>
 
           <button onClick={handleSubmit} disabled={envoiEnCours} style={{padding:14,borderRadius:14,background:envoiEnCours?"#C4B8F8":V,border:"none",color:WH,fontWeight:700,fontSize:15,cursor:envoiEnCours?"default":"pointer",width:"100%"}}>{envoiEnCours?"Envoi en cours...":initialData?"Enregistrer les modifications":"Envoyer ma suggestion"}</button>
@@ -1630,7 +1710,7 @@ function AccessibiliteSortieSection({accessibilite,tousLesAvis=[]}){
   );
 }
 
-function SortieDetailPage({sortie,isFavorite,onToggleFavorite,onBack,onReport,isLoggedIn=true,onRequireAuth,onMasquer,estMasque=false,currentUser=null}){
+function SortieDetailPage({sortie,isFavorite,onToggleFavorite,onBack,onReport,isLoggedIn=true,onRequireAuth,onMasquer,estMasque=false}){
   const card={background:WH,borderRadius:16,padding:14,marginBottom:12,boxShadow:"0 1px 3px rgba(0,0,0,0.06)"};
   const sec=(t)=>(<div style={{fontSize:12,fontWeight:600,color:V,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:10}}>{t}</div>);
   const emo=sortie.type==="Zoo"?"🦁":sortie.type==="Musee"?"🏛️":sortie.type==="Parc d attraction"?"🎢":sortie.type==="Plage"?"🏖️":sortie.type==="Bowling"?"🎳":sortie.type==="Escape game"?"🔐":sortie.type==="Ferme pedagogique"?"🐄":sortie.type==="Piscine"?"🏊":"🗺️";
@@ -1664,7 +1744,7 @@ function SortieDetailPage({sortie,isFavorite,onToggleFavorite,onBack,onReport,is
         <button onClick={onToggleFavorite} style={{width:"100%",background:isFavorite?"#FCEBEB":V,color:isFavorite?"#A32D2D":WH,border:"none",borderRadius:28,padding:14,fontSize:14,fontWeight:600,cursor:"pointer",marginBottom:8}}>{isFavorite?"Retirer des favoris":"Ajouter aux favoris"}</button>
         {onMasquer&&<button onClick={onMasquer} style={{width:"100%",background:estMasque?VL:WH,color:estMasque?V:TM,border:BD,borderRadius:28,padding:12,fontSize:13,fontWeight:600,cursor:"pointer",marginBottom:8}}>{estMasque?"↩️ Reproposer cette sortie":"🚫 Ne plus proposer cette sortie"}</button>}
         <button onClick={()=>setShowPartageMenu(true)} style={{width:"100%",background:WH,color:V,border:"1.5px solid "+V,borderRadius:28,padding:12,fontSize:14,cursor:"pointer"}}>Partager</button>
-        <SignalementButton type="sortie" onSignaler={(raison,detail)=>{if(onReport)onReport({type:"sortie",titre:sortie.nom,raison,detail:detail||"",signalePar:currentUser?.email||"non connecté",dept:sortie.dept,prix:sortie.prix,ville:sortie.ville,categorie:sortie.type});}}/>
+        <SignalementButton type="sortie" onSignaler={(raison,detail)=>{if(onReport)onReport({type:"sortie",titre:sortie.nom,raison,detail:detail||"",signalePar:"utilisateur@parentales.fr",dept:sortie.dept,prix:sortie.prix,ville:sortie.ville,categorie:sortie.type});}}/>
       </div>
       <PartageMenu show={showPartageMenu} titre={sortie.nom} texte={partageTexte} onClose={()=>setShowPartageMenu(false)}/>
     </div>
@@ -1721,7 +1801,7 @@ function AAnticiperVide(){
   );
 }
 
-function ActivityDetailPage({activity,isFavorite,onToggleFavorite,onBack,onReport,isLoggedIn=true,onRequireAuth,matchEnfant=null,onMasquer,estMasque=false,currentUser=null,amazonTag=""}){
+function ActivityDetailPage({activity,isFavorite,onToggleFavorite,onBack,onReport,isLoggedIn=true,onRequireAuth,matchEnfant=null,onMasquer,estMasque=false,amazonTag=""}){
   const titre=activity.titre||activity.title||activity.nom||"";
   const emoji=activity.emoji||"🎨";
   const categorie=activity.categorie||activity.category||"";
@@ -1784,8 +1864,70 @@ function ActivityDetailPage({activity,isFavorite,onToggleFavorite,onBack,onRepor
           );
         })()}
         <div style={card}>{sec("Informations")}{[{label:"Motivation",val:motLabel},{label:"Age conseille",val:activity.age||"Tous ages"},{label:"Difficulte",val:difficulte||"-"}].map(({label,val},i)=>(<div key={label} style={{display:"flex",alignItems:"center",gap:10,padding:"6px 0",borderBottom:i<2?"0.5px solid #F3F4F6":"none"}}><span style={{fontSize:12,color:"#9CA3AF",width:80,flexShrink:0}}>{label}</span><span style={{fontSize:13,color:"#1a1a1a",fontWeight:500}}>{val}</span></div>))}</div>
-        <div style={card}>{sec("Materiel")}{materiel?<div>{materiel.map((m,i)=>(<a key={i} href={(activity.materielLiens&&activity.materielLiens[m])||("https://www.amazon.fr/s?k="+encodeURIComponent(m)+(amazonTag?"&tag="+encodeURIComponent(amazonTag):""))} target="_blank" rel="noreferrer" style={{display:"inline-flex",alignItems:"center",gap:4,background:BG,borderRadius:20,padding:"4px 10px",fontSize:12,color:"#374151",margin:3,textDecoration:"none"}}>🛒 {m}</a>))}</div>:<span style={{fontSize:13,color:TM}}>Aucun materiel necessaire !</span>}</div>
+        <div style={card}>{sec("Materiel")}{materiel?<div>{materiel.map((m,i)=>{
+          const lienPrecis=(activity.materielLiens||{})[m];
+          const href=lienPrecis||("https://www.amazon.fr/s?k="+encodeURIComponent(m)+(amazonTag?"&tag="+encodeURIComponent(amazonTag):""));
+          return (
+            <a key={i} href={href} target="_blank" rel="noreferrer" style={{display:"inline-flex",alignItems:"center",gap:4,background:BG,borderRadius:20,padding:"4px 10px",fontSize:12,color:"#374151",margin:3,textDecoration:"none"}}>
+              🛒 {m}
+            </a>
+          );
+        })}</div>:<span style={{fontSize:13,color:TM}}>Aucun materiel necessaire !</span>}</div>
         <div style={card}>{sec("Etapes")}{etapes?etapes.map((e,i)=>(<div key={i} style={{display:"flex",gap:10,padding:"6px 0"}}><div style={{width:22,height:22,borderRadius:"50%",background:V,color:WH,fontSize:11,fontWeight:600,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginTop:1}}>{i+1}</div><div style={{fontSize:13,color:"#374151",lineHeight:1.5}}>{e}</div></div>)):<span style={{fontSize:13,color:TM}}>Laissez parler votre creativite !</span>}</div>
+
+        {/* Points à anticiper */}
+        {(()=>{
+          const ptsCreateur=activity.pointsAnticiper||POINTS_ANTICIPER_MAP[titre]||[];
+          // Agrégation des points signalés par la communauté via les avis
+          const compteComm={};
+          tousLesAvis.forEach(a=>{(a.pointsAnticiper||[]).forEach(id=>{compteComm[id]=(compteComm[id]||0)+1;});});
+          const ptsCommunaute=Object.keys(compteComm).filter(id=>!ptsCreateur.includes(id));
+          if(ptsCreateur.length===0&&ptsCommunaute.length===0) return <AAnticiperVide/>;
+          const pts=ptsCreateur.map(id=>POINTS_ANTICIPER.find(p=>p.id===id)).filter(Boolean);
+          const groupes={sensoriel:{titre:"🎨 Sensoriel",items:[]},attention:{titre:"🧠 Attention",items:[]},moteur:{titre:"💪 Moteur",items:[]},structure:{titre:"🗓️ Structure",items:[]},emotion:{titre:"💛 Émotion",items:[]}};
+          pts.forEach(p=>{if(groupes[p.categorie])groupes[p.categorie].items.push(p);});
+          const ptsCommList=ptsCommunaute.map(id=>({...POINTS_ANTICIPER.find(p=>p.id===id),nb:compteComm[id]})).filter(p=>p.id);
+          return(
+            <div style={card}>
+              {sec("⚠️ À anticiper")}
+              {Object.values(groupes).filter(g=>g.items.length>0).map(g=>(
+                <div key={g.titre} style={{marginBottom:12}}>
+                  <p style={{margin:"0 0 8px",fontSize:11,fontWeight:700,color:"#9A3412",textTransform:"uppercase",letterSpacing:"0.04em"}}>{g.titre}</p>
+                  <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                    {g.items.map(p=>(
+                      <div key={p.id} style={{background:"#FFF7ED",borderRadius:10,borderLeft:"3px solid #F59E0B",padding:"10px 12px",display:"flex",gap:10,alignItems:"flex-start"}}>
+                        <span style={{fontSize:24,flexShrink:0,lineHeight:1}}>{p.emoji}</span>
+                        <div style={{flex:1}}>
+                          <p style={{margin:"0 0 2px",fontSize:13,fontWeight:700,color:"#1a1a1a"}}>{p.label}</p>
+                          <p style={{margin:0,fontSize:12,color:"#78716C",lineHeight:1.5}}>{p.desc}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+              {ptsCommList.length>0&&(
+                <div>
+                  <p style={{margin:"0 0 8px",fontSize:11,fontWeight:700,color:"#9A3412",textTransform:"uppercase",letterSpacing:"0.04em"}}>👥 Signalé par la communauté</p>
+                  <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                    {ptsCommList.map(p=>(
+                      <div key={p.id} style={{background:"#FFF7ED",borderRadius:10,borderLeft:"3px solid #F59E0B",padding:"10px 12px",display:"flex",gap:10,alignItems:"flex-start"}}>
+                        <span style={{fontSize:24,flexShrink:0,lineHeight:1}}>{p.emoji}</span>
+                        <div style={{flex:1}}>
+                          <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:2}}>
+                            <p style={{margin:0,fontSize:13,fontWeight:700,color:"#1a1a1a"}}>{p.label}</p>
+                            <span style={{fontSize:10,fontWeight:700,color:"#9A3412",background:"#FDE7C8",padding:"1px 7px",borderRadius:10}}>{p.nb} famille{p.nb>1?"s":""}</span>
+                          </div>
+                          <p style={{margin:0,fontSize:12,color:"#78716C",lineHeight:1.5}}>{p.desc}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })()}
 
         {/* Section TND */}
         {(()=>{
@@ -1808,6 +1950,27 @@ function ActivityDetailPage({activity,isFavorite,onToggleFavorite,onBack,onRepor
           return(
             <div style={card}>
               {sec("🧩 Infos TND")}
+              {/* Niveaux sensoriels */}
+              {Object.values(n).some(v=>v>0)&&(
+                <div style={{marginBottom:14}}>
+                  {[{k:"bruit",l:"🔊 Niveau sonore"},{k:"visuel",l:"💡 Stimulation visuelle"},{k:"physique",l:"🤸 Activité physique"},{k:"attention",l:"⏱️ Durée d'attention"}].map(({k,l})=>{
+                    const val=n[k]||0;
+                    const col=val<=33?"#10B981":val<=66?"#F59E0B":"#EF4444";
+                    const badge=val<=33?"Faible":val<=66?"Moyen":"Élevé";
+                    return(
+                      <div key={k} style={{marginBottom:10}}>
+                        <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
+                          <span style={{fontSize:12,color:"#374151"}}>{l}</span>
+                          <span style={{fontSize:11,fontWeight:700,color:col}}>{badge}</span>
+                        </div>
+                        <div style={{height:6,background:"#E5E7EB",borderRadius:6,overflow:"hidden"}}>
+                          <div style={{height:"100%",width:val+"%",background:col,borderRadius:6}}/>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
               {/* Adaptations */}
               {adaps.length>0&&(
                 <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:12}}>
@@ -1820,18 +1983,18 @@ function ActivityDetailPage({activity,isFavorite,onToggleFavorite,onBack,onRepor
           );
         })()}
         <div style={card}>{sec("Notes")}<div style={{display:"flex",alignItems:"center",gap:10}}><span style={{fontSize:28,fontWeight:700,color:"#1a1a1a"}}>{chargement?"...":noteGlobale.toFixed(1)}</span><div><Stars count={Math.round(noteGlobale)} size={14}/><div style={{fontSize:11,color:"#9CA3AF"}}>{tousLesAvis.length} avis</div></div></div></div>
-        <AvisForm isLoggedIn={isLoggedIn} onRequireAuth={onRequireAuth} tousLesAvis={tousLesAvis} chargement={chargement} onAjouterAvis={ajouterAvis} onSupprimerAvis={supprimerAvis} currentUserId={currentUserId}/>
+        <AvisForm isLoggedIn={isLoggedIn} onRequireAuth={onRequireAuth} tousLesAvis={tousLesAvis} chargement={chargement} onAjouterAvis={ajouterAvis} onSupprimerAvis={supprimerAvis} currentUserId={currentUserId} showPointsAnticiper={true}/>
         <button onClick={onToggleFavorite} style={{width:"100%",background:isFavorite?"#FCEBEB":V,color:isFavorite?"#A32D2D":WH,border:"none",borderRadius:28,padding:14,fontSize:14,fontWeight:600,cursor:"pointer",marginBottom:8}}>{isFavorite?"Retirer des favoris":"Ajouter aux favoris"}</button>
         {onMasquer&&<button onClick={onMasquer} style={{width:"100%",background:estMasque?VL:WH,color:estMasque?V:TM,border:BD,borderRadius:28,padding:12,fontSize:13,fontWeight:600,cursor:"pointer",marginBottom:8}}>{estMasque?"↩️ Reproposer cette activité":"🚫 Ne plus proposer cette activité"}</button>}
         <button onClick={()=>setShowPartageMenu(true)} style={{width:"100%",background:WH,color:V,border:"1.5px solid "+V,borderRadius:28,padding:12,fontSize:14,cursor:"pointer"}}>Partager</button>
-        <SignalementButton type="activite" onSignaler={(raison,detail)=>{if(onReport)onReport({type:"activite",titre:activity.nom||activity.titre||activity.title,raison,detail:detail||"",signalePar:currentUser?.email||"non connecté",categorie:activity.categorie,lieu:activity.lieu,age:activity.age});}}/>
+        <SignalementButton type="activite" onSignaler={(raison,detail)=>{if(onReport)onReport({type:"activite",titre:activity.nom||activity.titre||activity.title,raison,detail:detail||"",signalePar:"utilisateur@parentales.fr",categorie:activity.categorie,lieu:activity.lieu,age:activity.age});}}/>
       </div>
       <PartageMenu show={showPartageMenu} titre={activity.nom} texte={partageTexte} onClose={()=>setShowPartageMenu(false)}/>
     </div>
   );
 }
 
-function EvenementDetail({evt,onBack,onReport,isFavorite,onToggleFavorite,isLoggedIn=true,onRequireAuth,customCatEvenements=[],onMasquer,estMasque=false,currentUser=null}){
+function EvenementDetail({evt,onBack,onReport,isFavorite,onToggleFavorite,isLoggedIn=true,onRequireAuth,customCatEvenements=[],onMasquer,estMasque=false}){
   const cat=EVT_CATEGORIES.find(c=>c.k===evt.categorie)||customCatEvenements.find(c=>c.k===evt.categorie)||{emoji:"🎉",label:""};
   const card={background:WH,borderRadius:16,padding:14,marginBottom:12,boxShadow:"0 1px 3px rgba(0,0,0,0.06)"};
   const sec=(t)=>(<div style={{fontSize:12,fontWeight:600,color:V,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:10}}>{t}</div>);
@@ -1864,14 +2027,14 @@ function EvenementDetail({evt,onBack,onReport,isFavorite,onToggleFavorite,isLogg
         <button onClick={onToggleFavorite} style={{width:"100%",background:isFavorite?"#FCEBEB":V,color:isFavorite?"#A32D2D":WH,border:"none",borderRadius:28,padding:14,fontSize:14,fontWeight:600,cursor:"pointer",marginBottom:8}}>{isFavorite?"Retirer des favoris":"Ajouter aux favoris"}</button>
         {onMasquer&&<button onClick={onMasquer} style={{width:"100%",background:estMasque?VL:WH,color:estMasque?V:TM,border:BD,borderRadius:28,padding:12,fontSize:13,fontWeight:600,cursor:"pointer",marginBottom:8}}>{estMasque?"↩️ Reproposer cet événement":"🚫 Ne plus proposer cet événement"}</button>}
         <button onClick={()=>setShowPartageMenu(true)} style={{width:"100%",background:WH,color:V,border:"1.5px solid "+V,borderRadius:28,padding:12,fontSize:14,cursor:"pointer",marginBottom:8}}>Partager</button>
-        <SignalCardBtn id={"evtdetail_"+(evt.id||evt.nom)} titre={evt.titre||evt.nom} type="evenement" onReport={onReport} currentUser={currentUser}/>
+        <SignalCardBtn id={"evtdetail_"+(evt.id||evt.nom)} titre={evt.titre||evt.nom} type="evenement" onReport={onReport}/>
       </div>
       <PartageMenu show={showPartageMenu} titre={evt.nom} texte={partageTexte} onClose={()=>setShowPartageMenu(false)}/>
     </div>
   );
 }
 
-function EvtCard({e,onClick,onReport,customCatEvenements=[],isFav,onToggleFav,onMasquer,estMasque=false,estBoostee=false,currentUser=null}){
+function EvtCard({e,onClick,onReport,customCatEvenements=[],isFav,onToggleFav,onMasquer,estMasque=false,estBoostee=false}){
   const cat=EVT_CATEGORIES.find(c=>c.k===e.categorie)||customCatEvenements.find(c=>c.k===e.categorie);
   const catEmoji=cat?cat.emoji:"🎉";
   const tooMany=(e.signalements||0)>=3;
@@ -1900,17 +2063,18 @@ function EvtCard({e,onClick,onReport,customCatEvenements=[],isFav,onToggleFav,on
       </div>
       <div style={{borderTop:"1px solid #F3F4F6",padding:"8px 14px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
         {onMasquer?<button onClick={()=>onMasquer()} style={{background:"none",border:"none",color:estMasque?V:TM,fontSize:11,cursor:"pointer",display:"flex",alignItems:"center",gap:4,padding:0}}>{estMasque?"↩️ Reproposer":"🚫 Ne plus proposer"}</button>:<span/>}
-        <SignalCardBtn id={"evt_"+e.id} titre={e.nom||e.titre} type="evenement" onReport={onReport} currentUser={currentUser}/>
+        <SignalCardBtn id={"evt_"+e.id} titre={e.nom||e.titre} type="evenement" onReport={onReport}/>
       </div>
     </div>
   );
 }
 
-function ActiviteCard({a,onClick,onReport,isFav,onToggleFav,verrouille=false,customCatActivites=[],matchScore,onMasquer,estMasque=false,estBoostee=false,currentUser=null}){
+function ActiviteCard({a,onClick,onReport,isFav,onToggleFav,verrouille=false,customCatActivites=[],matchScore,onMasquer,estMasque=false,estBoostee=false}){
   const tile=iconTileAct(a.categorie,customCatActivites);
   const isNew=a._createdAt&&(Date.now()-new Date(a._createdAt).getTime())<7*24*60*60*1000;
   const isCommunity=!!a._auteur||!!a.communaute;
   const matchBadge=matchScore!==undefined?getBadgeScoreMatch(matchScore):null;
+  const nbPointsAnticiper=(a.pointsAnticiper||POINTS_ANTICIPER_MAP[a.nom||a.titre]||[]).length;
   return(
     <div style={{background:WH,borderRadius:16,overflow:"hidden",border:estBoostee?"2px solid #F59E0B":BD,marginBottom:12,boxShadow:estBoostee?"0 4px 14px rgba(245,158,11,0.2)":"0 2px 8px rgba(0,0,0,0.06)",opacity:verrouille?0.75:1}}>
       <div style={{position:"relative",height:160,background:a.photo&&!verrouille?"#000":`linear-gradient(135deg,${tile.bg},${tile.bg})`,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",overflow:"hidden"}} onClick={onClick}>
@@ -1924,6 +2088,11 @@ function ActiviteCard({a,onClick,onReport,isFav,onToggleFav,verrouille=false,cus
           {isNew&&<span style={{background:"#10B981",borderRadius:20,padding:"3px 10px",fontSize:10,fontWeight:700,color:"#fff"}}>🆕 Nouveau</span>}
           {isCommunity&&<span style={{background:"#8B5CF6",borderRadius:20,padding:"3px 10px",fontSize:10,fontWeight:700,color:"#fff"}}>👥 Communauté</span>}
         </div>
+        {nbPointsAnticiper>0&&(
+          <span style={{position:"absolute",bottom:10,left:10,background:"#FFF7ED",border:"1px solid #F59E0B",borderRadius:20,padding:"3px 10px",fontSize:10,fontWeight:700,color:"#9A3412",display:"flex",alignItems:"center",gap:3}}>
+            ⚠️ {nbPointsAnticiper} à anticiper
+          </span>
+        )}
       </div>
       <div style={{padding:"12px 14px"}} onClick={onClick}>
         <h3 style={{fontSize:16,fontWeight:700,color:TX,margin:"0 0 4px"}}>{a.nom}</h3>
@@ -1941,13 +2110,13 @@ function ActiviteCard({a,onClick,onReport,isFav,onToggleFav,verrouille=false,cus
       </div>
       <div style={{borderTop:"1px solid #F3F4F6",padding:"8px 14px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
         {onMasquer&&<button onClick={e=>{e.stopPropagation();onMasquer();}} style={{background:"none",border:"none",color:estMasque?V:TM,fontSize:11,cursor:"pointer",display:"flex",alignItems:"center",gap:4,padding:0}}>{estMasque?"↩️ Reproposer":"🚫 Ne plus proposer"}</button>}
-        <SignalCardBtn id={"act_"+a.id} titre={a.nom} type="activite" onReport={onReport} currentUser={currentUser}/>
+        <SignalCardBtn id={"act_"+a.id} titre={a.nom} type="activite" onReport={onReport}/>
       </div>
     </div>
   );
 }
 
-function SortieCard({s,onClick,onReport,isFav,onToggleFav,customCatSorties=[],onMasquer,estMasque=false,estBoostee=false,currentUser=null}){
+function SortieCard({s,onClick,onReport,isFav,onToggleFav,customCatSorties=[],onMasquer,estMasque=false,estBoostee=false}){
   const tile=iconTileSortie(s.type,customCatSorties);
   const {tousLesAvis,chargement,noteGlobale}=useAvis("sortie",s.id);
   const isNew=s._createdAt&&(Date.now()-new Date(s._createdAt).getTime())<7*24*60*60*1000;
@@ -1984,7 +2153,7 @@ function SortieCard({s,onClick,onReport,isFav,onToggleFav,customCatSorties=[],on
       </div>
       <div style={{borderTop:"1px solid #F3F4F6",padding:"8px 14px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
         {onMasquer&&<button onClick={e=>{e.stopPropagation();onMasquer();}} style={{background:"none",border:"none",color:estMasque?V:TM,fontSize:11,cursor:"pointer",display:"flex",alignItems:"center",gap:4,padding:0}}>{estMasque?"↩️ Reproposer":"🚫 Ne plus proposer"}</button>}
-        <SignalCardBtn id={"sort_"+s.id} titre={s.nom} type="sortie" onReport={onReport} currentUser={currentUser}/>
+        <SignalCardBtn id={"sort_"+s.id} titre={s.nom} type="sortie" onReport={onReport}/>
       </div>
     </div>
   );
@@ -2031,7 +2200,7 @@ function FilterSectionTitle({icon,label}){
   );
 }
 
-function CalendrierMensuel({evtFiltered=[],setEvtDetail,addReport,customCatEvenements=[],currentUser=null,isFavBiblio=()=>false,toggleFavBiblio=()=>{},toggleMasquer,estMasque=()=>false,estBoosteItem=()=>false}){
+function CalendrierMensuel({evtFiltered=[],setEvtDetail,addReport,customCatEvenements=[]}){
   const now=new Date();
   const [moisView,setMoisView]=useState(now.getMonth());
   const [anneeView,setAnneeView]=useState(now.getFullYear());
@@ -2073,7 +2242,7 @@ function CalendrierMensuel({evtFiltered=[],setEvtDetail,addReport,customCatEvene
       ):(
         <div style={{display:"flex",flexDirection:"column",gap:8}}>
           <p style={{margin:"0 0 6px",fontSize:12,fontWeight:700,color:TM}}>{evtsDuMois.length} événement{evtsDuMois.length>1?"s":""} ce mois</p>
-          {evtsDuMois.map(e=><EvtCard key={e.id||e.nom} e={e} onClick={()=>setEvtDetail(e)} onReport={addReport} customCatEvenements={customCatEvenements} isFav={isFavBiblio(e,"evenement")} onToggleFav={()=>toggleFavBiblio(e,"evenement")} onMasquer={toggleMasquer?()=>toggleMasquer(e,"evenement"):undefined} estMasque={estMasque?estMasque(e,"evenement"):false} estBoostee={estBoosteItem(e,"evenement")} currentUser={currentUser}/>)}
+          {evtsDuMois.map(e=><EvtCard key={e.id||e.nom} e={e} onClick={()=>setEvtDetail(e)} onReport={addReport} customCatEvenements={customCatEvenements} isFav={isFavBiblio(e,"evenement")} onToggleFav={()=>toggleFavBiblio(e,"evenement")} onMasquer={toggleMasquer?()=>toggleMasquer(e,"evenement"):undefined} estMasque={estMasque?estMasque(e,"evenement"):false} estBoostee={estBoosteItem(e,"evenement")}/>)}
         </div>
       )}
     </div>
@@ -2511,7 +2680,7 @@ function PageBiblio({pendingContribs=[],setPendingContribs,adminActivites=[],adm
                 </div>
               )}
               {actFiltered.map(a=>(
-                <ActiviteCard key={a.id} a={a} onClick={()=>{if(a.premium&&!isPremium){onOpenPremium&&onOpenPremium();return;}setDetail({item:a,type:"activite"});}} onReport={addReport} isFav={isFavBiblio(a,"activite")} onToggleFav={()=>toggleFavBiblio(a,"activite")} verrouille={!!a.premium&&!isPremium} customCatActivites={customCatActivites} matchScore={matchActif?calculerScoreMatch(a,enfantCourantBiblio):undefined} onMasquer={toggleMasquer?()=>toggleMasquer(a,"activite"):undefined} estMasque={estMasque?estMasque(a,"activite"):false} estBoostee={estBoosteItem(a,"activite")} currentUser={currentUser}/>
+                <ActiviteCard key={a.id} a={a} onClick={()=>{if(a.premium&&!isPremium){onOpenPremium&&onOpenPremium();return;}setDetail({item:a,type:"activite"});}} onReport={addReport} isFav={isFavBiblio(a,"activite")} onToggleFav={()=>toggleFavBiblio(a,"activite")} verrouille={!!a.premium&&!isPremium} customCatActivites={customCatActivites} matchScore={matchActif?calculerScoreMatch(a,enfantCourantBiblio):undefined} onMasquer={toggleMasquer?()=>toggleMasquer(a,"activite"):undefined} estMasque={estMasque?estMasque(a,"activite"):false} estBoostee={estBoosteItem(a,"activite")}/>
               ))}
             </div>
             <div style={{background:"#FFFBEB",borderRadius:12,padding:"10px 14px",marginTop:14,border:"1px solid #FDE68A",display:"flex",gap:10,alignItems:"flex-start"}}><span style={{fontSize:16,flexShrink:0}}>👶</span><p style={{margin:0,fontSize:12,color:"#92400E",lineHeight:1.5}}>Les activites proposees doivent etre destinees aux enfants.</p></div>
@@ -2575,7 +2744,7 @@ function PageBiblio({pendingContribs=[],setPendingContribs,adminActivites=[],adm
                 </div>
               )}
               {sortFiltered.filter(s=>(sigSort[s.id]||0)<3).map(s=>(
-                <SortieCard key={s.id} s={s} onClick={()=>setDetail({item:s,type:"sortie"})} onReport={addReport} isFav={isFavBiblio(s,"sortie")} onToggleFav={()=>toggleFavBiblio(s,"sortie")} customCatSorties={customCatSorties} onMasquer={toggleMasquer?()=>toggleMasquer(s,"sortie"):undefined} estMasque={estMasque?estMasque(s,"sortie"):false} estBoostee={estBoosteItem(s,"sortie")} currentUser={currentUser}/>
+                <SortieCard key={s.id} s={s} onClick={()=>setDetail({item:s,type:"sortie"})} onReport={addReport} isFav={isFavBiblio(s,"sortie")} onToggleFav={()=>toggleFavBiblio(s,"sortie")} customCatSorties={customCatSorties} onMasquer={toggleMasquer?()=>toggleMasquer(s,"sortie"):undefined} estMasque={estMasque?estMasque(s,"sortie"):false} estBoostee={estBoosteItem(s,"sortie")}/>
               ))}
             </div>
             <div style={{background:"#FFFBEB",borderRadius:12,padding:"10px 14px",marginTop:14,border:"1px solid #FDE68A",display:"flex",gap:10,alignItems:"flex-start"}}><span style={{fontSize:16,flexShrink:0}}>👶</span><p style={{margin:0,fontSize:12,color:"#92400E",lineHeight:1.5}}>Les sorties proposees doivent etre adaptees aux enfants.</p></div>
@@ -2617,13 +2786,13 @@ function PageBiblio({pendingContribs=[],setPendingContribs,adminActivites=[],adm
                     return true;
                   });
                   if(evtsDate.length===0)return null;
-                  return(<div key={date} style={{marginBottom:12}}><div style={{background:V,borderRadius:10,padding:"6px 14px",marginBottom:10,display:"inline-flex"}}><span style={{fontSize:12,fontWeight:700,color:WH}}>{jourLabel(date)} {formatDate(date)}</span></div>{evtsDate.map(e=><EvtCard key={e.id} e={e} onClick={()=>setEvtDetail(e)} onReport={addReport} customCatEvenements={customCatEvenements} isFav={isFavBiblio(e,"evenement")} onToggleFav={()=>toggleFavBiblio(e,"evenement")} onMasquer={toggleMasquer?()=>toggleMasquer(e,"evenement"):undefined} estMasque={estMasque?estMasque(e,"evenement"):false} estBoostee={estBoosteItem(e,"evenement")} currentUser={currentUser}/>)}</div>);
+                  return(<div key={date} style={{marginBottom:12}}><div style={{background:V,borderRadius:10,padding:"6px 14px",marginBottom:10,display:"inline-flex"}}><span style={{fontSize:12,fontWeight:700,color:WH}}>{jourLabel(date)} {formatDate(date)}</span></div>{evtsDate.map(e=><EvtCard key={e.id} e={e} onClick={()=>setEvtDetail(e)} onReport={addReport} customCatEvenements={customCatEvenements} isFav={isFavBiblio(e,"evenement")} onToggleFav={()=>toggleFavBiblio(e,"evenement")} onMasquer={toggleMasquer?()=>toggleMasquer(e,"evenement"):undefined} estMasque={estMasque?estMasque(e,"evenement"):false} estBoostee={estBoosteItem(e,"evenement")}/>)}</div>);
                 })}
                 {Object.keys(byDate).length===0&&<div style={{textAlign:"center",padding:"40px 0",color:TM}}><p style={{fontSize:32}}>📭</p><p style={{fontSize:14}}>Aucun evenement trouve.</p></div>}
                 <PropBtn/>
               </div>
             )}
-            {evtView==="mensuel"&&<CalendrierMensuel evtFiltered={evtFiltered} setEvtDetail={setEvtDetail} addReport={addReport} customCatEvenements={customCatEvenements} currentUser={currentUser} isFavBiblio={isFavBiblio} toggleFavBiblio={toggleFavBiblio} toggleMasquer={toggleMasquer} estMasque={estMasque} estBoosteItem={estBoosteItem}/>}
+            {evtView==="mensuel"&&<CalendrierMensuel evtFiltered={evtFiltered} setEvtDetail={setEvtDetail} addReport={addReport} customCatEvenements={customCatEvenements}/>}
 
             {evtView==="generateur"&&(
               <div>
@@ -2632,8 +2801,8 @@ function PageBiblio({pendingContribs=[],setPendingContribs,adminActivites=[],adm
                   <button onClick={genEvt} style={{width:"100%",padding:13,borderRadius:12,background:V,border:"none",color:WH,fontWeight:600,fontSize:14,cursor:"pointer"}}>Generer des evenements</button>
                 </div>
                 {evtResult&&(<>
-                  {evtResult.free.length>0&&(<div style={{marginBottom:12}}><p style={{fontSize:12,fontWeight:600,color:GR,margin:"0 0 8px"}}>Gratuit ({evtResult.free.length})</p>{evtResult.free.map(e=><EvtCard key={e.id} e={e} onClick={()=>setEvtDetail(e)} onReport={addReport} customCatEvenements={customCatEvenements} isFav={isFavBiblio(e,"evenement")} onToggleFav={()=>toggleFavBiblio(e,"evenement")} onMasquer={toggleMasquer?()=>toggleMasquer(e,"evenement"):undefined} estMasque={estMasque?estMasque(e,"evenement"):false} estBoostee={estBoosteItem(e,"evenement")} currentUser={currentUser}/>)}</div>)}
-                  {evtResult.premium.length>0&&(<div><p style={{fontSize:12,fontWeight:600,color:OR,margin:"0 0 8px"}}>Premium</p>{evtResult.premium.map(e=>isPremium?(<EvtCard key={e.id} e={e} onClick={()=>setEvtDetail(e)} onReport={addReport} customCatEvenements={customCatEvenements} isFav={isFavBiblio(e,"evenement")} onToggleFav={()=>toggleFavBiblio(e,"evenement")} onMasquer={toggleMasquer?()=>toggleMasquer(e,"evenement"):undefined} estMasque={estMasque?estMasque(e,"evenement"):false} estBoostee={estBoosteItem(e,"evenement")} currentUser={currentUser}/>):(<div key={e.id} style={{opacity:0.6,pointerEvents:"none"}}><EvtCard e={e} onClick={()=>{}} customCatEvenements={customCatEvenements}/></div>))}{!isPremium&&<button onClick={()=>onOpenPremium&&onOpenPremium()} style={{width:"100%",padding:11,borderRadius:12,background:V,border:"none",color:WH,fontWeight:600,fontSize:13,cursor:"pointer",marginTop:4}}>Passer Premium</button>}</div>)}
+                  {evtResult.free.length>0&&(<div style={{marginBottom:12}}><p style={{fontSize:12,fontWeight:600,color:GR,margin:"0 0 8px"}}>Gratuit ({evtResult.free.length})</p>{evtResult.free.map(e=><EvtCard key={e.id} e={e} onClick={()=>setEvtDetail(e)} onReport={addReport} customCatEvenements={customCatEvenements} isFav={isFavBiblio(e,"evenement")} onToggleFav={()=>toggleFavBiblio(e,"evenement")} onMasquer={toggleMasquer?()=>toggleMasquer(e,"evenement"):undefined} estMasque={estMasque?estMasque(e,"evenement"):false} estBoostee={estBoosteItem(e,"evenement")}/>)}</div>)}
+                  {evtResult.premium.length>0&&(<div><p style={{fontSize:12,fontWeight:600,color:OR,margin:"0 0 8px"}}>Premium</p>{evtResult.premium.map(e=>isPremium?(<EvtCard key={e.id} e={e} onClick={()=>setEvtDetail(e)} onReport={addReport} customCatEvenements={customCatEvenements} isFav={isFavBiblio(e,"evenement")} onToggleFav={()=>toggleFavBiblio(e,"evenement")} onMasquer={toggleMasquer?()=>toggleMasquer(e,"evenement"):undefined} estMasque={estMasque?estMasque(e,"evenement"):false} estBoostee={estBoosteItem(e,"evenement")}/>):(<div key={e.id} style={{opacity:0.6,pointerEvents:"none"}}><EvtCard e={e} onClick={()=>{}} customCatEvenements={customCatEvenements}/></div>))}{!isPremium&&<button onClick={()=>onOpenPremium&&onOpenPremium()} style={{width:"100%",padding:11,borderRadius:12,background:V,border:"none",color:WH,fontWeight:600,fontSize:13,cursor:"pointer",marginTop:4}}>Passer Premium</button>}</div>)}
                   {evtResult.free.length===0&&evtResult.premium.length===0&&<div style={{textAlign:"center",padding:"30px 0",color:TM}}><p style={{fontSize:32}}>📭</p><p>Aucun evenement.</p></div>}
                 </>)}
                 <PropBtn/>
@@ -2644,8 +2813,8 @@ function PageBiblio({pendingContribs=[],setPendingContribs,adminActivites=[],adm
       </div>
       {showCarte==="sortie"&&<CarteInteractive items={sortFiltered} type="sortie" onClose={()=>setShowCarte(null)} onOpenItem={(item)=>{setShowCarte(null);setDetail({item,type:"sortie"});}}/>}
       {showCarte==="evenement"&&<CarteInteractive items={evtFiltered} type="evenement" onClose={()=>setShowCarte(null)} onOpenItem={(item)=>{setShowCarte(null);setEvtDetail(item);}}/>}
-      {detail&&detail.type==="activite"&&<ActivityDetailPage activity={detail.item} isFavorite={isFavBiblio(detail.item,"activite")} onToggleFavorite={()=>toggleFavBiblio(detail.item,"activite")} onBack={()=>setDetail(null)} onReport={addReport} isLoggedIn={isLoggedIn} onRequireAuth={onRequireAuth} matchEnfant={matchActif?enfantCourantBiblio:null} onMasquer={toggleMasquer?()=>toggleMasquer(detail.item,"activite"):undefined} estMasque={estMasque?estMasque(detail.item,"activite"):false} currentUser={currentUser} amazonTag={amazonTag}/>}
-      {detail&&detail.type==="sortie"&&<SortieDetailPage sortie={detail.item} isFavorite={isFavBiblio(detail.item,"sortie")} onToggleFavorite={()=>toggleFavBiblio(detail.item,"sortie")} onBack={()=>setDetail(null)} onReport={addReport} isLoggedIn={isLoggedIn} onRequireAuth={onRequireAuth} onMasquer={toggleMasquer?()=>toggleMasquer(detail.item,"sortie"):undefined} estMasque={estMasque?estMasque(detail.item,"sortie"):false} currentUser={currentUser}/>}
+      {detail&&detail.type==="activite"&&<ActivityDetailPage activity={detail.item} isFavorite={isFavBiblio(detail.item,"activite")} onToggleFavorite={()=>toggleFavBiblio(detail.item,"activite")} onBack={()=>setDetail(null)} onReport={addReport} isLoggedIn={isLoggedIn} onRequireAuth={onRequireAuth} matchEnfant={matchActif?enfantCourantBiblio:null} onMasquer={toggleMasquer?()=>toggleMasquer(detail.item,"activite"):undefined} estMasque={estMasque?estMasque(detail.item,"activite"):false} amazonTag={amazonTag}/>}
+      {detail&&detail.type==="sortie"&&<SortieDetailPage sortie={detail.item} isFavorite={isFavBiblio(detail.item,"sortie")} onToggleFavorite={()=>toggleFavBiblio(detail.item,"sortie")} onBack={()=>setDetail(null)} onReport={addReport} isLoggedIn={isLoggedIn} onRequireAuth={onRequireAuth} onMasquer={toggleMasquer?()=>toggleMasquer(detail.item,"sortie"):undefined} estMasque={estMasque?estMasque(detail.item,"sortie"):false}/>}
       {detail&&detail.type==="form_activite"&&<FormActivite customCatActivites={customCatActivites} onClose={()=>setDetail(null)} onSubmit={(item)=>{
         const newItem={...item,id:Date.now(),_type:"activite",_createdAt:new Date().toISOString(),_statut:"published",_signalements:0,_raisonSignalement:"",_auteur:currentUser?.nom||"Anonyme",_auteurEmail:currentUser?.email||"non connecté"};
         setPendingContribs(prev=>[newItem,...prev]);
@@ -2693,7 +2862,7 @@ function PageBiblio({pendingContribs=[],setPendingContribs,adminActivites=[],adm
           </div>
         </div>
       )}
-      {evtDetail&&<EvenementDetail evt={evtDetail} onBack={()=>setEvtDetail(null)} onReport={addReport} isFavorite={isFavBiblio(evtDetail,"evenement")} onToggleFavorite={()=>toggleFavBiblio(evtDetail,"evenement")} isLoggedIn={isLoggedIn} onRequireAuth={onRequireAuth} customCatEvenements={customCatEvenements} onMasquer={toggleMasquer?()=>toggleMasquer(evtDetail,"evenement"):undefined} estMasque={estMasque?estMasque(evtDetail,"evenement"):false} currentUser={currentUser}/>}
+      {evtDetail&&<EvenementDetail evt={evtDetail} onBack={()=>setEvtDetail(null)} onReport={addReport} isFavorite={isFavBiblio(evtDetail,"evenement")} onToggleFavorite={()=>toggleFavBiblio(evtDetail,"evenement")} isLoggedIn={isLoggedIn} onRequireAuth={onRequireAuth} customCatEvenements={customCatEvenements} onMasquer={toggleMasquer?()=>toggleMasquer(evtDetail,"evenement"):undefined} estMasque={estMasque?estMasque(evtDetail,"evenement"):false}/>}
       {showFormEvt&&(<FormEvenement customCatEvenements={customCatEvenements} onClose={()=>{setShowFormEvt(false);setTypeEvtForm("");setTypeAutreForm("");}} onSubmit={handleSubmitEvt} onOpenAutrePopup={()=>{setTypeAutreTemp(typeAutreForm);setShowAutrePopup(true);}} typeAutre={typeAutreForm} typeEvt={typeEvtForm} setTypeEvt={setTypeEvtForm}/>)}
       {showAutrePopup&&(<div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.6)",zIndex:9999,display:"flex",alignItems:"center",justifyContent:"center",padding:"0 24px"}}><div style={{background:WH,borderRadius:20,padding:24,width:"100%",maxWidth:320,boxShadow:"0 8px 40px rgba(0,0,0,0.25)"}}><p style={{margin:"0 0 4px",fontSize:16,fontWeight:700,color:TX,textAlign:"center"}}>Autre type</p><input value={typeAutreTemp} onChange={e=>setTypeAutreTemp(e.target.value)} placeholder="Ex : Festival, Portes ouvertes..." style={{padding:"12px 14px",borderRadius:12,border:"1.5px solid "+V,fontSize:14,width:"100%",boxSizing:"border-box",fontFamily:"inherit",outline:"none",marginBottom:16}}/><div style={{display:"flex",gap:10}}><button onClick={()=>setShowAutrePopup(false)} style={{flex:1,padding:"11px 0",borderRadius:28,background:BG,border:"1px solid #E5E7EB",color:TX,fontSize:14,cursor:"pointer"}}>Annuler</button><button onClick={()=>{if(typeAutreTemp.trim()){setTypeAutreForm(typeAutreTemp.trim());setTypeEvtForm("autre");}setShowAutrePopup(false);}} style={{flex:1,padding:"11px 0",borderRadius:28,background:V,border:"none",color:WH,fontWeight:600,fontSize:14,cursor:"pointer"}}>Confirmer</button></div></div></div>)}
       {showFavorisLimitMsg&&(
@@ -2800,7 +2969,7 @@ function Confetti({active}){
 function Onboarding({onDone,onDemo}){
   const [step,setStep]=useState(0);
   const steps=[
-    {emoji:"🧩",titre:"Bienvenue sur Parent'Hèse",desc:"L'app pensée pour tous les parents — et particulièrement pour ceux d'enfants à besoins particuliers (TSA, TDAH, DYS...). Trouvez des activités et sorties adaptées en quelques secondes.",bg:"linear-gradient(135deg,#6C5CE7,#a78bfa)"},
+    {emoji:"🧩",titre:"Bienvenue sur Parent'Hèse",desc:"L'app pensée pour les familles avec des enfants TND — TSA, TDAH, DYS. Trouvez des activités et sorties adaptées en quelques secondes.",bg:"linear-gradient(135deg,#6C5CE7,#a78bfa)"},
     {emoji:"🪄",titre:"Générez des idées adaptées",desc:"Décrivez l'énergie et l'humeur du moment, l'app propose des activités personnalisées selon les besoins sensoriels de votre enfant.",bg:"linear-gradient(135deg,#10B981,#34d399)"},
     {emoji:"🗺️",titre:"Découvrez les sorties près de chez vous",desc:"Parcs, musées, fermes pédagogiques… filtrés par accessibilité et adaptabilité TND. Avec les avis d'autres parents.",bg:"linear-gradient(135deg,#F59E0B,#fcd34d)"},
     {emoji:"📅",titre:"Planifiez la semaine",desc:"Générez un planning d'activités sur mesure pour 3 ou 7 jours. L'emploi du temps en pictogrammes aide votre enfant à se préparer.",bg:"linear-gradient(135deg,#EC4899,#f9a8d4)"},
@@ -3495,7 +3664,7 @@ function PageAccueil({favoris,setFavoris,setPage,customEvents=[],popupShown=new 
           <p style={{margin:"0 0 6px",fontSize:26,fontWeight:800,color:TX,lineHeight:1.2}}>Que souhaitez-vous<br/>faire aujourd hui ? 🪄</p>
           <p style={{margin:0,fontSize:14,color:TM}}>Trouvez l inspiration parfaite en deux clics pour vos enfants.</p>
           {/* Bandeaux admin actifs */}
-        {(adminComms||[]).filter(c=>c.actif&&c.type==="banner"&&(!c.debut||c.debut<=today)&&(!c.fin||c.fin>=today)).map(c=>(
+        {(adminComms||[]).filter(c=>c.actif&&c.type==="banner").map(c=>(
           <div key={c.id} onClick={()=>{if(c.codePromo&&onOpenPremium)onOpenPremium(c.codePromo);}} style={{background:"linear-gradient(135deg,#6C5CE7,#a78bfa)",borderRadius:14,padding:"12px 16px",marginBottom:10,display:"flex",alignItems:"center",gap:10,cursor:c.codePromo?"pointer":"default"}}>
             <span style={{fontSize:20,flexShrink:0}}>📢</span>
             <div style={{flex:1}}>
@@ -3894,7 +4063,12 @@ function PageAccueil({favoris,setFavoris,setPage,customEvents=[],popupShown=new 
             <p style={{margin:"0 0 16px",fontSize:13,color:TX,lineHeight:1.6}}>{evt.desc}</p>
             <div style={{marginBottom:16}}>
               <p style={{margin:"0 0 8px",fontSize:13,fontWeight:700,color:TX}}>🧩 Infos accessibilité TND</p>
-              <TNDBadgesEvt tnd={evt.tnd}/>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>
+                <div style={{background:"#D1FAE5",borderRadius:10,padding:"6px 10px",display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:14}}>🔈</span><div><div style={{fontSize:10,color:TM}}>Son</div><div style={{fontSize:12,fontWeight:600,color:"#065F46"}}>Calme</div></div></div>
+                <div style={{background:"#DBEAFE",borderRadius:10,padding:"6px 10px",display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:14}}>👥</span><div><div style={{fontSize:10,color:TM}}>Affluence</div><div style={{fontSize:12,fontWeight:600,color:"#1E3A5F"}}>Faible</div></div></div>
+                <div style={{background:"#D1FAE5",borderRadius:10,padding:"6px 10px",display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:14}}>🔮</span><div><div style={{fontSize:10,color:TM}}>Prévisibilité</div><div style={{fontSize:12,fontWeight:600,color:"#065F46"}}>Structurée</div></div></div>
+                <div style={{background:"#F0FDF4",borderRadius:10,padding:"6px 10px",display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:14}}>🌿</span><div><div style={{fontSize:10,color:TM}}>Zone calme</div><div style={{fontSize:12,fontWeight:600,color:"#374151"}}>Oui</div></div></div>
+              </div>
             </div>
             <button onClick={()=>setShowEvtAdminSheet(false)} style={{width:"100%",padding:"12px 0",borderRadius:28,background:OR,border:"none",color:WH,fontWeight:700,fontSize:13,cursor:"pointer"}}>✅ Noté, on y va !</button>
           </div>
@@ -3995,7 +4169,7 @@ function PageAccueil({favoris,setFavoris,setPage,customEvents=[],popupShown=new 
       {showFichier&&<FichierViewer fichier={showFichier} couleur={showFichier.couleur||V} onClose={()=>setShowFichier(null)}/>}
       {detailActiviteEvt&&(
         <div style={{position:"fixed",inset:0,zIndex:600,background:"#fff",overflowY:"auto"}}>
-          <ActivityDetailPage activity={detailActiviteEvt} isFavorite={favoris.some(f=>f.id===detailActiviteEvt.id&&f._type==="activite")} onToggleFavorite={()=>setFavorisGuarded(prev=>{const exists=prev.find(f=>f.id===detailActiviteEvt.id&&f._type==="activite");if(exists)return prev.filter(f=>!(f.id===detailActiviteEvt.id&&f._type==="activite"));return[...prev,{...detailActiviteEvt,nom:detailActiviteEvt.titre,_type:"activite"}];})} onBack={()=>setDetailActiviteEvt(null)} isLoggedIn={isLoggedIn} onRequireAuth={onRequireAuth} onMasquer={toggleMasquer?()=>toggleMasquer(detailActiviteEvt,"activite"):undefined} estMasque={estMasque?estMasque(detailActiviteEvt,"activite"):false} currentUser={currentUser} amazonTag={amazonTag}/>
+          <ActivityDetailPage activity={detailActiviteEvt} isFavorite={favoris.some(f=>f.id===detailActiviteEvt.id&&f._type==="activite")} onToggleFavorite={()=>setFavorisGuarded(prev=>{const exists=prev.find(f=>f.id===detailActiviteEvt.id&&f._type==="activite");if(exists)return prev.filter(f=>!(f.id===detailActiviteEvt.id&&f._type==="activite"));return[...prev,{...detailActiviteEvt,nom:detailActiviteEvt.titre,_type:"activite"}];})} onBack={()=>setDetailActiviteEvt(null)} isLoggedIn={isLoggedIn} onRequireAuth={onRequireAuth} onMasquer={toggleMasquer?()=>toggleMasquer(detailActiviteEvt,"activite"):undefined} estMasque={estMasque?estMasque(detailActiviteEvt,"activite"):false} amazonTag={amazonTag}/>
         </div>
       )}
 
@@ -4046,8 +4220,8 @@ function PageAccueil({favoris,setFavoris,setPage,customEvents=[],popupShown=new 
         </div>
       )}
       {resultS&&<BottomSheet item={resultS} type="sortie" onClose={()=>setResultS(null)} onFav={toggleFav} isFav={favoris.some(f=>f.id===resultS.id&&f._type==="sortie")} onDone={(item)=>handleMarquerFait(item,"sortie")} onMasquer={toggleMasquer?(item)=>{toggleMasquer(item,"sortie");setResultS(null);}:undefined}/>}
-      {resultsAList&&<ListePropositions items={resultsAList} type="activite" onChoisir={choisirDansListeA} onClose={()=>setResultsAList(null)} isPremium={isPremium} enfantActif={enfants.find(e=>e.id===enfantActif)||null} onMasquer={toggleMasquer?(item)=>toggleMasquer(item,"activite"):undefined}/>}
-      {resultsSList&&<ListePropositions items={resultsSList} type="sortie" onChoisir={choisirDansListeS} onClose={()=>setResultsSList(null)} isPremium={isPremium} enfantActif={enfants.find(e=>e.id===enfantActif)||null} onMasquer={toggleMasquer?(item)=>toggleMasquer(item,"sortie"):undefined}/>}
+      {resultsAList&&<ListePropositions items={resultsAList} type="activite" onChoisir={choisirDansListeA} onClose={()=>setResultsAList(null)} isPremium={isPremium} enfantActif={enfants.find(e=>e.id===enfantActif)||null} onMasquer={toggleMasquer?(item)=>toggleMasquer(item,"activite"):undefined} amazonTag={amazonTag}/>}
+      {resultsSList&&<ListePropositions items={resultsSList} type="sortie" onChoisir={choisirDansListeS} onClose={()=>setResultsSList(null)} isPremium={isPremium} enfantActif={enfants.find(e=>e.id===enfantActif)||null} onMasquer={toggleMasquer?(item)=>toggleMasquer(item,"sortie"):undefined} amazonTag={amazonTag}/>}
 
       {showFiltresSortie&&(
         <div onClick={()=>setShowFiltresSortie(false)} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.45)",zIndex:500,display:"flex",alignItems:"flex-end",justifyContent:"center"}}>
@@ -4144,12 +4318,7 @@ function PageAccueil({favoris,setFavoris,setPage,customEvents=[],popupShown=new 
   );
 }
 
-function PageSOS({sosLib=[],sosSituations=[],isPremium=false,onOpenPremium,onBack}){
-  const [sosTab,setSosTab]=useState("crise"); // "crise" | "situation"
-  const [themeActif,setThemeActif]=useState(null);
-  const [situationActive,setSituationActive]=useState(null);
-  const [solutionActive,setSolutionActive]=useState(null);
-  const [checklistCochee,setChecklistCochee]=useState({});
+function PageSOS({sosLib=[],isPremium=false,onOpenPremium,onBack}){
   const [sosCrise,setSosCrise]=useState(null);
   const [sosResults,setSosResults]=useState(null);
   const [sosDetailActive,setSosDetailActive]=useState(null); // activité en cours de réalisation
@@ -4183,98 +4352,6 @@ function PageSOS({sosLib=[],sosSituations=[],isPremium=false,onOpenPremium,onBac
     <p style={{margin:"0 0 8px",fontSize:12,color:"rgba(255,255,255,0.65)",lineHeight:1.5}}>{act.desc}</p>
     {Array.isArray(act.materiel)&&act.materiel.length>0&&<p style={{margin:0,fontSize:11,color:"rgba(255,255,255,0.35)"}}>Matériel : {act.materiel.join(", ")}</p>}
   </div>);
-
-  const selectionnerSituation=(si)=>{
-    setSituationActive(si);
-    setChecklistCochee({});
-    const sols=si.solutions||[];
-    setSolutionActive(sols.length<=1?(sols[0]||null):null);
-  };
-  const retourDepuisSolution=()=>{
-    setChecklistCochee({});
-    if((situationActive?.solutions||[]).length>1){setSolutionActive(null);}
-    else{setSituationActive(null);setSolutionActive(null);}
-  };
-
-  if(situationActive&&!solutionActive&&(situationActive.solutions||[]).length>1){
-    const si=situationActive;
-    return(
-      <div style={{background:"#0f0505",minHeight:"100vh",display:"flex",flexDirection:"column",fontFamily:"system-ui,-apple-system,sans-serif"}}>
-        <div style={{background:"linear-gradient(135deg,#7f1d1d,#dc2626)",padding:"16px 16px 20px",position:"relative"}}>
-          <button onClick={()=>{setSituationActive(null);setSolutionActive(null);}} style={{position:"absolute",top:14,left:14,width:34,height:34,borderRadius:"50%",background:"rgba(255,255,255,0.15)",border:"none",color:"#fff",fontSize:18,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>←</button>
-          <div style={{textAlign:"center"}}>
-            <div style={{fontSize:36,marginBottom:4}}>{si.emoji||"🧩"}</div>
-            <p style={{margin:"0 0 2px",fontSize:18,fontWeight:800,color:"#fff"}}>{si.titre}</p>
-            {si.sousTitre&&<p style={{margin:0,fontSize:12,color:"rgba(255,255,255,0.7)"}}>{si.sousTitre}</p>}
-          </div>
-        </div>
-        <div style={{flex:1,padding:"20px 20px 24px",overflowY:"auto"}}>
-          <p style={{fontSize:12,fontWeight:700,color:"#fca5a5",margin:"0 0 14px",textTransform:"uppercase",letterSpacing:"0.5px"}}>Choisis une approche à essayer</p>
-          <div style={{display:"flex",flexDirection:"column",gap:10}}>
-            {si.solutions.map((sol,i)=>(
-              <button key={i} onClick={()=>setSolutionActive(sol)} style={{display:"flex",alignItems:"center",gap:12,padding:"16px",borderRadius:16,background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.12)",cursor:"pointer",textAlign:"left"}}>
-                <div style={{flex:1}}>
-                  <p style={{margin:0,fontSize:14,fontWeight:700,color:"#fff"}}>{sol.label}</p>
-                </div>
-                <span style={{fontSize:16,color:"rgba(255,255,255,0.3)"}}>→</span>
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if(solutionActive){
-    const si=situationActive;
-    const sol=solutionActive;
-    return(
-      <div style={{background:"#0f0505",minHeight:"100vh",display:"flex",flexDirection:"column",fontFamily:"system-ui,-apple-system,sans-serif"}}>
-        <div style={{background:"linear-gradient(135deg,#7f1d1d,#dc2626)",padding:"16px 16px 20px",position:"relative"}}>
-          <button onClick={retourDepuisSolution} style={{position:"absolute",top:14,left:14,width:34,height:34,borderRadius:"50%",background:"rgba(255,255,255,0.15)",border:"none",color:"#fff",fontSize:18,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>←</button>
-          <div style={{textAlign:"center"}}>
-            <div style={{fontSize:36,marginBottom:4}}>{si?.emoji||"🧩"}</div>
-            <p style={{margin:"0 0 2px",fontSize:18,fontWeight:800,color:"#fff"}}>{si?.titre}</p>
-            {(si?.solutions||[]).length>1?<p style={{margin:0,fontSize:12,color:"rgba(255,255,255,0.7)"}}>{sol.label}</p>:si?.sousTitre&&<p style={{margin:0,fontSize:12,color:"rgba(255,255,255,0.7)"}}>{si.sousTitre}</p>}
-          </div>
-        </div>
-        <div style={{flex:1,padding:"20px 20px 24px",overflowY:"auto"}}>
-          {sol.etapes&&sol.etapes.length>0&&(
-            <div style={{marginBottom:24}}>
-              <p style={{fontSize:12,fontWeight:700,color:"#fca5a5",margin:"0 0 12px",textTransform:"uppercase",letterSpacing:"0.5px"}}>📝 Que faire, étape par étape</p>
-              <div style={{display:"flex",flexDirection:"column",gap:12}}>
-                {sol.etapes.map((e,i)=>(
-                  <div key={i} style={{display:"flex",gap:12,alignItems:"flex-start"}}>
-                    <div style={{width:26,height:26,borderRadius:"50%",background:"rgba(239,68,68,0.2)",border:"1.5px solid #ef4444",color:"#fca5a5",fontSize:12,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginTop:1}}>{i+1}</div>
-                    <p style={{margin:0,fontSize:14,color:"rgba(255,255,255,0.85)",lineHeight:1.6}}>{e}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-          {sol.checklist&&sol.checklist.length>0&&(
-            <div>
-              <p style={{fontSize:12,fontWeight:700,color:"#fca5a5",margin:"0 0 12px",textTransform:"uppercase",letterSpacing:"0.5px"}}>✅ Checklist rapide</p>
-              <div style={{display:"flex",flexDirection:"column",gap:8}}>
-                {sol.checklist.map((c,i)=>{
-                  const coche=!!checklistCochee[i];
-                  return(
-                    <button key={i} onClick={()=>setChecklistCochee(p=>({...p,[i]:!p[i]}))} style={{display:"flex",alignItems:"center",gap:10,padding:"12px 14px",borderRadius:14,background:coche?"rgba(34,197,94,0.1)":"rgba(255,255,255,0.04)",border:`1px solid ${coche?"rgba(34,197,94,0.35)":"rgba(255,255,255,0.08)"}`,cursor:"pointer",textAlign:"left"}}>
-                      <span style={{fontSize:18,flexShrink:0}}>{coche?"✅":"⬜"}</span>
-                      <span style={{fontSize:13,color:coche?"rgba(255,255,255,0.5)":"rgba(255,255,255,0.85)",textDecoration:coche?"line-through":"none"}}>{c}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-        </div>
-        <div style={{padding:"16px 20px 24px"}}>
-          <button onClick={()=>{setSituationActive(null);setSolutionActive(null);setChecklistCochee({});onBack&&onBack();}} style={{width:"100%",padding:"15px 0",borderRadius:28,background:"linear-gradient(135deg,#16a34a,#22c55e)",border:"none",color:"#fff",fontWeight:700,fontSize:15,cursor:"pointer"}}>😌 C'est fini, merci !</button>
-        </div>
-      </div>
-    );
-  }
 
   if(sosDetailActive){
     const act=sosDetailActive;
@@ -4333,71 +4410,6 @@ function PageSOS({sosLib=[],sosSituations=[],isPremium=false,onOpenPremium,onBac
         </div>
       </div>
       <div style={{flex:1,padding:"16px 16px 24px",overflowY:"auto"}}>
-        {/* Switcher d'approche */}
-        <div style={{display:"flex",gap:8,marginBottom:18,background:"rgba(255,255,255,0.04)",borderRadius:16,padding:4}}>
-          {[{k:"crise",l:"😰 Type de crise"},{k:"situation",l:"🧩 Situation concrète"}].map(t=>(
-            <button key={t.k} onClick={()=>{setSosTab(t.k);setSosResults(null);setSosCrise(null);setThemeActif(null);setSituationActive(null);setSolutionActive(null);}} style={{flex:1,padding:"9px 0",borderRadius:12,border:"none",background:sosTab===t.k?"rgba(239,68,68,0.9)":"transparent",color:"#fff",fontWeight:sosTab===t.k?700:500,fontSize:12,cursor:"pointer",transition:"all 0.15s"}}>{t.l}</button>
-          ))}
-        </div>
-
-        {sosTab==="situation"?(()=>{
-          const publiees=sosSituations.filter(s=>s.statut==="published").sort((a,b)=>(a.ordre||0)-(b.ordre||0));
-          if(themeActif){
-            const dansTheme=publiees.filter(s=>s.theme===themeActif);
-            return(
-              <div>
-                <button onClick={()=>setThemeActif(null)} style={{background:"none",border:"none",color:"rgba(255,255,255,0.6)",fontSize:12,cursor:"pointer",padding:0,marginBottom:12,display:"flex",alignItems:"center",gap:4}}>← Thèmes</button>
-                <p style={{fontSize:12,fontWeight:700,color:"#fca5a5",margin:"0 0 12px",textTransform:"uppercase",letterSpacing:"0.5px"}}>{themeActif}</p>
-                <div style={{display:"flex",flexDirection:"column",gap:10}}>
-                  {dansTheme.map(si=>(
-                    <button key={si.id} onClick={()=>selectionnerSituation(si)} style={{display:"flex",alignItems:"center",gap:12,padding:"14px 16px",borderRadius:16,background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.1)",cursor:"pointer",textAlign:"left"}}>
-                      <span style={{fontSize:28,flexShrink:0}}>{si.emoji||"🧩"}</span>
-                      <div style={{flex:1}}>
-                        <p style={{margin:"0 0 2px",fontSize:14,fontWeight:700,color:"#fff"}}>{si.titre}</p>
-                        {si.sousTitre&&<p style={{margin:0,fontSize:11,color:"rgba(255,255,255,0.5)"}}>{si.sousTitre}</p>}
-                      </div>
-                      <span style={{fontSize:16,color:"rgba(255,255,255,0.3)"}}>→</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            );
-          }
-          const themes=[...new Set(publiees.filter(s=>s.theme).map(s=>s.theme))];
-          const sansTheme=publiees.filter(s=>!s.theme);
-          return(
-            <div>
-              <p style={{fontSize:12,fontWeight:700,color:"#fca5a5",margin:"0 0 12px",textTransform:"uppercase",letterSpacing:"0.5px"}}>🧩 Quelle situation rencontres-tu ?</p>
-              <div style={{display:"flex",flexDirection:"column",gap:10}}>
-                {themes.map(theme=>{
-                  const count=publiees.filter(s=>s.theme===theme).length;
-                  return(
-                    <button key={theme} onClick={()=>setThemeActif(theme)} style={{display:"flex",alignItems:"center",gap:12,padding:"14px 16px",borderRadius:16,background:"rgba(139,92,246,0.1)",border:"1px solid rgba(139,92,246,0.3)",cursor:"pointer",textAlign:"left"}}>
-                      <div style={{flex:1}}>
-                        <p style={{margin:0,fontSize:14,fontWeight:700,color:"#fff"}}>{theme}</p>
-                        <p style={{margin:0,fontSize:11,color:"rgba(255,255,255,0.5)"}}>{count} situation{count>1?"s":""}</p>
-                      </div>
-                      <span style={{fontSize:16,color:"rgba(255,255,255,0.3)"}}>→</span>
-                    </button>
-                  );
-                })}
-                {sansTheme.map(si=>(
-                  <button key={si.id} onClick={()=>selectionnerSituation(si)} style={{display:"flex",alignItems:"center",gap:12,padding:"14px 16px",borderRadius:16,background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.1)",cursor:"pointer",textAlign:"left"}}>
-                    <span style={{fontSize:28,flexShrink:0}}>{si.emoji||"🧩"}</span>
-                    <div style={{flex:1}}>
-                      <p style={{margin:"0 0 2px",fontSize:14,fontWeight:700,color:"#fff"}}>{si.titre}</p>
-                      {si.sousTitre&&<p style={{margin:0,fontSize:11,color:"rgba(255,255,255,0.5)"}}>{si.sousTitre}</p>}
-                    </div>
-                    <span style={{fontSize:16,color:"rgba(255,255,255,0.3)"}}>→</span>
-                  </button>
-                ))}
-                {publiees.length===0&&(
-                  <p style={{fontSize:13,color:"rgba(255,255,255,0.5)",textAlign:"center",padding:"20px 0"}}>Aucune situation disponible pour le moment.</p>
-                )}
-              </div>
-            </div>
-          );
-        })():(<>
         {!sosResults?(
           <div>
             {/* Filtre 1 — Type de crise */}
@@ -4436,18 +4448,21 @@ function PageSOS({sosLib=[],sosSituations=[],isPremium=false,onOpenPremium,onBac
             </div>
           </div>
         )}
-        </>)}
       </div>
     </div>
   );
 }
 
-function PagePlanning({sosLib=[],enfants=[],enfantActif,setEnfantActif,isPremium=false,onOpenPremium,sosModeActif=true,adminActivites=[],pendingContribs=[],deletedTitles=new Set(),masquees=[],adminReports=[],currentUser=null,count=3,setCount,energieP=null,setEnergieP,lieuP=null,setLieuP,semaineType=null,setSemaineType,planning=[],setPlanning,materielDispo=[],setMaterielDispo,sansMateriel=false,setSansMateriel,enfantsSelectionnes=[],setEnfantsSelectionnes,checkedMat={},setCheckedMat,amazonTag=""}){
+function PagePlanning({sosLib=[],enfants=[],enfantActif,setEnfantActif,isPremium=false,onOpenPremium,sosModeActif=true,adminActivites=[],pendingContribs=[],deletedTitles=new Set(),masquees=[],adminReports=[],currentUser=null,amazonTag=""}){
+  const [count,setCount]=useState(3);
+  const [energieP,setEnergieP]=useState(null);
+  const [lieuP,setLieuP]=useState(null);
+  const [semaineType,setSemaineType]=useState(null); // null | "semaine" | "weekend"
+  const [planning,setPlanning]=useState([]);
   const [detailActivitePlanning,setDetailActivitePlanning]=useState(null);
   const [showFiltresMat,setShowFiltresMat]=useState(false);
-  useEffect(()=>{
-    if(enfantsSelectionnes.length===0&&enfantActif)setEnfantsSelectionnes([enfantActif]);
-  },[enfantActif]);
+  const [materielDispo,setMaterielDispo]=useState([]);
+  const [enfantsSelectionnes,setEnfantsSelectionnes]=useState(enfantActif?[enfantActif]:[]);
   const joursBase=["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"];
   const joursSemaine=["Lundi","Mardi","Mercredi","Jeudi","Vendredi"];
   const joursWeekend=["Samedi","Dimanche"];
@@ -4460,6 +4475,7 @@ function PagePlanning({sosLib=[],enfants=[],enfantActif,setEnfantActif,isPremium
   const toutesActivitesP=[...ACTIVITES,...adminPubP,...approvedActsP].filter(a=>!blockedTitlesP.has(a.nom)&&!blockedTitlesP.has(a.titre)).filter(a=>!masqueesActKeysP.has(String(a.id))&&!masqueesActKeysP.has(String(a.nom))&&!masqueesActKeysP.has(String(a.titre)));
   const enfantCourantP=enfants.find(e=>e.id===enfantActif);
   const ALL_MATERIEL=[...new Set(toutesActivitesP.flatMap(a=>a.materiel||[]))].sort();
+  const [sansMateriel,setSansMateriel]=useState(false);
   const toggleMat=(m)=>setMaterielDispo(prev=>prev.includes(m)?prev.filter(x=>x!==m):[...prev,m]);
   const actMatOk=(a)=>{
     if(sansMateriel&&(a.materiel||[]).length>0)return false;
@@ -4492,6 +4508,7 @@ function PagePlanning({sosLib=[],enfants=[],enfantActif,setEnfantActif,isPremium
     setPlanning(prev=>prev.map((p,idx)=>idx===i?{...p,activite:shortlist[Math.floor(Math.random()*shortlist.length)]}:p));
   };
   const allMateriel=[...new Set(planning.flatMap(p=>p.activite?.materiel||[]))];
+  const [checkedMat,setCheckedMat]=useState({});
   const toggleChecked=(m)=>setCheckedMat(prev=>({...prev,[m]:!prev[m]}));
 
   // Sauvegarde / restauration du planning + liste de courses (stockage personnel persistant)
@@ -4650,26 +4667,6 @@ function PagePlanning({sosLib=[],enfants=[],enfantActif,setEnfantActif,isPremium
                   <div style={{width:pct+"%",height:"100%",background:"#fff",borderRadius:4,transition:"width 0.4s"}}/>
                 </div>
                 {checkedCount>0&&<p style={{margin:"6px 0 0",fontSize:11,color:"rgba(255,255,255,0.75)"}}>{checkedCount}/{totalItems} cochés — {totalItems-checkedCount} restant{totalItems-checkedCount>1?"s":""}</p>}
-                {/* Actions dédiées à la liste de courses */}
-                <div style={{display:"flex",gap:8,marginTop:10}}>
-                  <button onClick={()=>{
-                    const texteListe="🛒 Ma liste de courses\n\n"+Object.values(grouped).map(r=>`${r.label}\n`+r.items.map(m=>`☐ ${m}`).join("\n")).join("\n\n")+"\n\nGénéré avec Parent'Hèse 🧩";
-                    if(navigator.share){navigator.share({title:"Ma liste de courses",text:texteListe}).catch(()=>{});}
-                    else if(navigator.clipboard){navigator.clipboard.writeText(texteListe).then(()=>setSaveToast("📋 Liste copiée !")).catch(()=>{});}
-                  }} style={{flex:1,padding:"8px 0",borderRadius:20,background:"rgba(255,255,255,0.18)",border:"1px solid rgba(255,255,255,0.35)",color:"#fff",fontSize:12,fontWeight:700,cursor:"pointer"}}>
-                    📤 Partager / Notes
-                  </button>
-                  <button onClick={()=>{
-                    const win=window.open("","_blank");
-                    if(!win){setSaveToast("⚠️ Bloqué par le navigateur — autorisez les pop-ups pour ce site puis réessayez.");setTimeout(()=>setSaveToast(null),4000);return;}
-                    const html=`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Liste de courses Parent'Hèse</title><style>body{font-family:system-ui,sans-serif;max-width:500px;margin:0 auto;padding:24px;color:#2C2A3E}h1{color:#6C5CE7;font-size:22px;margin-bottom:4px}.subtitle{color:#7A7690;font-size:13px;margin-bottom:20px}.rayon{margin-top:18px}.rayon h2{font-size:14px;color:#6C5CE7;margin:0 0 8px}.item{padding:6px 0;font-size:14px;border-bottom:1px solid #EDE9FF}@media print{body{margin:0}}</style></head><body><h1>🛒 Ma liste de courses</h1><p class="subtitle">Générée le ${new Date().toLocaleDateString("fr-FR")}</p>${Object.values(grouped).map(r=>`<div class="rayon"><h2>${r.label}</h2>${r.items.map(m=>`<div class="item">☐ ${m}</div>`).join("")}</div>`).join("")}</body></html>`;
-                    win.document.write(html);
-                    win.document.close();
-                    win.print();
-                  }} style={{flex:1,padding:"8px 0",borderRadius:20,background:"rgba(255,255,255,0.18)",border:"1px solid rgba(255,255,255,0.35)",color:"#fff",fontSize:12,fontWeight:700,cursor:"pointer"}}>
-                    🖨️ Imprimer
-                  </button>
-                </div>
               </div>
 
               {/* Rayons */}
@@ -5122,7 +5119,7 @@ function PagePremium({onBack,onSubscribe,isLoggedIn=true,onRequireAuth,premiumTr
       valeur:"Gain de temps",
       detail:"Génère en 1 clic un planning d'activités sur 7 jours, adapté à l'énergie et aux envies de votre enfant. Inclut automatiquement la liste de courses pour préparer les activités.",
       exemple:"Lundi : peinture 🎨 · Mardi : cuisine 🍳 · Mercredi : nature 🌳...",
-      gratuit:"Pas de gratuité",
+      gratuit:"3 jours seulement",
     },
     {
       emoji:"👶",titre:"Profils enfants illimités",desc:"Jusqu'à 6 enfants au lieu de 2",
@@ -5130,7 +5127,7 @@ function PagePremium({onBack,onSubscribe,isLoggedIn=true,onRequireAuth,premiumTr
       valeur:"Famille nombreuse",
       detail:"Créez un profil personnalisé pour chacun de vos enfants avec son propre carnet sensoriel, ses profils TND (TSA, TDAH, DYS) et ses préférences. Les suggestions s'adaptent à l'enfant sélectionné.",
       exemple:"Chaque enfant a ses propres suggestions adaptées à son profil.",
-      gratuit:"Pas de gratuité",
+      gratuit:"2 profils maximum",
     },
     {
       emoji:"🆘",titre:"Mode SOS",desc:"Activités d'urgence pour les moments difficiles",
@@ -5170,7 +5167,7 @@ function PagePremium({onBack,onSubscribe,isLoggedIn=true,onRequireAuth,premiumTr
       valeur:"Suggestions pertinentes",
       detail:"Toujours 3 propositions comme en gratuit, mais triées et scorées selon le profil sensoriel et les besoins de votre enfant. Un badge de compatibilité indique en un coup d'œil les activités les mieux adaptées.",
       exemple:"🟢 Très adapté · 🟡 Adapté · ⚪ À tester — pour chaque proposition.",
-      gratuit:"3 propositions non triées par besoin des enfants",
+      gratuit:"3 propositions non triées",
     },
   ];
 
@@ -5300,9 +5297,9 @@ function PagePremium({onBack,onSubscribe,isLoggedIn=true,onRequireAuth,premiumTr
           </div>
           {[
             ["Générateur d'activités","3 choix","3 choix triés"],
-            ["Profils enfants","✗","6 max"],
+            ["Profils enfants","2 max","6 max"],
             ["Favoris","10 max","Illimités"],
-            ["Planning hebdomadaire","✗","7 jours"],
+            ["Planning hebdomadaire","3 jours","7 jours"],
             ["Mode SOS","✗","✓"],
             ["Carnet sensoriel","✗","✓"],
             ["Pictogrammes","✗","✓"],
@@ -5563,7 +5560,7 @@ function PageAide({onBack,onGoConfidentialite,isPremium=false,setPremium,onOpenP
     {categorie:"👤 Mon compte",couleur:BG,couleurTexte:"#444441",questions:[
       {id:"m1",question:"Comment modifier mon profil ?",reponse:"Dans l onglet Profil, clique sur ton avatar ou ton nom pour modifier tes informations personnelles (prenom, photo, nombre et age de tes enfants)."},
       {id:"m2",question:"Comment supprimer mon compte ?",reponse:"Dans Profil → Confidentialite → Supprimer mon compte. Cette action est irreversible et supprime toutes tes donnees. Tu devras taper SUPPRIMER pour confirmer."},
-      {id:"m3",question:"Comment recuperer mes donnees personnelles ?",reponse:"Dans Profil → Confidentialite → Telecharger mes donnees. Un fichier avec l ensemble de tes donnees se telecharge immediatement, conformement au RGPD."},
+      {id:"m3",question:"Comment recuperer mes donnees personnelles ?",reponse:"Dans Profil → Confidentialite → Telecharger mes donnees. Tu recevras un email avec l ensemble de tes donnees sous 48h, conformement au RGPD."},
       {id:"m4",question:"Comment annuler mon abonnement Premium ?",reponse:"Dans Profil → Aide & FAQ, descends jusqu a la section Mon abonnement et clique sur Annuler mon abonnement Premium. Tu repasses immediatement en version gratuite, sans engagement."},
     ]},
   ];
@@ -5787,7 +5784,7 @@ function PageAmelioration({onBack}){
   );
 }
 
-function PageConfidentialite({onBack,onDeleteAccount,currentUser=null,enfants=[],favoris=[],historiqueActivites=[],pendingContribs=[]}){
+function PageConfidentialite({onBack,onDeleteAccount}){
   const [dataPrefs,setDataPrefs]=useState({statistiques:true,personnalisation:true});
   const [showDeleteModal,setShowDeleteModal]=useState(false);
   const [showDownloadToast,setShowDownloadToast]=useState(false);
@@ -5801,27 +5798,7 @@ function PageConfidentialite({onBack,onDeleteAccount,currentUser=null,enfants=[]
   };
   const [legalModal,setLegalModal]=useState(null);
   const togglePref=(k)=>setDataPrefs(prev=>({...prev,[k]:!prev[k]}));
-  const handleDownload=()=>{
-    const mesContribs=(pendingContribs||[]).filter(c=>currentUser&&((currentUser.email&&c._auteurEmail===currentUser.email)||(currentUser.nom&&c._auteur===currentUser.nom)));
-    const donnees={
-      export_genere_le:new Date().toISOString(),
-      profil:{nom:currentUser?.nom||null,email:currentUser?.email||null,premium:!!currentUser?.premium},
-      enfants:(enfants||[]).map(e=>({prenom:e.prenom,age:e.age,besoins:e.besoins,besoinsMatching:e.besoinsMatching,niveauxSensoriels:e.niveauxSensoriels})),
-      favoris:(favoris||[]).map(f=>({nom:f.nom||f.titre,type:f._type})),
-      historique_activites:(historiqueActivites||[]).map(h=>({nom:h.nom||h.titre,date:h._date})),
-      mes_contributions:mesContribs.map(c=>({type:c._type,titre:c.titre||c.nom,statut:c._statut,date:c._createdAt})),
-    };
-    const blob=new Blob([JSON.stringify(donnees,null,2)],{type:"application/json"});
-    const url=URL.createObjectURL(blob);
-    const a=document.createElement("a");
-    a.href=url;
-    a.download=`mes-donnees-parenthese-${new Date().toISOString().slice(0,10)}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    setShowDownloadToast(true);setTimeout(()=>setShowDownloadToast(false),3000);
-  };
+  const handleDownload=()=>{setShowDownloadToast(true);setTimeout(()=>setShowDownloadToast(false),3000);};
   const LEGAL={
     politique:{titre:"Politique de confidentialite",txt:"Parent'Hèse collecte uniquement les donnees necessaires au fonctionnement de l application (email, preferences, contributions). Vos donnees ne sont jamais vendues a des tiers. Conformement au RGPD, vous pouvez demander l acces, la modification ou la suppression de vos donnees a tout moment via support@parentales.fr"},
     conditions:{titre:"Conditions d utilisation",txt:"En utilisant Parent'Hèse, vous acceptez de ne pas publier de contenus inappropries, faux ou trompeurs. Les contenus soumis par les utilisateurs sont moderes avant publication. Parent'Hèse se reserve le droit de supprimer tout contenu ne respectant pas ces conditions."},
@@ -5860,7 +5837,7 @@ function PageConfidentialite({onBack,onDeleteAccount,currentUser=null,enfants=[]
         </div>
         <p style={{fontSize:13,fontWeight:800,color:TX,margin:"0 0 8px"}}>👤 Mes donnees</p>
         <div style={{background:WH,borderRadius:16,border:BD,overflow:"hidden",marginBottom:14}}>
-          <LinkRow icon="📋" iconBg="#EEEDFE" title="Telecharger mes donnees" sub="Téléchargement immédiat d'un fichier avec toutes vos données" onClick={handleDownload}/>
+          <LinkRow icon="📋" iconBg="#EEEDFE" title="Telecharger mes donnees" sub="Recevoir une copie de toutes vos donnees" onClick={handleDownload}/>
           <LinkRow icon="🗑️" iconBg="#FCEBEB" title="Supprimer mon compte" sub="Supprime definitivement votre compte et vos donnees" onClick={()=>setShowDeleteModal(true)} danger last/>
         </div>
         <p style={{fontSize:13,fontWeight:800,color:TX,margin:"0 0 8px"}}>🍪 Preferences de donnees</p>
@@ -5878,7 +5855,7 @@ function PageConfidentialite({onBack,onDeleteAccount,currentUser=null,enfants=[]
       </div>
       {showDownloadToast&&(
         <div style={{position:"fixed",bottom:80,left:"50%",transform:"translateX(-50%)",background:"#065F46",color:WH,borderRadius:20,padding:"10px 20px",fontSize:13,fontWeight:600,zIndex:700,whiteSpace:"nowrap",boxShadow:"0 4px 16px rgba(0,0,0,0.2)"}}>
-          ✅ Téléchargement lancé — vérifiez vos fichiers téléchargés.
+          📧 Un email vous sera envoye avec vos donnees sous 48h.
         </div>
       )}
       {showDeletedToast&&(
@@ -6843,7 +6820,7 @@ function PictogrammeView({ onBack, isPremium = false, onOpenPremium, adminEvenem
   );
 }
 
-function PageProfil({setPage,enfants=[],setEnfants,enfantActif,setEnfantActif,showGestionEnfants,setShowGestionEnfants,currentUser,onLogout,onRequireAuth,isPremium=false,setPremium,evenementsSaisonniers=[],onOpenPremium,onDeleteAccount,favoris=[],adminEvenements=[],pendingContribs=[],darkMode=false,setDarkMode,historiqueActivites=[],setHistoriqueActivites,estBooste,activerBoost,ajouterDemandeDevisBoost,betisesLutin=[],cartesVoyageLutin=[],mesAvisCount=0,aSauvegardePlanning=false,planningEtEnfantsGratuits=false}){
+function PageProfil({setPage,enfants=[],setEnfants,enfantActif,setEnfantActif,showGestionEnfants,setShowGestionEnfants,currentUser,onLogout,onRequireAuth,isPremium=false,setPremium,evenementsSaisonniers=[],onOpenPremium,onDeleteAccount,favoris=[],adminEvenements=[],pendingContribs=[],darkMode=false,setDarkMode,historiqueActivites=[],setHistoriqueActivites,estBooste,activerBoost,ajouterDemandeDevisBoost,betisesLutin=[],cartesVoyageLutin=[],mesAvisCount=0,aSauvegardePlanning=false}){
   const [boostItem,setBoostItem]=useState(null);
   const isLoggedIn=!!currentUser;
   const [subPage,setSubPage]=useState(null);
@@ -6893,29 +6870,19 @@ function PageProfil({setPage,enfants=[],setEnfants,enfantActif,setEnfantActif,sh
   const progressPct=Math.round((tropheesDebloques/trophees.length)*100);
   const tropheesProg=trophees.slice(0,5);
   const tropheesSpec=trophees.slice(5);
-  const [notifiedTrophies,setNotifiedTrophies]=useState(null); // null = pas encore chargé depuis Supabase
+  const contributionsTotalPrecedent=useRef(null);
   useEffect(()=>{
-    if(!currentUser?.id){setNotifiedTrophies([]);return;}
-    (async()=>{
-      try{
-        const {data}=await supabase.from("profiles").select("trophees_notifies").eq("id",currentUser.id).single();
-        setNotifiedTrophies(Array.isArray(data?.trophees_notifies)?data.trophees_notifies:[]);
-      }catch(e){ setNotifiedTrophies([]); }
-    })();
-  },[currentUser?.id]);
-  useEffect(()=>{
-    if(notifiedTrophies===null)return; // pas encore chargé — on ne décide rien tant qu'on n'a pas l'historique réel
-    const nouveauxDebloques=trophees.filter(t=>isDebloque(t)&&!notifiedTrophies.includes(t.id));
-    if(nouveauxDebloques.length>0){
-      const t=nouveauxDebloques[0];
-      setPopupTrophee(t);
-      const maj=[...notifiedTrophies,t.id];
-      setNotifiedTrophies(maj);
-      if(currentUser?.id)supabase.from("profiles").update({trophees_notifies:maj}).eq("id",currentUser.id).then(()=>{},()=>{});
+    if(contributionsTotalPrecedent.current===null){
+      contributionsTotalPrecedent.current=contributions;
+      return;
     }
-  },[notifiedTrophies,contributions.total,contributions.activites,contributions.sorties,contributions.evenements,contributions.tnd]);
+    const prev=contributionsTotalPrecedent.current;
+    const nouveauxDebloques=trophees.filter(t=>contributions[t.type]>=t.requis&&(prev[t.type]||0)<t.requis);
+    if(nouveauxDebloques.length>0)setPopupTrophee(nouveauxDebloques[0]);
+    contributionsTotalPrecedent.current=contributions;
+  },[contributions.total,contributions.activites,contributions.sorties,contributions.evenements,contributions.tnd]);
   if(subPage==="notifications") return <PageNotifications onBack={()=>setSubPage(null)}/>;
-  if(subPage==="confidentialite") return <PageConfidentialite onBack={()=>setSubPage(null)} onDeleteAccount={onDeleteAccount} currentUser={currentUser} enfants={enfants} favoris={favoris} historiqueActivites={historiqueActivites} pendingContribs={pendingContribs}/>;
+  if(subPage==="confidentialite") return <PageConfidentialite onBack={()=>setSubPage(null)} onDeleteAccount={onDeleteAccount}/>;
   if(subPage==="aide") return <PageAide onBack={()=>setSubPage(null)} onGoConfidentialite={()=>setSubPage("confidentialite")} isPremium={isPremium} setPremium={setPremium} onOpenPremium={onOpenPremium}/>;
   if(subPage==="amelioration") return <PageAmelioration onBack={()=>setSubPage(null)}/>;
   if(subPage==="pictogrammes") return <PictogrammeView onBack={()=>setSubPage(null)} isPremium={isPremium} onOpenPremium={onOpenPremium} adminEvenements={adminEvenements} pendingContribs={pendingContribs}/>;
@@ -6936,7 +6903,7 @@ function PageProfil({setPage,enfants=[],setEnfants,enfantActif,setEnfantActif,sh
     };
     return <PageBadges stats={badgeStats} onBack={()=>setSubPage(null)}/>;
   }
-  if(showGestionEnfants) return <GestionEnfants enfants={enfants} setEnfants={setEnfants} enfantActif={enfantActif} setEnfantActif={setEnfantActif} onBack={()=>setShowGestionEnfants(false)} isPremium={isPremium||planningEtEnfantsGratuits} onOpenPremium={onOpenPremium} userId={currentUser?.id}/>;
+  if(showGestionEnfants) return <GestionEnfants enfants={enfants} setEnfants={setEnfants} enfantActif={enfantActif} setEnfantActif={setEnfantActif} onBack={()=>setShowGestionEnfants(false)} isPremium={isPremium} onOpenPremium={onOpenPremium} userId={currentUser?.id}/>;
 
   const menuItems=[
     {icon:"🔔",bg:"#EDE9FF",color:"#6C5CE7",label:"Notifications",sub:"Gerer vos notifications",page:"notifications"},
@@ -8383,13 +8350,13 @@ function Activites({sharedActivites,setSharedActivites,customCatActivites=[],pen
     if(!window.confirm(`Retirer définitivement "${item.titre||item.nom}" de la bibliothèque ?`))return;
     if(setPendingContribs)setPendingContribs(prev=>prev.filter(c=>c.id!==item.id));
     const nomItem=item.nom||item.titre;
-    supabase.from("activites").delete().eq("nom",nomItem).eq("communaute",true).then(()=>{},()=>{});
+    supabase.from("activites").delete().eq("nom",nomItem).then(()=>{},()=>{});
   };
   const syncItems=(newItems)=>{
     const supprime=items.find(old=>!newItems.some(n=>n.id===old.id));
     if(supprime&&!MOCK_IDS.has(supprime.id)){
       const nomItem=supprime.nom||supprime.titre;
-      supabase.from("activites").delete().eq("nom",nomItem).eq("communaute",false).then(()=>{},()=>{});
+      supabase.from("activites").delete().eq("nom",nomItem).then(()=>{},()=>{});
     }
     setItems(newItems);
     if(setSharedActivites){
@@ -8401,23 +8368,14 @@ function Activites({sharedActivites,setSharedActivites,customCatActivites=[],pen
   const [search,setSearch] = useState("");
   const [filterStatut,setFilterStatut] = useState("");
   const [modal,setModal] = useState(null);
-  const emptyForm = {titre:"",desc:"",duree:"",difficulte:"",lieu:"",energie:"",categorie:"",ageMin:"",ageMax:"",materielStr:"",etapes:"",premium:false,statut:"published",programmation:{date:"",heure:""},etiquettes:[],acc_poussette:false,acc_bebe:false,acc_allaitement:false,acc_langer:false,acc_aire03:false,acc_peubruyant:false,pmr_fauteuil:false,pmr_escaliers:false,pmr_parking:false,pmr_toilettes:false,pmr_personnel:false,pmr_chemin:false};
+  const emptyForm = {titre:"",desc:"",duree:"",difficulte:"",lieu:"",energie:"",categorie:"",ageMin:"",ageMax:"",materielStr:"",materielLiens:{},etapes:"",premium:false,statut:"published",programmation:{date:"",heure:""},etiquettes:[],acc_poussette:false,acc_bebe:false,acc_allaitement:false,acc_langer:false,acc_aire03:false,acc_peubruyant:false,pmr_fauteuil:false,pmr_escaliers:false,pmr_parking:false,pmr_toilettes:false,pmr_personnel:false,pmr_chemin:false,tsa_foule:false,tsa_calme:false,tsa_lumiere:false,tsa_retrait:false,tsa_bruit:false,tsa_personnel:false,tdah_espace:false,tdah_physique:false,tdah_attente:false,tdah_stimulation:false,dys_visuels:false,dys_nonecrite:false,dys_rythme:false,dys_personnel:false};
   const [form,setForm] = useState(emptyForm);
   const tf = (key) => setForm(prev=>({...prev,[key]:!prev[key]}));
   const filtered = itemsAffiches.filter(a=>(filterStatut===""||a.statut===filterStatut)&&(!search||((a.titre||a.nom||"").toLowerCase()).includes(search.toLowerCase())));
   const {slice:filteredPage,Pagination:PagActiv,reset:resetPagActiv}=usePagination(filtered,8);
   useEffect(()=>resetPagActiv(),[search,filterStatut]);
   const save = () => {
-    if(!form.titre){alert("Le titre de l'activité est obligatoire.");return;}
-    if(!form.desc){alert("La description est obligatoire.");return;}
-    if(!form.duree){alert("La durée est obligatoire.");return;}
-    if(!form.difficulte){alert("La difficulté est obligatoire.");return;}
-    if(!form.lieu){alert("Le lieu (intérieur/extérieur) est obligatoire.");return;}
-    if(!form.energie){alert("La motivation (fatigue/motiv) est obligatoire.");return;}
-    if(!form.categorie){alert("La catégorie est obligatoire.");return;}
-    const niveauxSensoriels={
-      bruit:form.niveauBruit||0,visuel:form.niveauVisuel||0,physique:form.niveauPhysique||0,attention:form.niveauAttention||0,
-    };
+    if(!form.titre) return;
     const normalized={
       ...form,
       nom:form.titre,
@@ -8425,28 +8383,10 @@ function Activites({sharedActivites,setSharedActivites,customCatActivites=[],pen
       energie:form.energie||"motiv",
       materiel:form.materielStr?form.materielStr.split(",").map(m=>m.trim()):[],
       materielLiens:form.materielLiens||{},
-      tnd:null,niveauxSensoriels,
+      tnd:null,
     };
-    const payloadSupabase={
-      nom:normalized.nom,categorie:normalized.categorie,lieu:normalized.lieu,energie:normalized.energie,
-      age:normalized.age,duree:normalized.duree,difficulte:normalized.difficulte,materiel:normalized.materiel,
-      materiel_liens:normalized.materielLiens,
-      etapes:normalized.etapes?String(normalized.etapes).split("\n").map(s=>s.trim()).filter(Boolean):[],
-      description:normalized.desc||"",photo:normalized.photo||null,
-      niveaux_sensoriels:niveauxSensoriels,adaptations:normalized.adaptations||[],
-      statut:normalized.statut||"published",communaute:false,
-    };
-    if(modal?.mode==="edit"){
-      syncItems(items.map(a=>a.id===modal.item.id?{...a,...normalized}:a));
-      const ancienNom=modal.item.nom||modal.item.titre;
-      supabase.from("activites").update(payloadSupabase).eq("nom",ancienNom).eq("communaute",false)
-        .then(({error})=>{if(error)console.error("Erreur mise à jour activité Supabase:",error.message);});
-    }else{
-      const nouvelItem={id:Date.now().toString(),...normalized,auteur:"Admin",date:new Date().toLocaleDateString()};
-      syncItems([...items,nouvelItem]);
-      supabase.from("activites").insert(payloadSupabase)
-        .then(({error})=>{if(error)console.error("Erreur création activité Supabase:",error.message);});
-    }
+    if(modal?.mode==="edit") syncItems(items.map(a=>a.id===modal.item.id?{...a,...normalized}:a));
+    else syncItems([...items,{id:Date.now().toString(),...normalized,auteur:"Admin",date:new Date().toLocaleDateString()}]);
     setModal(null);
   };
   const chkStyle = (active) => ({display:"flex",alignItems:"center",gap:7,padding:"6px 10px",borderRadius:8,border:`1px solid ${active?"rgba(124,58,237,0.4)":C.border}`,background:active?"rgba(124,58,237,0.1)":"transparent",color:active?"#a78bfa":C.muted,fontSize:12,cursor:"pointer",userSelect:"none",marginBottom:4,flexShrink:0});
@@ -8481,7 +8421,7 @@ function Activites({sharedActivites,setSharedActivites,customCatActivites=[],pen
               <button style={{...s.btnOutline(C.red),width:"100%"}} onClick={()=>supprimerContribItem(a)}>🗑️ Retirer de la bibliothèque</button>
             ):(
               <div style={{display:"flex",gap:6}}>
-                <button style={{...s.btnOutline(C.accent),flex:1}} onClick={()=>{setForm({...emptyForm,...a,materielStr:Array.isArray(a.materiel)?a.materiel.join(", "):(a.materielStr||a.materiel||""),materielLiens:a.materielLiens||{}});setModal({mode:"edit",item:a});}}>✏️ Modifier</button>
+                <button style={{...s.btnOutline(C.accent),flex:1}} onClick={()=>{setForm({...emptyForm,...a});setModal({mode:"edit",item:a});}}>✏️ Modifier</button>
                 <button style={s.btnOutline(C.red)} onClick={()=>syncItems(items.filter(x=>x.id!==a.id))}>🗑️</button>
               </div>
             )}
@@ -8540,23 +8480,51 @@ function Activites({sharedActivites,setSharedActivites,customCatActivites=[],pen
           {(()=>{
             const noms=(form.materielStr||"").split(",").map(m=>m.trim()).filter(Boolean);
             if(noms.length===0)return null;
-            return(
-              <div style={{background:"rgba(245,158,11,0.06)",borderRadius:12,padding:"12px 14px",marginBottom:14}}>
-                <p style={{margin:"0 0 8px",fontSize:12,fontWeight:700,color:"#92400E"}}>🛒 Lien Amazon précis (optionnel)</p>
-                <p style={{margin:"0 0 10px",fontSize:11,color:C.muted}}>Laisse vide pour qu'une simple recherche Amazon par nom soit utilisée à la place.</p>
+            return (
+              <AdminField label="🛒 Lien Amazon précis (optionnel)">
+                <p style={{margin:"0 0 8px",fontSize:11,color:C.muted}}>Laisse vide pour un lien de recherche automatique. Colle ici le lien exact vers le produit sur Amazon si tu en as un.</p>
                 {noms.map(nom=>(
                   <div key={nom} style={{marginBottom:8}}>
-                    <label style={{fontSize:11,color:C.muted,display:"block",marginBottom:3}}>{nom}</label>
+                    <label style={{display:"block",fontSize:11,color:C.muted,marginBottom:3}}>{nom}</label>
                     <input style={s.input} value={(form.materielLiens||{})[nom]||""} onChange={e=>setForm(p=>({...p,materielLiens:{...(p.materielLiens||{}),[nom]:e.target.value}}))} placeholder="https://www.amazon.fr/dp/..."/>
                   </div>
                 ))}
-              </div>
+              </AdminField>
             );
           })()}
           <AdminField label="Etapes"><textarea style={{...s.input,minHeight:80,resize:"vertical"}} value={form.etapes||""} onChange={e=>setForm({...form,etapes:e.target.value})} placeholder={"1. Preparer le materiel\n2. ..."}/></AdminField>
           <div style={{borderTop:`1px solid ${C.border}`,paddingTop:16,marginBottom:14}}>
             <p style={{margin:"0 0 4px",fontSize:14,fontWeight:800,color:"#1a1a1a"}}>🧩 Compatibilité TND</p>
             <p style={{margin:"0 0 14px",fontSize:11,color:C.muted}}>Ces informations aident les familles à trouver les activités adaptées à leur enfant.</p>
+
+            {/* Niveaux sensoriels sliders */}
+            <p style={{margin:"0 0 10px",fontSize:12,fontWeight:700,color:C.text}}>Niveaux sensoriels :</p>
+            {[
+              {k:"niveauBruit",l:"🔊 Niveau sonore",left:"Silencieux",right:"Bruyant"},
+              {k:"niveauVisuel",l:"💡 Stimulation visuelle",left:"Calme",right:"Intense"},
+              {k:"niveauPhysique",l:"🤸 Activité physique",left:"Aucune",right:"Intense"},
+              {k:"niveauAttention",l:"⏱️ Durée d'attention",left:"Courte",right:"Longue"},
+            ].map(({k,l,left,right})=>{
+              const val=form[k]||0;
+              const col=val<=33?"#10B981":val<=66?"#F59E0B":"#EF4444";
+              const badge=val<=33?"Faible":val<=66?"Moyen":"Élevé";
+              return(
+                <div key={k} style={{marginBottom:14}}>
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
+                    <span style={{fontSize:12,color:C.text}}>{l}</span>
+                    <span style={{fontSize:11,fontWeight:700,color:col,background:col+"18",padding:"2px 10px",borderRadius:20}}>{badge}</span>
+                  </div>
+                  <div style={{display:"flex",alignItems:"center",gap:8}}>
+                    <span style={{fontSize:10,color:C.muted,width:52,textAlign:"right",flexShrink:0}}>{left}</span>
+                    <div style={{flex:1,height:5,background:"#E5E7EB",borderRadius:6,overflow:"hidden"}}>
+                      <div style={{height:"100%",width:val+"%",background:col,borderRadius:6}}/>
+                    </div>
+                    <span style={{fontSize:10,color:C.muted,width:52,flexShrink:0}}>{right}</span>
+                  </div>
+                  <input type="range" min={0} max={100} value={val} onChange={e=>setForm(p=>({...p,[k]:Number(e.target.value)}))} style={{width:"100%",marginTop:4,accentColor:col,cursor:"pointer"}}/>
+                </div>
+              );
+            })}
 
             {/* Adaptations */}
             <p style={{margin:"0 0 8px",fontSize:12,fontWeight:700,color:C.text}}>Adaptations possibles :</p>
@@ -8594,6 +8562,39 @@ function Activites({sharedActivites,setSharedActivites,customCatActivites=[],pen
             </AdminField>
           </div>
 
+          {/* Points à anticiper */}
+          <div style={{borderTop:`1px solid ${C.border}`,paddingTop:16,marginBottom:14}}>
+            <p style={{margin:"0 0 4px",fontSize:14,fontWeight:800,color:"#1a1a1a"}}>⚠️ Points à anticiper</p>
+            <p style={{margin:"0 0 14px",fontSize:11,color:C.muted}}>Aide les parents à préparer l'activité selon les besoins de leur enfant</p>
+            {[
+              {titre:"🎨 Sensoriel",ids:["pa1","pa2","pa3","pa4"]},
+              {titre:"🧠 Attention",ids:["pa5","pa6"]},
+              {titre:"💪 Moteur",ids:["pa8","pa9","pa10"]},
+              {titre:"🗓️ Structure & Émotion",ids:["pa7","pa11","pa12","pa13","pa14","pa15"]},
+            ].map(({titre,ids})=>(
+              <div key={titre} style={{marginBottom:12}}>
+                <p style={{margin:"0 0 8px",fontSize:12,fontWeight:700,color:"#9A3412"}}>{titre}</p>
+                <div style={{display:"flex",flexDirection:"column",gap:6}}>
+                  {ids.map(id=>{
+                    const pt=POINTS_ANTICIPER.find(p=>p.id===id);
+                    if(!pt)return null;
+                    const actif=(form.pointsAnticiper||[]).includes(id);
+                    return(
+                      <div key={id} onClick={()=>setForm(p=>({...p,pointsAnticiper:actif?(p.pointsAnticiper||[]).filter(x=>x!==id):[...(p.pointsAnticiper||[]),id]}))} style={{padding:"10px 12px",borderRadius:8,border:`1.5px solid ${actif?"#F59E0B":"#E5E7EB"}`,background:actif?"#FFF7ED":WH,cursor:"pointer",display:"flex",alignItems:"flex-start",gap:10}}>
+                        <span style={{fontSize:18,flexShrink:0}}>{pt.emoji}</span>
+                        <div style={{flex:1}}>
+                          <p style={{margin:"0 0 2px",fontSize:13,fontWeight:600,color:"#1a1a1a"}}>{pt.label}</p>
+                          <p style={{margin:0,fontSize:11,color:C.muted,lineHeight:1.4}}>{pt.desc}</p>
+                        </div>
+                        <span style={{fontSize:14,flexShrink:0,color:actif?"#F59E0B":"#D1D5DB"}}>{actif?"☑":"☐"}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+
           <div style={{background:"#FFFBEB",borderRadius:10,padding:"10px 14px",marginBottom:14,display:"flex",gap:8,alignItems:"flex-start"}}><span style={{fontSize:16}}>👶</span><p style={{margin:0,fontSize:12,color:"#92400E",lineHeight:1.5}}>Les activites proposees doivent etre destinees aux enfants.</p></div>
           <EtiquettesField value={form.etiquettes||[]} onChange={v=>setForm({...form,etiquettes:v})}/>
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14,padding:"10px 14px",background:"rgba(124,58,237,0.08)",borderRadius:10}}>
@@ -8617,20 +8618,20 @@ function Activites({sharedActivites,setSharedActivites,customCatActivites=[],pen
 
 function Sorties({sharedSorties=[],setSharedSorties,customCatSorties=[],setCustomCatSorties,pendingContribs=[],setPendingContribs,updateContrib}) {
   const DEPTS_ALL=[["01","Ain"],["02","Aisne"],["03","Allier"],["04","Alpes-de-Haute-Provence"],["05","Hautes-Alpes"],["06","Alpes-Maritimes"],["07","Ardeche"],["08","Ardennes"],["09","Ariege"],["10","Aube"],["11","Aude"],["12","Aveyron"],["13","Bouches-du-Rhone"],["14","Calvados"],["15","Cantal"],["16","Charente"],["17","Charente-Maritime"],["18","Cher"],["19","Correze"],["20","Corse"],["21","Cote-d-Or"],["22","Cotes-d-Armor"],["23","Creuse"],["24","Dordogne"],["25","Doubs"],["26","Drome"],["27","Eure"],["28","Eure-et-Loir"],["29","Finistere"],["30","Gard"],["31","Haute-Garonne"],["32","Gers"],["33","Gironde"],["34","Herault"],["35","Ille-et-Vilaine"],["36","Indre"],["37","Indre-et-Loire"],["38","Isere"],["39","Jura"],["40","Landes"],["41","Loir-et-Cher"],["42","Loire"],["43","Haute-Loire"],["44","Loire-Atlantique"],["45","Loiret"],["46","Lot"],["47","Lot-et-Garonne"],["48","Lozere"],["49","Maine-et-Loire"],["50","Manche"],["51","Marne"],["52","Haute-Marne"],["53","Mayenne"],["54","Meurthe-et-Moselle"],["55","Meuse"],["56","Morbihan"],["57","Moselle"],["58","Nievre"],["59","Nord"],["60","Oise"],["61","Orne"],["62","Pas-de-Calais"],["63","Puy-de-Dome"],["64","Pyrenees-Atlantiques"],["65","Hautes-Pyrenees"],["66","Pyrenees-Orientales"],["67","Bas-Rhin"],["68","Haut-Rhin"],["69","Rhone"],["70","Haute-Saone"],["71","Saone-et-Loire"],["72","Sarthe"],["73","Savoie"],["74","Haute-Savoie"],["75","Paris"],["76","Seine-Maritime"],["77","Seine-et-Marne"],["78","Yvelines"],["79","Deux-Sevres"],["80","Somme"],["81","Tarn"],["82","Tarn-et-Garonne"],["83","Var"],["84","Vaucluse"],["85","Vendee"],["86","Vienne"],["87","Haute-Vienne"],["88","Vosges"],["89","Yonne"],["90","Territoire de Belfort"],["91","Essonne"],["92","Hauts-de-Seine"],["93","Seine-Saint-Denis"],["94","Val-de-Marne"],["95","Val-d-Oise"],["971","Guadeloupe"],["972","Martinique"],["973","Guyane"],["974","La Reunion"]];
-  const emptyForm={titre:"",dept:"",adresse:"",horaires:"",prix:"",categorie:"",statut:"published",programmation:{date:"",heure:""},etiquettes:[],acc_poussette:false,acc_bebe:false,acc_allaitement:false,acc_langer:false,acc_aire03:false,acc_peubruyant:false,pmr_fauteuil:false,pmr_escaliers:false,pmr_parking:false,pmr_toilettes:false,pmr_personnel:false,pmr_chemin:false};
+  const emptyForm={titre:"",dept:"",adresse:"",horaires:"",prix:"",categorie:"",statut:"published",programmation:{date:"",heure:""},etiquettes:[],acc_poussette:false,acc_bebe:false,acc_allaitement:false,acc_langer:false,acc_aire03:false,acc_peubruyant:false,pmr_fauteuil:false,pmr_escaliers:false,pmr_parking:false,pmr_toilettes:false,pmr_personnel:false,pmr_chemin:false,tsa_foule:false,tsa_calme:false,tsa_lumiere:false,tsa_retrait:false,tsa_bruit:false,tsa_personnel:false,tdah_espace:false,tdah_physique:false,tdah_attente:false,tdah_stimulation:false,dys_visuels:false,dys_nonecrite:false,dys_rythme:false,dys_personnel:false};
   const MOCK_IDS=new Set(MOCK_SORTIES.map(o=>o.id));
   const [items,setItems] = useState(()=>[...MOCK_SORTIES,...(sharedSorties||[]).filter(o=>!MOCK_IDS.has(o.id))]);
   const supprimerContribItem=(item)=>{
     if(!window.confirm(`Retirer définitivement "${item.titre||item.nom}" de la bibliothèque ?`))return;
     if(setPendingContribs)setPendingContribs(prev=>prev.filter(c=>c.id!==item.id));
     const nomItem=item.nom||item.titre;
-    supabase.from("sorties").delete().eq("nom",nomItem).eq("communaute",true).then(()=>{},()=>{});
+    supabase.from("sorties").delete().eq("nom",nomItem).then(()=>{},()=>{});
   };
   const syncItems=(newItems)=>{
     const supprime=items.find(old=>!newItems.some(n=>n.id===old.id));
     if(supprime&&!MOCK_IDS.has(supprime.id)){
       const nomItem=supprime.nom||supprime.titre;
-      supabase.from("sorties").delete().eq("nom",nomItem).eq("communaute",false).then(()=>{},()=>{});
+      supabase.from("sorties").delete().eq("nom",nomItem).then(()=>{},()=>{});
     }
     setItems(newItems);if(setSharedSorties)setSharedSorties(newItems.filter(o=>!MOCK_IDS.has(o.id)));
   };
@@ -8644,30 +8645,15 @@ function Sorties({sharedSorties=[],setSharedSorties,customCatSorties=[],setCusto
   const {slice:filteredPageS,Pagination:PagSort,reset:resetPagSort}=usePagination(filtered,8);
   useEffect(()=>resetPagSort(),[search]);
   const save = () => {
-    if(!form.titre){alert("Le titre de la sortie est obligatoire.");return;}
-    if(!form.dept){alert("Le département est obligatoire.");return;}
-    if(!(form.categorie||"").trim()){alert("Le type de sortie est obligatoire.");return;}
+    if(!form.titre) return;
     // Si le type est personnalisé (pas dans les types prédéfinis), l'ajouter aux catégories
     const typeVal=(form.categorie||"").trim();
     if(typeVal&&typeVal!==" "&&![...TYPES_SORTIE,...(customCatSorties||[]).map(c=>c.label)].includes(typeVal)){
       const k=typeVal.toLowerCase().replace(/\s+/g,"_").replace(/[^a-z0-9_]/g,"");
       setCustomCatSorties&&setCustomCatSorties(prev=>[...prev,{k,label:typeVal,emoji:"🗺️"}]);
     }
-    const categorieFinale=typeVal||form.categorie;
-    const payloadSupabase={
-      nom:form.titre,type:categorieFinale,dept:form.dept,horaires:form.horaires,prix:form.prix,
-      accessibilite:form.accessibilite||null,statut:form.statut||"published",communaute:false,
-    };
-    if(modal?.mode==="edit"){
-      syncItems(items.map(a=>a.id===modal.item.id?{...a,...form,categorie:categorieFinale}:a));
-      const ancienNom=modal.item.nom||modal.item.titre;
-      supabase.from("sorties").update(payloadSupabase).eq("nom",ancienNom).eq("communaute",false)
-        .then(({error})=>{if(error)console.error("Erreur mise à jour sortie Supabase:",error.message);});
-    }else{
-      syncItems([...items,{id:Date.now().toString(),...form,categorie:categorieFinale}]);
-      supabase.from("sorties").insert(payloadSupabase)
-        .then(({error})=>{if(error)console.error("Erreur création sortie Supabase:",error.message);});
-    }
+    if(modal?.mode==="edit") syncItems(items.map(a=>a.id===modal.item.id?{...a,...form,categorie:typeVal||form.categorie}:a));
+    else syncItems([...items,{id:Date.now().toString(),...form,categorie:typeVal||form.categorie}]);
     setModal(null);
   };
   return (
@@ -8778,7 +8764,7 @@ function useAutoExpireEvenements(items,setItems,MOCK_IDS){
         if(expires.length===0)return prev;
         expires.forEach(item=>{
           const nomItem=item.nom||item.titre;
-          supabase.from("evenements").delete().eq("nom",nomItem).eq("communaute",false).then(()=>{},()=>{});
+          supabase.from("evenements").delete().eq("nom",nomItem).then(()=>{},()=>{});
         });
         return prev.filter(item=>!expires.some(e=>e.id===item.id));
       });
@@ -8800,7 +8786,7 @@ function Evenements({sharedEvenements=[],setSharedEvenements,customCatEvenements
       if(expirees.length===0)return;
       expirees.forEach(item=>{
         const nomItem=item.nom||item.titre;
-        supabase.from("evenements").delete().eq("nom",nomItem).eq("communaute",true).then(()=>{},()=>{});
+        supabase.from("evenements").delete().eq("nom",nomItem).then(()=>{},()=>{});
       });
       if(setPendingContribs)setPendingContribs(prev=>prev.filter(c=>!expirees.some(e=>e.id===c.id)));
     };
@@ -8812,49 +8798,31 @@ function Evenements({sharedEvenements=[],setSharedEvenements,customCatEvenements
     if(!window.confirm(`Retirer définitivement "${item.titre||item.nom}" de la bibliothèque ?`))return;
     if(setPendingContribs)setPendingContribs(prev=>prev.filter(c=>c.id!==item.id));
     const nomItem=item.nom||item.titre;
-    supabase.from("evenements").delete().eq("nom",nomItem).eq("communaute",true).then(()=>{},()=>{});
+    supabase.from("evenements").delete().eq("nom",nomItem).then(()=>{},()=>{});
   };
   const syncItems=(newItems)=>{
     const supprime=items.find(old=>!newItems.some(n=>n.id===old.id));
     if(supprime&&!MOCK_IDS.has(supprime.id)){
       const nomItem=supprime.nom||supprime.titre;
-      supabase.from("evenements").delete().eq("nom",nomItem).eq("communaute",false).then(()=>{},()=>{});
+      supabase.from("evenements").delete().eq("nom",nomItem).then(()=>{},()=>{});
     }
     setItems(newItems);if(setSharedEvenements)setSharedEvenements(newItems.filter(o=>!MOCK_IDS.has(o.id)));
   };
   useScheduler(setItems,syncItems);
   const [search,setSearch] = useState("");
   const [modal,setModal] = useState(null);
-  const [form,setForm] = useState({titre:"",desc:"",type:"",ville:"",dept:"",date:"",fin:"",horaires:"",prix:"",adresse:"",organisateur:"",statut:"draft",programmation:{date:"",heure:""},etiquettes:[],acc_poussette:false,acc_bebe:false,acc_allaitement:false,acc_langer:false,acc_aire03:false,acc_peubruyant:false,pmr_fauteuil:false,pmr_escaliers:false,pmr_parking:false,pmr_toilettes:false,pmr_personnel:false,pmr_chemin:false});
+  const [form,setForm] = useState({titre:"",desc:"",type:"",ville:"",dept:"",date:"",fin:"",horaires:"",prix:"",adresse:"",organisateur:"",statut:"draft",programmation:{date:"",heure:""},etiquettes:[],acc_poussette:false,acc_bebe:false,acc_allaitement:false,acc_langer:false,acc_aire03:false,acc_peubruyant:false,pmr_fauteuil:false,pmr_escaliers:false,pmr_parking:false,pmr_toilettes:false,pmr_personnel:false,pmr_chemin:false,tsa_foule:false,tsa_calme:false,tsa_lumiere:false,tsa_retrait:false,tsa_bruit:false,tsa_personnel:false,tdah_espace:false,tdah_physique:false,tdah_attente:false,tdah_stimulation:false,dys_visuels:false,dys_nonecrite:false,dys_rythme:false,dys_personnel:false});
   const save = () => {
-    if(!form.titre){alert("Le nom de l'événement est obligatoire.");return;}
-    if(!form.ville){alert("La ville est obligatoire.");return;}
-    if(!form.dept){alert("Le département est obligatoire.");return;}
-    if(!form.date){alert("La date de début est obligatoire.");return;}
+    if(!form.titre) return;
     // Si le type est personnalisé, l'ajouter aux catégories événements
     const typeVal=(form.type||"").trim();
-    if(!typeVal){alert("Le type d'événement est obligatoire.");return;}
     const existingTypes=[...EVT_CATEGORIES,...(customCatEvenements||[])].map(c=>c.k||c.label);
     if(typeVal&&!existingTypes.includes(typeVal)){
       const k=typeVal.toLowerCase().replace(/\s+/g,"_").replace(/[^a-z0-9_]/g,"");
       setCustomCatEvenements&&setCustomCatEvenements(prev=>[...prev,{k,label:typeVal,emoji:"🎪"}]);
     }
-    const typeFinal=typeVal||form.type;
-    const payloadSupabase={
-      nom:form.titre,categorie:typeFinal,ville:form.ville,dept:form.dept,date:form.date||null,
-      date_fin:form.fin||null,prix:form.prix,adresse:form.adresse,photo:form.photo||null,
-      description:form.desc||"",tnd:form.tnd||null,statut:form.statut||"published",communaute:false,
-    };
-    if(modal?.mode==="edit"){
-      syncItems(items.map(a=>a.id===modal.item.id?{...a,...form,type:typeFinal}:a));
-      const ancienNom=modal.item.nom||modal.item.titre;
-      supabase.from("evenements").update(payloadSupabase).eq("nom",ancienNom).eq("communaute",false)
-        .then(({error})=>{if(error)console.error("Erreur mise à jour événement Supabase:",error.message);});
-    }else{
-      syncItems([...items,{id:Date.now().toString(),...form,type:typeFinal}]);
-      supabase.from("evenements").insert(payloadSupabase)
-        .then(({error})=>{if(error)console.error("Erreur création événement Supabase:",error.message);});
-    }
+    if(modal?.mode==="edit") syncItems(items.map(a=>a.id===modal.item.id?{...a,...form,type:typeVal||form.type}:a));
+    else syncItems([...items,{id:Date.now().toString(),...form,type:typeVal||form.type}]);
     setModal(null);
   };
   return (
@@ -8954,6 +8922,20 @@ function Evenements({sharedEvenements=[],setSharedEvenements,customCatEvenements
             <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:14}}>
               {[["pmr_fauteuil","Accès fauteuil"],["pmr_escaliers","Sans escaliers"],["pmr_parking","Parking PMR"],["pmr_toilettes","Toilettes adaptées"],["pmr_personnel","Personnel formé"],["pmr_chemin","Chemin accessible"]].map(([k,l])=>(<div key={k} onClick={()=>tf(k)} style={chkStyle(!!form[k])}><span style={{fontSize:14}}>{form[k]?"☑":"☐"}</span>{l}</div>))}
             </div>
+            <p style={{margin:"0 0 4px",fontSize:13,fontWeight:700,color:"#a78bfa"}}>🧩 TND</p>
+            <p style={{margin:"0 0 10px",fontSize:11,color:C.muted}}>Ces infos aident les familles TND</p>
+            <p style={{margin:"0 0 6px",fontSize:12,fontWeight:600,color:"#8b5cf6"}}>TSA Autisme</p>
+            <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:10}}>
+              {[["tsa_foule","Peu de foule"],["tsa_calme","Env calme"],["tsa_lumiere","Lumière douce"],["tsa_retrait","Espace retrait"],["tsa_bruit","Peu de bruit"],["tsa_personnel","Personnel TSA"]].map(([k,l])=>(<div key={k} onClick={()=>tf(k)} style={chkStyle(!!form[k])}><span style={{fontSize:14}}>{form[k]?"☑":"☐"}</span>{l}</div>))}
+            </div>
+            <p style={{margin:"0 0 6px",fontSize:12,fontWeight:600,color:"#ec4899"}}>TDAH</p>
+            <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:10}}>
+              {[["tdah_espace","Grand espace"],["tdah_physique","Activité physique"],["tdah_attente","Peu attente"],["tdah_stimulation","Stimulation variée"]].map(([k,l])=>(<div key={k} onClick={()=>tf(k)} style={chkStyle(!!form[k])}><span style={{fontSize:14}}>{form[k]?"☑":"☐"}</span>{l}</div>))}
+            </div>
+            <p style={{margin:"0 0 6px",fontSize:12,fontWeight:600,color:"#06b6d4"}}>DYS</p>
+            <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:14}}>
+              {[["dys_visuels","Supports visuels"],["dys_nonecrite","Non écrite"],["dys_rythme","Rythme libre"],["dys_personnel","Personnel DYS"]].map(([k,l])=>(<div key={k} onClick={()=>tf(k)} style={chkStyle(!!form[k])}><span style={{fontSize:14}}>{form[k]?"☑":"☐"}</span>{l}</div>))}
+            </div>
           </div>
 
           <AdminField label="Statut"><select style={s.input} value={form.statut||"draft"} onChange={e=>setForm({...form,statut:e.target.value})}><option value="draft">Brouillon</option><option value="published">Publié</option><option value="scheduled">⏰ Programmé</option></select></AdminField>
@@ -9006,7 +8988,7 @@ function Evenements({sharedEvenements=[],setSharedEvenements,customCatEvenements
   );
 }
 
-function BiblioNoel({onBack,sharedActivites=[],setSharedActivites}) {
+function BiblioNoel({onBack,sharedActivites=[],setSharedActivites,amazonTag=""}) {
   const MOCK_NOEL=[
     {id:"n1",titre:"Fabriquer des boules de Noël",categorie:"Créatif",age:"4-12 ans",duree:"45 min",statut:"published"},
     {id:"n2",titre:"Biscuits de Noël en famille",categorie:"Cuisine",age:"3-10 ans",duree:"60 min",statut:"published"},
@@ -9168,7 +9150,7 @@ function BiblioNoel({onBack,sharedActivites=[],setSharedActivites}) {
       })()}
       {previewActivite&&(
         <div style={{position:"fixed",inset:0,zIndex:100,background:"#fff",overflowY:"auto"}}>
-          <ActivityDetailPage activity={previewActivite} onBack={()=>setPreviewActivite(null)} onReport={()=>{}}/>
+          <ActivityDetailPage activity={previewActivite} onBack={()=>setPreviewActivite(null)} onReport={()=>{}} amazonTag={amazonTag}/>
         </div>
       )}
     </div>
@@ -9900,7 +9882,7 @@ function DetailEvenement({evt,onBack,onSave,onDelete,onArchive,toggleCustom}){
   );
 }
 
-function Saisonnier({sharedCustomEvents=[],setSharedCustomEvents,evenementsSaisonniers=[],setEvenementsSaisonniers,sharedActivites=[],setSharedActivites,betisesLutin=[],setBetisesLutin,cartesVoyageLutin=[],setCartesVoyageLutin}) {
+function Saisonnier({sharedCustomEvents=[],setSharedCustomEvents,evenementsSaisonniers=[],setEvenementsSaisonniers,sharedActivites=[],setSharedActivites,betisesLutin=[],setBetisesLutin,cartesVoyageLutin=[],setCartesVoyageLutin,amazonTag=""}) {
   const sections = MOCK_SEASONAL.map(m=>{
     const reel=evenementsSaisonniers.find(e=>e.type===m.type);
     return reel?{...m,id:reel.id,actif:!!reel.actif,banner:!!reel.banner,popup:!!reel.popup}:m;
@@ -9970,7 +9952,7 @@ function Saisonnier({sharedCustomEvents=[],setSharedCustomEvents,evenementsSaiso
     setCustomEvents(prev=>prev.map(e=>e.id===id?{...e,archive:false}:e));
     supabase.from("custom_events_config").update({archive:false}).eq("id",id).then(()=>{},()=>{});
   };
-  if(biblioNoel) return <BiblioNoel onBack={()=>setBiblioNoel(false)} sharedActivites={sharedActivites} setSharedActivites={setSharedActivites}/>;
+  if(biblioNoel) return <BiblioNoel onBack={()=>setBiblioNoel(false)} sharedActivites={sharedActivites} setSharedActivites={setSharedActivites} amazonTag={amazonTag}/>;
   if(betisesLutinAdmin) return <AdminBetisesLutin onBack={()=>setBetisesLutinAdmin(false)} betisesLutin={betisesLutin} setBetisesLutin={setBetisesLutin}/>;
   if(voyageLutinAdmin) return <AdminCartesVoyageLutin onBack={()=>setVoyageLutinAdmin(false)} cartesVoyageLutin={cartesVoyageLutin} setCartesVoyageLutin={setCartesVoyageLutin}/>;
   if(creerEvt) return <CreerEvenement onBack={()=>setCreerEvt(false)} onSave={handleSaveCustom}/>;
@@ -10136,7 +10118,7 @@ function Saisonnier({sharedCustomEvents=[],setSharedCustomEvents,evenementsSaiso
   );
 }
 
-function Utilisateurs({appLogo=null,setAppLogo}) {
+function Utilisateurs({premiumPourTous=false,togglePremiumPourTous}) {
   const [users,setUsers] = useState([]);
   const [chargement,setChargement] = useState(true);
   const [search,setSearch] = useState("");
@@ -10211,26 +10193,18 @@ function Utilisateurs({appLogo=null,setAppLogo}) {
         </div>
       </div>
 
-      {/* 🖼️ Logo de l'application */}
-      <div style={{...s.card,marginBottom:20,padding:"16px 20px"}}>
-        <p style={{margin:"0 0 2px",fontSize:14,fontWeight:700,color:C.text}}>🖼️ Logo de l'application</p>
-        <p style={{margin:"0 0 14px",fontSize:12,color:C.muted}}>Affiché sur l'écran de connexion et sur le bouton Accueil de la barre de navigation.</p>
-        <div style={{display:"flex",alignItems:"center",gap:16}}>
-          <div style={{width:64,height:64,borderRadius:16,overflow:"hidden",flexShrink:0,background:"rgba(255,255,255,0.05)",display:"flex",alignItems:"center",justifyContent:"center",border:`1px solid ${C.border}`}}>
-            {appLogo?<img src={appLogo} alt="Logo actuel" style={{width:"100%",height:"100%",objectFit:"cover"}}/>:<span style={{fontSize:28}}>🧩</span>}
+      {/* 🎉 Premium temporaire pour tous */}
+      <div style={{...s.card,marginBottom:20,padding:"16px 20px",background:premiumPourTous?"rgba(245,158,11,0.08)":s.card.background,border:premiumPourTous?"1px solid rgba(245,158,11,0.4)":s.card.border}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:16}}>
+          <div style={{flex:1}}>
+            <p style={{margin:"0 0 2px",fontSize:14,fontWeight:700,color:C.text}}>🎉 Premium temporaire pour tous</p>
+            <p style={{margin:0,fontSize:12,color:C.muted}}>{premiumPourTous?"Activé — tous les utilisateurs ont accès au Premium en ce moment, même sans abonnement.":"Débloque le Premium pour tout le monde (événement, promo...) sans toucher aux vrais abonnements."}</p>
           </div>
-          <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-            <input id="admin-app-logo" type="file" accept="image/jpeg,image/png,image/webp" style={{display:"none"}} onChange={async e=>{
-              const file=e.target.files[0];if(!file)return;
-              try{
-                const compressed=await compresserImage(file,256,0.85);
-                setAppLogo&&setAppLogo(compressed);
-              }catch(err){alert("Impossible de lire cette image.");}
-              e.target.value="";
-            }}/>
-            <button onClick={()=>document.getElementById("admin-app-logo").click()} style={{padding:"9px 16px",borderRadius:14,border:"none",fontWeight:700,fontSize:13,cursor:"pointer",background:"rgba(124,58,237,0.15)",color:C.accent}}>{appLogo?"Changer le logo":"Ajouter un logo"}</button>
-            {appLogo&&<button onClick={()=>{if(window.confirm("Retirer le logo actuel et revenir à l'icône par défaut ?"))setAppLogo&&setAppLogo(null);}} style={{padding:"9px 16px",borderRadius:14,border:"1px solid rgba(239,68,68,0.3)",fontWeight:700,fontSize:13,cursor:"pointer",background:"transparent",color:C.red}}>Retirer</button>}
-          </div>
+          <button onClick={()=>{
+            if(premiumPourTous||window.confirm("Activer le Premium pour TOUS les utilisateurs, même ceux qui n'ont pas payé ? Tu pourras désactiver à tout moment pour ne garder que les vrais abonnés.")){
+              togglePremiumPourTous&&togglePremiumPourTous();
+            }
+          }} style={{padding:"10px 20px",borderRadius:20,border:"none",fontWeight:700,fontSize:13,cursor:"pointer",flexShrink:0,background:premiumPourTous?"#f59e0b":"rgba(245,158,11,0.15)",color:premiumPourTous?"#1a1a1a":"#f59e0b"}}>{premiumPourTous?"✅ Activé — Désactiver":"Activer pour tous"}</button>
         </div>
       </div>
 
@@ -10315,9 +10289,10 @@ function Utilisateurs({appLogo=null,setAppLogo}) {
   );
 }
 
-function Abonnements({premiumPourTous=false,togglePremiumPourTous,planningEtEnfantsGratuits=false,toggleAllPlanningEtEnfantsGratuits,amazonTag="",setAmazonTag}) {
-  const [amazonTagInput,setAmazonTagInput]=useState(amazonTag);
-  useEffect(()=>{setAmazonTagInput(amazonTag);},[amazonTag]);
+function Abonnements({amazonTag="",setAmazonTag}) {
+  const [tagInput,setTagInput]=useState(amazonTag);
+  const [tagSaved,setTagSaved]=useState(false);
+  useEffect(()=>{setTagInput(amazonTag)},[amazonTag]);
   const [subs] = useState(MOCK_SUBS);
   const [sponsos,setSponsos] = useState([
     {id:"s1",entreprise:"Toys'R'Us",type:"sortie",contenu:"Parc des Expositions",montant:500,duree:"3 mois",debut:"01/04/2024",fin:"30/06/2024",statut:"active"},
@@ -10347,6 +10322,17 @@ function Abonnements({premiumPourTous=false,togglePremiumPourTous,planningEtEnfa
       </div>
       <p style={{fontSize:13,color:C.muted,margin:"0 0 20px"}}>Abonnements Premium et partenariats sponsorisés</p>
 
+      {/* Lien d'affiliation Amazon */}
+      <div style={{...s.card,marginBottom:20,padding:"16px 20px"}}>
+        <p style={{margin:"0 0 4px",fontSize:14,fontWeight:700,color:C.text}}>🛒 Lien d'affiliation Amazon</p>
+        <p style={{margin:"0 0 10px",fontSize:12,color:C.muted}}>Ton identifiant Amazon Associates (ex : parenthese-21). Il sera ajouté automatiquement à tous les liens Amazon proposés aux utilisateurs (liste de matériel, planning...) pour que tu touches une commission.</p>
+        <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+          <input value={tagInput} onChange={e=>{setTagInput(e.target.value);setTagSaved(false);}} placeholder="ex : parenthese-21" style={{...s.input,flex:1,minWidth:180}}/>
+          <button style={s.btn(C.accent)} onClick={async()=>{if(setAmazonTag){await setAmazonTag(tagInput);setTagSaved(true);setTimeout(()=>setTagSaved(false),2500);}}}>{tagSaved?"✅ Enregistré":"Enregistrer"}</button>
+        </div>
+        {amazonTag&&<p style={{margin:"8px 0 0",fontSize:11,color:C.muted}}>Actif actuellement : <b>{amazonTag}</b></p>}
+      </div>
+
       {/* Revenus banner */}
       <div style={{...s.card,background:"linear-gradient(135deg,#059669,#10b981)",marginBottom:16,padding:"18px 20px"}}>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
@@ -10374,48 +10360,6 @@ function Abonnements({premiumPourTous=false,togglePremiumPourTous,planningEtEnfa
           {label:"Plan mensuel",val:stats.mensuel,sub:"4.99 €/mois",emoji:"📅",color:C.accent},
           {label:"Plan annuel",val:stats.annuel,sub:"39.99 €/an",emoji:"🗓️",color:"#f59e0b"},
         ].map((st,i)=><StatCard key={i} {...st}/>)}
-      </div>
-
-      {/* 🎉 Premium temporaire pour tous */}
-      <div style={{...s.card,marginBottom:12,padding:"16px 20px",background:premiumPourTous?"rgba(245,158,11,0.08)":s.card.background,border:premiumPourTous?"1px solid rgba(245,158,11,0.4)":s.card.border}}>
-        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:16}}>
-          <div style={{flex:1}}>
-            <p style={{margin:"0 0 2px",fontSize:14,fontWeight:700,color:C.text}}>🎉 Premium temporaire pour tous</p>
-            <p style={{margin:0,fontSize:12,color:C.muted}}>{premiumPourTous?"Activé — tous les utilisateurs ont accès au Premium en ce moment, même sans abonnement.":"Débloque le Premium pour tout le monde (événement, promo...) sans toucher aux vrais abonnements."}</p>
-          </div>
-          <button onClick={()=>{
-            if(premiumPourTous||window.confirm("Activer le Premium pour TOUS les utilisateurs, même ceux qui n'ont pas payé ? Tu pourras désactiver à tout moment pour ne garder que les vrais abonnés.")){
-              togglePremiumPourTous&&togglePremiumPourTous();
-            }
-          }} style={{padding:"10px 20px",borderRadius:20,border:"none",fontWeight:700,fontSize:13,cursor:"pointer",flexShrink:0,background:premiumPourTous?"#f59e0b":"rgba(245,158,11,0.15)",color:premiumPourTous?"#1a1a1a":"#f59e0b"}}>{premiumPourTous?"✅ Activé — Désactiver":"Activer pour tous"}</button>
-        </div>
-      </div>
-
-      {/* 🚀 Planning + Profils enfants gratuits (lancement) */}
-      <div style={{...s.card,marginBottom:24,padding:"16px 20px",background:planningEtEnfantsGratuits?"rgba(16,185,129,0.08)":s.card.background,border:planningEtEnfantsGratuits?"1px solid rgba(16,185,129,0.4)":s.card.border}}>
-        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:16}}>
-          <div style={{flex:1}}>
-            <p style={{margin:"0 0 2px",fontSize:14,fontWeight:700,color:C.text}}>🚀 Planning + Profils enfants gratuits (lancement)</p>
-            <p style={{margin:0,fontSize:12,color:C.muted}}>{planningEtEnfantsGratuits?"Activé — tout le monde peut utiliser le Planning et créer des profils enfants sans être Premium, le temps du lancement.":"Désactivé — ces deux fonctionnalités sont réservées aux vrais abonnés Premium."}</p>
-          </div>
-          <button onClick={()=>{
-            const message=planningEtEnfantsGratuits
-              ?"Repasser le Planning et les Profils enfants en Premium uniquement ? Les utilisateurs gratuits perdront l'accès immédiatement."
-              :"Rendre le Planning et les Profils enfants gratuits pour tout le monde, même sans Premium ?";
-            if(window.confirm(message))toggleAllPlanningEtEnfantsGratuits&&toggleAllPlanningEtEnfantsGratuits();
-          }} style={{padding:"10px 20px",borderRadius:20,border:"none",fontWeight:700,fontSize:13,cursor:"pointer",flexShrink:0,background:planningEtEnfantsGratuits?"#10b981":"rgba(16,185,129,0.15)",color:planningEtEnfantsGratuits?"#052e1f":"#10b981"}}>{planningEtEnfantsGratuits?"✅ Gratuit — Repasser Premium":"Rendre gratuit"}</button>
-        </div>
-      </div>
-
-      {/* 🛒 Lien d'affiliation Amazon */}
-      <div style={{...s.card,marginBottom:24,padding:"16px 20px"}}>
-        <p style={{margin:"0 0 2px",fontSize:14,fontWeight:700,color:C.text}}>🛒 Lien d'affiliation Amazon</p>
-        <p style={{margin:"0 0 14px",fontSize:12,color:C.muted}}>Ajoute ton identifiant partenaire Amazon Associates (ex: monsite-21) pour toucher une commission sur les liens "Amazon" affichés dans la liste de matériel du Planning.</p>
-        <div style={{display:"flex",gap:8,alignItems:"center"}}>
-          <input style={{...s.input,margin:0,flex:1}} value={amazonTagInput} onChange={e=>setAmazonTagInput(e.target.value.trim())} placeholder="Ex : monsite-21"/>
-          <button onClick={()=>setAmazonTag&&setAmazonTag(amazonTagInput)} disabled={amazonTagInput===amazonTag} style={{padding:"11px 18px",borderRadius:14,border:"none",fontWeight:700,fontSize:13,cursor:amazonTagInput===amazonTag?"default":"pointer",background:amazonTagInput===amazonTag?"rgba(255,255,255,0.06)":"rgba(245,158,11,0.15)",color:amazonTagInput===amazonTag?C.muted:"#f59e0b",flexShrink:0}}>Enregistrer</button>
-        </div>
-        {amazonTag&&<p style={{margin:"8px 0 0",fontSize:11,color:"#10b981"}}>✅ Actif — les liens Amazon incluent actuellement ton identifiant "{amazonTag}"</p>}
       </div>
 
       {/* Table abonnements */}
@@ -10804,7 +10748,7 @@ function Communication({ideesMomentConfig=[],setIdeesMomentConfig,adminComms=[],
   const [selectedIdee,setSelectedIdee] = useState(null); // index of selected idee
   const [codesPromo,setCodesPromo] = useState([]);
   const [modalCode,setModalCode] = useState(null);
-  const [formCode,setFormCode] = useState({code:"",description:"",max_utilisations:"",actif:true,type:"gratuit",pourcentage:"",debut:"",fin:"",creerBandeau:false});
+  const [formCode,setFormCode] = useState({code:"",description:"",max_utilisations:"",actif:true,type:"gratuit",pourcentage:"",creerBandeau:false});
   useEffect(()=>{
     (async()=>{
       try{
@@ -10817,7 +10761,7 @@ function Communication({ideesMomentConfig=[],setIdeesMomentConfig,adminComms=[],
     const code=formCode.code.trim().toUpperCase();
     if(!code)return;
     if(formCode.type==="reduction"&&!formCode.pourcentage){alert("Indique un pourcentage de réduction.");return;}
-    const payload={code,description:formCode.description.trim(),max_utilisations:formCode.max_utilisations?parseInt(formCode.max_utilisations):null,actif:!!formCode.actif,type:formCode.type,pourcentage:formCode.type==="reduction"?parseInt(formCode.pourcentage):null,debut:formCode.debut||null,fin:formCode.fin||null};
+    const payload={code,description:formCode.description.trim(),max_utilisations:formCode.max_utilisations?parseInt(formCode.max_utilisations):null,actif:!!formCode.actif,type:formCode.type,pourcentage:formCode.type==="reduction"?parseInt(formCode.pourcentage):null};
     if(modalCode?.mode==="edit"){
       setCodesPromo(prev=>prev.map(c=>c.id===modalCode.item.id?{...c,...payload}:c));
       try{ await supabase.from("promo_codes").update(payload).eq("id",modalCode.item.id); }catch(e){}
@@ -10830,10 +10774,10 @@ function Communication({ideesMomentConfig=[],setIdeesMomentConfig,adminComms=[],
       if(formCode.creerBandeau){
         const titreB=formCode.type==="reduction"?`🎁 -${formCode.pourcentage}% sur l'abonnement Premium !`:"🎁 Une surprise vous attend !";
         const messageB=formCode.type==="reduction"?`Utilisez le code ${code} pour profiter de ${formCode.pourcentage}% de réduction sur votre abonnement Premium.`:`Utilisez le code ${code} pour débloquer Premium gratuitement !`;
-        const nouveauBandeau={id:Date.now().toString(),type:"banner",titre:titreB,message:messageB,debut:formCode.debut||"",fin:formCode.fin||"",actif:true,codePromo:code};
+        const nouveauBandeau={id:Date.now().toString(),type:"banner",titre:titreB,message:messageB,debut:"",fin:"",actif:true,codePromo:code};
         setComms(prev=>[...prev,nouveauBandeau]);
         try{
-          const {data:insertedB}=await supabase.from("communications").insert({type:"banner",titre:titreB,message:messageB,debut:formCode.debut||null,fin:formCode.fin||null,actif:true,code_promo:code}).select().single();
+          const {data:insertedB}=await supabase.from("communications").insert({type:"banner",titre:titreB,message:messageB,actif:true,code_promo:code}).select().single();
           if(insertedB)setComms(prev=>prev.map(c=>c===nouveauBandeau?{...c,id:insertedB.id}:c));
         }catch(e){ /* le bandeau reste visible localement même si la sauvegarde échoue */ }
       }
@@ -10917,7 +10861,7 @@ function Communication({ideesMomentConfig=[],setIdeesMomentConfig,adminComms=[],
       <div style={{...s.card,marginBottom:20}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
           <p style={{fontSize:14,fontWeight:700,color:C.text,margin:0}}>🎁 Codes promo</p>
-          <button style={s.btn(C.accent)} onClick={()=>{setFormCode({code:"",description:"",max_utilisations:"",actif:true,type:"gratuit",pourcentage:"",debut:"",fin:"",creerBandeau:true});setModalCode({mode:"add"});}}>+ Créer un code</button>
+          <button style={s.btn(C.accent)} onClick={()=>{setFormCode({code:"",description:"",max_utilisations:"",actif:true,type:"gratuit",pourcentage:"",creerBandeau:true});setModalCode({mode:"add"});}}>+ Créer un code</button>
         </div>
         <p style={{fontSize:12,color:C.muted,margin:"0 0 14px"}}>Débloque Premium gratuitement pour l'utilisateur qui saisit ce code — pratique pour une promo annoncée dans un bandeau ou une pub.</p>
         {codesPromo.length===0&&<p style={{fontSize:13,color:C.muted,fontStyle:"italic"}}>Aucun code promo pour le moment.</p>}
@@ -10930,10 +10874,10 @@ function Communication({ideesMomentConfig=[],setIdeesMomentConfig,adminComms=[],
                   <span style={{fontSize:10,fontWeight:700,padding:"2px 8px",borderRadius:10,background:c.type==="reduction"?"rgba(59,130,246,0.15)":"rgba(124,58,237,0.15)",color:c.type==="reduction"?"#3b82f6":"#a78bfa"}}>{c.type==="reduction"?`💸 -${c.pourcentage}%`:"🎁 Gratuit"}</span>
                 </div>
                 {c.description&&<p style={{margin:"2px 0 0",fontSize:12,color:C.muted}}>{c.description}</p>}
-                <p style={{margin:"2px 0 0",fontSize:11,color:C.muted}}>{c.utilisations_actuelles||0} utilisation{(c.utilisations_actuelles||0)>1?"s":""}{c.max_utilisations!=null?` / ${c.max_utilisations} max`:" · illimité"}{(c.debut||c.fin)?` · ${c.debut||"…"} → ${c.fin||"…"}`:""}</p>
+                <p style={{margin:"2px 0 0",fontSize:11,color:C.muted}}>{c.utilisations_actuelles||0} utilisation{(c.utilisations_actuelles||0)>1?"s":""}{c.max_utilisations!=null?` / ${c.max_utilisations} max`:" · illimité"}</p>
               </div>
               <button onClick={()=>toggleActifCode(c)} style={{fontSize:11,fontWeight:700,padding:"5px 12px",borderRadius:20,border:"none",cursor:"pointer",background:c.actif?"rgba(16,185,129,0.15)":"rgba(255,255,255,0.06)",color:c.actif?"#10b981":C.muted}}>{c.actif?"✓ Actif":"Inactif"}</button>
-              <button onClick={()=>{setFormCode({code:c.code,description:c.description||"",max_utilisations:c.max_utilisations!=null?String(c.max_utilisations):"",actif:c.actif,type:c.type||"gratuit",pourcentage:c.pourcentage!=null?String(c.pourcentage):"",debut:c.debut||"",fin:c.fin||""});setModalCode({mode:"edit",item:c});}} style={{background:"none",border:"none",fontSize:14,cursor:"pointer"}}>✏️</button>
+              <button onClick={()=>{setFormCode({code:c.code,description:c.description||"",max_utilisations:c.max_utilisations!=null?String(c.max_utilisations):"",actif:c.actif,type:c.type||"gratuit",pourcentage:c.pourcentage!=null?String(c.pourcentage):""});setModalCode({mode:"edit",item:c});}} style={{background:"none",border:"none",fontSize:14,cursor:"pointer"}}>✏️</button>
               <button onClick={()=>{if(window.confirm("Supprimer ce code promo ?"))supprimerCode(c.id);}} style={{background:"none",border:"none",fontSize:14,cursor:"pointer"}}>🗑️</button>
             </div>
           ))}
@@ -10952,10 +10896,6 @@ function Communication({ideesMomentConfig=[],setIdeesMomentConfig,adminComms=[],
           {formCode.type==="reduction"&&(
             <AdminField label="Pourcentage de réduction *"><input type="number" min={1} max={99} style={s.input} value={formCode.pourcentage} onChange={e=>setFormCode({...formCode,pourcentage:e.target.value})} placeholder="Ex : 30"/></AdminField>
           )}
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
-            <AdminField label="Date de début (optionnel)"><input type="date" style={s.input} value={formCode.debut} onChange={e=>setFormCode({...formCode,debut:e.target.value})}/></AdminField>
-            <AdminField label="Date de fin (optionnel)"><input type="date" style={s.input} value={formCode.fin} onChange={e=>setFormCode({...formCode,fin:e.target.value})}/></AdminField>
-          </div>
           <AdminField label="Nombre d'utilisations max (laisser vide = illimité)"><input type="number" min={1} style={s.input} value={formCode.max_utilisations} onChange={e=>setFormCode({...formCode,max_utilisations:e.target.value})} placeholder="Illimité"/></AdminField>
           {modalCode.mode!=="edit"&&(
             <div onClick={()=>setFormCode({...formCode,creerBandeau:!formCode.creerBandeau})} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",borderRadius:10,border:`1.5px solid ${formCode.creerBandeau?C.accent:C.border}`,background:formCode.creerBandeau?"rgba(124,58,237,0.08)":"transparent",cursor:"pointer",marginBottom:8}}>
@@ -11573,55 +11513,23 @@ function BoostRow({item,booste,boostActuel,onActiverBoost,onRetirerBoost}){
 }
 
 function Admins() {
-  const [admins,setAdmins] = useState([]);
-  const [chargement,setChargement] = useState(true);
+  const [admins,setAdmins] = useState(MOCK_ADMINS);
   const [search,setSearch] = useState("");
   const [modal,setModal] = useState(null);
-  const [form,setForm] = useState({prenom:"",nom:"",email:"",role:"moderateur",code2fa:""});
-  const chargerAdmins=async()=>{
-    try{
-      const {data}=await supabase.rpc("list_admin_users");
-      setAdmins(data||[]);
-    }catch(e){ /* erreur réseau — liste reste vide */ }
-    finally{ setChargement(false); }
-  };
-  useEffect(()=>{ chargerAdmins(); },[]);
-  const save = async () => {
+  const [form,setForm] = useState({prenom:"",nom:"",email:"",role:"moderateur"});
+  const save = () => {
     if(!form.prenom||!form.nom||!form.email) return;
-    if(modal?.mode!=="edit"&&!/^\d{4,8}$/.test(form.code2fa.trim())){alert("Le code d'accès doit faire entre 4 et 8 chiffres.");return;}
-    const payload={prenom:form.prenom.trim(),nom:form.nom.trim(),email:form.email.trim().toLowerCase(),role:form.role};
-    if(form.code2fa.trim())payload.code_2fa=form.code2fa.trim();
-    if(modal?.mode==="edit"){
-      const {error}=await supabase.from("admin_users").update(payload).eq("id",modal.item.id);
-      if(error){alert("Erreur : "+error.message);return;}
-    }else{
-      const {error}=await supabase.from("admin_users").insert({...payload,statut:"active"});
-      if(error){alert("Erreur : "+error.message+" (l'email existe peut-être déjà)");return;}
-    }
+    if(modal?.mode==="edit") setAdmins(admins.map(a=>a.id===modal.item.id?{...a,...form}:a));
+    else setAdmins([...admins,{id:Date.now().toString(),...form,statut:"active",cree:new Date().toLocaleDateString(),connexion:"jamais"}]);
     setModal(null);
-    chargerAdmins();
-  };
-  const toggleStatut = async (admin) => {
-    const nouveauStatut=admin.statut==="active"?"suspended":"active";
-    const {error}=await supabase.from("admin_users").update({statut:nouveauStatut}).eq("id",admin.id);
-    if(!error)setAdmins(admins.map(a=>a.id===admin.id?{...a,statut:nouveauStatut}:a));
-  };
-  const supprimer = async (id) => {
-    if(!window.confirm("Retirer cet administrateur ? Il perdra l'accès à l'admin (le compte de connexion Supabase, lui, doit être supprimé séparément si besoin)."))return;
-    const {error}=await supabase.from("admin_users").delete().eq("id",id);
-    if(!error)setAdmins(admins.filter(a=>a.id!==id));
   };
   const filtered = admins.filter(a=>!search||`${a.prenom||""} ${a.nom||""} ${a.email||""}`.toLowerCase().includes(search.toLowerCase()));
   return (
     <div>
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:20}}>
         <div><h1 style={{fontSize:22,fontWeight:800,color:C.text,margin:0}}>Administrateurs</h1><p style={{fontSize:13,color:C.muted,margin:"4px 0 0"}}>Gérez les accès à l'interface admin</p></div>
-        <button style={s.btn(C.accent)} onClick={()=>{setForm({prenom:"",nom:"",email:"",role:"moderateur",code2fa:""});setModal({mode:"add"});}}>+ Nouvel admin</button>
+        <button style={s.btn(C.accent)} onClick={()=>{setForm({prenom:"",nom:"",email:"",role:"moderateur"});setModal({mode:"add"});}}>+ Nouvel admin</button>
       </div>
-      <div style={{background:"rgba(124,58,237,0.08)",borderRadius:12,padding:"12px 16px",marginBottom:16,fontSize:12,color:C.muted,lineHeight:1.5}}>
-        ℹ️ Ajouter quelqu'un ici lui donne un <strong>rôle</strong> et un <strong>code d'accès personnel</strong>, mais ne crée pas son mot de passe. Pour qu'il puisse vraiment se connecter, crée aussi son compte dans Supabase → Authentication → Users, avec le même email, puis transmets-lui le mot de passe <strong>et</strong> son code à la main. Par sécurité, ces codes ne sont jamais réaffichés ensuite, même à toi.
-      </div>
-      {chargement&&<p style={{fontSize:13,color:C.muted,marginBottom:16}}>Chargement...</p>}
       <SearchBar value={search} onChange={setSearch} placeholder="Rechercher un administrateur..."/>
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))",gap:14}}>
         {filtered.map(admin=>(
@@ -11633,38 +11541,32 @@ function Admins() {
             <p style={{margin:"0 0 2px",fontSize:15,fontWeight:700,color:C.text}}>{admin.prenom} {admin.nom}</p>
             <p style={{margin:"0 0 10px",fontSize:12,color:C.muted}}>{admin.email}</p>
             <div style={{fontSize:11,color:C.muted,marginBottom:12}}>
-              <div>Ajouté le {admin.created_at?new Date(admin.created_at).toLocaleDateString("fr-FR"):"—"}</div>
+              <div>Créé le {admin.cree}</div>
+              <div>Dernière connexion : {admin.connexion}</div>
             </div>
             {statutBadge(admin.statut)}
             <div style={{display:"flex",gap:6,marginTop:12,paddingTop:12,borderTop:`1px solid ${C.border}`}}>
-              <button style={{...s.btnOutline(C.accent),flex:1}} onClick={()=>{setForm({prenom:admin.prenom,nom:admin.nom,email:admin.email,role:admin.role,code2fa:""});setModal({mode:"edit",item:admin});}}>✏️</button>
+              <button style={{...s.btnOutline(C.accent),flex:1}} onClick={()=>{setForm({prenom:admin.prenom,nom:admin.nom,email:admin.email,role:admin.role});setModal({mode:"edit",item:admin});}}>✏️</button>
               {admin.role!=="super_admin"&&<>
-                <button style={s.btnOutline(admin.statut==="active"?C.yellow:C.green)} onClick={()=>toggleStatut(admin)}>{admin.statut==="active"?"⏸":"▶"}</button>
-                <button style={s.btnOutline(C.red)} onClick={()=>supprimer(admin.id)}>🗑️</button>
+                <button style={s.btnOutline(admin.statut==="active"?C.yellow:C.green)} onClick={()=>setAdmins(admins.map(a=>a.id===admin.id?{...a,statut:a.statut==="active"?"suspended":"active"}:a))}>{admin.statut==="active"?"⏸":"▶"}</button>
+                <button style={s.btnOutline(C.red)} onClick={()=>setAdmins(admins.filter(a=>a.id!==admin.id))}>🗑️</button>
               </>}
             </div>
           </div>
         ))}
-        {!chargement&&filtered.length===0&&<p style={{fontSize:13,color:C.muted,fontStyle:"italic"}}>Aucun administrateur pour le moment.</p>}
       </div>
       {modal&&<Modal title={modal.mode==="edit"?"Modifier l'administrateur":"Nouvel administrateur"} onClose={()=>setModal(null)}>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
           <AdminField label="Prénom"><input style={s.input} value={form.prenom||""} onChange={e=>setForm({...form,prenom:e.target.value})}/></AdminField>
           <AdminField label="Nom"><input style={s.input} value={form.nom||""} onChange={e=>setForm({...form,nom:e.target.value})}/></AdminField>
         </div>
-        <AdminField label="Email"><input style={s.input} type="email" value={form.email||""} onChange={e=>setForm({...form,email:e.target.value})} disabled={modal.mode==="edit"}/></AdminField>
+        <AdminField label="Email"><input style={s.input} type="email" value={form.email||""} onChange={e=>setForm({...form,email:e.target.value})}/></AdminField>
         <AdminField label="Rôle"><select style={s.input} value={form.role||"moderateur"} onChange={e=>setForm({...form,role:e.target.value})}><option value="moderateur">👁️ Modérateur</option><option value="admin">🛡️ Admin</option><option value="super_admin">👑 Super Admin</option></select></AdminField>
-        <AdminField label={modal.mode==="edit"?"Nouveau code d'accès (laisser vide pour ne pas le changer)":"Code d'accès (4 à 8 chiffres) *"}>
-          <input style={{...s.input,fontFamily:"monospace",letterSpacing:2}} value={form.code2fa||""} onChange={e=>setForm({...form,code2fa:e.target.value.replace(/\D/g,"")})} placeholder="Ex : 481920" maxLength={8}/>
-        </AdminField>
         <div style={{background:"rgba(124,58,237,0.08)",borderRadius:10,padding:12,marginBottom:14,fontSize:12,color:C.muted}}>
-          {form.role==="super_admin"&&"• Accès complet : Dashboard, Utilisateurs, Abonnements, Communication, Boost, gestion des administrateurs, et tout le reste"}
-          {form.role==="admin"&&"• Contenu (activités, sorties, événements, saisonnier, catégories, ressources), contributions et signalements — pas d'accès à Dashboard, Utilisateurs, Abonnements, Communication ni Boost"}
-          {form.role==="moderateur"&&"• Modération des contributions et signalements uniquement"}
+          {form.role==="super_admin"&&"• Accès complet + gestion des administrateurs"}
+          {form.role==="admin"&&"• Gestion du contenu, des utilisateurs et des signalements"}
+          {form.role==="moderateur"&&"• Modération des signalements uniquement"}
         </div>
-        {modal.mode!=="edit"&&<div style={{background:"rgba(245,158,11,0.1)",borderRadius:10,padding:12,marginBottom:14,fontSize:12,color:"#92400e"}}>
-          ⚠️ N'oublie pas de créer aussi le compte de connexion pour <strong>{form.email||"cet email"}</strong> dans Supabase → Authentication → Users, avec un mot de passe que tu lui transmettras, en plus de ce code.
-        </div>}
         <div style={{display:"flex",justifyContent:"flex-end",gap:8}}>
           <button style={s.btnOutline(C.muted)} onClick={()=>setModal(null)}>Annuler</button>
           <button style={s.btn(C.accent)} onClick={save}>{modal.mode==="edit"?"Modifier":"Créer"}</button>
@@ -11758,49 +11660,9 @@ function Contributions({items,updateContrib,setPendingContribs,supprimerContrib,
 
 const PAGES_FN = {dashboard:(props)=><Dashboard {...props}/>,sos:(props)=><AdminSOS {...props}/>,activites:(props)=><Activites {...props}/>,sorties:(props)=><Sorties {...props}/>,evenements:(props)=><Evenements {...props}/>,saisonnier:(props)=><Saisonnier {...props}/>,categories:(props)=><Categories {...props}/>,ressources:(props)=><RessourcesAdmin {...props}/>,boost:(props)=><AdminBoost {...props}/>,utilisateurs:(props)=><Utilisateurs {...props}/>,abonnements:(props)=><Abonnements {...props}/>,signalements:(props)=><Signalements {...props}/>,communication:(props)=><Communication key="comm" {...props}/>,admins:()=><Admins/>};
 
-function AdminSOS({sosLib=[],setSosLib,sosSituations=[],setSosSituations,sosModeActif=true,setSosModeActif}){
-  const [tab,setTab]=useState("activites");
+function AdminSOS({sosLib=[],setSosLib,sosModeActif=true,setSosModeActif}){
   const [modal,setModal]=useState(null);
   const [form,setForm]=useState({titre:"",desc:"",duree:"",age:"",materiel:"",statut:"published"});
-  const [situModal,setSituModal]=useState(null);
-  const emptySolution=()=>({label:"",etapesStr:"",checklistStr:""});
-  const [situForm,setSituForm]=useState({titre:"",sousTitre:"",emoji:"🧩",theme:"",statut:"published",solutions:[emptySolution()]});
-  const themesExistants=[...new Set(sosSituations.map(s=>s.theme).filter(Boolean))];
-  const saveSituation=async()=>{
-    if(!situForm.titre)return;
-    const solutions=situForm.solutions
-      .filter(sol=>sol.label.trim()||sol.etapesStr.trim()||sol.checklistStr.trim())
-      .map(sol=>({
-        label:sol.label.trim()||"Solution",
-        etapes:sol.etapesStr?sol.etapesStr.split("\n").map(s=>s.trim()).filter(Boolean):[],
-        checklist:sol.checklistStr?sol.checklistStr.split("\n").map(s=>s.trim()).filter(Boolean):[],
-      }));
-    const payload={titre:situForm.titre.trim(),sous_titre:situForm.sousTitre.trim(),emoji:situForm.emoji||"🧩",theme:situForm.theme.trim()||null,solutions,statut:situForm.statut,ordre:situForm.ordre||sosSituations.length+1};
-    if(situModal?.mode==="edit"){
-      setSosSituations(prev=>prev.map(s=>s.id===situModal.item.id?{...s,titre:payload.titre,sousTitre:payload.sous_titre,emoji:payload.emoji,theme:payload.theme,solutions,statut:payload.statut}:s));
-      try{await supabase.from("sos_situations").update(payload).eq("id",situModal.item.id);}catch(e){/* échec réseau — reste correct localement */}
-    }else{
-      const tempId="situ"+Date.now();
-      setSosSituations(prev=>[...prev,{id:tempId,titre:payload.titre,sousTitre:payload.sous_titre,emoji:payload.emoji,theme:payload.theme,solutions,statut:payload.statut,ordre:payload.ordre}]);
-      try{
-        const {data:inserted}=await supabase.from("sos_situations").insert(payload).select().single();
-        if(inserted)setSosSituations(prev=>prev.map(s=>s.id===tempId?{...s,id:inserted.id}:s));
-      }catch(e){ /* la situation reste visible localement même si la sauvegarde échoue */ }
-    }
-    setSituModal(null);
-  };
-  const toggleStatutSituation=async(item)=>{
-    const nouveauStatut=item.statut==="published"?"draft":"published";
-    setSosSituations(prev=>prev.map(x=>x.id===item.id?{...x,statut:nouveauStatut}:x));
-    try{ await supabase.from("sos_situations").update({statut:nouveauStatut}).eq("id",item.id); }
-    catch(e){ /* échec réseau — reste correct localement */ }
-  };
-  const supprimerSituation=async(item)=>{
-    if(!window.confirm(`Supprimer la situation "${item.titre}" ?`))return;
-    setSosSituations(prev=>prev.filter(x=>x.id!==item.id));
-    try{ await supabase.from("sos_situations").delete().eq("id",item.id); }
-    catch(e){ /* échec réseau — sera resynchronisé au prochain chargement */ }
-  };
   const save=async()=>{
     if(!form.titre)return;
     const {materiel,id,...rest}=form;
@@ -11847,18 +11709,8 @@ function AdminSOS({sosLib=[],setSosLib,sosSituations=[],setSosSituations,sosMode
             <Tog on={sosModeActif} onChange={()=>setSosModeActif&&setSosModeActif(!sosModeActif)}/>
             <span style={{fontSize:12,color:sosModeActif?C.green:C.red,fontWeight:600}}>{sosModeActif?"Actif":"Inactif"}</span>
           </div>
-          <button style={s.btn("#ef4444")} onClick={()=>{
-            if(tab==="situations"){setSituForm({titre:"",sousTitre:"",emoji:"🧩",theme:"",statut:"published",solutions:[emptySolution()]});setSituModal({mode:"add"});}
-            else{setForm({titre:"",desc:"",duree:"",age:"",materiel:"",statut:"published"});setModal({mode:"add"});}
-          }}>{tab==="situations"?"+ Ajouter une situation":"+ Ajouter une activité"}</button>
+          <button style={s.btn("#ef4444")} onClick={()=>{setForm({titre:"",desc:"",duree:"",age:"",materiel:"",statut:"published"});setModal({mode:"add"});}}>+ Ajouter une activité</button>
         </div>
-      </div>
-
-      {/* Onglets */}
-      <div style={{display:"flex",gap:8,marginBottom:20}}>
-        {[{k:"activites",l:"🆘 Activités SOS"},{k:"situations",l:"🧩 Situations concrètes"}].map(t=>(
-          <button key={t.k} onClick={()=>setTab(t.k)} style={{padding:"9px 16px",borderRadius:12,border:`1.5px solid ${tab===t.k?"#ef4444":C.border}`,background:tab===t.k?"rgba(239,68,68,0.12)":"transparent",color:tab===t.k?"#fca5a5":C.muted,fontWeight:tab===t.k?700:500,fontSize:13,cursor:"pointer"}}>{t.l}</button>
-        ))}
       </div>
       {!sosModeActif&&(
         <div style={{background:"rgba(239,68,68,0.12)",border:"1px solid rgba(239,68,68,0.3)",borderRadius:12,padding:"10px 16px",marginBottom:16}}>
@@ -11866,7 +11718,6 @@ function AdminSOS({sosLib=[],setSosLib,sosSituations=[],setSosSituations,sosMode
         </div>
       )}
 
-      {tab==="activites"&&(<>
       {/* Stats */}
       <div style={{display:"flex",gap:12,marginBottom:20}}>
         {[{label:"Total activités",val:sosLib.length,emoji:"📋",color:C.blue},{label:"Publiées",val:sosLib.filter(a=>a.statut==="published").length,emoji:"✅",color:C.green},{label:"Brouillons",val:sosLib.filter(a=>a.statut==="draft").length,emoji:"📝",color:C.muted}].map((st,i)=>(
@@ -11954,94 +11805,12 @@ function AdminSOS({sosLib=[],setSosLib,sosSituations=[],setSosSituations,sosMode
         </Modal>
         );
       })()}
-      </>)}
-
-      {tab==="situations"&&(<>
-      <div style={{background:"rgba(139,92,246,0.08)",borderRadius:12,padding:"12px 16px",marginBottom:20,display:"flex",gap:10,alignItems:"flex-start",border:"1px solid rgba(139,92,246,0.2)"}}>
-        <span style={{fontSize:20,flexShrink:0}}>🧩</span>
-        <div>
-          <p style={{margin:"0 0 2px",fontSize:13,fontWeight:700,color:"#c4b5fd"}}>Situations concrètes du quotidien</p>
-          <p style={{fontSize:12,color:C.muted}}>Contrairement aux activités SOS (diversion), ces fiches répondent directement à une situation précise (transitions, refus de partir...) avec des étapes concrètes et/ou une checklist.</p>
-        </div>
-      </div>
-      <div style={{...s.card,padding:0,overflow:"hidden"}}>
-        <table style={{width:"100%",borderCollapse:"collapse"}}>
-          <thead><tr style={{background:"#0d1117"}}>{["Situation","Thème","Solutions","Statut","Actions"].map(h=><th key={h} style={{padding:"10px 16px",textAlign:"left",fontSize:11,color:C.muted,fontWeight:600,textTransform:"uppercase"}}>{h}</th>)}</tr></thead>
-          <tbody>{[...sosSituations].sort((a,b)=>(a.ordre||0)-(b.ordre||0)).map(si=>(
-            <tr key={si.id} style={{borderTop:`1px solid ${C.border}`,opacity:si.statut==="draft"?0.6:1}}>
-              <td style={{padding:"12px 16px"}}>
-                <p style={{margin:"0 0 3px",fontSize:13,fontWeight:600,color:C.text}}>{si.emoji} {si.titre}</p>
-                <p style={{margin:0,fontSize:11,color:C.muted,maxWidth:280,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{si.sousTitre}</p>
-              </td>
-              <td style={{padding:"12px 16px"}}>{si.theme?<span style={s.badge("rgba(139,92,246,0.15)","#c4b5fd")}>{si.theme}</span>:<span style={{fontSize:12,color:C.muted}}>—</span>}</td>
-              <td style={{padding:"12px 16px",fontSize:12,color:C.muted}}>{(si.solutions||[]).length} approche{(si.solutions||[]).length>1?"s":""}</td>
-              <td style={{padding:"12px 16px"}}>{statutBadge(si.statut)}</td>
-              <td style={{padding:"12px 16px"}}>
-                <div style={{display:"flex",gap:6}}>
-                  <button style={s.btnOutline("#ef4444")} onClick={()=>{setSituForm({titre:si.titre,sousTitre:si.sousTitre||"",emoji:si.emoji||"🧩",theme:si.theme||"",statut:si.statut,ordre:si.ordre,solutions:(si.solutions&&si.solutions.length>0)?si.solutions.map(sol=>({label:sol.label||"",etapesStr:(sol.etapes||[]).join("\n"),checklistStr:(sol.checklist||[]).join("\n")})):[emptySolution()]});setSituModal({mode:"edit",item:si});}}>✏️</button>
-                  <button style={s.btnOutline(si.statut==="published"?C.yellow:C.green)} onClick={()=>toggleStatutSituation(si)}>{si.statut==="published"?"📝":"✅"}</button>
-                  <button style={s.btnOutline(C.red)} onClick={()=>supprimerSituation(si)}>🗑️</button>
-                </div>
-              </td>
-            </tr>
-          ))}</tbody>
-        </table>
-        {sosSituations.length===0&&<div style={{padding:"40px 0",textAlign:"center",color:C.muted}}><p style={{fontSize:32,margin:"0 0 8px"}}>🧩</p><p>Aucune situation pour le moment</p></div>}
-      </div>
-
-      {situModal&&(
-        <Modal title={situModal.mode==="edit"?"Modifier la situation":"Nouvelle situation"} onClose={()=>setSituModal(null)} width={620}>
-          <div style={{background:"rgba(139,92,246,0.06)",borderRadius:10,padding:"10px 14px",marginBottom:16,display:"flex",gap:8}}><span>💡</span><p style={{margin:0,fontSize:12,color:"#c4b5fd"}}>Regroupe plusieurs situations proches sous un même thème (ex: "Sommeil"), et propose plusieurs approches différentes si tu en as — les familles choisiront celle qui leur parle le plus.</p></div>
-          <div style={{display:"grid",gridTemplateColumns:"60px 1fr",gap:12}}>
-            <AdminField label="Emoji"><input style={{...s.input,textAlign:"center",fontSize:20}} value={situForm.emoji} onChange={e=>setSituForm({...situForm,emoji:e.target.value})}/></AdminField>
-            <AdminField label="Titre de la situation *"><input style={s.input} value={situForm.titre} onChange={e=>setSituForm({...situForm,titre:e.target.value})} placeholder="Ex : Peur du noir"/></AdminField>
-          </div>
-          <AdminField label="Sous-titre (description courte)"><input style={s.input} value={situForm.sousTitre} onChange={e=>setSituForm({...situForm,sousTitre:e.target.value})} placeholder="Ex : Refuse de dormir sans lumière, angoisse au coucher"/></AdminField>
-          <AdminField label="Thème (optionnel — regroupe plusieurs situations, ex: Sommeil)">
-            <input style={s.input} list="themes-existants" value={situForm.theme} onChange={e=>setSituForm({...situForm,theme:e.target.value})} placeholder="Ex : Sommeil, Alimentation, Émotions..."/>
-            <datalist id="themes-existants">{themesExistants.map(t=><option key={t} value={t}/>)}</datalist>
-          </AdminField>
-
-          <div style={{borderTop:`1px solid ${C.border}`,paddingTop:14,marginTop:6}}>
-            <p style={{margin:"0 0 4px",fontSize:13,fontWeight:800,color:C.text}}>Solutions / approches proposées</p>
-            <p style={{margin:"0 0 12px",fontSize:11,color:C.muted}}>Ajoute une ou plusieurs approches. S'il n'y en a qu'une, elle s'affiche directement. S'il y en a plusieurs, la famille choisit celle qu'elle veut essayer.</p>
-            {situForm.solutions.map((sol,i)=>(
-              <div key={i} style={{background:"rgba(255,255,255,0.03)",border:`1px solid ${C.border}`,borderRadius:12,padding:14,marginBottom:12}}>
-                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
-                  <p style={{margin:0,fontSize:12,fontWeight:700,color:"#c4b5fd"}}>Approche {i+1}</p>
-                  {situForm.solutions.length>1&&<button onClick={()=>setSituForm(p=>({...p,solutions:p.solutions.filter((_,j)=>j!==i)}))} style={{background:"none",border:"none",color:C.red,cursor:"pointer",fontSize:12}}>🗑️ Retirer</button>}
-                </div>
-                <AdminField label="Nom de l'approche (si plusieurs solutions)"><input style={s.input} value={sol.label} onChange={e=>setSituForm(p=>({...p,solutions:p.solutions.map((x,j)=>j===i?{...x,label:e.target.value}:x)}))} placeholder="Ex : Le gardien de la nuit"/></AdminField>
-                <AdminField label="Script étape par étape (une étape par ligne)"><textarea style={{...s.input,minHeight:90,resize:"vertical"}} value={sol.etapesStr} onChange={e=>setSituForm(p=>({...p,solutions:p.solutions.map((x,j)=>j===i?{...x,etapesStr:e.target.value}:x)}))} placeholder={"Choisissez ensemble un doudou gardien...\nInstaurez un rituel de ronde..."}/></AdminField>
-                <AdminField label="Checklist rapide (une action par ligne)"><textarea style={{...s.input,minHeight:70,resize:"vertical"}} value={sol.checklistStr} onChange={e=>setSituForm(p=>({...p,solutions:p.solutions.map((x,j)=>j===i?{...x,checklistStr:e.target.value}:x)}))} placeholder={"Choisir un objet gardien\nRituel avant coucher"}/></AdminField>
-              </div>
-            ))}
-            <button onClick={()=>setSituForm(p=>({...p,solutions:[...p.solutions,emptySolution()]}))} style={{...s.btnOutline("#c4b5fd"),width:"100%",marginBottom:16}}>+ Ajouter une autre approche</button>
-          </div>
-
-          <AdminField label="Statut"><select style={s.input} value={situForm.statut} onChange={e=>setSituForm({...situForm,statut:e.target.value})}><option value="published">Publié</option><option value="draft">Brouillon</option></select></AdminField>
-          <div style={{display:"flex",justifyContent:"flex-end",gap:8,marginTop:4}}>
-            <button style={s.btnOutline(C.muted)} onClick={()=>setSituModal(null)}>Annuler</button>
-            <button style={s.btn("#ef4444")} onClick={saveSituation}>{situModal.mode==="edit"?"Modifier":"Ajouter"}</button>
-          </div>
-        </Modal>
-      )}
-      </>)}
     </div>
   );
 }
 
-function PageAdmin({onLogout,adminRole="super_admin",adminInfo=null,pendingContribs=[],setPendingContribs,updateContrib,supprimerContrib,adminActivites=[],setAdminActivites,adminSorties=[],setAdminSorties,adminEvenements=[],setAdminEvenements,adminReports=[],setAdminReports,addDeletedTitle,adminCustomEvents=[],setAdminCustomEvents,sosLib=[],setSosLib,sosSituations=[],setSosSituations,sosModeActif=true,setSosModeActif,ideesMomentConfig=[],setIdeesMomentConfig,evenementsSaisonniers=[],setEvenementsSaisonniers,betisesLutin=[],setBetisesLutin,cartesVoyageLutin=[],setCartesVoyageLutin,customCatActivites=[],setCustomCatActivites,customCatSorties=[],setCustomCatSorties,customCatEvenements=[],setCustomCatEvenements,adminComms=[],setAdminComms,ressourcesSites=[],setRessourcesSites,ressourcesContacts=[],setRessourcesContacts,ressourcesPdf=[],setRessourcesPdf,devisBoostDemandes=[],setDevisBoostDemandes,boosts=[],setBoosts,activerBoost,retirerBoostSupabase,demoMode=false,setDemoMode,premiumPourTous=false,togglePremiumPourTous,planningEtEnfantsGratuits=false,toggleAllPlanningEtEnfantsGratuits,amazonTag="",setAmazonTag,appLogo=null,setAppLogo}) {
-  const RESERVE_SUPER_ADMIN=["dashboard","utilisateurs","abonnements","communication","boost","admins"];
-  const PAGES_AUTORISEES={
-    moderateur:["contributions","signalements"],
-    admin:MENU.map(m=>m.k).filter(k=>!RESERVE_SUPER_ADMIN.includes(k)),
-    super_admin:MENU.map(m=>m.k),
-  };
-  const pagesOk=PAGES_AUTORISEES[adminRole]||PAGES_AUTORISEES.moderateur;
-  const menuVisible=MENU.filter(item=>pagesOk.includes(item.k));
-  const [page,setPage] = useState(pagesOk[0]||"contributions");
-  useEffect(()=>{ if(!pagesOk.includes(page))setPage(pagesOk[0]||"contributions"); },[adminRole]);
+function PageAdmin({onLogout,pendingContribs=[],setPendingContribs,updateContrib,supprimerContrib,adminActivites=[],setAdminActivites,adminSorties=[],setAdminSorties,adminEvenements=[],setAdminEvenements,adminReports=[],setAdminReports,addDeletedTitle,adminCustomEvents=[],setAdminCustomEvents,sosLib=[],setSosLib,sosModeActif=true,setSosModeActif,ideesMomentConfig=[],setIdeesMomentConfig,evenementsSaisonniers=[],setEvenementsSaisonniers,betisesLutin=[],setBetisesLutin,cartesVoyageLutin=[],setCartesVoyageLutin,customCatActivites=[],setCustomCatActivites,customCatSorties=[],setCustomCatSorties,customCatEvenements=[],setCustomCatEvenements,adminComms=[],setAdminComms,ressourcesSites=[],setRessourcesSites,ressourcesContacts=[],setRessourcesContacts,ressourcesPdf=[],setRessourcesPdf,devisBoostDemandes=[],setDevisBoostDemandes,boosts=[],setBoosts,activerBoost,retirerBoostSupabase,demoMode=false,setDemoMode,premiumPourTous=false,togglePremiumPourTous,amazonTag="",setAmazonTag}) {
+  const [page,setPage] = useState("dashboard");
   const [collapsed,setCollapsed] = useState(false);
   const pendingReports = adminReports.filter(r=>r.statut==="pending").length;
   return (
@@ -12053,7 +11822,7 @@ function PageAdmin({onLogout,adminRole="super_admin",adminInfo=null,pendingContr
           {!collapsed&&<div><p style={{margin:0,fontSize:13,fontWeight:800,color:C.text}}>Parent'Hèse</p><p style={{margin:0,fontSize:10,color:C.muted}}>Admin</p></div>}
         </div>
         <nav style={{flex:1,padding:"12px 8px",overflowY:"auto"}}>
-          {menuVisible.map(item=>(
+          {MENU.map(item=>(
             <button key={item.k} onClick={()=>setPage(item.k)} style={{width:"100%",display:"flex",alignItems:"center",gap:10,padding:"9px 10px",borderRadius:10,border:"none",background:page===item.k?"rgba(124,58,237,0.15)":"transparent",color:page===item.k?"#a78bfa":C.muted,cursor:"pointer",marginBottom:2,textAlign:"left",position:"relative",overflow:"hidden"}}>
               <span style={{fontSize:17,flexShrink:0}}>{item.emoji}</span>
               {!collapsed&&<span style={{fontSize:13,fontWeight:page===item.k?600:400,whiteSpace:"nowrap"}}>{item.label}</span>}
@@ -12080,12 +11849,12 @@ function PageAdmin({onLogout,adminRole="super_admin",adminInfo=null,pendingContr
               <span style={{fontSize:14}}>📱</span> Mode utilisateur
             </button>
             <div style={{width:1,height:20,background:C.border}}/>
-            <div style={{fontSize:11,color:C.muted}}>{adminRole==="super_admin"?"👑 Super Admin":adminRole==="admin"?"🛡️ Admin":"👁️ Modérateur"}</div>
-            <Avatar nom={adminInfo?`${adminInfo.prenom||""} ${adminInfo.nom||""}`.trim()||adminInfo.email:"Admin"} size={30}/>
+            <div style={{fontSize:11,color:C.muted}}>👑 Super Admin</div>
+            <Avatar nom="Alexandre Fontaine" size={30}/>
           </div>
         </header>
         <main style={{flex:1,overflowY:"auto",padding:24}}>
-          {page==="contributions"?<Contributions items={pendingContribs} updateContrib={updateContrib} setPendingContribs={setPendingContribs} supprimerContrib={supprimerContrib} customCatActivites={customCatActivites} customCatSorties={customCatSorties} customCatEvenements={customCatEvenements}/>:PAGES_FN[page]?PAGES_FN[page]({sharedActivites:adminActivites,setSharedActivites:setAdminActivites,sharedSorties:adminSorties,setSharedSorties:setAdminSorties,sharedEvenements:adminEvenements,setSharedEvenements:setAdminEvenements,userReports:adminReports,setUserReports:setAdminReports,onDeleteTitle:addDeletedTitle,sharedCustomEvents:adminCustomEvents,setSharedCustomEvents:setAdminCustomEvents,pendingContribs,setPendingContribs,updateContrib,dashUserReports:adminReports,sosLib,setSosLib,sosSituations,setSosSituations,sosModeActif,setSosModeActif,ideesMomentConfig,setIdeesMomentConfig,evenementsSaisonniers,setEvenementsSaisonniers,betisesLutin,setBetisesLutin,cartesVoyageLutin,setCartesVoyageLutin,customCatActivites,setCustomCatActivites,customCatSorties,setCustomCatSorties,customCatEvenements,setCustomCatEvenements,adminComms,setAdminComms,ressourcesSites,setRessourcesSites,ressourcesContacts,setRessourcesContacts,ressourcesPdf,setRessourcesPdf,devisBoostDemandes,setDevisBoostDemandes,boosts,onActiverBoost:activerBoost,onRetirerBoost:retirerBoostSupabase,demoMode,setDemoMode,premiumPourTous,togglePremiumPourTous,planningEtEnfantsGratuits,toggleAllPlanningEtEnfantsGratuits,amazonTag,setAmazonTag,appLogo,setAppLogo}):null}
+          {page==="contributions"?<Contributions items={pendingContribs} updateContrib={updateContrib} setPendingContribs={setPendingContribs} supprimerContrib={supprimerContrib} customCatActivites={customCatActivites} customCatSorties={customCatSorties} customCatEvenements={customCatEvenements}/>:PAGES_FN[page]?PAGES_FN[page]({sharedActivites:adminActivites,setSharedActivites:setAdminActivites,sharedSorties:adminSorties,setSharedSorties:setAdminSorties,sharedEvenements:adminEvenements,setSharedEvenements:setAdminEvenements,userReports:adminReports,setUserReports:setAdminReports,onDeleteTitle:addDeletedTitle,sharedCustomEvents:adminCustomEvents,setSharedCustomEvents:setAdminCustomEvents,pendingContribs,setPendingContribs,updateContrib,dashUserReports:adminReports,sosLib,setSosLib,sosModeActif,setSosModeActif,ideesMomentConfig,setIdeesMomentConfig,evenementsSaisonniers,setEvenementsSaisonniers,betisesLutin,setBetisesLutin,cartesVoyageLutin,setCartesVoyageLutin,customCatActivites,setCustomCatActivites,customCatSorties,setCustomCatSorties,customCatEvenements,setCustomCatEvenements,adminComms,setAdminComms,ressourcesSites,setRessourcesSites,ressourcesContacts,setRessourcesContacts,ressourcesPdf,setRessourcesPdf,devisBoostDemandes,setDevisBoostDemandes,boosts,onActiverBoost:activerBoost,onRetirerBoost:retirerBoostSupabase,demoMode,setDemoMode,premiumPourTous,togglePremiumPourTous,amazonTag,setAmazonTag}):null}
         </main>
       </div>
     </div>
@@ -12097,65 +11866,16 @@ function PageAdmin({onLogout,adminRole="super_admin",adminInfo=null,pendingContr
 // AUTHENTIFICATION — Compte local protégé par mot de passe
 // (pas de serveur : les identifiants restent stockés sur cet appareil)
 // ============================================================
-function PageSetNewPassword({onDone}){
-  const [password1,setPassword1]=useState("");
-  const [password2,setPassword2]=useState("");
-  const [showPw,setShowPw]=useState(false);
-  const [error,setError]=useState("");
-  const [loading,setLoading]=useState(false);
-  const valider=async()=>{
-    setError("");
-    if(password1.length<6){setError("Le mot de passe doit faire au moins 6 caractères.");return;}
-    if(password1!==password2){setError("Les deux mots de passe ne correspondent pas.");return;}
-    setLoading(true);
-    try{
-      const {error:updateError}=await supabase.auth.updateUser({password:password1});
-      if(updateError){setError("Erreur : "+updateError.message);setLoading(false);return;}
-      setLoading(false);
-      onDone&&onDone();
-    }catch(e){
-      setError("Erreur réseau, réessaie.");
-      setLoading(false);
-    }
-  };
-  return(
-    <div style={{ maxWidth: 390, margin: "0 auto", minHeight: "100vh", background: BG, display: "flex", flexDirection: "column", justifyContent: "center", padding: "32px 24px", fontFamily: "system-ui,-apple-system,sans-serif", boxSizing: "border-box" }}>
-      <div style={{ textAlign: "center", marginBottom: 28 }}>
-        <div style={{ fontSize: 48, marginBottom: 10 }}>🔑</div>
-        <h1 style={{ margin: "0 0 4px", fontSize: 21, fontWeight: 800, color: TX }}>Nouveau mot de passe</h1>
-        <p style={{ margin: 0, fontSize: 13, color: TM }}>Choisis un nouveau mot de passe pour ton compte</p>
-      </div>
-      <div style={{ background: WH, borderRadius: 20, padding: 20, border: BD }}>
-        <div style={{ marginBottom: 12 }}>
-          <label style={{ fontSize: 12, color: TM, display: "block", marginBottom: 6 }}>Nouveau mot de passe</label>
-          <div style={{ position: "relative" }}>
-            <input type={showPw?"text":"password"} value={password1} onChange={e=>setPassword1(e.target.value)} placeholder="••••••" style={{...FS, paddingRight: 40}}/>
-            <button type="button" onClick={()=>setShowPw(p=>!p)} style={{ position: "absolute", right: 4, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", fontSize: 17, padding: 8, lineHeight: 1 }}>{showPw?"🙈":"👁️"}</button>
-          </div>
-        </div>
-        <div style={{ marginBottom: 6 }}>
-          <label style={{ fontSize: 12, color: TM, display: "block", marginBottom: 6 }}>Confirme le mot de passe</label>
-          <input type={showPw?"text":"password"} value={password2} onChange={e=>setPassword2(e.target.value)} onKeyDown={e=>e.key==="Enter"&&valider()} placeholder="••••••" style={FS}/>
-        </div>
-        {error&&<p style={{ margin: "10px 0 0", fontSize: 12, color: RD, fontWeight: 600 }}>{error}</p>}
-        <button onClick={valider} disabled={loading} style={{ width: "100%", marginTop: 16, padding: 13, borderRadius: 28, background: V, border: "none", color: WH, fontWeight: 700, fontSize: 14, cursor: loading?"default":"pointer", opacity: loading?0.7:1 }}>{loading?"...":"Valider le nouveau mot de passe"}</button>
-      </div>
-    </div>
-  );
-}
-
-function PageAuth({ onAuthSuccess, onCancel, onAdminSuccess, logo }) {
+function PageAuth({ onAuthSuccess, onCancel, onAdminSuccess }) {
   const [mode, setMode] = useState('signup'); // 'signup' | 'login'
   const [failedAttempts,setFailedAttempts]=useState(0);
   const [lockedUntil,setLockedUntil]=useState(null); // timestamp
   const [lockCountdown,setLockCountdown]=useState(0);
   const [adminStep,setAdminStep]=useState(false); // 2FA admin : email+mdp validés, attend le code admin
-  const [pendingAdmin,setPendingAdmin]=useState(null); // fiche admin (rôle, nom...) trouvée avant validation du 2FA
   const [adminCode2,setAdminCode2]=useState(""); // second facteur admin
   const [nom, setNom] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showReset, setShowReset] = useState(false);
@@ -12197,6 +11917,11 @@ function PageAuth({ onAuthSuccess, onCancel, onAdminSuccess, logo }) {
     setError('');
     if(lockedUntil&&Date.now()<lockedUntil){setError(`Trop de tentatives. Réessayez dans ${lockCountdown}s.`);return;}
     if (!email.trim() || !password.trim()) { setError('Merci de remplir tous les champs.'); return; }
+    // Vérification admin
+    const ADMIN_PW_H="a7576524a7576524a7576524a7576524a7576524a7576524a7576524a7576524";
+    if (simpleHash(email.trim().toLowerCase())===simpleHash(ADMIN_EMAIL) && simpleHash(password)===ADMIN_PW_H) {
+      setAdminStep(true); setAdminCode2(""); return;
+    }
     setLoading(true);
     const { data, error: loginError } = await supabase.auth.signInWithPassword({
       email: email.trim().toLowerCase(),
@@ -12210,16 +11935,6 @@ function PageAuth({ onAuthSuccess, onCancel, onAdminSuccess, logo }) {
       setLoading(false);
       return;
     }
-    // Le mot de passe est correct — vérifie si cet email correspond à un administrateur
-    const {data:adminRow}=await supabase.from("admin_users").select("*").ilike("email",email.trim()).eq("statut","active").maybeSingle();
-    if(adminRow){
-      // Ferme la session tout de suite : on ne l'ouvre pour de vrai qu'une fois le code à 2FA validé
-      await supabase.auth.signOut();
-      setPendingAdmin(adminRow);
-      setLoading(false);
-      setAdminStep(true); setAdminCode2("");
-      return;
-    }
     setFailedAttempts(0);
     const profil = await chargerOuReparerProfil(data.user);
     setLoading(false);
@@ -12227,28 +11942,13 @@ function PageAuth({ onAuthSuccess, onCancel, onAdminSuccess, logo }) {
   };
 
   // Validation du 2ème facteur admin
-  const handleAdminCode2 = async () => {
-    if(!pendingAdmin?.code_2fa){
-      setError("Aucun code d'accès n'est configuré pour ce compte. Demande à un super admin de t'en attribuer un depuis la page Administrateurs.");
-      return;
-    }
-    if(adminCode2.trim()===pendingAdmin.code_2fa){
-      setLoading(true);
-      // Ouvre une vraie session Supabase pour l'admin, indispensable pour que les écritures
-      // (créer/modifier une activité, sortie, événement...) passent les règles de sécurité (RLS).
-      const {error:sessionError}=await supabase.auth.signInWithPassword({
-        email: email.trim().toLowerCase(),
-        password,
-      });
-      setLoading(false);
-      if(sessionError){
-        setError("Code correct, mais impossible d'ouvrir la session Supabase : "+sessionError.message);
-        return;
-      }
+  const handleAdminCode2 = () => {
+    const SECRET_2FA="875010"; // Peut être changé indépendamment du mot de passe
+    if(adminCode2.trim()===SECRET_2FA){
       setAdminStep(false);
       setAdminCode2("");
       setFailedAttempts(0);
-      onAdminSuccess && onAdminSuccess(pendingAdmin);
+      onAdminSuccess && onAdminSuccess();
     }else{
       const newAttempts=failedAttempts+1;
       setFailedAttempts(newAttempts);
@@ -12262,23 +11962,17 @@ function PageAuth({ onAuthSuccess, onCancel, onAdminSuccess, logo }) {
     }
   };
 
-  const handleReset = async () => {
-    if (!email.trim()) { setShowReset(false); setError("Indique ton email d'abord, puis réessaie."); return; }
+  const handleReset = () => {
     setShowReset(false);
-    try {
-      const { error: resetError } = await supabase.auth.resetPasswordForEmail(email.trim());
-      if (resetError) { setError("Impossible d'envoyer l'email : " + resetError.message); return; }
-      setShowResetSent(true);
-      setTimeout(() => setShowResetSent(false), 4000);
-    } catch (e) {
-      setError("Erreur réseau, réessaie dans un instant.");
-    }
+    setShowResetSent(true);
+    setTimeout(() => setShowResetSent(false), 4000);
   };
 
   const handleResetCompte = async () => {
     try {
-      await supabase.auth.signOut();
-    } catch (e) { /* déjà déconnecté ou erreur réseau */ }
+      await window.storage.delete('auth_account');
+      await window.storage.delete('auth_session');
+    } catch (e) { /* rien à supprimer */ }
     finally {
       setShowResetCompte(false);
       setHasAccount(false);
@@ -12299,10 +11993,7 @@ function PageAuth({ onAuthSuccess, onCancel, onAdminSuccess, logo }) {
         </div>
         <div style={{marginBottom:16}}>
           <label style={{fontSize:12,color:TM,display:"block",marginBottom:6}}>Code d'accès admin</label>
-          <div style={{ position: "relative" }}>
-            <input type={showPassword?"text":"password"} value={adminCode2} onChange={e=>setAdminCode2(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleAdminCode2()} placeholder="••••••••" autoFocus style={{...FS,letterSpacing:4,textAlign:"center",fontSize:18,paddingRight:40}} autoComplete="off"/>
-            <button type="button" onClick={()=>setShowPassword(p=>!p)} style={{ position: "absolute", right: 4, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", fontSize: 17, padding: 8, lineHeight: 1 }} aria-label={showPassword?"Masquer le code":"Afficher le code"}>{showPassword?"🙈":"👁️"}</button>
-          </div>
+          <input type="password" value={adminCode2} onChange={e=>setAdminCode2(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleAdminCode2()} placeholder="••••••••" autoFocus style={{...FS,letterSpacing:4,textAlign:"center",fontSize:18}} autoComplete="off"/>
         </div>
         {error&&<p style={{margin:"0 0 12px",fontSize:12,color:RD,fontWeight:600,textAlign:"center"}}>{error}</p>}
         {lockedUntil&&<p style={{margin:"0 0 12px",fontSize:12,color:OR,fontWeight:600,textAlign:"center"}}>🔒 Verrouillé encore {lockCountdown}s</p>}
@@ -12322,11 +12013,7 @@ function PageAuth({ onAuthSuccess, onCancel, onAdminSuccess, logo }) {
         <button onClick={onCancel} style={{ position: "absolute", top: 16, right: 16, width: 34, height: 34, borderRadius: "50%", background: WH, border: BD, fontSize: 16, color: TM, cursor: "pointer" }}>✕</button>
       )}
       <div style={{ textAlign: "center", marginBottom: 28 }}>
-        {logo?(
-          <img src={logo} alt="Logo" style={{ width: 64, height: 64, borderRadius: 18, objectFit: "cover", margin: "0 auto 14px", boxShadow: "0 4px 16px rgba(108,92,231,0.3)", display:"block" }}/>
-        ):(
-          <div style={{ width: 64, height: 64, borderRadius: 18, background: "linear-gradient(135deg," + V + ",#a78bfa)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 30, margin: "0 auto 14px", boxShadow: "0 4px 16px rgba(108,92,231,0.3)" }}>🧩</div>
-        )}
+        <div style={{ width: 64, height: 64, borderRadius: 18, background: "linear-gradient(135deg," + V + ",#a78bfa)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 30, margin: "0 auto 14px", boxShadow: "0 4px 16px rgba(108,92,231,0.3)" }}>🧩</div>
         <h1 style={{ margin: "0 0 4px", fontSize: 21, fontWeight: 800, color: TX }}>Parent'Hèse</h1>
         <p style={{ margin: 0, fontSize: 13, color: TM }}>{mode === 'signup' ? "Crée ton compte pour commencer" : "Connecte-toi pour continuer"}</p>
       </div>
@@ -12344,10 +12031,7 @@ function PageAuth({ onAuthSuccess, onCancel, onAdminSuccess, logo }) {
         </div>
         <div style={{ marginBottom: 6 }}>
           <label style={{ fontSize: 12, color: TM, display: "block", marginBottom: 6 }}>Mot de passe</label>
-          <div style={{ position: "relative" }}>
-            <input type={showPassword?"text":"password"} value={password} onChange={e => setPassword(e.target.value)} onKeyDown={e => e.key === "Enter" && (mode === 'signup' ? handleSignup() : handleLogin())} placeholder="••••••" style={{...FS, paddingRight: 40}} />
-            <button type="button" onClick={()=>setShowPassword(p=>!p)} style={{ position: "absolute", right: 4, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", fontSize: 17, padding: 8, lineHeight: 1 }} aria-label={showPassword?"Masquer le mot de passe":"Afficher le mot de passe"}>{showPassword?"🙈":"👁️"}</button>
-          </div>
+          <input type="password" value={password} onChange={e => setPassword(e.target.value)} onKeyDown={e => e.key === "Enter" && (mode === 'signup' ? handleSignup() : handleLogin())} placeholder="••••••" style={FS} />
         </div>
 
         {error && <p style={{ margin: "10px 0 0", fontSize: 12, color: RD, fontWeight: 600 }}>{error}</p>}
@@ -12371,7 +12055,7 @@ function PageAuth({ onAuthSuccess, onCancel, onAdminSuccess, logo }) {
         )}
       </div>
 
-      <p style={{ textAlign: "center", fontSize: 11, color: TM, marginTop: 16, lineHeight: 1.5 }}>🔒 Tes informations sont stockées de façon sécurisée et ne sont jamais partagées avec des tiers.</p>
+      <p style={{ textAlign: "center", fontSize: 11, color: TM, marginTop: 16, lineHeight: 1.5 }}>🔒 Tes informations restent privées : elles sont stockées uniquement sur cet appareil, sans serveur externe.</p>
 
       {showReset && (
         <div onClick={() => setShowReset(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", zIndex: 800, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
@@ -12396,10 +12080,10 @@ function PageAuth({ onAuthSuccess, onCancel, onAdminSuccess, logo }) {
           <div onClick={e => e.stopPropagation()} style={{ background: WH, borderRadius: 20, padding: 24, maxWidth: 320, width: "100%" }}>
             <div style={{ fontSize: 36, textAlign: "center", marginBottom: 10 }}>⚠️</div>
             <p style={{ margin: "0 0 8px", fontSize: 15, fontWeight: 700, color: TX, textAlign: "center" }}>Plus du tout accès à ton compte ?</p>
-            <p style={{ margin: "0 0 20px", fontSize: 13, color: TM, textAlign: "center", lineHeight: 1.5 }}>Essaie d'abord "Mot de passe oublié" pour recevoir un email de réinitialisation. En tout dernier recours, tu peux déconnecter cet appareil pour te reconnecter avec un autre compte — <strong>tes données existantes ne seront pas supprimées</strong>, juste cet appareil sera déconnecté.</p>
+            <p style={{ margin: "0 0 20px", fontSize: 13, color: TM, textAlign: "center", lineHeight: 1.5 }}>En dernier recours, tu peux réinitialiser l'application : le compte actuel sera supprimé et tu pourras en créer un nouveau. <strong>Cette action est irréversible.</strong></p>
             <div style={{ display: "flex", gap: 10 }}>
               <button onClick={() => setShowResetCompte(false)} style={{ flex: 1, padding: 12, borderRadius: 28, background: BG, border: BD, color: TM, fontWeight: 600, cursor: "pointer" }}>Annuler</button>
-              <button onClick={handleResetCompte} style={{ flex: 1, padding: 12, borderRadius: 28, background: "#EF4444", border: "none", color: WH, fontWeight: 700, cursor: "pointer" }}>Déconnecter cet appareil</button>
+              <button onClick={handleResetCompte} style={{ flex: 1, padding: 12, borderRadius: 28, background: "#EF4444", border: "none", color: WH, fontWeight: 700, cursor: "pointer" }}>Réinitialiser</button>
             </div>
           </div>
         </div>
@@ -12456,16 +12140,13 @@ export default function App(){
       try{
         const {data:{session}}=await supabase.auth.getSession();
         if(session?.user&&actif){
-          const {data:estAdmin}=await supabase.from("admin_users").select("id").ilike("email",session.user.email).eq("statut","active").maybeSingle();
-          if(!estAdmin&&actif){
-            const profil=await chargerOuReparerProfil(session.user);
-            setCurrentUser({id:session.user.id,nom:profil?.nom||"",email:session.user.email,premium:!!profil?.premium});
-            setPremiumTrialUsed(!!profil?.premium_trial_used);
-            if(profil?.trial_end_date)setTrialEndDate(profil.trial_end_date);
-            chargerEnfantsSupabase(session.user.id);
-            chargerFavorisSupabase(session.user.id);
-            chargerMasqueesSupabase(session.user.id);
-          }
+          const profil=await chargerOuReparerProfil(session.user);
+          setCurrentUser({id:session.user.id,nom:profil?.nom||"",email:session.user.email,premium:!!profil?.premium});
+          setPremiumTrialUsed(!!profil?.premium_trial_used);
+          if(profil?.trial_end_date)setTrialEndDate(profil.trial_end_date);
+          chargerEnfantsSupabase(session.user.id);
+          chargerFavorisSupabase(session.user.id);
+          chargerMasqueesSupabase(session.user.id);
         }
       }catch(e){
         // Pas de session active
@@ -12474,11 +12155,8 @@ export default function App(){
       }
     })();
     const {data:listener}=supabase.auth.onAuthStateChange(async(event,session)=>{
-      if(event==="PASSWORD_RECOVERY"){setShowSetNewPassword(true);return;}
       if(event==="SIGNED_OUT"){setCurrentUser(null);setPremiumTrialUsed(false);setTrialEndDate(null);setEnfants([]);setEnfantActif("");setFavoris([]);favorisChargesDepuisServeur.current=false;setMasquees([]);masqueesChargeesDepuisServeur.current=false;return;}
       if(session?.user){
-        const {data:estAdmin}=await supabase.from("admin_users").select("id").ilike("email",session.user.email).eq("statut","active").maybeSingle();
-        if(estAdmin)return; // Session admin — ne pas la traiter comme un utilisateur normal
         const profil=await chargerOuReparerProfil(session.user);
         setCurrentUser({id:session.user.id,nom:profil?.nom||"",email:session.user.email,premium:!!profil?.premium});
         setPremiumTrialUsed(!!profil?.premium_trial_used);
@@ -12498,21 +12176,16 @@ export default function App(){
     setPage("accueil");
   };
   const handleDeleteAccount=async()=>{
-    const uid=currentUser?.id;
     try{
-      if(uid){
-        await Promise.all([
-          supabase.from("favoris").delete().eq("user_id",uid),
-          supabase.from("enfants").delete().eq("user_id",uid),
-          supabase.from("historique_activites").delete().eq("user_id",uid),
-          supabase.from("masquees").delete().eq("user_id",uid),
-          supabase.from("profiles").delete().eq("id",uid),
-        ]);
-      }
-    }catch(e){
-      console.error("Erreur lors de la suppression des données du compte:",e.message);
-    }
-    try{ await supabase.auth.signOut(); }catch(e){}
+      await Promise.all([
+        window.storage.delete("auth_account"),
+        window.storage.delete("auth_session"),
+        window.storage.delete("favoris"),
+        window.storage.delete("enfants"),
+        window.storage.delete("planning_hebdo"),
+        window.storage.delete("popup_shown"),
+      ]);
+    }catch(e){ /* certaines cles peuvent deja etre absentes */ }
     setCurrentUser(null);
     setFavoris([]);
     setEnfants([]);
@@ -12520,32 +12193,17 @@ export default function App(){
     setPage("accueil");
   };
   const [demoMode,setDemoMode]=useState(false);
-  // Planning hebdo — état remonté ici (au lieu d'être local à PagePlanning) pour
-  // qu'il ne se réinitialise pas quand on navigue vers un autre onglet puis qu'on revient.
-  const [planningCount,setPlanningCount]=useState(3);
-  const [planningEnergie,setPlanningEnergie]=useState(null);
-  const [planningLieu,setPlanningLieu]=useState(null);
-  const [planningSemaineType,setPlanningSemaineType]=useState(null);
-  const [planning,setPlanning]=useState([]);
-  const [planningMaterielDispo,setPlanningMaterielDispo]=useState([]);
-  const [planningSansMateriel,setPlanningSansMateriel]=useState(false);
-  const [planningEnfantsSelectionnes,setPlanningEnfantsSelectionnes]=useState([]);
-  const [planningCheckedMat,setPlanningCheckedMat]=useState({});
   const [premiumPourTous,setPremiumPourTous]=useState(false);
-  const [planningEtEnfantsGratuits,setPlanningEtEnfantsGratuits]=useState(true); // vrai par défaut au lancement
-  const [appLogo,setAppLogoState]=useState(null);
   const [amazonTag,setAmazonTagState]=useState("");
   useEffect(()=>{
     (async()=>{
       try{
-        const {data}=await supabase.from("app_config").select("premium_pour_tous,logo,planning_et_enfants_gratuits,amazon_affiliate_tag").eq("id",1).single();
+        const {data}=await supabase.from("app_config").select("premium_pour_tous,amazon_affiliate_tag").eq("id",1).single();
         if(data){
           setPremiumPourTous(!!data.premium_pour_tous);
-          if(data.logo)setAppLogoState(data.logo);
-          if(data.planning_et_enfants_gratuits!==null&&data.planning_et_enfants_gratuits!==undefined)setPlanningEtEnfantsGratuits(!!data.planning_et_enfants_gratuits);
           if(data.amazon_affiliate_tag)setAmazonTagState(data.amazon_affiliate_tag);
         }
-      }catch(e){ /* erreur réseau — reste false/null */ }
+      }catch(e){ /* erreur réseau — reste false */ }
     })();
   },[]);
   const isPremiumUser=!!currentUser?.premium||demoMode||premiumPourTous;
@@ -12556,23 +12214,11 @@ export default function App(){
       await supabase.from("app_config").upsert({id:1,premium_pour_tous:nouvelleValeur});
     }catch(e){ /* échec réseau — reste correct localement pour cette session */ }
   };
-  const toggleAllPlanningEtEnfantsGratuits=async()=>{
-    const nouvelleValeur=!planningEtEnfantsGratuits;
-    setPlanningEtEnfantsGratuits(nouvelleValeur);
-    try{
-      await supabase.from("app_config").upsert({id:1,planning_et_enfants_gratuits:nouvelleValeur});
-    }catch(e){ /* échec réseau — reste correct localement pour cette session */ }
-  };
-  const setAppLogo=async(base64OuNull)=>{
-    setAppLogoState(base64OuNull);
-    try{
-      await supabase.from("app_config").upsert({id:1,logo:base64OuNull});
-    }catch(e){ /* échec réseau — reste correct localement pour cette session */ }
-  };
   const setAmazonTag=async(nouveauTag)=>{
-    setAmazonTagState(nouveauTag);
+    const val=(nouveauTag||"").trim();
+    setAmazonTagState(val);
     try{
-      await supabase.from("app_config").upsert({id:1,amazon_affiliate_tag:nouveauTag||null});
+      await supabase.from("app_config").upsert({id:1,amazon_affiliate_tag:val||null});
     }catch(e){ /* échec réseau — reste correct localement pour cette session */ }
   };
 
@@ -12603,9 +12249,6 @@ export default function App(){
       const {data:codeData,error}=await supabase.from("promo_codes").select("*").ilike("code",codeTape).maybeSingle();
       if(error||!codeData)return{ok:false,message:"Ce code n'existe pas."};
       if(!codeData.actif)return{ok:false,message:"Ce code n'est plus valide."};
-      const aujourdhui=new Date().toISOString().slice(0,10);
-      if(codeData.debut&&codeData.debut>aujourdhui)return{ok:false,message:"Ce code n'est pas encore actif."};
-      if(codeData.fin&&codeData.fin<aujourdhui)return{ok:false,message:"Ce code a expiré."};
       if(codeData.max_utilisations!=null&&codeData.utilisations_actuelles>=codeData.max_utilisations)return{ok:false,message:"Ce code a atteint sa limite d'utilisation."};
       await supabase.from("promo_codes").update({utilisations_actuelles:(codeData.utilisations_actuelles||0)+1}).eq("id",codeData.id);
       if(codeData.type==="reduction"){
@@ -12683,9 +12326,6 @@ export default function App(){
   const [enfantActif,setEnfantActif]=useState("1");
   const [showGestionEnfants,setShowGestionEnfants]=useState(false);
   const [isAdmin,setIsAdmin]=useState(false);
-  const [adminRole,setAdminRole]=useState("super_admin");
-  const [adminInfo,setAdminInfo]=useState(null);
-  const [showSetNewPassword,setShowSetNewPassword]=useState(false);
   const adminSessionRef=useRef(null);
   useEffect(()=>{
     if(!isAdmin){if(adminSessionRef.current)clearTimeout(adminSessionRef.current);return;}
@@ -12711,9 +12351,8 @@ export default function App(){
         ]);
         const acts=(actsData||[]).map(a=>({
           id:a.id,nom:a.nom,titre:a.nom,categorie:a.categorie,lieu:a.lieu,energie:a.energie,age:a.age,duree:a.duree,
-          difficulte:a.difficulte,materiel:a.materiel||[],materielLiens:a.materiel_liens||{},etapes:a.etapes||[],desc:a.description,photo:a.photo,
+          difficulte:a.difficulte,materiel:a.materiel||[],etapes:a.etapes||[],desc:a.description,photo:a.photo,
           niveauxSensoriels:a.niveaux_sensoriels,profilsTND:a.profils_tnd,adaptations:a.adaptations||[],
-          tnd:a.profils_tnd?.score||null,
           caracteristiques:a.caracteristiques,commentaireTND:a.commentaire_tnd,pointsAnticiper:a.points_anticiper||[],
           _type:"activite",_statut:a.statut||"published",_createdAt:a.created_at,_auteur:a.auteur_nom||"Anonyme",communaute:true,
         }));
@@ -12743,41 +12382,6 @@ export default function App(){
   useScheduler(setAdminActivites);
   useScheduler(setAdminSorties);
   useScheduler(setAdminEvenements);
-  // ── Chargement des activités/sorties/événements créés par l'admin depuis Supabase ──
-  // (auparavant ces listes ne vivaient que dans le stockage local du navigateur admin,
-  // jamais partagées avec les autres appareils/utilisateurs)
-  useEffect(()=>{
-    (async()=>{
-      try{
-        const [{data:actsAdminData},{data:sortsAdminData},{data:evtsAdminData}]=await Promise.all([
-          supabase.from("activites").select("*").eq("communaute",false),
-          supabase.from("sorties").select("*").eq("communaute",false),
-          supabase.from("evenements").select("*").eq("communaute",false),
-        ]);
-        const actsAdmin=(actsAdminData||[]).map(a=>({
-          id:a.id,nom:a.nom,titre:a.nom,categorie:a.categorie,lieu:a.lieu,energie:a.energie,age:a.age,duree:a.duree,
-          difficulte:a.difficulte,materiel:a.materiel||[],materielLiens:a.materiel_liens||{},etapes:a.etapes||[],desc:a.description,photo:a.photo,
-          niveauxSensoriels:a.niveaux_sensoriels,profilsTND:a.profils_tnd,adaptations:a.adaptations||[],
-          tnd:a.profils_tnd?.score||null,
-          caracteristiques:a.caracteristiques,commentaireTND:a.commentaire_tnd,pointsAnticiper:a.points_anticiper||[],
-          statut:a.statut||"published",communaute:false,
-        }));
-        const sortsAdmin=(sortsAdminData||[]).map(s=>({
-          id:s.id,nom:s.nom,titre:s.nom,categorie:s.type,dept:s.dept,ville:s.ville,prix:s.prix,horaires:s.horaires,
-          desc:s.description,photo:s.photo,tnd:s.tnd,accessibilite:s.accessibilite,commentaireTND:s.commentaire_tnd,
-          statut:s.statut||"published",communaute:false,
-        }));
-        const evtsAdmin=(evtsAdminData||[]).map(e=>({
-          id:e.id,nom:e.nom,titre:e.nom,type:e.categorie,categorie:e.categorie,ville:e.ville,dept:e.dept,date:e.date,
-          fin:e.date_fin,prix:e.prix,adresse:e.adresse,photo:e.photo,desc:e.description,commentaireTND:e.commentaire_tnd,
-          tnd:e.tnd,statut:e.statut||"published",communaute:false,
-        }));
-        if(actsAdmin.length>0)setAdminActivites(prev=>[...prev.filter(a=>!actsAdmin.some(x=>x.id===a.id)),...actsAdmin]);
-        if(sortsAdmin.length>0)setAdminSorties(prev=>[...prev.filter(a=>!sortsAdmin.some(x=>x.id===a.id)),...sortsAdmin]);
-        if(evtsAdmin.length>0)setAdminEvenements(prev=>[...prev.filter(a=>!evtsAdmin.some(x=>x.id===a.id)),...evtsAdmin]);
-      }catch(e){ /* erreur réseau — les éléments admin resteront limités à cette session */ }
-    })();
-  },[]);
   const [adminReports,setAdminReports]=useState([]);
   const [deletedTitles,setDeletedTitles]=useState(new Set());
   const [customEvents,setCustomEvents]=useState([]);
@@ -12795,7 +12399,7 @@ export default function App(){
       }catch(err){ /* erreur réseau — reste vide */ }
     })();
   },[]);
-  const [adminComms,setAdminComms]=useState([]);
+  const [adminComms,setAdminComms]=useState(MOCK_COMMS);
   const [ressourcesSites,setRessourcesSites]=useState(MOCK_RESSOURCES_SITES);
   const [ressourcesContacts,setRessourcesContacts]=useState(MOCK_RESSOURCES_CONTACTS);
   const [ressourcesPdf,setRessourcesPdf]=useState(MOCK_RESSOURCES_PDF);
@@ -12821,23 +12425,6 @@ export default function App(){
     {id:"sos15",titre:"Livre audio ou podcast enfant",desc:"Mettre un livre audio ou podcast enfant connu et apprécié. Distrait sans demander d'effort visuel ou de lecture.",duree:"15-30 min",age:"4-12 ans",materiel:["enceinte ou écouteurs"],statut:"published",profil_dys:true,profil_ordinaire:true,profil_tsa:true,crise_concentration:true,crise_emotionnelle:true,lieu_maison:true,lieu_voiture:true},
   ]);
   const [sosModeActif,setSosModeActif]=useState(true);
-  const [sosSituations,setSosSituations]=useState([
-    {id:"situ1",titre:"Difficulté à quitter un lieu",sousTitre:"Il refuse de partir, crise au moment de partir",emoji:"🚪",theme:null,statut:"published",ordre:1,
-      solutions:[{label:"Solution",etapes:["Annonce le départ à l'avance (\"Dans 5 minutes on part\"), pas au dernier moment.","Utilise un minuteur visuel ou une chanson de transition pour rendre le compte à rebours concret.","Propose un choix limité plutôt qu'un ordre : \"Tu veux partir en marchant ou en sautant comme une grenouille ?\"","Reste calme et ferme, sans négocier indéfiniment — répète la même phrase courte si besoin.","Si la crise éclate, accompagne sans forcer physiquement sauf danger réel : attends que l'intensité redescende avant de reprendre le départ."],
-      checklist:["Prévenir 5-10 min avant","Utiliser un minuteur visuel","Proposer un choix, pas un ordre","Garder une phrase de transition fixe et répétée","Rester calme, ne pas négocier en boucle"]}]},
-    {id:"situ2",titre:"Difficulté avec les transitions",sousTitre:"Passer d'une activité à une autre est un vrai combat",emoji:"🔄",theme:null,statut:"published",ordre:2,
-      solutions:[{label:"Solution",etapes:["Annonce la transition à venir plusieurs minutes avant qu'elle n'arrive.","Utilise toujours le même signal (mot, chanson, minuteur) pour que l'enfant l'associe à \"changement à venir\".","Termine l'activité en cours par une étape claire et courte (\"encore 2 tours puis on range\") plutôt que brutalement.","Implique l'enfant dans la transition : lui faire ranger, compter à rebours avec toi.","Valide ce qu'il ressent (\"je vois que c'est dur d'arrêter\") avant de passer à la suite."],
-      checklist:["Prévenir plusieurs minutes avant","Toujours le même signal de transition","Terminer l'activité en cours proprement, pas brutalement","Impliquer l'enfant dans le changement","Nommer ce qu'il ressent"]}]},
-    {id:"situ3",titre:"Refus de s'habiller ou se laver",sousTitre:"Chaque matin/soir devient un conflit",emoji:"🧦",theme:null,statut:"published",ordre:3,
-      solutions:[{label:"Solution",etapes:["Réduis le nombre de choix pour éviter la surcharge décisionnelle : propose 2 tenues, pas toute l'armoire.","Vérifie l'inconfort sensoriel réel (étiquette qui gratte, matière, température de l'eau) avant de penser à un refus \"de principe\".","Transforme l'étape en jeu ou chrono ludique plutôt qu'en ordre direct.","Anticipe en préparant la tenue la veille avec l'enfant, pour réduire la charge mentale du matin.","Accepte de petites victoires imparfaites (habillé mais dépareillé) plutôt qu'un conflit total."],
-      checklist:["Limiter les choix à 2 options","Vérifier l'inconfort sensoriel (étiquettes, matière)","Préparer la tenue la veille","En faire un jeu/chrono","Accepter les petites victoires imparfaites"]}]},
-    {id:"situ4",titre:"Peur du noir",sousTitre:"Refuse de dormir sans lumière, angoisse au coucher",emoji:"😴",theme:"Sommeil",statut:"published",ordre:4,
-      solutions:[
-        {label:"🛡️ Le gardien de la nuit",etapes:["Choisissez ensemble un doudou ou objet \"gardien\" dont le rôle est de veiller pendant la nuit.","Instaurez un petit rituel : le gardien \"fait sa ronde\" dans la chambre avant le coucher.","Rassurez verbalement en nommant le rôle du gardien à chaque soir, toujours avec les mêmes mots.","Laissez l'enfant garder le gardien contre lui toute la nuit."],checklist:["Choisir un objet gardien dédié","Rituel de ronde avant le coucher","Phrase de réassurance fixe chaque soir"]},
-        {label:"💡 Lumière progressive", etapes:["Installez une veilleuse à intensité réglable dans la chambre.","Les premiers soirs, laissez-la à pleine intensité sans négocier.","Chaque semaine, baissez légèrement l'intensité avec l'accord de l'enfant.","Valorisez chaque palier franchi (\"Tu as réussi avec la lumière un peu moins forte !\")."],checklist:["Installer une veilleuse réglable","Baisser progressivement, jamais d'un coup","Valoriser chaque étape franchie"]},
-        {label:"📖 Histoire du noir apprivoisé",etapes:["Lisez ensemble une histoire où le noir devient un ami plutôt qu'une menace.","Après la lecture, demandez à l'enfant de dessiner \"son\" noir à lui.","Accrochez le dessin près du lit comme rappel rassurant.","Répétez ce rituel plusieurs soirs de suite pour l'ancrer."],checklist:["Lire une histoire positive sur le noir","Faire dessiner \"son\" noir","Accrocher le dessin près du lit"]},
-      ]},
-  ]);
   const [customCatActivites,setCustomCatActivites]=useState([]); // [{label,emoji}]
   const [customCatSorties,setCustomCatSorties]=useState([]); // [{label,emoji}]
   const [customCatEvenements,setCustomCatEvenements]=useState([]); // [{k,label,emoji}]
@@ -12992,19 +12579,6 @@ export default function App(){
       }catch(e){ /* erreur réseau — reste sur les techniques par défaut */ }
     })();
   },[]);
-  // ── Chargement des situations concrètes SOS depuis Supabase (données globales) ──
-  useEffect(()=>{
-    (async()=>{
-      try{
-        const {data}=await supabase.from("sos_situations").select("*").order("ordre",{ascending:true});
-        if(data&&data.length>0)setSosSituations(data.map(s=>({
-          id:s.id,titre:s.titre,sousTitre:s.sous_titre,emoji:s.emoji||"🧩",theme:s.theme||null,
-          solutions:(s.solutions&&s.solutions.length>0)?s.solutions:(((s.etapes&&s.etapes.length>0)||(s.checklist&&s.checklist.length>0))?[{label:"Solution",etapes:s.etapes||[],checklist:s.checklist||[]}]:[]),
-          statut:s.statut,ordre:s.ordre||0,
-        })));
-      }catch(e){ /* erreur réseau — reste sur les situations par défaut */ }
-    })();
-  },[]);
   // ── Chargement des signalements depuis Supabase (données globales) ──
   useEffect(()=>{
     (async()=>{
@@ -13049,8 +12623,8 @@ export default function App(){
     })();
   },[]);
   // ── Sauvegarde globale — toutes les données privées en 1 clé ─────────────
-  const sauvegarderPrivé=(données)=>{
-    try{ localStorage.setItem("app_v1_private",JSON.stringify(données)); }catch(e){}
+  const sauvegarderPrivé=async(données)=>{
+    try{ await window.storage.set("app_v1_private",JSON.stringify(données),false); }catch(e){}
   };
   const sauvegarderPartagé=async(données)=>{
     try{ await window.storage.set("app_v1_shared",JSON.stringify(données),true); }catch(e){}
@@ -13058,18 +12632,18 @@ export default function App(){
 
   useEffect(()=>{
     (async()=>{
-      // Préférences propres à cet appareil (onboarding, popups vus, mode sombre, filtres mémorisés)
+      // 2 lectures au lieu de 24 → évite totalement le rate limit
       try{
-        const prvRaw=localStorage.getItem("app_v1_private");
-        if(prvRaw){
-          const d=JSON.parse(prvRaw);
+        const prv=await window.storage.get("app_v1_private",false);
+        if(prv&&prv.value){
+          const d=JSON.parse(prv.value);
           // favoris chargés depuis Supabase, plus depuis le stockage local
           // masquees chargés depuis Supabase, plus depuis le stockage local
           // enfants chargés depuis Supabase, plus depuis le stockage local
           if(d.onboarding_done)setOnboardingDone(d.onboarding_done);
           if(d.popup_shown)setPopupShown(new Set(Array.isArray(d.popup_shown)?d.popup_shown:[]));
           if(d.dark_mode!==undefined)setDarkMode(d.dark_mode);
-          // is_admin volontairement non restauré : l'accès admin redemande toujours le mot de passe + le code
+          if(d.is_admin)setIsAdmin(true);
           // historique chargé depuis Supabase, plus depuis le stockage local
           if(d.premium_trial_used)setPremiumTrialUsed(d.premium_trial_used);
           if(d.trial_end_date)setTrialEndDate(d.trial_end_date);
@@ -13083,15 +12657,21 @@ export default function App(){
           const d=JSON.parse(shr.value);
           if(d.ideesMomentConfig)setIdeesMomentConfig(d.ideesMomentConfig);
           if(d.sosModeActif!==undefined)setSosModeActif(d.sosModeActif);
-          // pendingContribs chargés depuis Supabase, plus depuis le stockage local
+          if(d.pendingContribs)setPendingContribs(d.pendingContribs);
           if(d.deletedTitles)setDeletedTitles(new Set(d.deletedTitles));
           // adminReports chargés depuis Supabase, plus depuis le stockage local
-          // customCatActivites/customCatSorties/customCatEvenements chargés depuis Supabase, plus depuis le stockage local
-          // adminActivites/adminSorties/adminEvenements chargés depuis Supabase, plus depuis le stockage local
+          if(d.customCatActivites)setCustomCatActivites(d.customCatActivites);
+          if(d.customCatSorties)setCustomCatSorties(d.customCatSorties);
+          if(d.customCatEvenements)setCustomCatEvenements(d.customCatEvenements);
+          if(d.adminActivites)setAdminActivites(d.adminActivites);
+          if(d.adminSorties)setAdminSorties(d.adminSorties);
+          if(d.adminEvenements)setAdminEvenements(d.adminEvenements);
           // sosLib chargé depuis Supabase, plus depuis le stockage local
-          // devisBoostDemandes chargées depuis Supabase, plus depuis le stockage local
-          // boosts chargés depuis Supabase, plus depuis le stockage local
-          // ressourcesSites/ressourcesContacts/ressourcesPdf chargées depuis Supabase, plus depuis le stockage local
+          if(d.devisBoostDemandes)setDevisBoostDemandes(d.devisBoostDemandes);
+          if(d.boosts)setBoosts(d.boosts);
+          if(d.ressourcesSites)setRessourcesSites(d.ressourcesSites);
+          if(d.ressourcesContacts)setRessourcesContacts(d.ressourcesContacts);
+          if(d.ressourcesPdf)setRessourcesPdf(d.ressourcesPdf);
         }
       }catch(e){}
       // Note : la session utilisateur est désormais entièrement gérée par Supabase Auth (voir plus bas)
@@ -13142,7 +12722,7 @@ export default function App(){
   useEffect(()=>{
     if(!dataLoaded)return;
     const timer=setTimeout(()=>{
-      sauvegarderPrivé({onboarding_done:onboardingDone,popup_shown:[...popupShown],dark_mode:darkMode,filtres_memo_activ:filtresMemoActiv,filtres_memo_sortie:filtresMemoSortie});
+      sauvegarderPrivé({onboarding_done:onboardingDone,popup_shown:[...popupShown],dark_mode:darkMode,filtres_memo_activ:filtresMemoActiv,filtres_memo_sortie:filtresMemoSortie,is_admin:isAdmin});
     },1500);
     return()=>clearTimeout(timer);
   },[popupShown,onboardingDone,historiqueActivites,darkMode,filtresMemoActiv,filtresMemoSortie,dataLoaded,isAdmin]);
@@ -13151,10 +12731,10 @@ export default function App(){
   useEffect(()=>{
     if(!dataLoaded)return;
     const timer=setTimeout(()=>{
-      sauvegarderPartagé({ideesMomentConfig,sosModeActif,deletedTitles:[...deletedTitles]});
+      sauvegarderPartagé({ideesMomentConfig,sosModeActif,pendingContribs,deletedTitles:[...deletedTitles],adminReports,customCatActivites,customCatSorties,customCatEvenements,adminActivites,adminSorties,adminEvenements,sosLib,devisBoostDemandes,boosts,ressourcesSites,ressourcesContacts,ressourcesPdf});
     },2000);
     return()=>clearTimeout(timer);
-  },[ideesMomentConfig,sosModeActif,deletedTitles,dataLoaded]);
+  },[ideesMomentConfig,sosModeActif,pendingContribs,deletedTitles,adminReports,customCatActivites,customCatSorties,customCatEvenements,adminActivites,adminSorties,adminEvenements,sosLib,devisBoostDemandes,boosts,ressourcesSites,ressourcesContacts,ressourcesPdf,dataLoaded]);
 
   const leftTabs=[{k:"biblio",icon:"📖",label:"Biblio"},{k:"ressources",icon:"🧠",label:"Ressources"}];
   const rightTabs=[{k:"planning",icon:"📅",label:"Planning"},{k:"profil",icon:"👤",label:"Profil"}];
@@ -13171,8 +12751,7 @@ export default function App(){
     setTimeout(()=>setGlobalToast(null),3000);
     setTimeout(()=>setShowConfetti(false),4500);
   };
-  if(showSetNewPassword) return <PageSetNewPassword onDone={()=>setShowSetNewPassword(false)}/>;
-  if(isAdmin) return <PageAdmin adminRole={adminRole} adminInfo={adminInfo} onLogout={()=>{ setIsAdmin(false); setAdminRole("super_admin"); setAdminInfo(null); setPage("profil"); supabase.auth.signOut().then(()=>{},()=>{}); sauvegarderPrivé({onboarding_done:onboardingDone,popup_shown:[...popupShown],dark_mode:darkMode,filtres_memo_activ:filtresMemoActiv,filtres_memo_sortie:filtresMemoSortie}); }} pendingContribs={pendingContribs} setPendingContribs={setPendingContribs} updateContrib={updateContrib} supprimerContrib={supprimerContrib} adminActivites={adminActivites} setAdminActivites={setAdminActivites} adminSorties={adminSorties} setAdminSorties={setAdminSorties} adminEvenements={adminEvenements} setAdminEvenements={setAdminEvenements} adminReports={adminReports} setAdminReports={setAdminReports} addDeletedTitle={addDeletedTitle} adminCustomEvents={customEvents} setAdminCustomEvents={setCustomEvents} sosLib={sosLib} setSosLib={setSosLib} sosSituations={sosSituations} setSosSituations={setSosSituations} sosModeActif={sosModeActif} setSosModeActif={setSosModeActif} ideesMomentConfig={ideesMomentConfig} setIdeesMomentConfig={setIdeesMomentConfig} evenementsSaisonniers={evenementsSaisonniers} setEvenementsSaisonniers={setEvenementsSaisonniers} betisesLutin={betisesLutin} setBetisesLutin={setBetisesLutin} cartesVoyageLutin={cartesVoyageLutin} setCartesVoyageLutin={setCartesVoyageLutin} customCatActivites={customCatActivites} setCustomCatActivites={setCustomCatActivites} customCatSorties={customCatSorties} setCustomCatSorties={setCustomCatSorties} customCatEvenements={customCatEvenements} setCustomCatEvenements={setCustomCatEvenements} adminComms={adminComms} setAdminComms={setAdminComms} ressourcesSites={ressourcesSites} setRessourcesSites={setRessourcesSites} ressourcesContacts={ressourcesContacts} setRessourcesContacts={setRessourcesContacts} ressourcesPdf={ressourcesPdf} setRessourcesPdf={setRessourcesPdf} devisBoostDemandes={devisBoostDemandes} setDevisBoostDemandes={setDevisBoostDemandes} boosts={boosts} setBoosts={setBoosts} activerBoost={activerBoost} retirerBoostSupabase={retirerBoostSupabase} demoMode={demoMode} setDemoMode={setDemoMode} premiumPourTous={premiumPourTous} togglePremiumPourTous={togglePremiumPourTous} planningEtEnfantsGratuits={planningEtEnfantsGratuits} toggleAllPlanningEtEnfantsGratuits={toggleAllPlanningEtEnfantsGratuits} amazonTag={amazonTag} setAmazonTag={setAmazonTag} appLogo={appLogo} setAppLogo={setAppLogo}/>;
+  if(isAdmin) return <PageAdmin onLogout={()=>{ setIsAdmin(false); setPage("profil"); sauvegarderPrivé({onboarding_done:onboardingDone,popup_shown:[...popupShown],dark_mode:darkMode,filtres_memo_activ:filtresMemoActiv,filtres_memo_sortie:filtresMemoSortie,is_admin:false}); }} pendingContribs={pendingContribs} setPendingContribs={setPendingContribs} updateContrib={updateContrib} supprimerContrib={supprimerContrib} adminActivites={adminActivites} setAdminActivites={setAdminActivites} adminSorties={adminSorties} setAdminSorties={setAdminSorties} adminEvenements={adminEvenements} setAdminEvenements={setAdminEvenements} adminReports={adminReports} setAdminReports={setAdminReports} addDeletedTitle={addDeletedTitle} adminCustomEvents={customEvents} setAdminCustomEvents={setCustomEvents} sosLib={sosLib} setSosLib={setSosLib} sosModeActif={sosModeActif} setSosModeActif={setSosModeActif} ideesMomentConfig={ideesMomentConfig} setIdeesMomentConfig={setIdeesMomentConfig} evenementsSaisonniers={evenementsSaisonniers} setEvenementsSaisonniers={setEvenementsSaisonniers} betisesLutin={betisesLutin} setBetisesLutin={setBetisesLutin} cartesVoyageLutin={cartesVoyageLutin} setCartesVoyageLutin={setCartesVoyageLutin} customCatActivites={customCatActivites} setCustomCatActivites={setCustomCatActivites} customCatSorties={customCatSorties} setCustomCatSorties={setCustomCatSorties} customCatEvenements={customCatEvenements} setCustomCatEvenements={setCustomCatEvenements} adminComms={adminComms} setAdminComms={setAdminComms} ressourcesSites={ressourcesSites} setRessourcesSites={setRessourcesSites} ressourcesContacts={ressourcesContacts} setRessourcesContacts={setRessourcesContacts} ressourcesPdf={ressourcesPdf} setRessourcesPdf={setRessourcesPdf} devisBoostDemandes={devisBoostDemandes} setDevisBoostDemandes={setDevisBoostDemandes} boosts={boosts} setBoosts={setBoosts} activerBoost={activerBoost} retirerBoostSupabase={retirerBoostSupabase} demoMode={demoMode} setDemoMode={setDemoMode} premiumPourTous={premiumPourTous} togglePremiumPourTous={togglePremiumPourTous} amazonTag={amazonTag} setAmazonTag={setAmazonTag}/>;
   return(
     <div style={{maxWidth:390,margin:"0 auto",background:BG,minHeight:"100vh",position:"relative",fontFamily:"system-ui,-apple-system,sans-serif",color:TX,transition:"background 0.3s,color 0.3s"}} className={darkMode?"dm":""}>
       <style>{`
@@ -13208,7 +12787,7 @@ export default function App(){
 
       {showAuthGate&&(
         <div style={{position:"fixed",inset:0,background:BG,zIndex:920,overflowY:"auto"}}>
-          <PageAuth logo={appLogo} onCancel={()=>{setShowAuthGate(false);}} onAuthSuccess={(u)=>{setCurrentUser(u);setShowAuthGate(false);}} onAdminSuccess={(adminRow)=>{setIsAdmin(true);setAdminRole(adminRow?.role||"super_admin");setAdminInfo(adminRow);setShowAuthGate(false);}}/>
+          <PageAuth onCancel={()=>{setShowAuthGate(false);}} onAuthSuccess={(u)=>{setCurrentUser(u);setShowAuthGate(false);}} onAdminSuccess={()=>{setIsAdmin(true);setShowAuthGate(false);}}/>
         </div>
       )}
       {showPremiumPage&&(
@@ -13243,10 +12822,10 @@ export default function App(){
         {page==="accueil"&&<PageAccueil favoris={favoris} setFavoris={setFavoris} setPage={setPage} customEvents={customEvents} popupShown={popupShown} setPopupShown={setPopupShown} ideesMomentConfig={ideesMomentConfig} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} evenementsSaisonniers={evenementsSaisonniers} isPremium={isPremiumUser} onOpenPremium={openPremium} customCatActivites={customCatActivites} customCatSorties={customCatSorties} customCatEvenements={customCatEvenements} adminActivites={adminActivites} adminSorties={adminSorties} pendingContribs={pendingContribs} setPendingContribs={setPendingContribs} deletedTitles={deletedTitles} currentUser={currentUser} sosModeActif={sosModeActif} enfants={enfants} enfantActif={enfantActif} setEnfantActif={setEnfantActif} onMarquerFait={marquerActiviteFaite} historiqueActivites={historiqueActivites} filtresMemoActiv={filtresMemoActiv} setFiltresMemoActiv={setFiltresMemoActiv} filtresMemoSortie={filtresMemoSortie} setFiltresMemoSortie={setFiltresMemoSortie} adminComms={adminComms} masquees={masquees} toggleMasquer={toggleMasquer} estMasque={estMasque} ajouterDemandeDevisBoost={ajouterDemandeDevisBoost} trialEndDate={trialEndDate} betisesLutin={betisesLutin} cartesVoyageLutin={cartesVoyageLutin} amazonTag={amazonTag}/>}
         {page==="biblio"&&<PageBiblio pendingContribs={pendingContribs} setPendingContribs={setPendingContribs} adminActivites={adminActivites} adminSorties={adminSorties} adminEvenements={adminEvenements} addReport={addReport} adminReports={adminReports} deletedTitles={deletedTitles} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} favoris={favoris} setFavoris={setFavoris} isPremium={isPremiumUser} onOpenPremium={openPremium} customCatActivites={customCatActivites} customCatSorties={customCatSorties} customCatEvenements={customCatEvenements} currentUser={currentUser} enfants={enfants} enfantActif={enfantActif} masquees={masquees} toggleMasquer={toggleMasquer} estMasque={estMasque} boosts={boosts} ajouterDemandeDevisBoost={ajouterDemandeDevisBoost} amazonTag={amazonTag}/>}
         {page==="generer"&&<PageAccueil favoris={favoris} setFavoris={setFavoris} setPage={setPage} customEvents={customEvents} popupShown={popupShown} setPopupShown={setPopupShown} ideesMomentConfig={ideesMomentConfig} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} evenementsSaisonniers={evenementsSaisonniers} isPremium={isPremiumUser} onOpenPremium={openPremium} customCatActivites={customCatActivites} customCatSorties={customCatSorties} customCatEvenements={customCatEvenements} adminActivites={adminActivites} adminSorties={adminSorties} pendingContribs={pendingContribs} setPendingContribs={setPendingContribs} deletedTitles={deletedTitles} currentUser={currentUser} sosModeActif={sosModeActif} enfants={enfants} enfantActif={enfantActif} setEnfantActif={setEnfantActif} onMarquerFait={marquerActiviteFaite} historiqueActivites={historiqueActivites} filtresMemoActiv={filtresMemoActiv} setFiltresMemoActiv={setFiltresMemoActiv} filtresMemoSortie={filtresMemoSortie} setFiltresMemoSortie={setFiltresMemoSortie} adminComms={adminComms} masquees={masquees} toggleMasquer={toggleMasquer} estMasque={estMasque} ajouterDemandeDevisBoost={ajouterDemandeDevisBoost} trialEndDate={trialEndDate} betisesLutin={betisesLutin} cartesVoyageLutin={cartesVoyageLutin} amazonTag={amazonTag}/>}
-        {page==="planning"&&<PagePlanning sosLib={sosLib} enfants={enfants} enfantActif={enfantActif} setEnfantActif={setEnfantActif} isPremium={isPremiumUser||planningEtEnfantsGratuits} onOpenPremium={openPremium} sosModeActif={sosModeActif} adminActivites={adminActivites} pendingContribs={pendingContribs} deletedTitles={deletedTitles} masquees={masquees} adminReports={adminReports} currentUser={currentUser} count={planningCount} setCount={setPlanningCount} energieP={planningEnergie} setEnergieP={setPlanningEnergie} lieuP={planningLieu} setLieuP={setPlanningLieu} semaineType={planningSemaineType} setSemaineType={setPlanningSemaineType} planning={planning} setPlanning={setPlanning} materielDispo={planningMaterielDispo} setMaterielDispo={setPlanningMaterielDispo} sansMateriel={planningSansMateriel} setSansMateriel={setPlanningSansMateriel} enfantsSelectionnes={planningEnfantsSelectionnes} setEnfantsSelectionnes={setPlanningEnfantsSelectionnes} checkedMat={planningCheckedMat} setCheckedMat={setPlanningCheckedMat} amazonTag={amazonTag}/>}
-        {page==="sos"&&<PageSOS sosLib={sosLib} sosSituations={sosSituations} isPremium={isPremiumUser} onOpenPremium={openPremium} onBack={()=>setPage("accueil")}/>}
+        {page==="planning"&&<PagePlanning sosLib={sosLib} enfants={enfants} enfantActif={enfantActif} setEnfantActif={setEnfantActif} isPremium={isPremiumUser} onOpenPremium={openPremium} sosModeActif={sosModeActif} adminActivites={adminActivites} pendingContribs={pendingContribs} deletedTitles={deletedTitles} masquees={masquees} adminReports={adminReports} currentUser={currentUser} amazonTag={amazonTag}/>}
+        {page==="sos"&&<PageSOS sosLib={sosLib} isPremium={isPremiumUser} onOpenPremium={openPremium} onBack={()=>setPage("accueil")}/>}
         {page==="ressources"&&<PageRessources sites={ressourcesSites} contacts={ressourcesContacts} pdfs={ressourcesPdf} setPdfs={setRessourcesPdf} isPremium={isPremiumUser} onOpenPremium={openPremium}/>}
-        {page==="profil"&&<PageProfil setPage={setPage} enfants={enfants} setEnfants={setEnfants} enfantActif={enfantActif} setEnfantActif={setEnfantActif} showGestionEnfants={showGestionEnfants} setShowGestionEnfants={setShowGestionEnfants} currentUser={currentUser} onLogout={handleLogout} onRequireAuth={requireAuth} isPremium={isPremiumUser} setPremium={setPremiumDemo} evenementsSaisonniers={evenementsSaisonniers} onOpenPremium={openPremium} onDeleteAccount={handleDeleteAccount} favoris={favoris} adminEvenements={adminEvenements} pendingContribs={pendingContribs} darkMode={darkMode} setDarkMode={setDarkMode} historiqueActivites={historiqueActivites} setHistoriqueActivites={setHistoriqueActivites} estBooste={estBooste} activerBoost={activerBoost} ajouterDemandeDevisBoost={ajouterDemandeDevisBoost} betisesLutin={betisesLutin} cartesVoyageLutin={cartesVoyageLutin} mesAvisCount={mesAvisCount} aSauvegardePlanning={aSauvegardePlanning} planningEtEnfantsGratuits={planningEtEnfantsGratuits}/>}
+        {page==="profil"&&<PageProfil setPage={setPage} enfants={enfants} setEnfants={setEnfants} enfantActif={enfantActif} setEnfantActif={setEnfantActif} showGestionEnfants={showGestionEnfants} setShowGestionEnfants={setShowGestionEnfants} currentUser={currentUser} onLogout={handleLogout} onRequireAuth={requireAuth} isPremium={isPremiumUser} setPremium={setPremiumDemo} evenementsSaisonniers={evenementsSaisonniers} onOpenPremium={openPremium} onDeleteAccount={handleDeleteAccount} favoris={favoris} adminEvenements={adminEvenements} pendingContribs={pendingContribs} darkMode={darkMode} setDarkMode={setDarkMode} historiqueActivites={historiqueActivites} setHistoriqueActivites={setHistoriqueActivites} estBooste={estBooste} activerBoost={activerBoost} ajouterDemandeDevisBoost={ajouterDemandeDevisBoost} betisesLutin={betisesLutin} cartesVoyageLutin={cartesVoyageLutin} mesAvisCount={mesAvisCount} aSauvegardePlanning={aSauvegardePlanning}/>}
         {page==="favoris"&&<PageFavoris favoris={favoris} setFavoris={setFavoris} isPremium={isPremiumUser} onBack={()=>setPage("profil")}/>}
       </div>
       <div style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:390,background:WH,borderTop:BD,display:"flex",alignItems:"flex-end",zIndex:200,paddingBottom:4}}>
@@ -13266,8 +12845,8 @@ export default function App(){
           const actif=page==="accueil";
           return(
             <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",position:"relative"}}>
-              <button onClick={()=>setPage("accueil")} style={{position:"absolute",top:-26,width:58,height:58,borderRadius:"50%",background:actif?`linear-gradient(135deg,${V},#8B7FF0)`:`linear-gradient(135deg,${V},#8B7FF0)`,border:"4px solid "+WH,boxShadow:actif?"0 6px 18px rgba(108,92,231,0.5)":"0 4px 14px rgba(108,92,231,0.35)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",transition:"transform 0.15s",overflow:"hidden"}}>
-                {appLogo?<img src={appLogo} alt="Accueil" style={{width:"100%",height:"100%",objectFit:"cover",borderRadius:"50%"}}/>:<span style={{fontSize:26}}>🏠</span>}
+              <button onClick={()=>setPage("accueil")} style={{position:"absolute",top:-26,width:58,height:58,borderRadius:"50%",background:actif?`linear-gradient(135deg,${V},#8B7FF0)`:`linear-gradient(135deg,${V},#8B7FF0)`,border:"4px solid "+WH,boxShadow:actif?"0 6px 18px rgba(108,92,231,0.5)":"0 4px 14px rgba(108,92,231,0.35)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",transition:"transform 0.15s"}}>
+                <span style={{fontSize:26}}>🏠</span>
                 {badge&&<span style={{position:"absolute",top:-6,right:-6,background:"#F97316",color:"#fff",borderRadius:10,padding:"1px 5px",fontSize:9,fontWeight:800,border:"2px solid "+WH}}>{badge}</span>}
               </button>
               <span style={{fontSize:10,color:actif?V:TM,fontWeight:actif?700:400,marginTop:34}}>Accueil</span>

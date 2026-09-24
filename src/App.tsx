@@ -8681,13 +8681,13 @@ function Sorties({sharedSorties=[],setSharedSorties,customCatSorties=[],setCusto
     if(!window.confirm(`Retirer définitivement "${item.titre||item.nom}" de la bibliothèque ?`))return;
     if(setPendingContribs)setPendingContribs(prev=>prev.filter(c=>c.id!==item.id));
     const nomItem=item.nom||item.titre;
-    supabase.from("sorties").delete().eq("nom",nomItem).then(()=>{},()=>{});
+    supabase.from("sorties").delete().eq("nom",nomItem).then(({error})=>{if(error)alert("Erreur Supabase (suppression) : "+error.message);});
   };
   const syncItems=(newItems)=>{
     const supprime=items.find(old=>!newItems.some(n=>n.id===old.id));
     if(supprime&&!MOCK_IDS.has(supprime.id)){
       const nomItem=supprime.nom||supprime.titre;
-      supabase.from("sorties").delete().eq("nom",nomItem).then(()=>{},()=>{});
+      supabase.from("sorties").delete().eq("nom",nomItem).then(({error})=>{if(error)alert("Erreur Supabase (suppression) : "+error.message);});
     }
     setItems(newItems);if(setSharedSorties)setSharedSorties(newItems.filter(o=>!MOCK_IDS.has(o.id)));
   };
@@ -8708,8 +8708,25 @@ function Sorties({sharedSorties=[],setSharedSorties,customCatSorties=[],setCusto
       const k=typeVal.toLowerCase().replace(/\s+/g,"_").replace(/[^a-z0-9_]/g,"");
       setCustomCatSorties&&setCustomCatSorties(prev=>[...prev,{k,label:typeVal,emoji:"🗺️"}]);
     }
-    if(modal?.mode==="edit") syncItems(items.map(a=>a.id===modal.item.id?{...a,...form,categorie:typeVal||form.categorie}:a));
-    else syncItems([...items,{id:Date.now().toString(),...form,categorie:typeVal||form.categorie}]);
+    const categorieFinale=typeVal||form.categorie;
+    const payloadDB={
+      nom:form.titre,type:categorieFinale,dept:form.dept,ville:form.adresse||"",prix:form.prix||"",
+      horaires:form.horaires||"",description:form.desc||"",photo:form.photo||null,tnd:form.tnd||null,
+      accessibilite:form.accessibilite||null,commentaire_tnd:form.commentaireTND||"",
+      statut:form.statut||"published",communaute:false,
+    };
+    if(modal?.mode==="edit"){
+      syncItems(items.map(a=>a.id===modal.item.id?{...a,...form,categorie:categorieFinale}:a));
+      const ancienNom=modal.item.nom||modal.item.titre;
+      supabase.from("sorties").select("id").eq("nom",ancienNom).then(({data,error:errSel})=>{
+        if(errSel){alert("Erreur Supabase (lecture) : "+errSel.message);return;}
+        if(data&&data.length>0)supabase.from("sorties").update(payloadDB).eq("nom",ancienNom).then(({error})=>{if(error)alert("Erreur Supabase (modification) : "+error.message);});
+        else supabase.from("sorties").insert(payloadDB).then(({error})=>{if(error)alert("Erreur Supabase (ajout) : "+error.message);});
+      },(e)=>{alert("Erreur réseau (lecture) : "+(e?.message||e));});
+    } else {
+      syncItems([...items,{id:Date.now().toString(),...form,categorie:categorieFinale}]);
+      supabase.from("sorties").insert(payloadDB).then(({error})=>{if(error)alert("Erreur Supabase (ajout) : "+error.message);},(e)=>{alert("Erreur réseau (ajout) : "+(e?.message||e));});
+    }
     setModal(null);
   };
   return (
@@ -8854,13 +8871,13 @@ function Evenements({sharedEvenements=[],setSharedEvenements,customCatEvenements
     if(!window.confirm(`Retirer définitivement "${item.titre||item.nom}" de la bibliothèque ?`))return;
     if(setPendingContribs)setPendingContribs(prev=>prev.filter(c=>c.id!==item.id));
     const nomItem=item.nom||item.titre;
-    supabase.from("evenements").delete().eq("nom",nomItem).then(()=>{},()=>{});
+    supabase.from("evenements").delete().eq("nom",nomItem).then(({error})=>{if(error)alert("Erreur Supabase (suppression) : "+error.message);});
   };
   const syncItems=(newItems)=>{
     const supprime=items.find(old=>!newItems.some(n=>n.id===old.id));
     if(supprime&&!MOCK_IDS.has(supprime.id)){
       const nomItem=supprime.nom||supprime.titre;
-      supabase.from("evenements").delete().eq("nom",nomItem).then(()=>{},()=>{});
+      supabase.from("evenements").delete().eq("nom",nomItem).then(({error})=>{if(error)alert("Erreur Supabase (suppression) : "+error.message);});
     }
     setItems(newItems);if(setSharedEvenements)setSharedEvenements(newItems.filter(o=>!MOCK_IDS.has(o.id)));
   };
@@ -8877,8 +8894,27 @@ function Evenements({sharedEvenements=[],setSharedEvenements,customCatEvenements
       const k=typeVal.toLowerCase().replace(/\s+/g,"_").replace(/[^a-z0-9_]/g,"");
       setCustomCatEvenements&&setCustomCatEvenements(prev=>[...prev,{k,label:typeVal,emoji:"🎪"}]);
     }
-    if(modal?.mode==="edit") syncItems(items.map(a=>a.id===modal.item.id?{...a,...form,type:typeVal||form.type}:a));
-    else syncItems([...items,{id:Date.now().toString(),...form,type:typeVal||form.type}]);
+    const typeFinal=typeVal||form.type;
+    const signaux={};
+    Object.keys(form).forEach(k=>{if(/^(pmr_|tsa_|tdah_|dys_)/.test(k)&&form[k])signaux[k]=true;});
+    const payloadDB={
+      nom:form.titre,categorie:typeFinal,ville:form.ville||"",dept:form.dept||"",date:form.date||null,
+      date_fin:form.fin||null,prix:form.prix||"",gratuit:!form.prix||/gratuit/i.test(form.prix||""),
+      adresse:form.adresse||"",photo:form.photo||null,description:form.desc||"",tnd:null,
+      accessibilite:{signaux,details:{}},commentaire_tnd:"",statut:form.statut||"published",communaute:false,
+    };
+    if(modal?.mode==="edit"){
+      syncItems(items.map(a=>a.id===modal.item.id?{...a,...form,type:typeFinal}:a));
+      const ancienNom=modal.item.nom||modal.item.titre;
+      supabase.from("evenements").select("id").eq("nom",ancienNom).then(({data,error:errSel})=>{
+        if(errSel){alert("Erreur Supabase (lecture) : "+errSel.message);return;}
+        if(data&&data.length>0)supabase.from("evenements").update(payloadDB).eq("nom",ancienNom).then(({error})=>{if(error)alert("Erreur Supabase (modification) : "+error.message);});
+        else supabase.from("evenements").insert(payloadDB).then(({error})=>{if(error)alert("Erreur Supabase (ajout) : "+error.message);});
+      },(e)=>{alert("Erreur réseau (lecture) : "+(e?.message||e));});
+    } else {
+      syncItems([...items,{id:Date.now().toString(),...form,type:typeFinal}]);
+      supabase.from("evenements").insert(payloadDB).then(({error})=>{if(error)alert("Erreur Supabase (ajout) : "+error.message);},(e)=>{alert("Erreur réseau (ajout) : "+(e?.message||e));});
+    }
     setModal(null);
   };
   return (
@@ -10163,29 +10199,32 @@ function Saisonnier({sharedCustomEvents=[],setSharedCustomEvents,evenementsSaiso
     actif:e.actif,archive:e.archive||false,type:e.type||"custom",bibliotheque_activ:e.bibliothequeActiv||[],
   });
   const handleSaveCustom = (evt) => {
-    setCustomEvents(prev=>[...prev,evt]);
     setCreerEvt(false);
     const payloadEnvoye=versSupabaseCustom(evt);
-    supabase.from("custom_events_config").insert(payloadEnvoye).then(()=>{},()=>{});
+    supabase.from("custom_events_config").insert(payloadEnvoye).select().single().then(({data,error})=>{
+      if(error){alert("Erreur Supabase (création événement saisonnier) : "+error.message);setCustomEvents(prev=>[...prev,evt]);return;}
+      // on reprend l'id réel donné par Supabase pour que les modifications/suppressions futures ciblent la bonne ligne
+      setCustomEvents(prev=>[...prev,data?{...evt,id:data.id}:evt]);
+    },(e)=>{alert("Erreur réseau (création événement saisonnier) : "+(e?.message||e));setCustomEvents(prev=>[...prev,evt]);});
   };
   const handleUpdateEvt = (updated) => {
     setCustomEvents(prev=>prev.map(e=>e.id===updated.id?updated:e));
     setSelectedEvt(null);
-    supabase.from("custom_events_config").update(versSupabaseCustom(updated)).eq("id",updated.id).then(()=>{},()=>{});
+    supabase.from("custom_events_config").update(versSupabaseCustom(updated)).eq("id",updated.id).then(({error})=>{if(error)alert("Erreur Supabase (modification événement saisonnier) : "+error.message);});
   };
   const handleDeleteEvt = (id) => {
     setCustomEvents(prev=>prev.filter(e=>e.id!==id));
     setSelectedEvt(null);
-    supabase.from("custom_events_config").delete().eq("id",id).then(()=>{},()=>{});
+    supabase.from("custom_events_config").delete().eq("id",id).then(({error})=>{if(error)alert("Erreur Supabase (suppression événement saisonnier) : "+error.message);});
   };
   const handleArchiveEvt = (id) => {
     setCustomEvents(prev=>prev.map(e=>e.id===id?{...e,actif:false,archive:true}:e));
     setSelectedEvt(null);
-    supabase.from("custom_events_config").update({actif:false,archive:true}).eq("id",id).then(()=>{},()=>{});
+    supabase.from("custom_events_config").update({actif:false,archive:true}).eq("id",id).then(({error})=>{if(error)alert("Erreur Supabase (archivage événement saisonnier) : "+error.message);});
   };
   const handleRestoreEvt = (id) => {
     setCustomEvents(prev=>prev.map(e=>e.id===id?{...e,archive:false}:e));
-    supabase.from("custom_events_config").update({archive:false}).eq("id",id).then(()=>{},()=>{});
+    supabase.from("custom_events_config").update({archive:false}).eq("id",id).then(({error})=>{if(error)alert("Erreur Supabase (restauration événement saisonnier) : "+error.message);});
   };
   if(biblioNoel) return <BiblioNoel onBack={()=>setBiblioNoel(false)} sharedActivites={sharedActivites} setSharedActivites={setSharedActivites} amazonTag={amazonTag}/>;
   if(betisesLutinAdmin) return <AdminBetisesLutin onBack={()=>setBetisesLutinAdmin(false)} betisesLutin={betisesLutin} setBetisesLutin={setBetisesLutin}/>;

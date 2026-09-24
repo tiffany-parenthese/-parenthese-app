@@ -3346,6 +3346,109 @@ function FichierViewer({fichier,couleur,onClose}){
   );
 }
 
+// ── Regroupement du matériel par rayon (réutilisé par le Planning et les générateurs d'événement) ──
+const RAYONS_MATERIEL=[
+  {label:"🎨 Créatif & Papeterie",color:"#8b5cf6",bg:"#ede9fe",keywords:["peinture","pinceau","feuille","papier","crayon","ciseaux","colle","marqueur","carton","dessin","feutre","gomme","taille","stylo","regle","compas","aquarelle","pastel","argile","pate"]},
+  {label:"🍳 Cuisine & Épicerie",color:"#f97316",bg:"#fff7ed",keywords:["farine","oeuf","lait","beurre","sucre","sel","huile","levure","chocolat","vanille","citron","fruit","legume","pate","riz","noix","miel","creme","yaourt","fromage","tomate","carotte","oignon","ail","pomme"]},
+  {label:"🌿 Nature & Extérieur",color:"#22c55e",bg:"#f0fdf4",keywords:["graine","terre","pot","arrosoir","pelle","râteau","seau","feuille","caillou","branche","fleur","plante","jardin","compost","filet"]},
+  {label:"🏗️ Construction & Jeu",color:"#f59e0b",bg:"#fffbeb",keywords:["lego","duplo","puzzle","brique","kapla","bloc","cube","jeu","carte","de","pion","figurine","magnetique","aimant"]},
+  {label:"🎵 Musique & Sons",color:"#ec4899",bg:"#fdf2f8",keywords:["instrument","tambour","flute","maracas","xylophone","casserole","baton","cloche","musique","son"]},
+  {label:"🧴 Matériaux & Récup",color:"#06b6d4",bg:"#ecfeff",keywords:["carton","tube","bouteille","boite","bouchon","tissu","fil","laine","aiguille","coton","ruban","ficelle","papier journal","magazine","journal","aluminium","scotch","elastique"]},
+  {label:"🛁 Eau & Sensoriel",color:"#3b82f6",bg:"#eff6ff",keywords:["eau","bain","sable","bac","bassine","seau","moule","serviette","eponge","savon","bulle"]},
+];
+function regrouperMateriel(liste){
+  const getRayon=(item)=>{
+    const lower=item.toLowerCase();
+    for(const r of RAYONS_MATERIEL){if(r.keywords.some(k=>lower.includes(k)))return r;}
+    return {label:"📦 Divers",color:"#6b7280",bg:"#f9fafb",keywords:[]};
+  };
+  return liste.reduce((acc,m)=>{
+    const r=getRayon(m);
+    if(!acc[r.label])acc[r.label]={...r,items:[]};
+    acc[r.label].items.push(m);
+    return acc;
+  },{});
+}
+const materielListe=(a)=>Array.isArray(a.materiel)?a.materiel:(a.materiel?String(a.materiel).split(",").map(m=>m.trim()).filter(Boolean):[]);
+
+// ── Génère plusieurs activités d'un coup depuis la bibliothèque d'un événement, + liste de courses ──
+// Utilisé côté admin (fiche événement) et côté familles (page de l'événement).
+function GenerateurPlusieursActivites({evt,activites=[],favoris=[],setFavoris,readOnly=false}){
+  const publiees=activites.filter(a=>a.statut==="published"||!a.statut);
+  const [count,setCount]=useState(Math.min(3,publiees.length||3));
+  const [selection,setSelection]=useState([]);
+  const [checkedMat,setCheckedMat]=useState({});
+  const genererPlusieurs=()=>{
+    const shuffled=[...publiees].sort(()=>Math.random()-0.5);
+    setSelection(shuffled.slice(0,Math.min(count,shuffled.length)));
+    setCheckedMat({});
+  };
+  const allMateriel=[...new Set(selection.flatMap(materielListe))];
+  const grouped=regrouperMateriel(allMateriel);
+  const totalItems=allMateriel.length;
+  const checkedCount=Object.values(checkedMat).filter(Boolean).length;
+  const pct=totalItems>0?Math.round(checkedCount/totalItems*100):0;
+  const toggleChecked=(m)=>setCheckedMat(prev=>({...prev,[m]:!prev[m]}));
+  const couleur=evt.couleur||"#6C5CE7";
+  if(publiees.length===0)return null;
+  return(
+    <div style={{background:WH,borderRadius:20,border:"1px solid rgba(0,0,0,0.06)",padding:16,marginBottom:20}}>
+      <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:14}}>
+        <div style={{width:40,height:40,borderRadius:12,background:couleur+"22",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20}}>🗓️</div>
+        <div>
+          <p style={{margin:0,fontSize:15,fontWeight:700,color:TX}}>Plusieurs activités d'un coup</p>
+          <p style={{margin:0,fontSize:12,color:TM}}>Prépare plusieurs idées à l'avance, avec la liste de courses</p>
+        </div>
+      </div>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
+        <span style={{fontSize:13,color:TX}}>Nombre d'activités</span>
+        <div style={{display:"flex",alignItems:"center",gap:10}}>
+          <button onClick={()=>setCount(c=>Math.max(1,c-1))} style={{width:28,height:28,borderRadius:8,border:"1px solid rgba(0,0,0,0.1)",background:BG,cursor:"pointer"}}>-</button>
+          <span style={{fontSize:15,fontWeight:700,color:couleur,minWidth:16,textAlign:"center"}}>{count}</span>
+          <button onClick={()=>setCount(c=>Math.min(publiees.length,c+1))} style={{width:28,height:28,borderRadius:8,border:"1px solid rgba(0,0,0,0.1)",background:BG,cursor:"pointer"}}>+</button>
+        </div>
+      </div>
+      <button onClick={genererPlusieurs} style={{width:"100%",padding:12,borderRadius:12,background:couleur,border:"none",color:"#fff",fontWeight:700,fontSize:13,cursor:"pointer",marginBottom:selection.length>0?14:0}}>
+        {selection.length>0?"🔄 Regénérer":"🪄 Générer"}
+      </button>
+      {selection.length>0&&(<>
+        <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:14}}>
+          {selection.map((a,i)=>(
+            <div key={a.id||i} style={{background:BG,borderRadius:12,padding:"10px 12px",border:"1px solid rgba(0,0,0,0.05)"}}>
+              <p style={{margin:"0 0 2px",fontSize:13,fontWeight:700,color:TX}}>{a.titre}</p>
+              {a.duree&&<p style={{margin:0,fontSize:11,color:TM}}>⏱ {a.duree}</p>}
+              {!readOnly&&setFavoris&&(
+                <button onClick={()=>setFavoris(prev=>{const exists=prev.find(f=>f.id===a.id&&f._type==="activite");if(exists)return prev;return[...prev,{...a,nom:a.titre,_type:"activite"}];})} style={{marginTop:6,padding:"6px 10px",borderRadius:20,background:"none",border:`1.5px solid ${couleur}`,color:couleur,fontSize:11,fontWeight:700,cursor:"pointer"}}>
+                  {favoris.some(f=>f.id===a.id&&f._type==="activite")?"❤️ Sauvegardé":"❤️ Sauvegarder"}
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+        {totalItems>0&&(
+          <div>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8}}>
+              <p style={{margin:0,fontSize:13,fontWeight:700,color:TX}}>🛒 Liste de courses ({totalItems})</p>
+              <span style={{fontSize:11,color:TM}}>{checkedCount}/{totalItems} · {pct}%</span>
+            </div>
+            {Object.values(grouped).map((rayon,ri)=>(
+              <div key={ri} style={{marginBottom:8}}>
+                <p style={{margin:"0 0 4px",fontSize:11,fontWeight:700,color:rayon.color}}>{rayon.label}</p>
+                {rayon.items.map(m=>(
+                  <div key={m} onClick={()=>toggleChecked(m)} style={{display:"flex",alignItems:"center",gap:8,padding:"5px 0",cursor:"pointer"}}>
+                    <span style={{fontSize:14}}>{checkedMat[m]?"☑":"☐"}</span>
+                    <span style={{fontSize:13,color:checkedMat[m]?TM:TX,textDecoration:checkedMat[m]?"line-through":"none"}}>{m}</span>
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
+        )}
+      </>)}
+    </div>
+  );
+}
+
 function EvtGenerateur({evt,activites,favoris,setFavoris,isPremium=false}){
   const [genResult,setGenResult]=useState(null);
   const [genListe,setGenListe]=useState(null);
@@ -4131,6 +4234,11 @@ function PageAccueil({favoris,setFavoris,setPage,customEvents=[],popupShown=new 
                 {/* Générateur lié */}
                 {showEvtBiblio.generateur&&showEvtBiblio.generateurActif&&activites.length>0&&(
                   <EvtGenerateur evt={showEvtBiblio} activites={activites} favoris={favoris} setFavoris={setFavorisGuarded} isPremium={isPremium}/>
+                )}
+
+                {/* Plusieurs activités + liste de courses */}
+                {activites.length>0&&(
+                  <GenerateurPlusieursActivites evt={showEvtBiblio} activites={activites} favoris={favoris} setFavoris={setFavorisGuarded}/>
                 )}
 
                 {/* Bibliothèque */}
@@ -9943,6 +10051,9 @@ function DetailEvenement({evt,onBack,onSave,onDelete,onArchive,toggleCustom,shar
           </div>
         </div>
         <p style={{margin:"-8px 0 14px",fontSize:11,color:C.muted}}>Les activités choisies ou créées ici restent propres à cet événement — elles n'apparaissent pas dans la bibliothèque principale.</p>
+        {(form.bibliothequeActiv||[]).filter(a=>a.statut==="published").length>0&&(
+          <GenerateurPlusieursActivites evt={form} activites={form.bibliothequeActiv||[]} readOnly/>
+        )}
         {(form.bibliothequeActiv||[]).length===0?(
           <div style={{...s.card,textAlign:"center",padding:"32px 16px"}}><p style={{fontSize:32,margin:"0 0 8px"}}>📚</p><p style={{fontSize:13,color:C.muted}}>Aucune activité dans la bibliothèque</p></div>
         ):(form.bibliothequeActiv||[]).map((a,i)=>(

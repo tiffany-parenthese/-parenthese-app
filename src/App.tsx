@@ -8383,6 +8383,7 @@ function Activites({sharedActivites,setSharedActivites,customCatActivites=[],pen
       energie:form.energie||"motiv",
       materiel:form.materielStr?form.materielStr.split(",").map(m=>m.trim()):[],
       materielLiens:form.materielLiens||{},
+      etapes:Array.isArray(form.etapes)?form.etapes:(form.etapes?String(form.etapes).split("\n").map(s=>s.trim()).filter(Boolean):[]),
       tnd:null,
     };
     if(modal?.mode==="edit") syncItems(items.map(a=>a.id===modal.item.id?{...a,...normalized}:a));
@@ -8421,7 +8422,7 @@ function Activites({sharedActivites,setSharedActivites,customCatActivites=[],pen
               <button style={{...s.btnOutline(C.red),width:"100%"}} onClick={()=>supprimerContribItem(a)}>🗑️ Retirer de la bibliothèque</button>
             ):(
               <div style={{display:"flex",gap:6}}>
-                <button style={{...s.btnOutline(C.accent),flex:1}} onClick={()=>{setForm({...emptyForm,...a});setModal({mode:"edit",item:a});}}>✏️ Modifier</button>
+                <button style={{...s.btnOutline(C.accent),flex:1}} onClick={()=>{setForm({...emptyForm,...a,materielStr:a.materielStr||(Array.isArray(a.materiel)?a.materiel.join(", "):""),etapes:Array.isArray(a.etapes)?a.etapes.join("\n"):(a.etapes||"")});setModal({mode:"edit",item:a});}}>✏️ Modifier</button>
                 <button style={s.btnOutline(C.red)} onClick={()=>syncItems(items.filter(x=>x.id!==a.id))}>🗑️</button>
               </div>
             )}

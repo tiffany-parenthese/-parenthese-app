@@ -8536,13 +8536,14 @@ function Activites({sharedActivites,setSharedActivites,customCatActivites=[],pen
     if(modal?.mode==="edit"){
       syncItems(items.map(a=>a.id===modal.item.id?{...a,...normalized}:a));
       const ancienNom=modal.item.nom||modal.item.titre;
-      supabase.from("activites").select("id").eq("nom",ancienNom).then(({data})=>{
-        if(data&&data.length>0)supabase.from("activites").update(payloadDB).eq("nom",ancienNom).then(()=>{},()=>{});
-        else supabase.from("activites").insert(payloadDB).then(()=>{},()=>{});
-      },()=>{});
+      supabase.from("activites").select("id").eq("nom",ancienNom).then(({data,error:errSel})=>{
+        if(errSel){alert("Erreur Supabase (lecture) : "+errSel.message);return;}
+        if(data&&data.length>0)supabase.from("activites").update(payloadDB).eq("nom",ancienNom).then(({error})=>{if(error)alert("Erreur Supabase (modification) : "+error.message);});
+        else supabase.from("activites").insert(payloadDB).then(({error})=>{if(error)alert("Erreur Supabase (ajout) : "+error.message);});
+      },(e)=>{alert("Erreur réseau (lecture) : "+(e?.message||e));});
     } else {
       syncItems([...items,{id:Date.now().toString(),...normalized,auteur:"Admin",date:new Date().toLocaleDateString()}]);
-      supabase.from("activites").insert(payloadDB).then(()=>{},()=>{});
+      supabase.from("activites").insert(payloadDB).then(({error})=>{if(error)alert("Erreur Supabase (ajout) : "+error.message);},(e)=>{alert("Erreur réseau (ajout) : "+(e?.message||e));});
     }
     setModal(null);
   };

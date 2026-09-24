@@ -8341,6 +8341,118 @@ function useScheduler(setItems,syncFn){
   },[]);
 }
 
+// Bloc "compatibilité TND" réutilisable : niveaux sensoriels, adaptations, points à anticiper, étiquettes.
+// Utilisé dans le formulaire principal (Admin > Activités) ET dans les activités dédiées aux événements saisonniers,
+// pour que les deux formulaires restent identiques.
+function ChampsActiviteRiche({form,setForm}){
+  return (
+    <>
+      <div style={{borderTop:`1px solid ${C.border}`,paddingTop:16,marginBottom:14}}>
+        <p style={{margin:"0 0 4px",fontSize:14,fontWeight:800,color:"#1a1a1a"}}>🧩 Compatibilité TND</p>
+        <p style={{margin:"0 0 14px",fontSize:11,color:C.muted}}>Ces informations aident les familles à trouver les activités adaptées à leur enfant.</p>
+
+        {/* Niveaux sensoriels sliders */}
+        <p style={{margin:"0 0 10px",fontSize:12,fontWeight:700,color:C.text}}>Niveaux sensoriels :</p>
+        {[
+          {k:"niveauBruit",l:"🔊 Niveau sonore",left:"Silencieux",right:"Bruyant"},
+          {k:"niveauVisuel",l:"💡 Stimulation visuelle",left:"Calme",right:"Intense"},
+          {k:"niveauPhysique",l:"🤸 Activité physique",left:"Aucune",right:"Intense"},
+          {k:"niveauAttention",l:"⏱️ Durée d'attention",left:"Courte",right:"Longue"},
+        ].map(({k,l,left,right})=>{
+          const val=form[k]||0;
+          const col=val<=33?"#10B981":val<=66?"#F59E0B":"#EF4444";
+          const badge=val<=33?"Faible":val<=66?"Moyen":"Élevé";
+          return(
+            <div key={k} style={{marginBottom:14}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
+                <span style={{fontSize:12,color:C.text}}>{l}</span>
+                <span style={{fontSize:11,fontWeight:700,color:col,background:col+"18",padding:"2px 10px",borderRadius:20}}>{badge}</span>
+              </div>
+              <div style={{display:"flex",alignItems:"center",gap:8}}>
+                <span style={{fontSize:10,color:C.muted,width:52,textAlign:"right",flexShrink:0}}>{left}</span>
+                <div style={{flex:1,height:5,background:"#E5E7EB",borderRadius:6,overflow:"hidden"}}>
+                  <div style={{height:"100%",width:val+"%",background:col,borderRadius:6}}/>
+                </div>
+                <span style={{fontSize:10,color:C.muted,width:52,flexShrink:0}}>{right}</span>
+              </div>
+              <input type="range" min={0} max={100} value={val} onChange={e=>setForm(p=>({...p,[k]:Number(e.target.value)}))} style={{width:"100%",marginTop:4,accentColor:col,cursor:"pointer"}}/>
+            </div>
+          );
+        })}
+
+        {/* Adaptations */}
+        <p style={{margin:"0 0 8px",fontSize:12,fontWeight:700,color:C.text}}>Adaptations possibles :</p>
+        <div style={{display:"flex",flexDirection:"column",gap:6,marginBottom:14}}>
+          {[
+            {id:"a1",label:"Ne nécessite pas de communication verbale",profil:"TSA"},
+            {id:"a2",label:"Pas de contrainte de temps — l'enfant va à son rythme",profil:"TSA"},
+            {id:"a3",label:"Peut se faire seul sans aide d'un adulte",profil:"Tous"},
+            {id:"a4",label:"Peut s'arrêter et reprendre sans perdre le fil",profil:"Tous"},
+            {id:"a5",label:"3 étapes maximum, facile à expliquer",profil:"DYS"},
+            {id:"a6",label:"Ne nécessite pas de toucher des matières inconfortables",profil:"TSA"},
+            {id:"a7",label:"Pas de contact physique imposé",profil:"TSA"},
+            {id:"a8",label:"Pas de bruits forts ou soudains",profil:"TSA"},
+            {id:"a9",label:"L'enfant voit ce qu'il crée (dessin, gâteau, construction...)",profil:"Tous"},
+            {id:"a10",label:"Convient aux enfants qui ont du mal à rester assis",profil:"TDAH"},
+            {id:"a11",label:"Pas de frustration si le résultat n'est pas parfait",profil:"TSA/DYS"},
+            {id:"a12",label:"L'enfant peut choisir comment faire à sa façon",profil:"Tous"},
+          ].map(({id,label,profil})=>{
+            const actif=(form.adaptations||[]).includes(id);
+            const badgeStyle={TSA:{bg:"#EEEDFE",col:"#3C3489"},TDAH:{bg:"#E1F5EE",col:"#085041"},DYS:{bg:"#FAEEDA",col:"#633806"},"TSA/DYS":{bg:"#F3EFFF",col:"#4B3F8F"},Tous:{bg:"#F5F5F5",col:"#666"}}[profil]||{bg:"#F5F5F5",col:"#666"};
+            return(
+              <div key={id} onClick={()=>setForm(p=>({...p,adaptations:actif?(p.adaptations||[]).filter(x=>x!==id):[...(p.adaptations||[]),id]}))} style={{padding:"10px 12px",borderRadius:8,border:`1.5px solid ${actif?"#6C5CE7":"#E5E7EB"}`,background:actif?"#EEEDFE":WH,cursor:"pointer",display:"flex",alignItems:"center",gap:8}}>
+                <span style={{fontSize:16,flexShrink:0,color:actif?"#6C5CE7":"#9CA3AF"}}>{actif?"☑":"☐"}</span>
+                <span style={{fontSize:13,color:actif?"#3C3489":"#374151",flex:1,lineHeight:1.4}}>{label}</span>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Commentaire */}
+        <AdminField label="Conseil TND (optionnel)">
+          <textarea style={{...s.input,minHeight:60,resize:"vertical"}} value={form.commentaireTND||""} onChange={e=>setForm({...form,commentaireTND:e.target.value.slice(0,200)})} placeholder="Ex : Idéal pour les enfants TSA, activité calme sans surprise..."/>
+          <p style={{margin:"4px 0 0",fontSize:10,color:C.muted,textAlign:"right"}}>{(form.commentaireTND||"").length}/200</p>
+        </AdminField>
+      </div>
+
+      {/* Points à anticiper */}
+      <div style={{borderTop:`1px solid ${C.border}`,paddingTop:16,marginBottom:14}}>
+        <p style={{margin:"0 0 4px",fontSize:14,fontWeight:800,color:"#1a1a1a"}}>⚠️ Points à anticiper</p>
+        <p style={{margin:"0 0 14px",fontSize:11,color:C.muted}}>Aide les parents à préparer l'activité selon les besoins de leur enfant</p>
+        {[
+          {titre:"🎨 Sensoriel",ids:["pa1","pa2","pa3","pa4"]},
+          {titre:"🧠 Attention",ids:["pa5","pa6"]},
+          {titre:"💪 Moteur",ids:["pa8","pa9","pa10"]},
+          {titre:"🗓️ Structure & Émotion",ids:["pa7","pa11","pa12","pa13","pa14","pa15"]},
+        ].map(({titre,ids})=>(
+          <div key={titre} style={{marginBottom:12}}>
+            <p style={{margin:"0 0 8px",fontSize:12,fontWeight:700,color:"#9A3412"}}>{titre}</p>
+            <div style={{display:"flex",flexDirection:"column",gap:6}}>
+              {ids.map(id=>{
+                const pt=POINTS_ANTICIPER.find(p=>p.id===id);
+                if(!pt)return null;
+                const actif=(form.pointsAnticiper||[]).includes(id);
+                return(
+                  <div key={id} onClick={()=>setForm(p=>({...p,pointsAnticiper:actif?(p.pointsAnticiper||[]).filter(x=>x!==id):[...(p.pointsAnticiper||[]),id]}))} style={{padding:"10px 12px",borderRadius:8,border:`1.5px solid ${actif?"#F59E0B":"#E5E7EB"}`,background:actif?"#FFF7ED":WH,cursor:"pointer",display:"flex",alignItems:"flex-start",gap:10}}>
+                    <span style={{fontSize:18,flexShrink:0}}>{pt.emoji}</span>
+                    <div style={{flex:1}}>
+                      <p style={{margin:"0 0 2px",fontSize:13,fontWeight:600,color:"#1a1a1a"}}>{pt.label}</p>
+                      <p style={{margin:0,fontSize:11,color:C.muted,lineHeight:1.4}}>{pt.desc}</p>
+                    </div>
+                    <span style={{fontSize:14,flexShrink:0,color:actif?"#F59E0B":"#D1D5DB"}}>{actif?"☑":"☐"}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <EtiquettesField value={form.etiquettes||[]} onChange={v=>setForm({...form,etiquettes:v})}/>
+    </>
+  );
+}
+
 function Activites({sharedActivites,setSharedActivites,customCatActivites=[],pendingContribs=[],setPendingContribs,updateContrib}) {
   const MOCK_IDS=new Set(MOCK_ACTIVITES.map(a=>a.id));
   const [items,setItems] = useState(()=>[...MOCK_ACTIVITES,...(sharedActivites||[]).filter(a=>!MOCK_IDS.has(a.id)&&a._source!=="noel")]);
@@ -8494,110 +8606,8 @@ function Activites({sharedActivites,setSharedActivites,customCatActivites=[],pen
             );
           })()}
           <AdminField label="Etapes"><textarea style={{...s.input,minHeight:80,resize:"vertical"}} value={form.etapes||""} onChange={e=>setForm({...form,etapes:e.target.value})} placeholder={"1. Preparer le materiel\n2. ..."}/></AdminField>
-          <div style={{borderTop:`1px solid ${C.border}`,paddingTop:16,marginBottom:14}}>
-            <p style={{margin:"0 0 4px",fontSize:14,fontWeight:800,color:"#1a1a1a"}}>🧩 Compatibilité TND</p>
-            <p style={{margin:"0 0 14px",fontSize:11,color:C.muted}}>Ces informations aident les familles à trouver les activités adaptées à leur enfant.</p>
-
-            {/* Niveaux sensoriels sliders */}
-            <p style={{margin:"0 0 10px",fontSize:12,fontWeight:700,color:C.text}}>Niveaux sensoriels :</p>
-            {[
-              {k:"niveauBruit",l:"🔊 Niveau sonore",left:"Silencieux",right:"Bruyant"},
-              {k:"niveauVisuel",l:"💡 Stimulation visuelle",left:"Calme",right:"Intense"},
-              {k:"niveauPhysique",l:"🤸 Activité physique",left:"Aucune",right:"Intense"},
-              {k:"niveauAttention",l:"⏱️ Durée d'attention",left:"Courte",right:"Longue"},
-            ].map(({k,l,left,right})=>{
-              const val=form[k]||0;
-              const col=val<=33?"#10B981":val<=66?"#F59E0B":"#EF4444";
-              const badge=val<=33?"Faible":val<=66?"Moyen":"Élevé";
-              return(
-                <div key={k} style={{marginBottom:14}}>
-                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
-                    <span style={{fontSize:12,color:C.text}}>{l}</span>
-                    <span style={{fontSize:11,fontWeight:700,color:col,background:col+"18",padding:"2px 10px",borderRadius:20}}>{badge}</span>
-                  </div>
-                  <div style={{display:"flex",alignItems:"center",gap:8}}>
-                    <span style={{fontSize:10,color:C.muted,width:52,textAlign:"right",flexShrink:0}}>{left}</span>
-                    <div style={{flex:1,height:5,background:"#E5E7EB",borderRadius:6,overflow:"hidden"}}>
-                      <div style={{height:"100%",width:val+"%",background:col,borderRadius:6}}/>
-                    </div>
-                    <span style={{fontSize:10,color:C.muted,width:52,flexShrink:0}}>{right}</span>
-                  </div>
-                  <input type="range" min={0} max={100} value={val} onChange={e=>setForm(p=>({...p,[k]:Number(e.target.value)}))} style={{width:"100%",marginTop:4,accentColor:col,cursor:"pointer"}}/>
-                </div>
-              );
-            })}
-
-            {/* Adaptations */}
-            <p style={{margin:"0 0 8px",fontSize:12,fontWeight:700,color:C.text}}>Adaptations possibles :</p>
-            <div style={{display:"flex",flexDirection:"column",gap:6,marginBottom:14}}>
-              {[
-                {id:"a1",label:"Ne nécessite pas de communication verbale",profil:"TSA"},
-                {id:"a2",label:"Pas de contrainte de temps — l'enfant va à son rythme",profil:"TSA"},
-                {id:"a3",label:"Peut se faire seul sans aide d'un adulte",profil:"Tous"},
-                {id:"a4",label:"Peut s'arrêter et reprendre sans perdre le fil",profil:"Tous"},
-                {id:"a5",label:"3 étapes maximum, facile à expliquer",profil:"DYS"},
-                {id:"a6",label:"Ne nécessite pas de toucher des matières inconfortables",profil:"TSA"},
-                {id:"a7",label:"Pas de contact physique imposé",profil:"TSA"},
-                {id:"a8",label:"Pas de bruits forts ou soudains",profil:"TSA"},
-                {id:"a9",label:"L'enfant voit ce qu'il crée (dessin, gâteau, construction...)",profil:"Tous"},
-                {id:"a10",label:"Convient aux enfants qui ont du mal à rester assis",profil:"TDAH"},
-                {id:"a11",label:"Pas de frustration si le résultat n'est pas parfait",profil:"TSA/DYS"},
-                {id:"a12",label:"L'enfant peut choisir comment faire à sa façon",profil:"Tous"},
-              ].map(({id,label,profil})=>{
-                const actif=(form.adaptations||[]).includes(id);
-                const badgeStyle={TSA:{bg:"#EEEDFE",col:"#3C3489"},TDAH:{bg:"#E1F5EE",col:"#085041"},DYS:{bg:"#FAEEDA",col:"#633806"},"TSA/DYS":{bg:"#F3EFFF",col:"#4B3F8F"},Tous:{bg:"#F5F5F5",col:"#666"}}[profil]||{bg:"#F5F5F5",col:"#666"};
-                return(
-                  <div key={id} onClick={()=>setForm(p=>({...p,adaptations:actif?(p.adaptations||[]).filter(x=>x!==id):[...(p.adaptations||[]),id]}))} style={{padding:"10px 12px",borderRadius:8,border:`1.5px solid ${actif?"#6C5CE7":"#E5E7EB"}`,background:actif?"#EEEDFE":WH,cursor:"pointer",display:"flex",alignItems:"center",gap:8}}>
-                    <span style={{fontSize:16,flexShrink:0,color:actif?"#6C5CE7":"#9CA3AF"}}>{actif?"☑":"☐"}</span>
-                    <span style={{fontSize:13,color:actif?"#3C3489":"#374151",flex:1,lineHeight:1.4}}>{label}</span>
-                    
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Commentaire */}
-            <AdminField label="Conseil TND (optionnel)">
-              <textarea style={{...s.input,minHeight:60,resize:"vertical"}} value={form.commentaireTND||""} onChange={e=>setForm({...form,commentaireTND:e.target.value.slice(0,200)})} placeholder="Ex : Idéal pour les enfants TSA, activité calme sans surprise..."/>
-              <p style={{margin:"4px 0 0",fontSize:10,color:C.muted,textAlign:"right"}}>{(form.commentaireTND||"").length}/200</p>
-            </AdminField>
-          </div>
-
-          {/* Points à anticiper */}
-          <div style={{borderTop:`1px solid ${C.border}`,paddingTop:16,marginBottom:14}}>
-            <p style={{margin:"0 0 4px",fontSize:14,fontWeight:800,color:"#1a1a1a"}}>⚠️ Points à anticiper</p>
-            <p style={{margin:"0 0 14px",fontSize:11,color:C.muted}}>Aide les parents à préparer l'activité selon les besoins de leur enfant</p>
-            {[
-              {titre:"🎨 Sensoriel",ids:["pa1","pa2","pa3","pa4"]},
-              {titre:"🧠 Attention",ids:["pa5","pa6"]},
-              {titre:"💪 Moteur",ids:["pa8","pa9","pa10"]},
-              {titre:"🗓️ Structure & Émotion",ids:["pa7","pa11","pa12","pa13","pa14","pa15"]},
-            ].map(({titre,ids})=>(
-              <div key={titre} style={{marginBottom:12}}>
-                <p style={{margin:"0 0 8px",fontSize:12,fontWeight:700,color:"#9A3412"}}>{titre}</p>
-                <div style={{display:"flex",flexDirection:"column",gap:6}}>
-                  {ids.map(id=>{
-                    const pt=POINTS_ANTICIPER.find(p=>p.id===id);
-                    if(!pt)return null;
-                    const actif=(form.pointsAnticiper||[]).includes(id);
-                    return(
-                      <div key={id} onClick={()=>setForm(p=>({...p,pointsAnticiper:actif?(p.pointsAnticiper||[]).filter(x=>x!==id):[...(p.pointsAnticiper||[]),id]}))} style={{padding:"10px 12px",borderRadius:8,border:`1.5px solid ${actif?"#F59E0B":"#E5E7EB"}`,background:actif?"#FFF7ED":WH,cursor:"pointer",display:"flex",alignItems:"flex-start",gap:10}}>
-                        <span style={{fontSize:18,flexShrink:0}}>{pt.emoji}</span>
-                        <div style={{flex:1}}>
-                          <p style={{margin:"0 0 2px",fontSize:13,fontWeight:600,color:"#1a1a1a"}}>{pt.label}</p>
-                          <p style={{margin:0,fontSize:11,color:C.muted,lineHeight:1.4}}>{pt.desc}</p>
-                        </div>
-                        <span style={{fontSize:14,flexShrink:0,color:actif?"#F59E0B":"#D1D5DB"}}>{actif?"☑":"☐"}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            ))}
-          </div>
-
           <div style={{background:"#FFFBEB",borderRadius:10,padding:"10px 14px",marginBottom:14,display:"flex",gap:8,alignItems:"flex-start"}}><span style={{fontSize:16}}>👶</span><p style={{margin:0,fontSize:12,color:"#92400E",lineHeight:1.5}}>Les activites proposees doivent etre destinees aux enfants.</p></div>
-          <EtiquettesField value={form.etiquettes||[]} onChange={v=>setForm({...form,etiquettes:v})}/>
+          <ChampsActiviteRiche form={form} setForm={setForm}/>
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14,padding:"10px 14px",background:"rgba(124,58,237,0.08)",borderRadius:10}}>
             <div><p style={{margin:0,fontSize:13,fontWeight:600,color:C.text}}>👑 Contenu Premium</p><p style={{margin:0,fontSize:11,color:C.muted}}>Reserve aux abonnes</p></div>
             <Tog on={!!form.premium} onChange={()=>setForm({...form,premium:!form.premium})}/>
@@ -9521,6 +9531,7 @@ function CreerEvenement({onBack,onSave,sharedActivites=[]}) {
           );
         })()}
         <AdminField label="Étapes"><textarea style={{...s.input,minHeight:80,resize:"vertical"}} value={formActiv.etapes||""} onChange={e=>setFormActiv({...formActiv,etapes:e.target.value})} placeholder={"1. Préparer le matériel\n2. ..."}/></AdminField>
+          <ChampsActiviteRiche form={formActiv} setForm={setFormActiv}/>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"10px 0",borderTop:`1px solid ${C.border}`,borderBottom:`1px solid ${C.border}`,marginBottom:14}}>
           <span style={{fontSize:13,color:C.text,fontWeight:500}}>👑 Réservé Premium</span>
           <Tog on={!!formActiv.premium} onChange={()=>setFormActiv(p=>({...p,premium:!p.premium}))}/>
@@ -9962,6 +9973,7 @@ function DetailEvenement({evt,onBack,onSave,onDelete,onArchive,toggleCustom,shar
             );
           })()}
           <AdminField label="Étapes"><textarea style={{...s.input,minHeight:80,resize:"vertical"}} value={formActiv.etapes||""} onChange={e=>setFormActiv({...formActiv,etapes:e.target.value})} placeholder={"1. Préparer le matériel\n2. ..."}/></AdminField>
+          <ChampsActiviteRiche form={formActiv} setForm={setFormActiv}/>
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"10px 0",borderTop:`1px solid ${C.border}`,borderBottom:`1px solid ${C.border}`,marginBottom:14}}>
             <span style={{fontSize:13,color:C.text,fontWeight:500}}>👑 Réservé Premium</span>
             <Tog on={!!formActiv.premium} onChange={()=>setFormActiv(p=>({...p,premium:!p.premium}))}/>

@@ -9401,20 +9401,36 @@ function AdminCartesVoyageLutin({cartesVoyageLutin=[],setCartesVoyageLutin,onBac
 }
 
 
-function CreerEvenement({onBack,onSave}) {
+function CreerEvenement({onBack,onSave,sharedActivites=[]}) {
   const [form,setForm] = useState({nom:"",emoji:"🎉",couleur:"#7c3aed",dateDebut:"",dateFin:"",banner:false,bannerTexte:"",popup:false,popupTexte:"",bibliotheque:true,generateur:true,generateurActif:true,premium:false,essaiActif:false,apercuGratuitJours:3,fichiers:[]});
   const [bibliothequeActiv,setBibliothequeActiv] = useState([]);
   const [step,setStep] = useState("infos"); // infos | biblio
   const [modalActiv,setModalActiv] = useState(null);
-  const [formActiv,setFormActiv] = useState({titre:"",categorie:"Créatif",duree:"",desc:"",statut:"draft"});
+  const emptyFormActiv={titre:"",desc:"",categorie:"",duree:"",difficulte:"",lieu:"",energie:"",ageMin:"",ageMax:"",materielStr:"",materielLiens:{},etapes:"",premium:false,statut:"draft"};
+  const [formActiv,setFormActiv] = useState(emptyFormActiv);
+  const [pickerOpen,setPickerOpen] = useState(false);
+  const [pickerSearch,setPickerSearch] = useState("");
   const EMOJIS = ["🎉","🎄","🐣","🎃","☀️","❄️","🌸","🏖️","🎆","🎊","🦃","🎁"];
   const COLORS = ["#7c3aed","#10b981","#f59e0b","#f97316","#ef4444","#3b82f6","#ec4899","#06b6d4","#8b5cf6"];
   const tf = key => setForm(p=>({...p,[key]:!p[key]}));
   const saveActiv = () => {
     if(!formActiv.titre) return;
-    if(modalActiv?.mode==="edit") setBibliothequeActiv(prev=>prev.map(a=>a.id===modalActiv.item.id?{...a,...formActiv}:a));
-    else setBibliothequeActiv(prev=>[...prev,{id:"ca"+Date.now(),...formActiv}]);
+    const age=(formActiv.ageMin&&formActiv.ageMax)?formActiv.ageMin.replace(" an","").replace(" ans","")+" - "+formActiv.ageMax.replace(" an","").replace(" ans","")+" ans":formActiv.ageMin||formActiv.ageMax||"Tous ages";
+    const normalized={
+      ...formActiv,
+      nom:formActiv.titre,
+      age,
+      materiel:formActiv.materielStr?formActiv.materielStr.split(",").map(m=>m.trim()).filter(Boolean):[],
+      materielLiens:formActiv.materielLiens||{},
+      etapes:formActiv.etapes?String(formActiv.etapes).split("\n").map(s=>s.trim()).filter(Boolean):[],
+    };
+    if(modalActiv?.mode==="edit") setBibliothequeActiv(prev=>prev.map(a=>a.id===modalActiv.item.id?{...a,...normalized}:a));
+    else setBibliothequeActiv(prev=>[...prev,{id:"ca"+Date.now(),...normalized}]);
     setModalActiv(null);
+  };
+  const ajouterDepuisBiblio=(a)=>{
+    const copie={...a,id:"ca"+Date.now()+"_"+Math.random().toString(36).slice(2,7),titre:a.titre||a.nom,statut:a.statut==="published"?"published":"draft",_depuisBiblio:true};
+    setBibliothequeActiv(prev=>[...prev,copie]);
   };
   const handleSave = () => {
     if(!form.nom) return;
@@ -9429,14 +9445,18 @@ function CreerEvenement({onBack,onSave}) {
           <h1 style={{fontSize:20,fontWeight:800,color:C.text,margin:0}}>{form.emoji} Bibliothèque — {form.nom||"Nouvel événement"}</h1>
           <p style={{fontSize:13,color:C.muted,margin:"4px 0 0"}}>Activités dédiées à cet événement</p>
         </div>
-        <button style={{...s.btn(C.accent),marginLeft:"auto"}} onClick={()=>{setFormActiv({titre:"",categorie:"Créatif",duree:"",desc:"",statut:"draft"});setModalActiv({mode:"add"});}}>+ Ajouter</button>
+        <div style={{marginLeft:"auto",display:"flex",gap:8}}>
+          <button style={s.btnOutline(C.accent)} onClick={()=>{setPickerSearch("");setPickerOpen(true);}}>🔍 Depuis la bibliothèque</button>
+          <button style={s.btn(C.accent)} onClick={()=>{setFormActiv(emptyFormActiv);setModalActiv({mode:"add"});}}>✨ Activité dédiée</button>
+        </div>
       </div>
+      <p style={{margin:"-12px 0 16px",fontSize:11,color:C.muted}}>Les activités choisies ou créées ici restent propres à cet événement — elles n'apparaissent pas dans la bibliothèque principale.</p>
       {bibliothequeActiv.length===0?(
         <div style={{...s.card,textAlign:"center",padding:"48px 24px"}}>
           <p style={{fontSize:36,margin:"0 0 12px"}}>📚</p>
           <p style={{fontSize:14,color:C.text,fontWeight:600,margin:"0 0 6px"}}>Aucune activité dans la bibliothèque</p>
           <p style={{fontSize:12,color:C.muted,margin:"0 0 16px"}}>Ajoute des activités dédiées à cet événement</p>
-          <button style={s.btn(C.accent)} onClick={()=>{setFormActiv({titre:"",categorie:"Créatif",duree:"",desc:"",statut:"draft"});setModalActiv({mode:"add"});}}>+ Première activité</button>
+          <button style={s.btn(C.accent)} onClick={()=>{setFormActiv(emptyFormActiv);setModalActiv({mode:"add"});}}>+ Première activité</button>
         </div>
       ):(
         <div style={{...s.card,padding:0,overflow:"hidden",marginBottom:16}}>
@@ -9453,7 +9473,7 @@ function CreerEvenement({onBack,onSave}) {
                 <td style={{padding:"12px 16px"}}>{statutBadge(a.statut)}</td>
                 <td style={{padding:"12px 16px"}}>
                   <div style={{display:"flex",gap:6}}>
-                    <button style={s.btnOutline(C.accent)} onClick={()=>{setFormActiv({...a});setModalActiv({mode:"edit",item:a});}}>✏️</button>
+                    <button style={s.btnOutline(C.accent)} onClick={()=>{setFormActiv({...a,materielStr:a.materielStr||(Array.isArray(a.materiel)?a.materiel.join(", "):""),etapes:Array.isArray(a.etapes)?a.etapes.join("\n"):(a.etapes||"")});setModalActiv({mode:"edit",item:a});}}>✏️</button>
                     <button style={s.btnOutline(C.red)} onClick={()=>setBibliothequeActiv(prev=>prev.filter(x=>x.id!==a.id))}>🗑️</button>
                   </div>
                 </td>
@@ -9463,19 +9483,83 @@ function CreerEvenement({onBack,onSave}) {
         </div>
       )}
       <button style={{...s.btn(C.accent),width:"100%",justifyContent:"center"}} onClick={handleSave}>✅ Créer l'événement saisonnier</button>
-      {modalActiv&&<Modal title={modalActiv.mode==="edit"?"Modifier":"Nouvelle activité"} onClose={()=>setModalActiv(null)} width={480}>
+      {modalActiv&&<Modal title={modalActiv.mode==="edit"?"Modifier l'activité":"Nouvelle activité dédiée"} onClose={()=>setModalActiv(null)} width={480}>
         <AdminField label="Titre *"><input style={s.input} value={formActiv.titre} onChange={e=>setFormActiv({...formActiv,titre:e.target.value})} placeholder="Ex : Chasse aux œufs"/></AdminField>
-        <AdminField label="Description"><textarea style={{...s.input,minHeight:60,resize:"vertical"}} value={formActiv.desc} onChange={e=>setFormActiv({...formActiv,desc:e.target.value})}/></AdminField>
+        <AdminField label="Description"><textarea style={{...s.input,minHeight:60,resize:"vertical"}} value={formActiv.desc||""} onChange={e=>setFormActiv({...formActiv,desc:e.target.value})}/></AdminField>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
-          <AdminField label="Catégorie"><select style={s.input} value={formActiv.categorie} onChange={e=>setFormActiv({...formActiv,categorie:e.target.value})}>{["Créatif","Cuisine","Jeu","Nature","Calme","Construction","Musique","Sport"].map(v=><option key={v}>{v}</option>)}</select></AdminField>
-          <AdminField label="Durée"><select style={s.input} value={formActiv.duree} onChange={e=>setFormActiv({...formActiv,duree:e.target.value})}><option value="">Choisir</option>{["moins de 15 min","15-30 min","30-60 min","1h-2h","2h+"].map(v=><option key={v}>{v}</option>)}</select></AdminField>
+          <AdminField label="Durée"><select style={s.input} value={formActiv.duree||""} onChange={e=>setFormActiv({...formActiv,duree:e.target.value})}><option value="">Choisir</option>{["moins de 15 min","15-30 min","30-60 min","1h-2h","2h+"].map(v=><option key={v}>{v}</option>)}</select></AdminField>
+          <AdminField label="Difficulté"><select style={s.input} value={formActiv.difficulte||""} onChange={e=>setFormActiv({...formActiv,difficulte:e.target.value})}><option value="">Choisir</option>{["Facile","Moyen","Difficile"].map(v=><option key={v}>{v}</option>)}</select></AdminField>
+          <AdminField label="Lieu"><select style={s.input} value={formActiv.lieu||""} onChange={e=>setFormActiv({...formActiv,lieu:e.target.value})}><option value="">Choisir</option><option value="interieur">Intérieur</option><option value="exterieur">Extérieur</option></select></AdminField>
+          <AdminField label="Motivation"><select style={s.input} value={formActiv.energie||""} onChange={e=>setFormActiv({...formActiv,energie:e.target.value})}><option value="">Choisir</option><option value="fatigue">Fatigue</option><option value="motiv">Motiv</option></select></AdminField>
         </div>
-        <AdminField label="Statut"><select style={s.input} value={formActiv.statut} onChange={e=>setFormActiv({...formActiv,statut:e.target.value})}><option value="draft">Brouillon</option><option value="published">Publié</option></select></AdminField>
+        <AdminField label="Catégorie">
+          <select style={s.input} value={formActiv.categorie||""} onChange={e=>setFormActiv({...formActiv,categorie:e.target.value})}>
+            <option value="">Choisir</option>
+            {CATEGORIES_ACT_ALL.map(v=><option key={v}>{v}</option>)}
+          </select>
+        </AdminField>
+        <AdminField label="Âge conseillé">
+          <div style={{display:"flex",gap:8}}>
+            <select style={{...s.input,flex:1}} value={formActiv.ageMin||""} onChange={e=>setFormActiv({...formActiv,ageMin:e.target.value})}><option value="">De...</option>{["0 an","1 an","2 ans","3 ans","4 ans","5 ans","6 ans","7 ans","8 ans","9 ans","10 ans","11 ans","12 ans"].map(v=><option key={v}>{v}</option>)}</select>
+            <select style={{...s.input,flex:1}} value={formActiv.ageMax||""} onChange={e=>setFormActiv({...formActiv,ageMax:e.target.value})}><option value="">À...</option>{["1 an","2 ans","3 ans","4 ans","5 ans","6 ans","7 ans","8 ans","9 ans","10 ans","11 ans","12 ans","12 ans+"].map(v=><option key={v}>{v}</option>)}</select>
+          </div>
+        </AdminField>
+        <AdminField label="Matériel nécessaire"><input style={s.input} value={formActiv.materielStr||""} onChange={e=>setFormActiv({...formActiv,materielStr:e.target.value})} placeholder="Ex : peinture, papier, tablier"/></AdminField>
+        {(()=>{
+          const noms=(formActiv.materielStr||"").split(",").map(m=>m.trim()).filter(Boolean);
+          if(noms.length===0)return null;
+          return (
+            <AdminField label="🛒 Lien Amazon précis (optionnel)">
+              <p style={{margin:"0 0 8px",fontSize:11,color:C.muted}}>Laisse vide pour un lien de recherche automatique.</p>
+              {noms.map(nom=>(
+                <div key={nom} style={{marginBottom:8}}>
+                  <label style={{display:"block",fontSize:11,color:C.muted,marginBottom:3}}>{nom}</label>
+                  <input style={s.input} value={(formActiv.materielLiens||{})[nom]||""} onChange={e=>setFormActiv(p=>({...p,materielLiens:{...(p.materielLiens||{}),[nom]:e.target.value}}))} placeholder="https://www.amazon.fr/dp/..."/>
+                </div>
+              ))}
+            </AdminField>
+          );
+        })()}
+        <AdminField label="Étapes"><textarea style={{...s.input,minHeight:80,resize:"vertical"}} value={formActiv.etapes||""} onChange={e=>setFormActiv({...formActiv,etapes:e.target.value})} placeholder={"1. Préparer le matériel\n2. ..."}/></AdminField>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"10px 0",borderTop:`1px solid ${C.border}`,borderBottom:`1px solid ${C.border}`,marginBottom:14}}>
+          <span style={{fontSize:13,color:C.text,fontWeight:500}}>👑 Réservé Premium</span>
+          <Tog on={!!formActiv.premium} onChange={()=>setFormActiv(p=>({...p,premium:!p.premium}))}/>
+        </div>
+        <AdminField label="Statut"><select style={s.input} value={formActiv.statut||"draft"} onChange={e=>setFormActiv({...formActiv,statut:e.target.value})}><option value="draft">Brouillon</option><option value="published">Publié</option></select></AdminField>
         <div style={{display:"flex",justifyContent:"flex-end",gap:8,marginTop:4}}>
           <button style={s.btnOutline(C.muted)} onClick={()=>setModalActiv(null)}>Annuler</button>
           <button style={s.btn(C.accent)} onClick={saveActiv}>{modalActiv.mode==="edit"?"Modifier":"Ajouter"}</button>
         </div>
       </Modal>}
+      {pickerOpen&&(()=>{
+        const dejaAjoutes=new Set(bibliothequeActiv.map(a=>String(a.titre||a.nom||"").toLowerCase()));
+        const toutes=[...MOCK_ACTIVITES,...sharedActivites.filter(a=>!MOCK_ACTIVITES.some(m=>m.id===a.id))];
+        const filtrees=toutes.filter(a=>!pickerSearch||String(a.titre||a.nom||"").toLowerCase().includes(pickerSearch.toLowerCase()));
+        return (
+          <Modal title="Choisir dans la bibliothèque principale" onClose={()=>setPickerOpen(false)} width={480}>
+            <input style={{...s.input,marginBottom:12}} value={pickerSearch} onChange={e=>setPickerSearch(e.target.value)} placeholder="Rechercher une activité..."/>
+            <div style={{maxHeight:400,overflowY:"auto"}}>
+              {filtrees.length===0&&<p style={{fontSize:13,color:C.muted,textAlign:"center",padding:"20px 0"}}>Aucune activité trouvée.</p>}
+              {filtrees.map(a=>{
+                const nom=a.titre||a.nom;
+                const dejaLa=dejaAjoutes.has(String(nom).toLowerCase());
+                return (
+                  <div key={a.id} style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:10,padding:"9px 4px",borderBottom:`1px solid ${C.border}`}}>
+                    <div style={{minWidth:0}}>
+                      <p style={{margin:0,fontSize:13,fontWeight:600,color:C.text,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{nom}</p>
+                      <p style={{margin:0,fontSize:11,color:C.muted}}>{a.categorie}{a.duree?" · "+a.duree:""}</p>
+                    </div>
+                    <button disabled={dejaLa} style={dejaLa?{...s.btnOutline(C.muted),flexShrink:0,cursor:"default"}:{...s.btn(C.accent),flexShrink:0}} onClick={()=>!dejaLa&&ajouterDepuisBiblio(a)}>{dejaLa?"✓ Ajoutée":"+ Ajouter"}</button>
+                  </div>
+                );
+              })}
+            </div>
+            <div style={{display:"flex",justifyContent:"flex-end",marginTop:14}}>
+              <button style={s.btn(C.accent)} onClick={()=>setPickerOpen(false)}>Terminé</button>
+            </div>
+          </Modal>
+        );
+      })()}
     </div>
   );
 
@@ -9667,18 +9751,35 @@ function CreerEvenement({onBack,onSave}) {
   );
 }
 
-function DetailEvenement({evt,onBack,onSave,onDelete,onArchive,toggleCustom}){
+function DetailEvenement({evt,onBack,onSave,onDelete,onArchive,toggleCustom,sharedActivites=[],amazonTag=""}){
   const [form,setForm]=useState({...evt});
   const [tab,setTab]=useState("infos"); // infos | biblio | fichiers
   const [modalActiv,setModalActiv]=useState(null);
-  const [formActiv,setFormActiv]=useState({titre:"",categorie:"Créatif",duree:"",desc:"",statut:"draft"});
+  const emptyFormActiv={titre:"",desc:"",categorie:"",duree:"",difficulte:"",lieu:"",energie:"",ageMin:"",ageMax:"",materielStr:"",materielLiens:{},etapes:"",premium:false,statut:"draft"};
+  const [formActiv,setFormActiv]=useState(emptyFormActiv);
+  const [pickerOpen,setPickerOpen]=useState(false);
+  const [pickerSearch,setPickerSearch]=useState("");
   const tf=key=>setForm(p=>({...p,[key]:!p[key]}));
   const saveActiv=()=>{
     if(!formActiv.titre)return;
     const biblio=form.bibliothequeActiv||[];
-    if(modalActiv?.mode==="edit") setForm(p=>({...p,bibliothequeActiv:biblio.map(a=>a.id===modalActiv.item.id?{...a,...formActiv}:a)}));
-    else setForm(p=>({...p,bibliothequeActiv:[...biblio,{id:"a"+Date.now(),...formActiv}]}));
+    const age=(formActiv.ageMin&&formActiv.ageMax)?formActiv.ageMin.replace(" an","").replace(" ans","")+" - "+formActiv.ageMax.replace(" an","").replace(" ans","")+" ans":formActiv.ageMin||formActiv.ageMax||"Tous ages";
+    const normalized={
+      ...formActiv,
+      nom:formActiv.titre,
+      age,
+      materiel:formActiv.materielStr?formActiv.materielStr.split(",").map(m=>m.trim()).filter(Boolean):[],
+      materielLiens:formActiv.materielLiens||{},
+      etapes:formActiv.etapes?String(formActiv.etapes).split("\n").map(s=>s.trim()).filter(Boolean):[],
+    };
+    if(modalActiv?.mode==="edit") setForm(p=>({...p,bibliothequeActiv:biblio.map(a=>a.id===modalActiv.item.id?{...a,...normalized}:a)}));
+    else setForm(p=>({...p,bibliothequeActiv:[...biblio,{id:"a"+Date.now(),...normalized}]}));
     setModalActiv(null);
+  };
+  const ajouterDepuisBiblio=(a)=>{
+    const biblio=form.bibliothequeActiv||[];
+    const copie={...a,id:"a"+Date.now()+"_"+Math.random().toString(36).slice(2,7),titre:a.titre||a.nom,statut:a.statut==="published"?"published":"draft",_depuisBiblio:true};
+    setForm(p=>({...p,bibliothequeActiv:[...biblio,copie]}));
   };
   const COLORS=["#7c3aed","#10b981","#f59e0b","#f97316","#ef4444","#3b82f6","#ec4899","#06b6d4","#8b5cf6"];
   const EMOJIS=["🎉","🎄","🐣","🎃","☀️","❄️","🌸","🏖️","🎆","🎊","🦃","🎁"];
@@ -9796,10 +9897,14 @@ function DetailEvenement({evt,onBack,onSave,onDelete,onArchive,toggleCustom}){
 
       {/* TAB BIBLIO */}
       {tab==="biblio"&&(<div>
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14,flexWrap:"wrap",gap:8}}>
           <p style={{margin:0,fontSize:13,color:C.muted}}>{(form.bibliothequeActiv||[]).filter(a=>a.statut==="published").length} activité(s) publiée(s)</p>
-          <button style={s.btn(C.accent)} onClick={()=>{setFormActiv({titre:"",categorie:"Créatif",duree:"",desc:"",statut:"draft"});setModalActiv({mode:"add"});}}>+ Ajouter</button>
+          <div style={{display:"flex",gap:8}}>
+            <button style={s.btnOutline(C.accent)} onClick={()=>{setPickerSearch("");setPickerOpen(true);}}>🔍 Depuis la bibliothèque</button>
+            <button style={s.btn(C.accent)} onClick={()=>{setFormActiv(emptyFormActiv);setModalActiv({mode:"add"});}}>✨ Nouvelle activité dédiée</button>
+          </div>
         </div>
+        <p style={{margin:"-8px 0 14px",fontSize:11,color:C.muted}}>Les activités choisies ou créées ici restent propres à cet événement — elles n'apparaissent pas dans la bibliothèque principale.</p>
         {(form.bibliothequeActiv||[]).length===0?(
           <div style={{...s.card,textAlign:"center",padding:"32px 16px"}}><p style={{fontSize:32,margin:"0 0 8px"}}>📚</p><p style={{fontSize:13,color:C.muted}}>Aucune activité dans la bibliothèque</p></div>
         ):(form.bibliothequeActiv||[]).map((a,i)=>(
@@ -9810,7 +9915,7 @@ function DetailEvenement({evt,onBack,onSave,onDelete,onArchive,toggleCustom}){
               {a.duree&&<p style={{margin:"2px 0 0",fontSize:11,color:C.muted}}>⏱ {a.duree}</p>}
             </div>
             <div style={{display:"flex",gap:6}}>
-              <button style={s.btnOutline(C.accent)} onClick={()=>{setFormActiv({...a});setModalActiv({mode:"edit",item:a});}}>✏️</button>
+              <button style={s.btnOutline(C.accent)} onClick={()=>{setFormActiv({...a,materielStr:a.materielStr||(Array.isArray(a.materiel)?a.materiel.join(", "):""),etapes:Array.isArray(a.etapes)?a.etapes.join("\n"):(a.etapes||"")});setModalActiv({mode:"edit",item:a});}}>✏️</button>
               <button style={s.btnOutline(a.statut==="published"?C.yellow:C.green)} onClick={()=>setForm(p=>({...p,bibliothequeActiv:(p.bibliothequeActiv||[]).map(x=>x.id===a.id?{...x,statut:x.statut==="published"?"draft":"published"}:x)}))}>
                 {a.statut==="published"?"📝":"✅"}
               </button>
@@ -9819,19 +9924,83 @@ function DetailEvenement({evt,onBack,onSave,onDelete,onArchive,toggleCustom}){
           </div>
         ))}
         {(form.bibliothequeActiv||[]).length>0&&<button style={{...s.btn(C.accent),width:"100%",justifyContent:"center",marginTop:8}} onClick={()=>onSave(form)}>✅ Enregistrer</button>}
-        {modalActiv&&<Modal title={modalActiv.mode==="edit"?"Modifier":"Nouvelle activité"} onClose={()=>setModalActiv(null)} width={440}>
+        {modalActiv&&<Modal title={modalActiv.mode==="edit"?"Modifier l'activité":"Nouvelle activité dédiée"} onClose={()=>setModalActiv(null)} width={480}>
           <AdminField label="Titre *"><input style={s.input} value={formActiv.titre} onChange={e=>setFormActiv({...formActiv,titre:e.target.value})}/></AdminField>
-          <AdminField label="Description"><textarea style={{...s.input,minHeight:60,resize:"vertical"}} value={formActiv.desc} onChange={e=>setFormActiv({...formActiv,desc:e.target.value})}/></AdminField>
+          <AdminField label="Description"><textarea style={{...s.input,minHeight:60,resize:"vertical"}} value={formActiv.desc||""} onChange={e=>setFormActiv({...formActiv,desc:e.target.value})}/></AdminField>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
-            <AdminField label="Catégorie"><select style={s.input} value={formActiv.categorie} onChange={e=>setFormActiv({...formActiv,categorie:e.target.value})}>{["Créatif","Cuisine","Jeu","Nature","Calme","Sport","Musique"].map(v=><option key={v}>{v}</option>)}</select></AdminField>
-            <AdminField label="Durée"><select style={s.input} value={formActiv.duree} onChange={e=>setFormActiv({...formActiv,duree:e.target.value})}><option value="">Choisir</option>{["moins de 15 min","15-30 min","30-60 min","1h-2h","2h+"].map(v=><option key={v}>{v}</option>)}</select></AdminField>
+            <AdminField label="Durée"><select style={s.input} value={formActiv.duree||""} onChange={e=>setFormActiv({...formActiv,duree:e.target.value})}><option value="">Choisir</option>{["moins de 15 min","15-30 min","30-60 min","1h-2h","2h+"].map(v=><option key={v}>{v}</option>)}</select></AdminField>
+            <AdminField label="Difficulté"><select style={s.input} value={formActiv.difficulte||""} onChange={e=>setFormActiv({...formActiv,difficulte:e.target.value})}><option value="">Choisir</option>{["Facile","Moyen","Difficile"].map(v=><option key={v}>{v}</option>)}</select></AdminField>
+            <AdminField label="Lieu"><select style={s.input} value={formActiv.lieu||""} onChange={e=>setFormActiv({...formActiv,lieu:e.target.value})}><option value="">Choisir</option><option value="interieur">Intérieur</option><option value="exterieur">Extérieur</option></select></AdminField>
+            <AdminField label="Motivation"><select style={s.input} value={formActiv.energie||""} onChange={e=>setFormActiv({...formActiv,energie:e.target.value})}><option value="">Choisir</option><option value="fatigue">Fatigue</option><option value="motiv">Motiv</option></select></AdminField>
           </div>
-          <AdminField label="Statut"><select style={s.input} value={formActiv.statut} onChange={e=>setFormActiv({...formActiv,statut:e.target.value})}><option value="draft">Brouillon</option><option value="published">Publié</option></select></AdminField>
+          <AdminField label="Catégorie">
+            <select style={s.input} value={formActiv.categorie||""} onChange={e=>setFormActiv({...formActiv,categorie:e.target.value})}>
+              <option value="">Choisir</option>
+              {CATEGORIES_ACT_ALL.map(v=><option key={v}>{v}</option>)}
+            </select>
+          </AdminField>
+          <AdminField label="Âge conseillé">
+            <div style={{display:"flex",gap:8}}>
+              <select style={{...s.input,flex:1}} value={formActiv.ageMin||""} onChange={e=>setFormActiv({...formActiv,ageMin:e.target.value})}><option value="">De...</option>{["0 an","1 an","2 ans","3 ans","4 ans","5 ans","6 ans","7 ans","8 ans","9 ans","10 ans","11 ans","12 ans"].map(v=><option key={v}>{v}</option>)}</select>
+              <select style={{...s.input,flex:1}} value={formActiv.ageMax||""} onChange={e=>setFormActiv({...formActiv,ageMax:e.target.value})}><option value="">À...</option>{["1 an","2 ans","3 ans","4 ans","5 ans","6 ans","7 ans","8 ans","9 ans","10 ans","11 ans","12 ans","12 ans+"].map(v=><option key={v}>{v}</option>)}</select>
+            </div>
+          </AdminField>
+          <AdminField label="Matériel nécessaire"><input style={s.input} value={formActiv.materielStr||""} onChange={e=>setFormActiv({...formActiv,materielStr:e.target.value})} placeholder="Ex : peinture, papier, tablier"/></AdminField>
+          {(()=>{
+            const noms=(formActiv.materielStr||"").split(",").map(m=>m.trim()).filter(Boolean);
+            if(noms.length===0)return null;
+            return (
+              <AdminField label="🛒 Lien Amazon précis (optionnel)">
+                <p style={{margin:"0 0 8px",fontSize:11,color:C.muted}}>Laisse vide pour un lien de recherche automatique.</p>
+                {noms.map(nom=>(
+                  <div key={nom} style={{marginBottom:8}}>
+                    <label style={{display:"block",fontSize:11,color:C.muted,marginBottom:3}}>{nom}</label>
+                    <input style={s.input} value={(formActiv.materielLiens||{})[nom]||""} onChange={e=>setFormActiv(p=>({...p,materielLiens:{...(p.materielLiens||{}),[nom]:e.target.value}}))} placeholder="https://www.amazon.fr/dp/..."/>
+                  </div>
+                ))}
+              </AdminField>
+            );
+          })()}
+          <AdminField label="Étapes"><textarea style={{...s.input,minHeight:80,resize:"vertical"}} value={formActiv.etapes||""} onChange={e=>setFormActiv({...formActiv,etapes:e.target.value})} placeholder={"1. Préparer le matériel\n2. ..."}/></AdminField>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"10px 0",borderTop:`1px solid ${C.border}`,borderBottom:`1px solid ${C.border}`,marginBottom:14}}>
+            <span style={{fontSize:13,color:C.text,fontWeight:500}}>👑 Réservé Premium</span>
+            <Tog on={!!formActiv.premium} onChange={()=>setFormActiv(p=>({...p,premium:!p.premium}))}/>
+          </div>
+          <AdminField label="Statut"><select style={s.input} value={formActiv.statut||"draft"} onChange={e=>setFormActiv({...formActiv,statut:e.target.value})}><option value="draft">Brouillon</option><option value="published">Publié</option></select></AdminField>
           <div style={{display:"flex",justifyContent:"flex-end",gap:8,marginTop:4}}>
             <button style={s.btnOutline(C.muted)} onClick={()=>setModalActiv(null)}>Annuler</button>
             <button style={s.btn(C.accent)} onClick={saveActiv}>{modalActiv.mode==="edit"?"Modifier":"Ajouter"}</button>
           </div>
         </Modal>}
+        {pickerOpen&&(()=>{
+          const dejaAjoutes=new Set((form.bibliothequeActiv||[]).map(a=>String(a.titre||a.nom||"").toLowerCase()));
+          const toutes=[...MOCK_ACTIVITES,...sharedActivites.filter(a=>!MOCK_ACTIVITES.some(m=>m.id===a.id))];
+          const filtrees=toutes.filter(a=>!pickerSearch||String(a.titre||a.nom||"").toLowerCase().includes(pickerSearch.toLowerCase()));
+          return (
+            <Modal title="Choisir dans la bibliothèque principale" onClose={()=>setPickerOpen(false)} width={480}>
+              <input style={{...s.input,marginBottom:12}} value={pickerSearch} onChange={e=>setPickerSearch(e.target.value)} placeholder="Rechercher une activité..."/>
+              <div style={{maxHeight:400,overflowY:"auto"}}>
+                {filtrees.length===0&&<p style={{fontSize:13,color:C.muted,textAlign:"center",padding:"20px 0"}}>Aucune activité trouvée.</p>}
+                {filtrees.map(a=>{
+                  const nom=a.titre||a.nom;
+                  const dejaLa=dejaAjoutes.has(String(nom).toLowerCase());
+                  return (
+                    <div key={a.id} style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:10,padding:"9px 4px",borderBottom:`1px solid ${C.border}`}}>
+                      <div style={{minWidth:0}}>
+                        <p style={{margin:0,fontSize:13,fontWeight:600,color:C.text,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{nom}</p>
+                        <p style={{margin:0,fontSize:11,color:C.muted}}>{a.categorie}{a.duree?" · "+a.duree:""}</p>
+                      </div>
+                      <button disabled={dejaLa} style={dejaLa?{...s.btnOutline(C.muted),flexShrink:0,cursor:"default"}:{...s.btn(C.accent),flexShrink:0}} onClick={()=>!dejaLa&&ajouterDepuisBiblio(a)}>{dejaLa?"✓ Ajoutée":"+ Ajouter"}</button>
+                    </div>
+                  );
+                })}
+              </div>
+              <div style={{display:"flex",justifyContent:"flex-end",marginTop:14}}>
+                <button style={s.btn(C.accent)} onClick={()=>setPickerOpen(false)}>Terminé</button>
+              </div>
+            </Modal>
+          );
+        })()}
       </div>)}
 
       {/* TAB FICHIERS */}
@@ -9956,8 +10125,8 @@ function Saisonnier({sharedCustomEvents=[],setSharedCustomEvents,evenementsSaiso
   if(biblioNoel) return <BiblioNoel onBack={()=>setBiblioNoel(false)} sharedActivites={sharedActivites} setSharedActivites={setSharedActivites} amazonTag={amazonTag}/>;
   if(betisesLutinAdmin) return <AdminBetisesLutin onBack={()=>setBetisesLutinAdmin(false)} betisesLutin={betisesLutin} setBetisesLutin={setBetisesLutin}/>;
   if(voyageLutinAdmin) return <AdminCartesVoyageLutin onBack={()=>setVoyageLutinAdmin(false)} cartesVoyageLutin={cartesVoyageLutin} setCartesVoyageLutin={setCartesVoyageLutin}/>;
-  if(creerEvt) return <CreerEvenement onBack={()=>setCreerEvt(false)} onSave={handleSaveCustom}/>;
-  if(selectedEvt) return <DetailEvenement evt={selectedEvt} onBack={()=>setSelectedEvt(null)} onSave={handleUpdateEvt} onDelete={handleDeleteEvt} onArchive={handleArchiveEvt} toggleCustom={toggleCustom}/>;
+  if(creerEvt) return <CreerEvenement onBack={()=>setCreerEvt(false)} onSave={handleSaveCustom} sharedActivites={sharedActivites}/>;
+  if(selectedEvt) return <DetailEvenement evt={selectedEvt} onBack={()=>setSelectedEvt(null)} onSave={handleUpdateEvt} onDelete={handleDeleteEvt} onArchive={handleArchiveEvt} toggleCustom={toggleCustom} sharedActivites={sharedActivites} amazonTag={amazonTag}/>;
   return (
     <div>
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:24}}>

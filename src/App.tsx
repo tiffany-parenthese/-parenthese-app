@@ -8458,6 +8458,29 @@ function Activites({sharedActivites,setSharedActivites,customCatActivites=[],pen
   const [items,setItems] = useState(()=>[...MOCK_ACTIVITES,...(sharedActivites||[]).filter(a=>!MOCK_IDS.has(a.id)&&a._source!=="noel")]);
   const contribsCommunaute=pendingContribs.filter(c=>c._type==="activite").map(c=>({...c,titre:c.titre||c.nom,_communaute:true}));
   const itemsAffiches=[...contribsCommunaute,...items];
+  // Charge les activités admin déjà réellement enregistrées dans la table Supabase (communaute:false)
+  // pour que la liste affichée ici corresponde toujours à ce qu'il y a vraiment dans la base.
+  useEffect(()=>{
+    (async()=>{
+      try{
+        const{data}=await supabase.from("activites").select("*").or("communaute.eq.false,communaute.is.null");
+        if(!data||data.length===0)return;
+        const norm=(v)=>String(v||"").trim().toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"");
+        setItems(prev=>{
+          const dejaPresent=new Set(prev.map(a=>norm(a.nom||a.titre)));
+          const nouveaux=data.filter(a=>!dejaPresent.has(norm(a.nom))).map(a=>({
+            id:a.id,nom:a.nom,titre:a.nom,categorie:a.categorie,lieu:a.lieu,energie:a.energie,age:a.age,duree:a.duree,
+            difficulte:a.difficulte,materielStr:Array.isArray(a.materiel)?a.materiel.join(", "):(a.materiel||""),
+            materiel:a.materiel||[],materielLiens:a.materiel_liens||{},etapes:a.etapes||[],
+            desc:a.description,photo:a.photo,niveauxSensoriels:a.niveaux_sensoriels,profilsTND:a.profils_tnd,
+            adaptations:a.adaptations||[],caracteristiques:a.caracteristiques,commentaireTND:a.commentaire_tnd,
+            pointsAnticiper:a.points_anticiper||[],statut:a.statut||"published",
+          }));
+          return nouveaux.length>0?[...prev,...nouveaux]:prev;
+        });
+      }catch(e){ /* erreur réseau — reste sur ce qui est déjà affiché */ }
+    })();
+  },[]);
   const supprimerContribItem=(item)=>{
     if(!window.confirm(`Retirer définitivement "${item.titre||item.nom}" de la bibliothèque ?`))return;
     if(setPendingContribs)setPendingContribs(prev=>prev.filter(c=>c.id!==item.id));
@@ -8498,8 +8521,29 @@ function Activites({sharedActivites,setSharedActivites,customCatActivites=[],pen
       etapes:Array.isArray(form.etapes)?form.etapes:(form.etapes?String(form.etapes).split("\n").map(s=>s.trim()).filter(Boolean):[]),
       tnd:null,
     };
-    if(modal?.mode==="edit") syncItems(items.map(a=>a.id===modal.item.id?{...a,...normalized}:a));
-    else syncItems([...items,{id:Date.now().toString(),...normalized,auteur:"Admin",date:new Date().toLocaleDateString()}]);
+    // ── Vrai enregistrement dans la table Supabase "activites" (communaute:false = ajout admin) ──
+    // en plus de la synchronisation habituelle (qui alimente l'affichage dans l'app pour les familles).
+    const payloadDB={
+      nom:normalized.nom,categorie:normalized.categorie,lieu:normalized.lieu,energie:normalized.energie,
+      age:normalized.age,duree:normalized.duree,difficulte:normalized.difficulte,
+      materiel:normalized.materiel,materiel_liens:normalized.materielLiens,etapes:normalized.etapes,
+      description:normalized.desc,photo:normalized.photo||null,
+      niveaux_sensoriels:normalized.niveauxSensoriels||null,profils_tnd:normalized.profilsTND||null,
+      adaptations:normalized.adaptations||[],caracteristiques:normalized.caracteristiques||null,
+      commentaire_tnd:normalized.commentaireTND||"",points_anticiper:normalized.pointsAnticiper||[],
+      statut:normalized.statut||"published",communaute:false,
+    };
+    if(modal?.mode==="edit"){
+      syncItems(items.map(a=>a.id===modal.item.id?{...a,...normalized}:a));
+      const ancienNom=modal.item.nom||modal.item.titre;
+      supabase.from("activites").select("id").eq("nom",ancienNom).then(({data})=>{
+        if(data&&data.length>0)supabase.from("activites").update(payloadDB).eq("nom",ancienNom).then(()=>{},()=>{});
+        else supabase.from("activites").insert(payloadDB).then(()=>{},()=>{});
+      },()=>{});
+    } else {
+      syncItems([...items,{id:Date.now().toString(),...normalized,auteur:"Admin",date:new Date().toLocaleDateString()}]);
+      supabase.from("activites").insert(payloadDB).then(()=>{},()=>{});
+    }
     setModal(null);
   };
   const chkStyle = (active) => ({display:"flex",alignItems:"center",gap:7,padding:"6px 10px",borderRadius:8,border:`1px solid ${active?"rgba(124,58,237,0.4)":C.border}`,background:active?"rgba(124,58,237,0.1)":"transparent",color:active?"#a78bfa":C.muted,fontSize:12,cursor:"pointer",userSelect:"none",marginBottom:4,flexShrink:0});

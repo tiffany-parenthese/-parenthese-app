@@ -3373,19 +3373,12 @@ const materielListe=(a)=>Array.isArray(a.materiel)?a.materiel:(a.materiel?String
 
 // ── Génère plusieurs activités d'un coup depuis la bibliothèque d'un événement, + liste de courses ──
 // Utilisé côté admin (fiche événement) et côté familles (page de l'événement).
-function GenerateurPlusieursActivites({evt,activites=[],favoris=[],setFavoris,readOnly=false,amazonTag=""}){
-  const publiees=activites.filter(a=>a.statut==="published"||!a.statut);
-  const [count,setCount]=useState(Math.min(3,publiees.length||3));
-  const [selection,setSelection]=useState([]);
+// ── Liste de courses (matériel regroupé par rayon, avec lien Amazon précis ou recherche + tag) ──
+function ListeCoursesActivites({activites=[],couleur="#6C5CE7",amazonTag=""}){
   const [checkedMat,setCheckedMat]=useState({});
-  const genererPlusieurs=()=>{
-    const shuffled=[...publiees].sort(()=>Math.random()-0.5);
-    setSelection(shuffled.slice(0,Math.min(count,shuffled.length)));
-    setCheckedMat({});
-  };
-  const allMateriel=[...new Set(selection.flatMap(materielListe))];
+  const allMateriel=[...new Set(activites.flatMap(materielListe))];
   const grouped=regrouperMateriel(allMateriel);
-  const materielLiensCombines=selection.reduce((acc,a)=>({...acc,...(a.materielLiens||{})}),{});
+  const materielLiensCombines=activites.reduce((acc,a)=>({...acc,...(a.materielLiens||{})}),{});
   const lienAmazon=(m)=>{
     const precis=materielLiensCombines[m];
     if(precis)return precis;
@@ -3395,6 +3388,44 @@ function GenerateurPlusieursActivites({evt,activites=[],favoris=[],setFavoris,re
   const checkedCount=Object.values(checkedMat).filter(Boolean).length;
   const pct=totalItems>0?Math.round(checkedCount/totalItems*100):0;
   const toggleChecked=(m)=>setCheckedMat(prev=>({...prev,[m]:!prev[m]}));
+  if(totalItems===0)return(
+    <div style={{textAlign:"center",padding:"40px 20px"}}>
+      <p style={{fontSize:32,margin:"0 0 10px"}}>🛒</p>
+      <p style={{fontSize:14,fontWeight:600,color:TX,margin:"0 0 4px"}}>Aucune liste pour l'instant</p>
+      <p style={{fontSize:12,color:TM}}>Génère des activités dans l'onglet Générateurs pour créer ta liste de courses.</p>
+    </div>
+  );
+  return(
+    <div>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
+        <p style={{margin:0,fontSize:14,fontWeight:700,color:TX}}>🛒 Liste de courses ({totalItems})</p>
+        <span style={{fontSize:11,color:TM}}>{checkedCount}/{totalItems} · {pct}%</span>
+      </div>
+      {Object.values(grouped).map((rayon,ri)=>(
+        <div key={ri} style={{marginBottom:10}}>
+          <p style={{margin:"0 0 4px",fontSize:11,fontWeight:700,color:rayon.color}}>{rayon.label}</p>
+          {rayon.items.map(m=>(
+            <div key={m} style={{display:"flex",alignItems:"center",gap:8,padding:"6px 0"}}>
+              <span onClick={()=>toggleChecked(m)} style={{fontSize:15,cursor:"pointer"}}>{checkedMat[m]?"☑":"☐"}</span>
+              <span onClick={()=>toggleChecked(m)} style={{fontSize:13,color:checkedMat[m]?TM:TX,textDecoration:checkedMat[m]?"line-through":"none",cursor:"pointer",flex:1}}>{m}</span>
+              {!checkedMat[m]&&<a href={lienAmazon(m)} target="_blank" rel="noreferrer" style={{fontSize:11,color:couleur,textDecoration:"none",background:couleur+"18",padding:"3px 9px",borderRadius:9,flexShrink:0}}>Amazon</a>}
+            </div>
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function GenerateurPlusieursActivites({evt,activites=[],favoris=[],setFavoris,readOnly=false,amazonTag="",masquerListeCourses=false,onSelectionChange}){
+  const publiees=activites.filter(a=>a.statut==="published"||!a.statut);
+  const [count,setCount]=useState(Math.min(3,publiees.length||3));
+  const [selection,setSelection]=useState([]);
+  useEffect(()=>{ if(onSelectionChange)onSelectionChange(selection); },[selection]);
+  const genererPlusieurs=()=>{
+    const shuffled=[...publiees].sort(()=>Math.random()-0.5);
+    setSelection(shuffled.slice(0,Math.min(count,shuffled.length)));
+  };
   const couleur=evt.couleur||"#6C5CE7";
   if(publiees.length===0)return null;
   return(
@@ -3417,8 +3448,8 @@ function GenerateurPlusieursActivites({evt,activites=[],favoris=[],setFavoris,re
       <button onClick={genererPlusieurs} style={{width:"100%",padding:12,borderRadius:12,background:couleur,border:"none",color:"#fff",fontWeight:700,fontSize:13,cursor:"pointer",marginBottom:selection.length>0?14:0}}>
         {selection.length>0?"🔄 Regénérer":"🪄 Générer"}
       </button>
-      {selection.length>0&&(<>
-        <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:14}}>
+      {selection.length>0&&(
+        <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:masquerListeCourses?0:14}}>
           {selection.map((a,i)=>(
             <div key={a.id||i} style={{background:BG,borderRadius:12,padding:"10px 12px",border:"1px solid rgba(0,0,0,0.05)"}}>
               <p style={{margin:"0 0 2px",fontSize:13,fontWeight:700,color:TX}}>{a.titre}</p>
@@ -3431,29 +3462,104 @@ function GenerateurPlusieursActivites({evt,activites=[],favoris=[],setFavoris,re
             </div>
           ))}
         </div>
-        {totalItems>0&&(
-          <div>
-            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8}}>
-              <p style={{margin:0,fontSize:13,fontWeight:700,color:TX}}>🛒 Liste de courses ({totalItems})</p>
-              <span style={{fontSize:11,color:TM}}>{checkedCount}/{totalItems} · {pct}%</span>
-            </div>
-            {Object.values(grouped).map((rayon,ri)=>(
-              <div key={ri} style={{marginBottom:8}}>
-                <p style={{margin:"0 0 4px",fontSize:11,fontWeight:700,color:rayon.color}}>{rayon.label}</p>
-                {rayon.items.map(m=>(
-                  <div key={m} style={{display:"flex",alignItems:"center",gap:8,padding:"5px 0"}}>
-                    <span onClick={()=>toggleChecked(m)} style={{fontSize:14,cursor:"pointer"}}>{checkedMat[m]?"☑":"☐"}</span>
-                    <span onClick={()=>toggleChecked(m)} style={{fontSize:13,color:checkedMat[m]?TM:TX,textDecoration:checkedMat[m]?"line-through":"none",cursor:"pointer",flex:1}}>{m}</span>
-                    {!checkedMat[m]&&<a href={lienAmazon(m)} target="_blank" rel="noreferrer" onClick={e=>e.stopPropagation()} style={{fontSize:11,color:couleur,textDecoration:"none",background:couleur+"18",padding:"3px 9px",borderRadius:9,flexShrink:0}}>Amazon</a>}
-                  </div>
-                ))}
+      )}
+      {!masquerListeCourses&&selection.length>0&&<ListeCoursesActivites activites={selection} couleur={couleur} amazonTag={amazonTag}/>}
+    </div>
+  );
+}
+
+// ── Page bibliothèque d'un événement (côté familles) : 3 onglets ──
+function ContenuBibliothequeEvenement({evt,favoris,setFavoris,isPremium,amazonTag="",onOpenFichier,onOpenActivite}){
+  const activites=(evt.bibliothequeActiv||[]).filter(a=>a.statut==="published");
+  const todayStr=new Date().toISOString().split("T")[0];
+  const fichiersVisibles=(evt.fichiers||[]).filter(f=>(!f.dateDebut||f.dateDebut<=todayStr)&&(!f.dateFin||f.dateFin>=todayStr));
+  const [tab,setTab]=useState("generateurs");
+  const [selection,setSelection]=useState([]);
+  const couleur=evt.couleur||"#6C5CE7";
+  if(activites.length===0&&fichiersVisibles.length===0){
+    return(
+      <div style={{textAlign:"center",padding:"48px 24px"}}>
+        <p style={{fontSize:36,margin:"0 0 12px"}}>{evt.emoji}</p>
+        <p style={{fontSize:15,fontWeight:600,color:TX,margin:"0 0 6px"}}>Aucune activité disponible</p>
+        <p style={{fontSize:13,color:TM}}>Les activités de cet événement arrivent bientôt !</p>
+      </div>
+    );
+  }
+  const TabBtn=({id,label})=>(
+    <button onClick={()=>setTab(id)} style={{flex:1,padding:"10px 4px",background:"none",border:"none",borderBottom:tab===id?`3px solid ${couleur}`:"3px solid transparent",color:tab===id?couleur:TM,fontWeight:tab===id?700:500,fontSize:12,cursor:"pointer"}}>{label}</button>
+  );
+  return(<>
+    <div style={{display:"flex",marginBottom:18,borderBottom:"1px solid rgba(0,0,0,0.06)"}}>
+      <TabBtn id="generateurs" label="🎲 Générateurs"/>
+      <TabBtn id="biblio" label="📚 Bibliothèque"/>
+      <TabBtn id="courses" label="🛒 Liste de courses"/>
+    </div>
+
+    {tab==="generateurs"&&(<>
+      {fichiersVisibles.length>0&&(
+        <div style={{marginBottom:20}}>
+          <p style={{fontSize:14,fontWeight:700,color:TX,margin:"0 0 12px"}}>📎 Documents & Fichiers</p>
+          <div style={{display:"flex",flexDirection:"column",gap:8}}>
+            {fichiersVisibles.map((f,i)=>(
+              <div key={i} style={{background:WH,borderRadius:14,padding:"12px 14px",border:"1px solid rgba(0,0,0,0.06)",display:"flex",alignItems:"center",gap:12,boxShadow:"0 2px 6px rgba(0,0,0,0.04)",cursor:"pointer"}}
+                onClick={()=>onOpenFichier(f)}>
+                <div style={{width:42,height:42,borderRadius:10,background:f.type?.includes("pdf")?"#fee2e2":f.type?.includes("image")?"#dbeafe":"#f3f4f6",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0}}>
+                  {f.type?.includes("pdf")?"📄":f.type?.includes("image")?"🖼️":"📎"}
+                </div>
+                <div style={{flex:1,minWidth:0}}>
+                  <p style={{margin:"0 0 2px",fontSize:13,fontWeight:600,color:TX,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{f.nom}</p>
+                  <p style={{margin:0,fontSize:11,color:TM}}>
+                    {f.taille}
+                    {f.dateDebut&&f.dateFin&&(()=>{const d=new Date(f.dateFin);return isNaN(d.getTime())?null:` · Visible jusqu'au ${d.toLocaleDateString("fr-FR")}`;})()}
+                  </p>
+                </div>
+                <div style={{width:32,height:32,borderRadius:"50%",background:couleur+"18",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                  <span style={{fontSize:14,color:couleur}}>↗</span>
+                </div>
               </div>
             ))}
           </div>
-        )}
-      </>)}
-    </div>
-  );
+        </div>
+      )}
+      {evt.generateur&&evt.generateurActif&&activites.length>0&&(
+        <EvtGenerateur evt={evt} activites={activites} favoris={favoris} setFavoris={setFavoris} isPremium={isPremium}/>
+      )}
+      {activites.length>0?(
+        <GenerateurPlusieursActivites evt={evt} activites={activites} favoris={favoris} setFavoris={setFavoris} amazonTag={amazonTag} masquerListeCourses onSelectionChange={setSelection}/>
+      ):(
+        <p style={{fontSize:13,color:TM,textAlign:"center"}}>Aucune activité disponible pour l'instant.</p>
+      )}
+    </>)}
+
+    {tab==="biblio"&&(<>
+      {activites.length>0&&<p style={{fontSize:14,fontWeight:700,color:TX,margin:"0 0 12px"}}>📚 Toutes les activités</p>}
+      {activites.length===0?(
+        <div style={{textAlign:"center",padding:"48px 24px"}}>
+          <p style={{fontSize:36,margin:"0 0 12px"}}>{evt.emoji}</p>
+          <p style={{fontSize:15,fontWeight:600,color:TX,margin:"0 0 6px"}}>Aucune activité disponible</p>
+          <p style={{fontSize:13,color:TM}}>Les activités de cet événement arrivent bientôt !</p>
+        </div>
+      ):activites.map(a=>(
+        <div key={a.id} onClick={()=>onOpenActivite(a)} style={{background:WH,borderRadius:16,padding:"14px 16px",border:"1px solid rgba(0,0,0,0.06)",marginBottom:10,boxShadow:"0 2px 8px rgba(0,0,0,0.05)",cursor:"pointer"}}>
+          <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:6}}>
+            <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+              <span style={{fontSize:11,background:couleur+"22",color:couleur,padding:"3px 10px",borderRadius:20,fontWeight:600}}>{a.categorie}</span>
+              {a.duree&&<span style={{fontSize:11,background:BG,color:TM,padding:"3px 10px",borderRadius:20}}>⏱ {a.duree}</span>}
+            </div>
+          </div>
+          <p style={{margin:"0 0 4px",fontSize:15,fontWeight:700,color:TX}}>{a.titre}</p>
+          {a.desc&&<p style={{margin:"0 0 8px",fontSize:13,color:TM,lineHeight:1.5}}>{a.desc}</p>}
+          {a.age&&<p style={{margin:"0 0 8px",fontSize:12,color:TM}}>👶 {a.age}</p>}
+          {a.materiel&&<div style={{background:BG,borderRadius:10,padding:"8px 12px",marginBottom:8}}><p style={{margin:"0 0 4px",fontSize:11,fontWeight:600,color:TX}}>🛒 Matériel</p><p style={{margin:0,fontSize:12,color:TM}}>{a.materiel}</p></div>}
+          <button onClick={e=>{e.stopPropagation();setFavoris(prev=>{const exists=prev.find(f=>f.id===a.id&&f._type==="activite");if(exists)return prev;return[...prev,{...a,nom:a.titre,_type:"activite"}];});}} style={{width:"100%",padding:"10px 0",borderRadius:28,background:favoris.some(f=>f.id===a.id&&f._type==="activite")?BG:couleur,border:favoris.some(f=>f.id===a.id&&f._type==="activite")?`1.5px solid ${couleur}`:"none",color:favoris.some(f=>f.id===a.id&&f._type==="activite")?couleur:"#fff",fontWeight:700,fontSize:13,cursor:"pointer"}}>
+            {favoris.some(f=>f.id===a.id&&f._type==="activite")?"❤️ Sauvegardé":"❤️ Sauvegarder"}
+          </button>
+        </div>
+      ))}
+    </>)}
+
+    {tab==="courses"&&<ListeCoursesActivites activites={selection} couleur={couleur} amazonTag={amazonTag}/>}
+  </>);
 }
 
 function EvtGenerateur({evt,activites,favoris,setFavoris,isPremium=false}){
@@ -4203,80 +4309,15 @@ function PageAccueil({favoris,setFavoris,setPage,customEvents=[],popupShown=new 
           </div>
           {/* Contenu */}
           <div style={{padding:"20px 16px"}}>
-            {(()=>{
-              const activites=(showEvtBiblio.bibliothequeActiv||[]).filter(a=>a.statut==="published");
-              const todayStr=new Date().toISOString().split("T")[0];
-              const fichiersVisibles=(showEvtBiblio.fichiers||[]).filter(f=>
-                (!f.dateDebut||f.dateDebut<=todayStr)&&(!f.dateFin||f.dateFin>=todayStr)
-              );
-
-              return(<>
-                {/* Fichiers */}
-                {fichiersVisibles.length>0&&(
-                  <div style={{marginBottom:20}}>
-                    <p style={{fontSize:14,fontWeight:700,color:TX,margin:"0 0 12px"}}>📎 Documents & Fichiers</p>
-                    <div style={{display:"flex",flexDirection:"column",gap:8}}>
-                      {fichiersVisibles.map((f,i)=>(
-                        <div key={i} style={{background:WH,borderRadius:14,padding:"12px 14px",border:"1px solid rgba(0,0,0,0.06)",display:"flex",alignItems:"center",gap:12,boxShadow:"0 2px 6px rgba(0,0,0,0.04)",cursor:"pointer"}}
-                          onClick={()=>setShowFichier({...f,couleur:showEvtBiblio.couleur||"#6C5CE7"})}>
-                          <div style={{width:42,height:42,borderRadius:10,background:f.type?.includes("pdf")?"#fee2e2":f.type?.includes("image")?"#dbeafe":"#f3f4f6",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0}}>
-                            {f.type?.includes("pdf")?"📄":f.type?.includes("image")?"🖼️":"📎"}
-                          </div>
-                          <div style={{flex:1,minWidth:0}}>
-                            <p style={{margin:"0 0 2px",fontSize:13,fontWeight:600,color:TX,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{f.nom}</p>
-                            <p style={{margin:0,fontSize:11,color:TM}}>
-                              {f.taille}
-                              {f.dateDebut&&f.dateFin&&(()=>{const d=new Date(f.dateFin);return isNaN(d.getTime())?null:` · Visible jusqu'au ${d.toLocaleDateString("fr-FR")}`;})()}
-                            </p>
-                          </div>
-                          <div style={{width:32,height:32,borderRadius:"50%",background:(showEvtBiblio.couleur||"#6C5CE7")+"18",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-                            <span style={{fontSize:14,color:(showEvtBiblio.couleur||"#6C5CE7")}}>↗</span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Générateur lié */}
-                {showEvtBiblio.generateur&&showEvtBiblio.generateurActif&&activites.length>0&&(
-                  <EvtGenerateur evt={showEvtBiblio} activites={activites} favoris={favoris} setFavoris={setFavorisGuarded} isPremium={isPremium}/>
-                )}
-
-                {/* Plusieurs activités + liste de courses */}
-                {activites.length>0&&(
-                  <GenerateurPlusieursActivites evt={showEvtBiblio} activites={activites} favoris={favoris} setFavoris={setFavorisGuarded} amazonTag={amazonTag}/>
-                )}
-
-                {/* Bibliothèque */}
-                {activites.length>0&&(
-                  <p style={{fontSize:14,fontWeight:700,color:TX,margin:"0 0 12px"}}>📚 Toutes les activités</p>
-                )}
-                {activites.length===0&&fichiersVisibles.length===0?(
-                  <div style={{textAlign:"center",padding:"48px 24px"}}>
-                    <p style={{fontSize:36,margin:"0 0 12px"}}>{showEvtBiblio.emoji}</p>
-                    <p style={{fontSize:15,fontWeight:600,color:TX,margin:"0 0 6px"}}>Aucune activité disponible</p>
-                    <p style={{fontSize:13,color:TM}}>Les activités de cet événement arrivent bientôt !</p>
-                  </div>
-                ):activites.map(a=>(
-                  <div key={a.id} onClick={()=>setDetailActiviteEvt({...a,materiel:Array.isArray(a.materiel)?a.materiel:(a.materiel?String(a.materiel).split(",").map(m=>m.trim()).filter(Boolean):[]),etapes:Array.isArray(a.etapes)?a.etapes:(a.etapes?String(a.etapes).split("\n").map(m=>m.trim()).filter(Boolean):[])})} style={{background:WH,borderRadius:16,padding:"14px 16px",border:"1px solid rgba(0,0,0,0.06)",marginBottom:10,boxShadow:"0 2px 8px rgba(0,0,0,0.05)",cursor:"pointer"}}>
-                    <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:6}}>
-                      <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-                        <span style={{fontSize:11,background:(showEvtBiblio.couleur||"#6C5CE7")+"22",color:(showEvtBiblio.couleur||"#6C5CE7"),padding:"3px 10px",borderRadius:20,fontWeight:600}}>{a.categorie}</span>
-                        {a.duree&&<span style={{fontSize:11,background:BG,color:TM,padding:"3px 10px",borderRadius:20}}>⏱ {a.duree}</span>}
-                      </div>
-                    </div>
-                    <p style={{margin:"0 0 4px",fontSize:15,fontWeight:700,color:TX}}>{a.titre}</p>
-                    {a.desc&&<p style={{margin:"0 0 8px",fontSize:13,color:TM,lineHeight:1.5}}>{a.desc}</p>}
-                    {a.age&&<p style={{margin:"0 0 8px",fontSize:12,color:TM}}>👶 {a.age}</p>}
-                    {a.materiel&&<div style={{background:BG,borderRadius:10,padding:"8px 12px",marginBottom:8}}><p style={{margin:"0 0 4px",fontSize:11,fontWeight:600,color:TX}}>🛒 Matériel</p><p style={{margin:0,fontSize:12,color:TM}}>{a.materiel}</p></div>}
-                    <button onClick={e=>{e.stopPropagation();setFavorisGuarded(prev=>{const exists=prev.find(f=>f.id===a.id&&f._type==="activite");if(exists)return prev;return[...prev,{...a,nom:a.titre,_type:"activite"}];});}} style={{width:"100%",padding:"10px 0",borderRadius:28,background:favoris.some(f=>f.id===a.id&&f._type==="activite")?BG:showEvtBiblio.couleur,border:favoris.some(f=>f.id===a.id&&f._type==="activite")?`1.5px solid ${showEvtBiblio.couleur}`:"none",color:favoris.some(f=>f.id===a.id&&f._type==="activite")?showEvtBiblio.couleur:"#fff",fontWeight:700,fontSize:13,cursor:"pointer"}}>
-                      {favoris.some(f=>f.id===a.id&&f._type==="activite")?"❤️ Sauvegardé":"❤️ Sauvegarder"}
-                    </button>
-                  </div>
-                ))}
-              </>);
-            })()}
+            <ContenuBibliothequeEvenement
+              evt={showEvtBiblio}
+              favoris={favoris}
+              setFavoris={setFavorisGuarded}
+              isPremium={isPremium}
+              amazonTag={amazonTag}
+              onOpenFichier={f=>setShowFichier({...f,couleur:showEvtBiblio.couleur||"#6C5CE7"})}
+              onOpenActivite={a=>setDetailActiviteEvt({...a,materiel:Array.isArray(a.materiel)?a.materiel:(a.materiel?String(a.materiel).split(",").map(m=>m.trim()).filter(Boolean):[]),etapes:Array.isArray(a.etapes)?a.etapes:(a.etapes?String(a.etapes).split("\n").map(m=>m.trim()).filter(Boolean):[])})}
+            />
           </div>
         </div>
       )}

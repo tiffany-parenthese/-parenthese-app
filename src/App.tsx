@@ -8684,7 +8684,7 @@ function ChampsActiviteRiche({form,setForm}){
 function Activites({sharedActivites,setSharedActivites,customCatActivites=[],pendingContribs=[],setPendingContribs,updateContrib}) {
   const MOCK_IDS=new Set(MOCK_ACTIVITES.map(a=>a.id));
   const [items,setItems] = useState(()=>[...MOCK_ACTIVITES,...(sharedActivites||[]).filter(a=>!MOCK_IDS.has(a.id)&&a._source!=="noel")]);
-  const contribsCommunaute=pendingContribs.filter(c=>c._type==="activite").map(c=>({...c,titre:c.titre||c.nom,_communaute:true}));
+  const contribsCommunaute=pendingContribs.filter(c=>c._type==="activite").map(c=>({...c,titre:c.titre||c.nom,_communaute:!!c.communaute}));
   const itemsAffiches=[...contribsCommunaute,...items];
   // Charge les activités admin déjà réellement enregistrées dans la table Supabase (communaute:false)
   // pour que la liste affichée ici corresponde toujours à ce qu'il y a vraiment dans la base.
@@ -8944,7 +8944,7 @@ function Sorties({sharedSorties=[],setSharedSorties,customCatSorties=[],setCusto
   const [search,setSearch] = useState("");
   const [modal,setModal] = useState(null);
   const [form,setForm] = useState(emptyForm);
-  const contribsCommunauteS=pendingContribs.filter(c=>c._type==="sortie").map(c=>({...c,titre:c.titre||c.nom,_communaute:true}));
+  const contribsCommunauteS=pendingContribs.filter(c=>c._type==="sortie").map(c=>({...c,titre:c.titre||c.nom,_communaute:!!c.communaute}));
   const itemsAffichesS=[...contribsCommunauteS,...items];
   const filtered = itemsAffichesS.filter(a=>!search||((a.titre||a.nom||"").toLowerCase()).includes(search.toLowerCase()));
   const {slice:filteredPageS,Pagination:PagSort,reset:resetPagSort}=usePagination(filtered,8);
@@ -9196,7 +9196,7 @@ function Evenements({sharedEvenements=[],setSharedEvenements,customCatEvenements
       <SearchBar value={search} onChange={setSearch} placeholder="Rechercher un événement..."/>
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))",gap:14}}>
         {(()=>{
-          const contribsCommunauteE=pendingContribs.filter(c=>c._type==="evenement").map(c=>({...c,titre:c.titre||c.nom,_communaute:true}));
+          const contribsCommunauteE=pendingContribs.filter(c=>c._type==="evenement").map(c=>({...c,titre:c.titre||c.nom,_communaute:!!c.communaute}));
           const itemsAffichesE=[...contribsCommunauteE,...items];
           return itemsAffichesE.filter(a=>!search||((a.titre||a.nom||"").toLowerCase()).includes(search.toLowerCase())).map(a=>(
           <div key={a.id} style={{...s.card,border:a._communaute?"1px solid rgba(139,92,246,0.4)":s.card.border}}>
@@ -12883,29 +12883,42 @@ export default function App(){
   const [pendingContribs,setPendingContribs]=useState([]);
   // ── Chargement des contributions communautaires (activités/sorties/événements) depuis Supabase ──
   useEffect(()=>{
+    // Supabase limite chaque requête à 1000 lignes par défaut : on pagine pour tout récupérer,
+    // quelle que soit la taille de la table (évite que les lignes les plus récentes soient coupées).
+    const fetchAllRows=async(table)=>{
+      let all=[];let from=0;const pageSize=1000;
+      while(true){
+        const {data,error}=await supabase.from(table).select("*").range(from,from+pageSize-1);
+        if(error||!data||data.length===0)break;
+        all=all.concat(data);
+        if(data.length<pageSize)break;
+        from+=pageSize;
+      }
+      return all;
+    };
     (async()=>{
       try{
-        const [{data:actsData},{data:sortsData},{data:evtsData}]=await Promise.all([
-          supabase.from("activites").select("*").eq("communaute",true),
-          supabase.from("sorties").select("*").eq("communaute",true),
-          supabase.from("evenements").select("*").eq("communaute",true),
+        const [actsData,sortsData,evtsData]=await Promise.all([
+          fetchAllRows("activites"),
+          fetchAllRows("sorties"),
+          fetchAllRows("evenements"),
         ]);
         const acts=(actsData||[]).map(a=>({
           id:a.id,nom:a.nom,titre:a.nom,categorie:a.categorie,lieu:a.lieu,energie:a.energie,age:a.age,duree:a.duree,
           difficulte:a.difficulte,materiel:a.materiel||[],etapes:a.etapes||[],desc:a.description,photo:a.photo,
           niveauxSensoriels:a.niveaux_sensoriels,profilsTND:a.profils_tnd,adaptations:a.adaptations||[],
           caracteristiques:a.caracteristiques,commentaireTND:a.commentaire_tnd,pointsAnticiper:a.points_anticiper||[],
-          _type:"activite",_statut:a.statut||"published",_createdAt:a.created_at,_auteur:a.auteur_nom||"Anonyme",communaute:true,
+          _type:"activite",_statut:a.statut||"published",_createdAt:a.created_at,_auteur:a.communaute?(a.auteur_nom||"Anonyme"):undefined,communaute:!!a.communaute,
         }));
         const sorts=(sortsData||[]).map(s=>({
           id:s.id,nom:s.nom,titre:s.nom,type:s.type,dept:s.dept,ville:s.ville,prix:s.prix,horaires:s.horaires,
           desc:s.description,photo:s.photo,tnd:s.tnd,accessibilite:s.accessibilite,commentaireTND:s.commentaire_tnd,
-          _type:"sortie",_statut:s.statut||"published",_createdAt:s.created_at,_auteur:s.auteur_nom||"Anonyme",communaute:true,
+          _type:"sortie",_statut:s.statut||"published",_createdAt:s.created_at,_auteur:s.communaute?(s.auteur_nom||"Anonyme"):undefined,communaute:!!s.communaute,
         }));
         const evts=(evtsData||[]).map(e=>({
           id:e.id,nom:e.nom,titre:e.nom,categorie:e.categorie,ville:e.ville,dept:e.dept,date:e.date,prix:e.prix,
           gratuit:e.gratuit,age:e.age,dates:e.dates,photo:e.photo,adresse:e.adresse,commentaireTND:e.commentaire_tnd,tnd:e.tnd,
-          _type:"evenement",_statut:e.statut||"published",_createdAt:e.created_at,_auteur:e.auteur_nom||"Anonyme",communaute:true,
+          _type:"evenement",_statut:e.statut||"published",_createdAt:e.created_at,_auteur:e.communaute?(e.auteur_nom||"Anonyme"):undefined,communaute:!!e.communaute,
         }));
         if(acts.length>0||sorts.length>0||evts.length>0)setPendingContribs(prev=>{
           const dejaPresent=(nom,type)=>prev.some(p=>p._type===type&&String(p.nom||p.titre||"").toLowerCase()===String(nom||"").toLowerCase());

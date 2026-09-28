@@ -3417,10 +3417,14 @@ function ListeCoursesActivites({activites=[],couleur="#6C5CE7",amazonTag=""}){
   );
 }
 
-function GenerateurPlusieursActivites({evt,activites=[],favoris=[],setFavoris,readOnly=false,amazonTag="",masquerListeCourses=false,onSelectionChange}){
+function GenerateurPlusieursActivites({evt,activites=[],favoris=[],setFavoris,readOnly=false,amazonTag="",masquerListeCourses=false,onSelectionChange,count:countProp,setCount:setCountProp,selection:selectionProp,setSelection:setSelectionProp}){
   const publiees=activites.filter(a=>a.statut==="published"||!a.statut);
-  const [count,setCount]=useState(Math.min(3,publiees.length||3));
-  const [selection,setSelection]=useState([]);
+  const [countLocal,setCountLocal]=useState(Math.min(3,publiees.length||3));
+  const [selectionLocal,setSelectionLocal]=useState([]);
+  const count=countProp!==undefined?countProp:countLocal;
+  const setCount=setCountProp||setCountLocal;
+  const selection=selectionProp!==undefined?selectionProp:selectionLocal;
+  const setSelection=setSelectionProp||setSelectionLocal;
   useEffect(()=>{ if(onSelectionChange)onSelectionChange(selection); },[selection]);
   const genererPlusieurs=()=>{
     const shuffled=[...publiees].sort(()=>Math.random()-0.5);
@@ -3474,6 +3478,7 @@ function ContenuBibliothequeEvenement({evt,favoris,setFavoris,isPremium,amazonTa
   const todayStr=new Date().toISOString().split("T")[0];
   const fichiersVisibles=(evt.fichiers||[]).filter(f=>(!f.dateDebut||f.dateDebut<=todayStr)&&(!f.dateFin||f.dateFin>=todayStr));
   const [tab,setTab]=useState("generateurs");
+  const [count,setCount]=useState(()=>Math.min(3,activites.length||3));
   const [selection,setSelection]=useState([]);
   const couleur=evt.couleur||"#6C5CE7";
   if(activites.length===0&&fichiersVisibles.length===0){
@@ -3521,11 +3526,8 @@ function ContenuBibliothequeEvenement({evt,favoris,setFavoris,isPremium,amazonTa
           </div>
         </div>
       )}
-      {evt.generateur&&evt.generateurActif&&activites.length>0&&(
-        <EvtGenerateur evt={evt} activites={activites} favoris={favoris} setFavoris={setFavoris} isPremium={isPremium}/>
-      )}
       {activites.length>0?(
-        <GenerateurPlusieursActivites evt={evt} activites={activites} favoris={favoris} setFavoris={setFavoris} amazonTag={amazonTag} masquerListeCourses onSelectionChange={setSelection}/>
+        <GenerateurPlusieursActivites evt={evt} activites={activites} favoris={favoris} setFavoris={setFavoris} amazonTag={amazonTag} masquerListeCourses count={count} setCount={setCount} selection={selection} setSelection={setSelection}/>
       ):(
         <p style={{fontSize:13,color:TM,textAlign:"center"}}>Aucune activité disponible pour l'instant.</p>
       )}

@@ -3481,6 +3481,26 @@ function ContenuBibliothequeEvenement({evt,favoris,setFavoris,isPremium,amazonTa
   const [count,setCount]=useState(()=>Math.min(3,activites.length||3));
   const [selection,setSelection]=useState([]);
   const couleur=evt.couleur||"#6C5CE7";
+
+  // Sauvegarde/restauration du planning généré pour cet événement (stockage personnel persistant)
+  const storageKey="evt_planning_"+(evt.id||evt.nom);
+  useEffect(()=>{
+    try{
+      const raw=localStorage.getItem(storageKey);
+      if(raw){
+        const data=JSON.parse(raw);
+        if(typeof data.count==="number")setCount(data.count);
+        if(Array.isArray(data.selection)&&data.selection.length>0)setSelection(data.selection);
+      }
+    }catch(e){
+      // Pas encore de planning sauvegardé pour cet événement — rien à restaurer
+    }
+  },[storageKey]);
+  useEffect(()=>{
+    if(selection.length===0)return; // rien à sauvegarder tant qu'aucune génération n'a eu lieu
+    try{ localStorage.setItem(storageKey,JSON.stringify({count,selection})); }catch(e){}
+  },[storageKey,count,selection]);
+
   if(activites.length===0&&fichiersVisibles.length===0){
     return(
       <div style={{textAlign:"center",padding:"48px 24px"}}>

@@ -8905,6 +8905,27 @@ function Sorties({sharedSorties=[],setSharedSorties,customCatSorties=[],setCusto
   const emptyForm={titre:"",dept:"",adresse:"",horaires:"",prix:"",categorie:"",statut:"published",programmation:{date:"",heure:""},etiquettes:[],acc_poussette:false,acc_bebe:false,acc_allaitement:false,acc_langer:false,acc_aire03:false,acc_peubruyant:false,pmr_fauteuil:false,pmr_escaliers:false,pmr_parking:false,pmr_toilettes:false,pmr_personnel:false,pmr_chemin:false,tsa_foule:false,tsa_calme:false,tsa_lumiere:false,tsa_retrait:false,tsa_bruit:false,tsa_personnel:false,tdah_espace:false,tdah_physique:false,tdah_attente:false,tdah_stimulation:false,dys_visuels:false,dys_nonecrite:false,dys_rythme:false,dys_personnel:false};
   const MOCK_IDS=new Set(MOCK_SORTIES.map(o=>o.id));
   const [items,setItems] = useState(()=>[...MOCK_SORTIES,...(sharedSorties||[]).filter(o=>!MOCK_IDS.has(o.id))]);
+  // Charge les sorties déjà réellement enregistrées dans la table Supabase (communaute:false)
+  // pour que la liste affichée ici corresponde toujours à ce qu'il y a vraiment dans la base
+  // (notamment celles ajoutées directement via SQL Editor).
+  useEffect(()=>{
+    (async()=>{
+      try{
+        const{data}=await supabase.from("sorties").select("*").or("communaute.eq.false,communaute.is.null");
+        if(!data||data.length===0)return;
+        const norm=(v)=>String(v||"").trim().toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"");
+        setItems(prev=>{
+          const dejaPresent=new Set(prev.map(a=>norm(a.nom||a.titre)));
+          const nouveaux=data.filter(a=>!dejaPresent.has(norm(a.nom))).map(a=>({
+            id:a.id,nom:a.nom,titre:a.nom,categorie:a.type,dept:a.dept,adresse:a.ville,
+            horaires:a.horaires,prix:a.prix,desc:a.description,photo:a.photo,tnd:a.tnd,
+            accessibilite:a.accessibilite,commentaireTND:a.commentaire_tnd,statut:a.statut||"published",
+          }));
+          return nouveaux.length>0?[...prev,...nouveaux]:prev;
+        });
+      }catch(e){ /* erreur réseau — reste sur ce qui est déjà affiché */ }
+    })();
+  },[]);
   const supprimerContribItem=(item)=>{
     if(!window.confirm(`Retirer définitivement "${item.titre||item.nom}" de la bibliothèque ?`))return;
     if(setPendingContribs)setPendingContribs(prev=>prev.filter(c=>c.id!==item.id));
@@ -9080,6 +9101,27 @@ function Evenements({sharedEvenements=[],setSharedEvenements,customCatEvenements
   const MOCK_IDS=new Set(MOCK_EVENTS.map(o=>o.id));
   const [items,setItems] = useState(()=>[...MOCK_EVENTS,...(sharedEvenements||[]).filter(o=>!MOCK_IDS.has(o.id))]);
   useAutoExpireEvenements(items,setItems,MOCK_IDS);
+  // Charge les événements déjà réellement enregistrés dans la table Supabase (communaute:false)
+  // pour que la liste affichée ici corresponde toujours à ce qu'il y a vraiment dans la base
+  // (notamment ceux ajoutés directement via SQL Editor).
+  useEffect(()=>{
+    (async()=>{
+      try{
+        const{data}=await supabase.from("evenements").select("*").or("communaute.eq.false,communaute.is.null");
+        if(!data||data.length===0)return;
+        const norm=(v)=>String(v||"").trim().toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"");
+        setItems(prev=>{
+          const dejaPresent=new Set(prev.map(a=>norm(a.nom||a.titre)));
+          const nouveaux=data.filter(a=>!dejaPresent.has(norm(a.nom))).map(a=>({
+            id:a.id,nom:a.nom,titre:a.nom,type:a.categorie,ville:a.ville,dept:a.dept,date:a.date,
+            fin:a.date_fin,prix:a.prix,adresse:a.adresse,photo:a.photo,desc:a.description,
+            accessibilite:a.accessibilite,statut:a.statut||"published",
+          }));
+          return nouveaux.length>0?[...prev,...nouveaux]:prev;
+        });
+      }catch(e){ /* erreur réseau — reste sur ce qui est déjà affiché */ }
+    })();
+  },[]);
   useEffect(()=>{
     const check=()=>{
       const aujourdhui=new Date().toISOString().slice(0,10);

@@ -4496,10 +4496,66 @@ function PageAccueil({favoris,setFavoris,setPage,customEvents=[],popupShown=new 
   );
 }
 
+const SOS_THEMES=[
+  {theme:"Sommeil",emoji:"😴",sousThemes:[
+    {nom:"Peur du noir",emoji:"🌑",solutions:[
+      {titre:"Veilleuse + rituel rassurant",desc:"Installer une veilleuse douce et répéter chaque soir la même petite phrase rassurante (« Je suis là, tout va bien, à demain »). La répétition du rituel sécurise plus que la lumière elle-même.",duree:"5 min",tags:["Le soir","Chambre"],emoji:"🌙"},
+      {titre:"Le gardien de la chambre",desc:"Choisir ensemble un doudou ou objet « gardien » dont le rôle est de veiller pendant la nuit. Donne à l'enfant un sentiment de protection concret.",duree:"3 min",tags:["Le soir","Objet transitionnel"],emoji:"🧸"},
+      {titre:"Chasse aux ombres",desc:"Faire le tour de la chambre lumière allumée puis éteinte, en nommant ensemble chaque forme/ombre pour dédramatiser. À faire une fois, avant le coucher.",duree:"5 min",tags:["Avant le coucher"],emoji:"🔦"},
+    ]},
+    {nom:"Refus de dormir seul",emoji:"🛏️",solutions:[
+      {titre:"Départs progressifs",desc:"Rester quelques minutes puis s'éloigner un peu plus chaque soir (porte entrouverte, puis palier, puis plus loin), en prévenant l'enfant du plan à l'avance.",duree:"10 min",tags:["Le soir","Progressif"],emoji:"🚪"},
+      {titre:"Carte du courage",desc:"Un tableau où l'enfant colle une gommette chaque nuit réussie seul, avec une petite récompense symbolique après quelques nuits.",duree:"2 min",tags:["Le matin","Motivation"],emoji:"⭐"},
+    ]},
+    {nom:"Réveils nocturnes",emoji:"⏰",solutions:[
+      {titre:"Retour au calme scripté",desc:"Préparer à l'avance une phrase et un geste toujours identiques à répéter en cas de réveil, pour éviter la stimulation d'une discussion en pleine nuit.",duree:"2 min",tags:["Nuit","Court"],emoji:"🤫"},
+      {titre:"Horloge du réveil autorisé",desc:"Une horloge visuelle (ou veilleuse qui change de couleur) qui indique à l'enfant l'heure à partir de laquelle il peut se lever.",duree:"1 min",tags:["Visuel","Autonomie"],emoji:"🕰️"},
+    ]},
+  ]},
+  {theme:"Repas",emoji:"🍽️",sousThemes:[
+    {nom:"Sélectivité alimentaire",emoji:"🥦",solutions:[
+      {titre:"Assiette découverte",desc:"Proposer un tout petit morceau du nouvel aliment à côté des aliments déjà acceptés, sans obligation d'en manger — juste le voir, le toucher ou le sentir.",duree:"Repas",tags:["Sans pression","Progressif"],emoji:"🍽️"},
+      {titre:"Cuisiner ensemble",desc:"Faire participer l'enfant à la préparation (laver, mélanger, disposer) d'un aliment qu'il refuse habituellement : le contact en amont réduit souvent le refus à table.",duree:"15 min",tags:["Avant le repas"],emoji:"👩‍🍳"},
+    ]},
+    {nom:"Refus de manger à table",emoji:"🙅",solutions:[
+      {titre:"Minuteur visuel de repas",desc:"Fixer une durée de repas raisonnable avec un minuteur visuel, sans négociation prolongée au-delà, pour limiter l'anxiété liée à un temps de table trop long.",duree:"20 min",tags:["Repas","Cadre clair"],emoji:"⏲️"},
+    ]},
+  ]},
+  {theme:"École",emoji:"🏫",sousThemes:[
+    {nom:"Angoisse de la rentrée",emoji:"😟",solutions:[
+      {titre:"Répétition du trajet",desc:"Refaire le trajet et visualiser l'entrée de l'école quelques jours avant la rentrée, en dehors des heures d'affluence, pour désamorcer l'inconnu.",duree:"15 min",tags:["Avant la rentrée"],emoji:"🚶"},
+      {titre:"Carnet des « au revoir »",desc:"Un petit rituel de séparation identique chaque matin (même phrase, même geste) pour rendre le moment prévisible et rassurant.",duree:"1 min",tags:["Le matin"],emoji:"👋"},
+    ]},
+    {nom:"Devoirs difficiles",emoji:"📚",solutions:[
+      {titre:"Décomposer en petites étapes",desc:"Diviser le devoir en 2-3 petites étapes visuelles avec une pause active entre chaque, plutôt qu'un bloc unique perçu comme insurmontable.",duree:"20 min",tags:["Après l'école"],emoji:"✂️"},
+    ]},
+  ]},
+  {theme:"Sorties & changements",emoji:"🎒",sousThemes:[
+    {nom:"Peur de la foule",emoji:"👥",solutions:[
+      {titre:"Casque anti-bruit + signal de sortie",desc:"Prévoir un casque ou des bouchons, et convenir à l'avance d'un signal simple que l'enfant peut faire pour demander à sortir du lieu bondé.",duree:"Avant la sortie",tags:["Prévention"],emoji:"🎧"},
+    ]},
+    {nom:"Changement de routine",emoji:"🔄",solutions:[
+      {titre:"Pictogramme du changement",desc:"Annoncer le changement à l'avance avec un support visuel simple (image ou mot-clé) plutôt qu'à l'oral seul, pour laisser le temps de l'anticiper.",duree:"5 min",tags:["Anticipation"],emoji:"🗂️"},
+    ]},
+  ]},
+  {theme:"Émotions",emoji:"😡",sousThemes:[
+    {nom:"Colère / crise",emoji:"💥",solutions:[
+      {titre:"Coin calme",desc:"Un espace dédié avec coussins et objets sensoriels où l'enfant peut se retirer pour se réguler, présenté comme un choix et non une punition.",duree:"5-10 min",tags:["Retrait","Sensoriel"],emoji:"🛋️"},
+      {titre:"Respiration du dragon",desc:"Inspirer fort par le nez, souffler très fort par la bouche comme un dragon qui crache le feu, 5 fois de suite.",duree:"1 min",tags:["Partout","Rapide"],emoji:"🐉"},
+    ]},
+    {nom:"Frustration",emoji:"😢",solutions:[
+      {titre:"Thermomètre des émotions",desc:"Utiliser un support visuel gradué pour que l'enfant montre l'intensité de sa frustration, ce qui aide à la nommer avant qu'elle ne déborde.",duree:"2 min",tags:["Visuel"],emoji:"🌡️"},
+    ]},
+  ]},
+];
+
 function PageSOS({sosLib=[],isPremium=false,onOpenPremium,onBack}){
   const [sosCrise,setSosCrise]=useState(null);
   const [sosResults,setSosResults]=useState(null);
   const [sosDetailActive,setSosDetailActive]=useState(null); // activité en cours de réalisation
+  const [sosOnglet,setSosOnglet]=useState("crise"); // "crise" | "theme"
+  const [themeActif,setThemeActif]=useState(null);
+  const [sousThemeActif,setSousThemeActif]=useState(null);
   const sosPublished=sosLib.filter(a=>a.statut==="published");
   const FALLBACK_ACTIVITIES=[
     {titre:"Respiration des bulles",desc:"Souffler lentement dans un tube imaginaire pour faire de grosses bulles. Focalise l'attention et régule la respiration.",duree:"1 min",tags:["Silencieux","Partout"],emoji:"🫧"},
@@ -4516,7 +4572,7 @@ function PageSOS({sosLib=[],isPremium=false,onOpenPremium,onBack}){
     const shuffle=[...pool].sort(()=>Math.random()-0.5);
     setSosResults({main:shuffle[0],alt:shuffle[1]||null,fallback:null});
   };
-  const reset=()=>{setSosResults(null);setSosCrise(null);};
+  const reset=()=>{setSosResults(null);setSosCrise(null);setThemeActif(null);setSousThemeActif(null);};
   const ActivityCard=({act,isMain=false})=>(<div style={{background:isMain?"rgba(255,255,255,0.08)":"rgba(255,255,255,0.04)",borderRadius:18,padding:"16px 16px",marginBottom:10,border:`1px solid ${isMain?"rgba(239,68,68,0.35)":"rgba(255,255,255,0.08)"}`}}>
     {isMain&&<div style={{display:"flex",alignItems:"center",gap:6,marginBottom:8}}><div style={{width:6,height:6,borderRadius:"50%",background:"#ef4444"}}/><span style={{fontSize:10,color:"#fca5a5",fontWeight:700,textTransform:"uppercase",letterSpacing:"0.5px"}}>Suggestion principale</span></div>}
     {!isMain&&<div style={{display:"flex",alignItems:"center",gap:6,marginBottom:8}}><span style={{fontSize:10,color:"rgba(255,255,255,0.35)",textTransform:"uppercase",letterSpacing:"0.5px"}}>Alternative</span></div>}
@@ -4588,7 +4644,63 @@ function PageSOS({sosLib=[],isPremium=false,onOpenPremium,onBack}){
         </div>
       </div>
       <div style={{flex:1,padding:"16px 16px 24px",overflowY:"auto"}}>
-        {!sosResults?(
+        {/* Onglets */}
+        <div style={{display:"flex",gap:8,marginBottom:18}}>
+          <button onClick={()=>setSosOnglet("crise")} style={{flex:1,padding:"9px 0",borderRadius:14,border:"none",background:sosOnglet==="crise"?"rgba(239,68,68,0.2)":"rgba(255,255,255,0.05)",color:sosOnglet==="crise"?"#fca5a5":"rgba(255,255,255,0.5)",fontWeight:700,fontSize:12,cursor:"pointer"}}>😰 Type de crise</button>
+          <button onClick={()=>setSosOnglet("theme")} style={{flex:1,padding:"9px 0",borderRadius:14,border:"none",background:sosOnglet==="theme"?"rgba(239,68,68,0.2)":"rgba(255,255,255,0.05)",color:sosOnglet==="theme"?"#fca5a5":"rgba(255,255,255,0.5)",fontWeight:700,fontSize:12,cursor:"pointer"}}>📖 Par thème</button>
+        </div>
+
+        {sosOnglet==="theme"&&(
+          <div>
+            {!themeActif?(
+              <div>
+                <p style={{fontSize:12,fontWeight:700,color:"#fca5a5",margin:"0 0 12px",textTransform:"uppercase",letterSpacing:"0.5px"}}>📖 Choisis un thème</p>
+                <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                  {SOS_THEMES.map(t=>(
+                    <button key={t.theme} onClick={()=>setThemeActif(t)} style={{display:"flex",alignItems:"center",gap:12,padding:"14px 14px",borderRadius:14,border:"1px solid rgba(255,255,255,0.1)",background:"rgba(255,255,255,0.03)",color:"#fff",cursor:"pointer",textAlign:"left"}}>
+                      <span style={{fontSize:24}}>{t.emoji}</span>
+                      <span style={{fontSize:14,fontWeight:700}}>{t.theme}</span>
+                      <span style={{marginLeft:"auto",fontSize:14,color:"rgba(255,255,255,0.3)"}}>›</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ):!sousThemeActif?(
+              <div>
+                <button onClick={()=>setThemeActif(null)} style={{background:"none",border:"none",color:"rgba(255,255,255,0.5)",fontSize:12,cursor:"pointer",marginBottom:14,padding:0}}>← Thèmes</button>
+                <p style={{fontSize:12,fontWeight:700,color:"#fca5a5",margin:"0 0 12px",textTransform:"uppercase",letterSpacing:"0.5px"}}>{themeActif.emoji} {themeActif.theme}</p>
+                <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                  {themeActif.sousThemes.map(st=>(
+                    <button key={st.nom} onClick={()=>setSousThemeActif(st)} style={{display:"flex",alignItems:"center",gap:12,padding:"14px 14px",borderRadius:14,border:"1px solid rgba(255,255,255,0.1)",background:"rgba(255,255,255,0.03)",color:"#fff",cursor:"pointer",textAlign:"left"}}>
+                      <span style={{fontSize:22}}>{st.emoji}</span>
+                      <span style={{fontSize:14,fontWeight:600}}>{st.nom}</span>
+                      <span style={{marginLeft:"auto",fontSize:14,color:"rgba(255,255,255,0.3)"}}>›</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ):(
+              <div>
+                <button onClick={()=>setSousThemeActif(null)} style={{background:"none",border:"none",color:"rgba(255,255,255,0.5)",fontSize:12,cursor:"pointer",marginBottom:14,padding:0}}>← {themeActif.theme}</button>
+                <p style={{fontSize:12,fontWeight:700,color:"#fca5a5",margin:"0 0 12px",textTransform:"uppercase",letterSpacing:"0.5px"}}>{sousThemeActif.emoji} {sousThemeActif.nom}</p>
+                {sousThemeActif.solutions.map((sol,i)=>(
+                  <div key={i} style={{background:"rgba(255,255,255,0.04)",borderRadius:18,padding:"16px 16px",marginBottom:10,border:"1px solid rgba(255,255,255,0.08)"}}>
+                    <div style={{display:"flex",gap:6,marginBottom:8,flexWrap:"wrap"}}>
+                      {sol.duree&&<span style={{fontSize:10,background:"rgba(239,68,68,0.15)",color:"#fca5a5",padding:"2px 8px",borderRadius:10,fontWeight:600}}>⏱ {sol.duree}</span>}
+                      {sol.tags&&sol.tags.map((t,ti)=><span key={ti} style={{fontSize:10,background:"rgba(255,255,255,0.05)",color:"rgba(255,255,255,0.4)",padding:"2px 8px",borderRadius:10}}>{t}</span>)}
+                    </div>
+                    <p style={{margin:"0 0 6px",fontSize:32}}>{sol.emoji}</p>
+                    <p style={{margin:"0 0 6px",fontSize:16,fontWeight:700,color:"#fff"}}>{sol.titre}</p>
+                    <p style={{margin:"0 0 12px",fontSize:12,color:"rgba(255,255,255,0.65)",lineHeight:1.5}}>{sol.desc}</p>
+                    <button onClick={()=>setSosDetailActive(sol)} style={{width:"100%",padding:"11px 0",borderRadius:24,background:"linear-gradient(135deg,#dc2626,#ef4444)",border:"none",color:"#fff",fontWeight:700,fontSize:13,cursor:"pointer"}}>✅ C'est parti !</button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {sosOnglet==="crise"&&(!sosResults?(
           <div>
             {/* Filtre 1 — Type de crise */}
             <div style={{marginBottom:18}}>
@@ -4625,7 +4737,7 @@ function PageSOS({sosLib=[],isPremium=false,onOpenPremium,onBack}){
               <button onClick={()=>setSosDetailActive(sosResults.main||(sosResults.fallback&&sosResults.fallback[0]))} style={{flex:1,padding:"13px 0",borderRadius:28,background:"linear-gradient(135deg,#dc2626,#ef4444)",border:"none",color:"#fff",fontWeight:700,fontSize:13,cursor:"pointer"}}>✅ C'est parti !</button>
             </div>
           </div>
-        )}
+        ))}
       </div>
     </div>
   );
